@@ -4,105 +4,30 @@
 <meta charset="UTF-8">
 <title>Materiais</title>
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-  margin: 0;
-  padding: 20px;
-}
+body { font-family: Arial, sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
 
-/* VOLTAR */
-.back-link {
-  display: inline-flex;
-  align-items: center;
-  color: #005A64;
-  text-decoration: none;
-  font-weight: bold;
-  margin-bottom: 20px;
-  transition: color 0.3s;
-}
+.back-link { display: inline-flex; align-items: center; color: #005A64; text-decoration: none; font-weight: bold; margin-bottom: 20px; transition: color 0.3s; }
+.back-link:hover { color: #003f46; }
+.back-link svg { margin-right: 8px; width: 18px; height: 18px; fill: currentColor; transition: transform 0.3s; }
+.back-link:hover svg { transform: translateX(-3px); }
 
-.back-link:hover {
-  color: #003f46;
-}
+h1 { color: #005A64; text-align: center; margin-bottom: 30px; }
 
-.back-link svg {
-  margin-right: 8px;
-  width: 18px;
-  height: 18px;
-  fill: currentColor;
-  transition: transform 0.3s;
-}
+.materiais-container { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
 
-.back-link:hover svg {
-  transform: translateX(-3px);
-}
+.card { background: #fff; border-radius: 12px; padding: 20px; width: 260px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s; }
+.card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+.card h3 { margin-top: 0; color: #005A64; }
+.card p { font-size: 14px; color: #333; }
+.card a { display: inline-block; margin-top: 10px; text-decoration: none; color: #fff; background: #005A64; padding: 10px 14px; border-radius: 6px; font-weight: bold; transition: background 0.3s; }
+.card a:hover { background: #003f46; }
 
-/* TÍTULO */
-h1 {
-  color: #005A64;
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-/* CARDS */
-.materiais-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
-}
-
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  width: 260px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-
-.card h3 {
-  margin-top: 0;
-  color: #005A64;
-}
-
-.card p {
-  font-size: 14px;
-  color: #333;
-}
-
-.card a {
-  display: inline-block;
-  margin-top: 10px;
-  text-decoration: none;
-  color: #fff;
-  background: #005A64;
-  padding: 10px 14px;
-  border-radius: 6px;
-  font-weight: bold;
-  transition: background 0.3s;
-}
-
-.card a:hover {
-  background: #003f46;
-}
-
-/* ESCONDE O CONTEÚDO ATÉ VERIFICAR LOGIN */
-#materiais-content {
-  display: none;
-}
+#materiais-content { display: none; }
 </style>
 </head>
 <body>
 
 <div id="materiais-content">
-  <!-- Setinha de voltar -->
   <a href="index.html" class="back-link">
     <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
     Voltar para Acessos Rápidos
@@ -116,13 +41,11 @@ h1 {
       <p>Guia rápido para consultas e processos internos.</p>
       <a href="LINK_DO_DRIVE_1" target="_blank">Abrir Documento</a>
     </div>
-
     <div class="card">
       <h3>Treinamento CX</h3>
       <p>Conteúdo de treinamento da equipe de atendimento.</p>
       <a href="LINK_DO_DRIVE_2" target="_blank">Abrir Documento</a>
     </div>
-
     <div class="card">
       <h3>Checklist de Instalação</h3>
       <p>Passo a passo completo para a equipe técnica.</p>
@@ -131,7 +54,6 @@ h1 {
   </div>
 </div>
 
-<!-- FIREBASE: verifica login e mostra conteúdo -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -145,14 +67,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Verifica se usuário está logado
+// Aguarda o estado do usuário carregar
+let userChecked = false;
 onAuthStateChanged(auth, (user) => {
-  if (user && user.email.endsWith("@leveros.com.br")) {
-    // Usuário logado: mostra conteúdo
-    document.getElementById("materiais-content").style.display = "block";
-  } else {
-    // Não logado: volta para index
-    window.location.href = "index.html";
+  if (!userChecked) {
+    userChecked = true;
+    if (user && user.email.endsWith("@leveros.com.br")) {
+      document.getElementById("materiais-content").style.display = "block";
+    } else {
+      window.location.href = "index.html";
+    }
   }
 });
 </script>
