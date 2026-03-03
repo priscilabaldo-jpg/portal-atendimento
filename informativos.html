@@ -3,29 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <title>Informativos</title>
+
 <style>
-body { font-family: Arial,sans-serif; background:#005A64; margin:0; padding:20px; }
-.back-link { display:inline-flex; align-items:center; color:#fff; text-decoration:none; font-weight:bold; margin-bottom:20px; transition:color .3s; }
-.back-link:hover { color:#e0e0e0; }
-.back-link svg { margin-right:8px; width:18px; height:18px; fill:currentColor; transition:transform .3s; }
-.back-link:hover svg { transform:translateX(-3px); }
+body{
+  font-family:Arial,sans-serif;
+  background:#005A64;
+  margin:0;
+  padding:20px;
+}
 
-h1 { color:#005A64; text-align:center; margin-bottom:30px; }
+.back-link{
+  display:inline-flex;
+  align-items:center;
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+  margin-bottom:20px;
+  transition:color .3s;
+}
 
-.infos-container { display:flex; flex-wrap:wrap; gap:20px; justify-content:center; }
+.back-link:hover{
+  color:#e0e0e0;
+}
 
-.card { background:#fff; border-radius:12px; padding:20px; width:300px; box-shadow:0 4px 10px rgba(0,0,0,0.1); transition:transform .3s,box-shadow .3s; }
-.card:hover { transform:translateY(-5px); box-shadow:0 8px 20px rgba(0,0,0,0.2); }
-.card h3 { margin-top:0; color:#005A64; }
-.card p { font-size:14px; color:#333; }
-#informativos-content { display:none; }
+.back-link svg{
+  margin-right:8px;
+  width:18px;
+  height:18px;
+  fill:currentColor;
+  transition:transform .3s;
+}
+
+.back-link:hover svg{
+  transform:translateX(-3px);
+}
+
+h1{
+  color:#005A64;
+  text-align:center;
+  margin-bottom:30px;
+}
+
+.infos-container{
+  display:flex;
+  flex-wrap:wrap;
+  gap:20px;
+  justify-content:center;
+}
+
+.card{
+  background:#fff;
+  border-radius:12px;
+  padding:20px;
+  width:300px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+  transition:transform .3s,box-shadow .3s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+}
+
+.card h3{
+  margin-top:0;
+  color:#005A64;
+}
+
+.card p{
+  font-size:14px;
+  color:#333;
+}
+
+#informativos-content{
+  display:none;
+}
+
+/* LOGO FIXO INFERIOR ESQUERDO */
+.logo-fixo{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  width:110px;
+  opacity:0.9;
+  z-index:1000;
+}
 </style>
 </head>
+
 <body>
 
 <div id="informativos-content">
   <a href="index.html" class="back-link">
-    <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    <svg viewBox="0 0 24 24">
+      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+    </svg>
     Voltar para Acessos Rápidos
   </a>
 
@@ -36,20 +108,26 @@ h1 { color:#005A64; text-align:center; margin-bottom:30px; }
       <h3>📌 Recados da Semana</h3>
       <p>Exemplo: Reunião de alinhamento quarta-feira 10h, entrega de relatórios sexta-feira 18h.</p>
     </div>
+
     <div class="card">
       <h3>🎯 Metas</h3>
       <p>Exemplo: Atingir 95% de SLA nos atendimentos, 20 novos clientes na semana.</p>
     </div>
+
     <div class="card">
       <h3>📢 Campanhas</h3>
       <p>Exemplo: Promoção de primavera, campanha de upsell de serviços.</p>
     </div>
+
     <div class="card">
       <h3>🎂 Aniversariantes do Mês</h3>
       <p>Exemplo: Ana Silva - 05/03, Carlos Lima - 12/03, Fernanda Souza - 25/03.</p>
     </div>
   </div>
 </div>
+
+<!-- LOGO FIXO -->
+<img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
