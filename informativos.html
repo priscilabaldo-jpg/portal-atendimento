@@ -3,64 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Informativos - CX Resolve</title>
+  <title>Metas - CX Resolve</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background-color: #f5f5f5; color: #333; }
-    a { text-decoration: none; color: inherit; }
-
     nav {
       background-color: #005A64;
       padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
-      align-items: center;
       color: #fff;
     }
-
     nav a { margin-left: 1.5rem; color: #fff; font-weight: 600; }
-    nav a:hover { text-decoration: underline; }
 
     .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+
+    h1 { margin-bottom: 1.5rem; }
+
+    .section-title {
+      margin: 2rem 0 1rem 0;
+      color: #005A64;
+      font-size: 1.3rem;
+      border-left: 6px solid #005A64;
+      padding-left: 0.75rem;
+    }
 
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
 
     .card {
       background: #fff;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       padding: 1.5rem;
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
 
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-    }
-
-    .card h2 {
-      margin-bottom: 1rem;
+    .card h3 {
+      margin-bottom: 0.75rem;
       color: #005A64;
-      font-size: 1.2rem;
     }
 
-    .meta-section {
-      margin-bottom: 1rem;
+    .card p {
       font-size: 0.9rem;
       line-height: 1.4rem;
-    }
-
-    .meta-section strong {
-      color: #005A64;
+      margin-bottom: 0.5rem;
     }
 
     footer {
       margin-top: 3rem;
       text-align: center;
       color: #666;
+      padding: 1rem;
       font-size: 0.9rem;
-      padding: 1rem 0;
     }
   </style>
 </head>
@@ -76,67 +70,69 @@
 </nav>
 
 <div class="container">
-  <h1>Guia Rápido de Metas – Temporada 25/26</h1>
+  <h1>Guia de Metas – Temporada 25/26</h1>
 
+  <div class="section-title">Metas Compartilhadas</div>
   <div class="grid">
 
-    <!-- NPS -->
     <div class="card">
-      <h2>📊 NPS BOT + URA</h2>
-      <div class="meta-section"><strong>Meta:</strong> 75% até 31/03/2026</div>
-      <div class="meta-section"><strong>O que é:</strong> Pesquisa de satisfação enviada após atendimento (URA em linha e BOT pós finalização).</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Atendimento claro, seguro e objetivo. Sempre convidar cliente/parceiro a responder a pesquisa.</div>
+      <h3>GPTW</h3>
+      <p><strong>Meta:</strong> ≥ 96% adesão | ≥ 84% favorabilidade</p>
+      <p>Envolve toda a empresa.</p>
     </div>
 
-    <!-- T&D -->
     <div class="card">
-      <h2>📦 Trocas & Devoluções (T&D)</h2>
-      <div class="meta-section"><strong>T&D Geral:</strong> ≤ 1,95% do faturamento</div>
-      <div class="meta-section"><strong>Pós Vendas:</strong> ≤ 0,02%</div>
-      <div class="meta-section"><strong>Casos Exceção:</strong> ≤ 0,23%</div>
-      <div class="meta-section"><strong>Importante:</strong> Quanto maior o faturamento, menor deve ser a emissão proporcional de NFD.</div>
+      <h3>NPS BOT + URA</h3>
+      <p><strong>Meta:</strong> 75%</p>
+      <p>Satisfação do cliente após atendimento.</p>
     </div>
 
-    <!-- Taxa Reversa -->
     <div class="card">
-      <h2>🔄 Taxa Reversa</h2>
-      <div class="meta-section"><strong>Meta:</strong> 3,57%</div>
-      <div class="meta-section"><strong>O que é:</strong> Percentual máximo de volumes devolvidos que podem permanecer no depósito reversa.</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Acompanhamento preventivo de entregas e retenções em trocas/devoluções.</div>
+      <h3>G&A (Despesas)</h3>
+      <p><strong>Meta:</strong> R$ 3.696.813 temporada</p>
+      <p>Controle orçamentário da área.</p>
     </div>
 
-    <!-- Marketplaces -->
     <div class="card">
-      <h2>🛒 Marketplaces</h2>
-      <div class="meta-section"><strong>Contas +90 dias:</strong> R$ 0,00</div>
-      <div class="meta-section"><strong>Recuperação:</strong> 60% do valor conciliado</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Responder dentro do SLA, evitar mediações e acionamentos de Garantia A a Z.</div>
+      <h3>Marketplaces +90 dias</h3>
+      <p><strong>Meta:</strong> R$ 0,00</p>
+      <p>Contas a receber sem pendência acima de 90 dias.</p>
     </div>
 
-    <!-- G&A -->
     <div class="card">
-      <h2>💰 Despesas G&A</h2>
-      <div class="meta-section"><strong>Meta Temporada:</strong> R$ 3.696.813</div>
-      <div class="meta-section"><strong>O que envolve:</strong> Folha, estrutura, benefícios, tecnologia, transporte e despesas judiciais.</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Redução de falhas operacionais que gerem custo financeiro.</div>
+      <h3>Recuperação Marketplace</h3>
+      <p><strong>Meta:</strong> 60%</p>
     </div>
 
-    <!-- Banco de Horas -->
     <div class="card">
-      <h2>⏱ Banco de Horas</h2>
-      <div class="meta-section"><strong>Objetivo:</strong> Manter saldo equilibrado (sem excesso positivo ou negativo).</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Organização diária junto à liderança.</div>
+      <h3>Taxa Reversa</h3>
+      <p><strong>Meta:</strong> 3,57%</p>
     </div>
 
-    <!-- Defeito Fabricante -->
     <div class="card">
-      <h2>🏭 Defeito Fabricante (pré-2025)</h2>
-      <div class="meta-section"><strong>Meta:</strong> Zerar saldo até 31/03/2026</div>
-      <div class="meta-section"><strong>O que é:</strong> Volumes alocados como defeito fabricante nos CDs 1021 e 1019.</div>
-      <div class="meta-section"><strong>Como contribuir:</strong> Melhor análise de troca, evidências claras e tratativas com fabricante em até 15 dias.</div>
+      <h3>Defeito Fabricante</h3>
+      <p><strong>Meta:</strong> Zerar saldo pré-2025</p>
+    </div>
+
+    <div class="card">
+      <h3>Banco de Horas</h3>
+      <p>Manter saldo equilibrado.</p>
     </div>
 
   </div>
+
+  <div class="section-title">Meta Departamental – Atendimento</div>
+  <div class="grid">
+
+    <div class="card">
+      <h3>Trocas & Devoluções (T&D)</h3>
+      <p><strong>T&D Geral:</strong> ≤ 1,95%</p>
+      <p><strong>Pós Vendas:</strong> ≤ 0,02%</p>
+      <p><strong>Casos Exceção:</strong> ≤ 0,23%</p>
+    </div>
+
+  </div>
+
 </div>
 
 <footer>
