@@ -2,17 +2,17 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Portal Atendimento</title>
+<title>Portal Atendimento - CX Resolve</title>
 
 <style>
 body{
   margin:0;
-  font-family:Arial,sans-serif;
-  background:#002D32;
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:linear-gradient(135deg,#002D32,#004D54,#00383E);
   color:white;
 }
 
-/* LOGIN COM IMAGEM */
+/* LOGIN */
 .login-container{
   display:flex;
   justify-content:center;
@@ -20,134 +20,170 @@ body{
   height:100vh;
   flex-direction:column;
   text-align:center;
-  background-image:url('https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1600&auto=format&fit=crop');
-  background-size:cover;
-  background-position:center;
-  position:relative;
-}
-
-.login-container::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:rgba(0,45,50,0.8);
+  background:linear-gradient(135deg,#002D32,#004D54);
 }
 
 .login-box{
-  position:relative;
-  z-index:2;
-  background:rgba(0,90,100,0.85);
-  padding:40px;
-  border-radius:20px;
-  backdrop-filter:blur(6px);
+  background:rgba(255,255,255,0.08);
+  padding:50px;
+  border-radius:25px;
+  backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.1);
 }
 
 .login-box h1{
+  font-size:38px;
   margin:0;
-  font-size:32px;
 }
 
 .login-box h2{
-  margin:10px 0 20px 0;
-  font-weight:normal;
+  font-weight:400;
   color:#4CDDDD;
 }
 
 .login-btn{
-  padding:12px 25px;
-  background:#4CDDDD;
+  margin-top:20px;
+  padding:14px 35px;
   border:none;
-  border-radius:8px;
+  border-radius:30px;
+  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
   font-weight:bold;
   cursor:pointer;
+  transition:0.3s;
 }
 
-.logout-btn{
-  padding:8px 15px;
-  background:#FFCE00;
-  border:none;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
-  color:#002D32;
+.login-btn:hover{
+  transform:scale(1.05);
 }
 
 /* HEADER */
 header{
-  background:#005A64;
-  padding:15px 20px;
+  background:rgba(0,90,100,0.85);
+  backdrop-filter:blur(10px);
+  padding:18px 25px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
 }
 
-header .menu-container{
-  max-width:1000px;
+.menu-container{
+  max-width:1200px;
   margin:0 auto;
   display:flex;
   justify-content:space-between;
   align-items:center;
 }
 
-header .menu-container h1{
+.menu-container h1{
   font-size:20px;
   margin:0;
 }
 
-header nav ul{
+nav ul{
   list-style:none;
   display:flex;
-  gap:15px;
+  gap:20px;
   margin:0;
   padding:0;
   align-items:center;
 }
 
-header nav ul li a{
-  color:#fff;
+nav a{
+  color:white;
   text-decoration:none;
-  font-weight:bold;
+  font-weight:500;
+  transition:0.3s;
 }
 
+nav a:hover{
+  opacity:0.7;
+}
+
+.logout-btn{
+  padding:8px 18px;
+  border:none;
+  border-radius:20px;
+  background:#FFCE00;
+  font-weight:bold;
+  cursor:pointer;
+  color:#002D32;
+}
+
+/* CONTAINER */
 .container{
-  padding:30px;
-  max-width:1000px;
+  padding:60px 20px;
+  max-width:1200px;
   margin:0 auto;
 }
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-  gap:20px;
+.container h2{
+  font-size:28px;
+  margin-bottom:10px;
 }
 
+.welcome{
+  margin-bottom:40px;
+  font-size:18px;
+  color:#4CDDDD;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:30px;
+}
+
+/* CARDS */
 .card{
-  background:#005A64;
-  padding:20px;
-  border-radius:15px;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  padding:35px;
   text-align:center;
+  transition:all 0.4s ease;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+}
+
+.card h3{
+  font-size:20px;
+  margin-bottom:20px;
 }
 
 .button{
-  display:block;
-  background:#4CDDDD;
+  display:inline-block;
+  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
   color:#002D32;
-  padding:12px;
-  border-radius:8px;
+  padding:12px 30px;
+  border-radius:30px;
   text-decoration:none;
   font-weight:bold;
-  margin-top:10px;
+  transition:0.3s;
+}
+
+.button:hover{
+  transform:scale(1.05);
+}
+
+/* LOGO FIXA */
+.logo-fixo{
+  position:fixed;
+  bottom:25px;
+  left:25px;
+  width:110px;
+  opacity:0.6;
+  transition:0.3s;
+}
+
+.logo-fixo:hover{
+  opacity:1;
 }
 
 #conteudo{
   display:none;
-}
-
-/* LOGO FIXO */
-.logo-fixo{
-  position:fixed;
-  bottom:20px;
-  left:20px;
-  width:110px;
-  opacity:0.9;
-  z-index:1000;
 }
 </style>
 </head>
@@ -166,6 +202,7 @@ header nav ul li a{
 
 <!-- PORTAL -->
 <div id="conteudo">
+
 <header>
   <div class="menu-container">
     <h1>Portal - Time de Atendimento</h1>
@@ -182,20 +219,21 @@ header nav ul li a{
 
 <div class="container">
   <h2>Acessos Rápidos</h2>
+  <div class="welcome" id="welcomeUser"></div>
 
   <div class="grid">
-    <div class="card"><h3>GLPI</h3><a href="https://glpi.leveros.com.br" class="button">Acessar</a></div>
-    <div class="card"><h3>Uappi</h3><a href="https://www.vendas.leveros.com.br" class="button">Acessar</a></div>
-    <div class="card"><h3>BoxLink</h3><a href="https://matriz.boxlink.com.br/home" class="button">Acessar</a></div>
-    <div class="card"><h3>Intergrall</h3><a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" class="button">Acessar</a></div>
-    <div class="card"><h3>Assertiva</h3><a href="https://painel.assertivasolucoes.com.br/login" class="button">Acessar</a></div>
-    <div class="card"><h3>Senior</h3><a href="https://platform.senior.com.br/senior-x/#/" class="button">Acessar</a></div>
+    <div class="card"><h3>🔧 GLPI</h3><a href="https://glpi.leveros.com.br" class="button">Acessar</a></div>
+    <div class="card"><h3>🛒 Uappi</h3><a href="https://www.vendas.leveros.com.br" class="button">Acessar</a></div>
+    <div class="card"><h3>📦 BoxLink</h3><a href="https://matriz.boxlink.com.br/home" class="button">Acessar</a></div>
+    <div class="card"><h3>📞 Intergrall</h3><a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" class="button">Acessar</a></div>
+    <div class="card"><h3>📊 Assertiva</h3><a href="https://painel.assertivasolucoes.com.br/login" class="button">Acessar</a></div>
+    <div class="card"><h3>👩‍💼 Senior</h3><a href="https://platform.senior.com.br/senior-x/#/" class="button">Acessar</a></div>
   </div>
 </div>
+
 </div>
 
-<!-- LOGO -->
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
+<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -211,28 +249,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* VERIFICA LOGIN */
 onAuthStateChanged(auth,user=>{
   if(user && user.email.endsWith("@leveros.com.br")){
     document.getElementById("login-area").style.display="none";
     document.getElementById("conteudo").style.display="block";
+    document.getElementById("welcomeUser").innerHTML =
+      "Olá, <strong>"+ user.displayName +"</strong> 👋";
   } else {
     document.getElementById("login-area").style.display="flex";
     document.getElementById("conteudo").style.display="none";
   }
 });
 
-/* BOTÃO LOGIN */
 document.getElementById("loginBtn").addEventListener("click",async()=>{
   const result = await signInWithPopup(auth,provider);
-  const email = result.user.email;
-  if(!email.endsWith("@leveros.com.br")){
+  if(!result.user.email.endsWith("@leveros.com.br")){
     alert("Acesso permitido apenas para e-mails corporativos.");
     signOut(auth);
   }
 });
 
-/* BOTÃO SAIR */
 document.getElementById("logoutBtn").addEventListener("click",async()=>{
   await signOut(auth);
 });
