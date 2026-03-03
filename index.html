@@ -12,6 +12,25 @@ body {
     color: white;
 }
 
+/* LOGIN */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+.login-btn {
+    padding: 12px 25px;
+    background-color: #4CDDDD;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* PORTAL */
 header {
     background-color: #005A64;
     padding: 20px;
@@ -66,6 +85,16 @@ header {
 
 <body>
 
+<!-- TELA DE LOGIN -->
+<div id="login-area" class="login-container">
+    <h2>Login Corporativo</h2>
+    <p>Use seu e-mail da empresa</p>
+    <button class="login-btn" onclick="loginGoogle()">Entrar com Google</button>
+</div>
+
+<!-- CONTEÚDO DO PORTAL -->
+<div id="conteudo" style="display:none;">
+
 <header>
 Portal Oficial - Time de Atendimento
 </header>
@@ -82,12 +111,12 @@ Portal Oficial - Time de Atendimento
 
 <div class="card">
 <h3>GLPI</h3>
-<a href="https://glpi.leveros.com.br/index.php?redirect=%2Ffront%2Fcentral.php&error=3" class="button">Acessar</a>
+<a href="https://glpi.leveros.com.br" class="button">Acessar</a>
 </div>
 
 <div class="card">
 <h3>Uappi</h3>
-<a href="https://www.vendas.leveros.com.br/wapstore/pedido/?limpar-ordenacao=busca&tipoBusca=numeroPedido&limpar-ordenacao=busca&busca=LVI-1333" class="button">Acessar</a>
+<a href="https://www.vendas.leveros.com.br" class="button">Acessar</a>
 </div>
 
 <div class="card">
@@ -101,11 +130,43 @@ Portal Oficial - Time de Atendimento
 </div>
 
 </div>
+</div>
 
 </div>
 
+<!-- FIREBASE LOGIN -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "COLE_SUA_API_KEY_AQUI",
+  authDomain: "COLE_SEU_AUTH_DOMAIN_AQUI",
+  projectId: "COLE_SEU_PROJECT_ID_AQUI",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+window.loginGoogle = function() {
+  signInWithPopup(auth, provider)
+    .then((result) => {
+      const email = result.user.email;
+
+      if (email.endsWith("@leveros.com.br")) {
+        document.getElementById("login-area").style.display = "none";
+        document.getElementById("conteudo").style.display = "block";
+      } else {
+        alert("Acesso permitido apenas para e-mails corporativos.");
+      }
+    })
+    .catch(() => {
+      alert("Erro no login.");
+    });
+}
+</script>
+
 </body>
 </html>
-</html>
-
 
