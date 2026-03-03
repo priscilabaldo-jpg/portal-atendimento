@@ -5,7 +5,6 @@
 <title>Portal Atendimento</title>
 
 <style>
-/* ===== BODY ===== */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -13,7 +12,7 @@ body {
     color: white;
 }
 
-/* ===== LOGIN ===== */
+/* LOGIN */
 .login-container {
     display: flex;
     justify-content: center;
@@ -31,7 +30,7 @@ body {
     cursor: pointer;
 }
 
-/* ===== HEADER / MENU ===== */
+/* HEADER / MENU */
 header {
     background-color: #005A64;
     padding: 15px 20px;
@@ -72,7 +71,7 @@ header nav ul li a:hover {
     background: #003f46;
 }
 
-/* ===== CONTAINER PRINCIPAL ===== */
+/* CONTAINER */
 .container {
     padding: 30px;
     max-width: 1000px;
@@ -89,7 +88,7 @@ header nav ul li a:hover {
     text-align: center;
 }
 
-/* ===== CARDS ===== */
+/* CARDS */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -129,7 +128,7 @@ header nav ul li a:hover {
     background-color: #34b3b3;
 }
 
-/* ===== RESPONSIVO ===== */
+/* RESPONSIVO */
 @media (max-width: 600px) {
     header .menu-container {
         flex-direction: column;
@@ -143,14 +142,14 @@ header nav ul li a:hover {
 </head>
 <body>
 
-<!-- ===== LOGIN ===== -->
+<!-- LOGIN -->
 <div id="login-area" class="login-container">
     <h2>Login Corporativo</h2>
     <p>Use seu e-mail da empresa</p>
     <button class="login-btn" id="loginBtn">Entrar com Google</button>
 </div>
 
-<!-- ===== PORTAL ===== -->
+<!-- PORTAL -->
 <div id="conteudo" style="display:none;">
 
 <header>
@@ -199,7 +198,7 @@ header nav ul li a:hover {
 
 </div>
 
-<!-- ===== FIREBASE LOGIN ===== -->
+<!-- FIREBASE LOGIN -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
