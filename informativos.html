@@ -18,12 +18,13 @@
       align-items: center;
       color: #fff;
     }
+
     nav a { margin-left: 1.5rem; color: #fff; font-weight: 600; }
     nav a:hover { text-decoration: underline; }
 
     .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
 
     .card {
       background: #fff;
@@ -32,29 +33,26 @@
       padding: 1.5rem;
       transition: transform 0.2s, box-shadow 0.2s;
     }
+
     .card:hover {
       transform: translateY(-4px);
       box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
-    .card h2 { margin-bottom: 1rem; color: #005A64; font-size: 1.25rem; }
 
-    .meta-item { margin-bottom: 0.75rem; font-size: 0.95rem; }
-
-    .status-ok { color: #1B8A5A; font-weight: 600; }
-    .status-alerta { color: #D97706; font-weight: 600; }
-    .status-andamento { color: #2563EB; font-weight: 600; }
-
-    .birthday {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.75rem;
+    .card h2 {
+      margin-bottom: 1rem;
+      color: #005A64;
+      font-size: 1.2rem;
     }
-    .birthday img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 0.75rem;
-      object-fit: cover;
+
+    .meta-section {
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+      line-height: 1.4rem;
+    }
+
+    .meta-section strong {
+      color: #005A64;
     }
 
     footer {
@@ -68,102 +66,82 @@
 </head>
 <body>
 
-  <nav>
-    <div><strong>CX Resolve</strong></div>
-    <div>
-      <a href="index.html">Home</a>
-      <a href="materiais.html">Materiais</a>
-      <a href="informativos.html">Informativos</a>
-    </div>
-  </nav>
-
-  <div class="container">
-    <h1>Informativos</h1>
-    <div class="grid">
-
-      <!-- Recados -->
-      <div class="card">
-        <h2>Recados da Semana</h2>
-        <ul>
-          <li>Reunião de alinhamento com o time de CX na quarta às 14h.</li>
-          <li>Envio de relatórios semanais até sexta-feira 18h.</li>
-          <li>Atualização dos dashboards de métricas de atendimento.</li>
-        </ul>
-      </div>
-
-      <!-- Metas -->
-      <div class="card">
-        <h2>Metas – Temporada 25/26 (Acumulado Janeiro)</h2>
-
-        <div class="meta-item">
-          📊 <strong>NPS BOT + URA:</strong> 76% (Meta 75%) 
-          <span class="status-ok">✓ Atingida</span>
-        </div>
-
-        <div class="meta-item">
-          📦 <strong>T&D Geral:</strong> 1,76% (Meta ≤ 1,95%) 
-          <span class="status-ok">✓ Atingida</span>
-        </div>
-
-        <div class="meta-item">
-          🔄 <strong>Taxa Reversa:</strong> 3,59% (Meta 3,57%) 
-          <span class="status-alerta">⚠ Atenção</span>
-        </div>
-
-        <div class="meta-item">
-          💰 <strong>Marketplaces +90 dias:</strong> R$ 0,00 
-          <span class="status-ok">✓ Atingida</span>
-        </div>
-
-        <div class="meta-item">
-          🛒 <strong>Recuperação Marketplace:</strong> 45,95% (Meta 60%) 
-          <span class="status-alerta">⚠ Abaixo da Meta</span>
-        </div>
-
-        <div class="meta-item">
-          ⏱ <strong>Banco de Horas:</strong> Dentro do orçamento 
-          <span class="status-ok">✓ Atingida</span>
-        </div>
-
-        <div class="meta-item">
-          🏭 <strong>Defeito Fabricante (pré-2025):</strong> 473 volumes 
-          <span class="status-andamento">↻ Em andamento</span>
-        </div>
-      </div>
-
-      <!-- Campanhas -->
-      <div class="card">
-        <h2>Campanhas</h2>
-        <ul>
-          <li>Campanha de fidelização – até 15/03.</li>
-          <li>Promoção de serviços adicionais para clientes ativos.</li>
-          <li>Survey de satisfação pós-atendimento.</li>
-        </ul>
-      </div>
-
-      <!-- Aniversariantes -->
-      <div class="card">
-        <h2>Aniversariantes do Mês</h2>
-        <div class="birthday">
-          <img src="https://i.pravatar.cc/40?img=1" alt="Aniversariante">
-          <span>Lucas Silva – 05/03</span>
-        </div>
-        <div class="birthday">
-          <img src="https://i.pravatar.cc/40?img=2" alt="Aniversariante">
-          <span>Mariana Costa – 12/03</span>
-        </div>
-        <div class="birthday">
-          <img src="https://i.pravatar.cc/40?img=3" alt="Aniversariante">
-          <span>Rafael Souza – 20/03</span>
-        </div>
-      </div>
-
-    </div>
+<nav>
+  <div><strong>CX Resolve</strong></div>
+  <div>
+    <a href="index.html">Home</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
   </div>
+</nav>
 
-  <footer>
-    CX Resolve &copy; 2026
-  </footer>
+<div class="container">
+  <h1>Guia Rápido de Metas – Temporada 25/26</h1>
+
+  <div class="grid">
+
+    <!-- NPS -->
+    <div class="card">
+      <h2>📊 NPS BOT + URA</h2>
+      <div class="meta-section"><strong>Meta:</strong> 75% até 31/03/2026</div>
+      <div class="meta-section"><strong>O que é:</strong> Pesquisa de satisfação enviada após atendimento (URA em linha e BOT pós finalização).</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Atendimento claro, seguro e objetivo. Sempre convidar cliente/parceiro a responder a pesquisa.</div>
+    </div>
+
+    <!-- T&D -->
+    <div class="card">
+      <h2>📦 Trocas & Devoluções (T&D)</h2>
+      <div class="meta-section"><strong>T&D Geral:</strong> ≤ 1,95% do faturamento</div>
+      <div class="meta-section"><strong>Pós Vendas:</strong> ≤ 0,02%</div>
+      <div class="meta-section"><strong>Casos Exceção:</strong> ≤ 0,23%</div>
+      <div class="meta-section"><strong>Importante:</strong> Quanto maior o faturamento, menor deve ser a emissão proporcional de NFD.</div>
+    </div>
+
+    <!-- Taxa Reversa -->
+    <div class="card">
+      <h2>🔄 Taxa Reversa</h2>
+      <div class="meta-section"><strong>Meta:</strong> 3,57%</div>
+      <div class="meta-section"><strong>O que é:</strong> Percentual máximo de volumes devolvidos que podem permanecer no depósito reversa.</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Acompanhamento preventivo de entregas e retenções em trocas/devoluções.</div>
+    </div>
+
+    <!-- Marketplaces -->
+    <div class="card">
+      <h2>🛒 Marketplaces</h2>
+      <div class="meta-section"><strong>Contas +90 dias:</strong> R$ 0,00</div>
+      <div class="meta-section"><strong>Recuperação:</strong> 60% do valor conciliado</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Responder dentro do SLA, evitar mediações e acionamentos de Garantia A a Z.</div>
+    </div>
+
+    <!-- G&A -->
+    <div class="card">
+      <h2>💰 Despesas G&A</h2>
+      <div class="meta-section"><strong>Meta Temporada:</strong> R$ 3.696.813</div>
+      <div class="meta-section"><strong>O que envolve:</strong> Folha, estrutura, benefícios, tecnologia, transporte e despesas judiciais.</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Redução de falhas operacionais que gerem custo financeiro.</div>
+    </div>
+
+    <!-- Banco de Horas -->
+    <div class="card">
+      <h2>⏱ Banco de Horas</h2>
+      <div class="meta-section"><strong>Objetivo:</strong> Manter saldo equilibrado (sem excesso positivo ou negativo).</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Organização diária junto à liderança.</div>
+    </div>
+
+    <!-- Defeito Fabricante -->
+    <div class="card">
+      <h2>🏭 Defeito Fabricante (pré-2025)</h2>
+      <div class="meta-section"><strong>Meta:</strong> Zerar saldo até 31/03/2026</div>
+      <div class="meta-section"><strong>O que é:</strong> Volumes alocados como defeito fabricante nos CDs 1021 e 1019.</div>
+      <div class="meta-section"><strong>Como contribuir:</strong> Melhor análise de troca, evidências claras e tratativas com fabricante em até 15 dias.</div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  CX Resolve &copy; 2026
+</footer>
 
 </body>
 </html>
