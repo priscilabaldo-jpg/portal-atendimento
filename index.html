@@ -85,14 +85,14 @@ header {
 
 <body>
 
-<!-- TELA DE LOGIN -->
+<!-- LOGIN -->
 <div id="login-area" class="login-container">
     <h2>Login Corporativo</h2>
     <p>Use seu e-mail da empresa</p>
-    <button class="login-btn" onclick="loginGoogle()">Entrar com Google</button>
+    <button class="login-btn" id="loginBtn">Entrar com Google</button>
 </div>
 
-<!-- CONTEÚDO DO PORTAL -->
+<!-- PORTAL -->
 <div id="conteudo" style="display:none;">
 
 <header>
@@ -134,39 +134,39 @@ Portal Oficial - Time de Atendimento
 
 </div>
 
-<!-- FIREBASE LOGIN -->
+<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "COLE_SUA_API_KEY_AQUI",
-  authDomain: "COLE_SEU_AUTH_DOMAIN_AQUI",
-  projectId: "COLE_SEU_PROJECT_ID_AQUI",
+  apiKey: "SUA_API_KEY_AQUI",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJECT_ID_AQUI",
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-window.loginGoogle = function() {
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      const email = result.user.email;
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const email = result.user.email;
 
-      if (email.endsWith("@leveros.com.br")) {
-        document.getElementById("login-area").style.display = "none";
-        document.getElementById("conteudo").style.display = "block";
-      } else {
-        alert("Acesso permitido apenas para e-mails corporativos.");
-      }
-    })
-    .catch(() => {
-      alert("Erro no login.");
-    });
-}
+    if (email.endsWith("@leveros.com.br")) {
+      document.getElementById("login-area").style.display = "none";
+      document.getElementById("conteudo").style.display = "block";
+    } else {
+      alert("Acesso permitido apenas para e-mails corporativos.");
+    }
+
+  } catch (error) {
+    alert("Erro: " + error.message);
+    console.error(error);
+  }
+});
 </script>
 
 </body>
 </html>
-
