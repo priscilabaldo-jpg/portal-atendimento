@@ -1,155 +1,144 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<title>Informativos</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informativos - CX Resolve</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    /* Reset e estilo base */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    body { background-color: #f5f5f5; color: #333; }
+    a { text-decoration: none; color: inherit; }
 
-<style>
-body{
-  font-family:Arial,sans-serif;
-  background:#005A64;
-  margin:0;
-  padding:20px;
-}
+    /* Navbar */
+    nav {
+      background-color: #005A64;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #fff;
+    }
+    nav a { margin-left: 1.5rem; color: #fff; font-weight: 600; }
+    nav a:hover { text-decoration: underline; }
 
-.back-link{
-  display:inline-flex;
-  align-items:center;
-  color:#fff;
-  text-decoration:none;
-  font-weight:bold;
-  margin-bottom:20px;
-  transition:color .3s;
-}
+    /* Container principal */
+    .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
 
-.back-link:hover{
-  color:#e0e0e0;
-}
+    /* Grid de cards */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
 
-.back-link svg{
-  margin-right:8px;
-  width:18px;
-  height:18px;
-  fill:currentColor;
-  transition:transform .3s;
-}
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    }
+    .card h2 { margin-bottom: 1rem; color: #005A64; font-size: 1.25rem; }
+    .card ul { list-style: disc inside; }
+    .card li { margin-bottom: 0.5rem; }
 
-.back-link:hover svg{
-  transform:translateX(-3px);
-}
+    /* Aniversariantes */
+    .birthday {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .birthday img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 0.75rem;
+      object-fit: cover;
+    }
 
-h1{
-  color:#005A64;
-  text-align:center;
-  margin-bottom:30px;
-}
-
-.infos-container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:20px;
-  justify-content:center;
-}
-
-.card{
-  background:#fff;
-  border-radius:12px;
-  padding:20px;
-  width:300px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  transition:transform .3s,box-shadow .3s;
-}
-
-.card:hover{
-  transform:translateY(-5px);
-  box-shadow:0 8px 20px rgba(0,0,0,0.2);
-}
-
-.card h3{
-  margin-top:0;
-  color:#005A64;
-}
-
-.card p{
-  font-size:14px;
-  color:#333;
-}
-
-#informativos-content{
-  display:none;
-}
-
-/* LOGO FIXO INFERIOR ESQUERDO */
-.logo-fixo{
-  position:fixed;
-  bottom:20px;
-  left:20px;
-  width:110px;
-  opacity:0.9;
-  z-index:1000;
-}
-</style>
+    /* Footer simples */
+    footer {
+      margin-top: 3rem;
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+      padding: 1rem 0;
+    }
+  </style>
 </head>
-
 <body>
 
-<div id="informativos-content">
-  <a href="index.html" class="back-link">
-    <svg viewBox="0 0 24 24">
-      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-    </svg>
-    Voltar para Acessos Rápidos
-  </a>
-
-  <h1>Informativos</h1>
-
-  <div class="infos-container">
-    <div class="card">
-      <h3>📌 Recados da Semana</h3>
-      <p>Exemplo: Reunião de alinhamento quarta-feira 10h, entrega de relatórios sexta-feira 18h.</p>
+  <!-- Navbar -->
+  <nav>
+    <div><strong>CX Resolve</strong></div>
+    <div>
+      <a href="index.html">Home</a>
+      <a href="materiais.html">Materiais</a>
+      <a href="informativos.html">Informativos</a>
     </div>
+  </nav>
 
-    <div class="card">
-      <h3>🎯 Metas</h3>
-      <p>Exemplo: Atingir 95% de SLA nos atendimentos, 20 novos clientes na semana.</p>
-    </div>
+  <!-- Conteúdo principal -->
+  <div class="container">
+    <h1>Informativos</h1>
+    <div class="grid">
 
-    <div class="card">
-      <h3>📢 Campanhas</h3>
-      <p>Exemplo: Promoção de primavera, campanha de upsell de serviços.</p>
-    </div>
+      <!-- Card Recados da Semana -->
+      <div class="card">
+        <h2>Recados da Semana</h2>
+        <ul>
+          <li>Reunião de alinhamento com o time de CX na quarta às 14h.</li>
+          <li>Envio de relatórios semanais até sexta-feira 18h.</li>
+          <li>Atualização dos dashboards de métricas de atendimento.</li>
+        </ul>
+      </div>
 
-    <div class="card">
-      <h3>🎂 Aniversariantes do Mês</h3>
-      <p>Exemplo: Ana Silva - 05/03, Carlos Lima - 12/03, Fernanda Souza - 25/03.</p>
+      <!-- Card Metas -->
+      <div class="card">
+        <h2>Metas</h2>
+        <ul>
+          <li>Atendimento médio diário: 95% de SLA.</li>
+          <li>Redução de tickets abertos: 10% no mês.</li>
+          <li>Implementar 2 melhorias no portal de clientes.</li>
+        </ul>
+      </div>
+
+      <!-- Card Campanhas -->
+      <div class="card">
+        <h2>Campanhas</h2>
+        <ul>
+          <li>Campanha de fidelização – até 15/03.</li>
+          <li>Promoção de serviços adicionais para clientes ativos.</li>
+          <li>Survey de satisfação pós-atendimento.</li>
+        </ul>
+      </div>
+
+      <!-- Card Aniversariantes do Mês -->
+      <div class="card">
+        <h2>Aniversariantes do Mês</h2>
+        <div class="birthday">
+          <img src="https://i.pravatar.cc/40?img=1" alt="Aniversariante">
+          <span>Lucas Silva – 05/03</span>
+        </div>
+        <div class="birthday">
+          <img src="https://i.pravatar.cc/40?img=2" alt="Aniversariante">
+          <span>Mariana Costa – 12/03</span>
+        </div>
+        <div class="birthday">
+          <img src="https://i.pravatar.cc/40?img=3" alt="Aniversariante">
+          <span>Rafael Souza – 20/03</span>
+        </div>
+      </div>
+
     </div>
   </div>
-</div>
 
-<!-- LOGO FIXO -->
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:"portal-atendimento-541ae.firebaseapp.com",
-  projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-onAuthStateChanged(auth,user=>{
-  if(user && user.email.endsWith("@leveros.com.br")){
-    document.getElementById("informativos-content").style.display="block";
-  } else {
-    window.location.href="index.html";
-  }
-});
-</script>
+  <footer>
+    CX Resolve &copy; 2026
+  </footer>
 
 </body>
 </html>
