@@ -136,6 +136,52 @@ h1{
   opacity:1;
 }
 
+/* RODAPÉ */
+footer{
+  margin-top:80px;
+  padding:40px 20px;
+  background:rgba(0,0,0,0.25);
+  backdrop-filter:blur(15px);
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.footer-container{
+  max-width:1200px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:30px;
+}
+
+.footer-col h4{
+  margin-bottom:15px;
+  font-size:16px;
+  font-weight:600;
+}
+
+.footer-col p,
+.footer-col a{
+  font-size:14px;
+  opacity:0.8;
+  text-decoration:none;
+  color:white;
+  display:block;
+  margin-bottom:8px;
+  transition:0.3s;
+}
+
+.footer-col a:hover{
+  opacity:1;
+  transform:translateX(5px);
+}
+
+.footer-bottom{
+  margin-top:30px;
+  text-align:center;
+  font-size:13px;
+  opacity:0.6;
+}
+
 #materiais-content{
   display:none;
 }
@@ -166,18 +212,55 @@ h1{
     <div class="card"><h3>Como usar a Uappi</h3><p>Passo a passo completo.</p><a href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link">Abrir Documento</a></div>
     <div class="card"><h3>Como realizar consulta na FUP</h3><p>Passo a passo completo.</p><a href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link">Abrir Documento</a></div>
     <div class="card"><h3>O que é Troca de titularidade p/ Marketplace</h3><p>Guia de consulta.</p><a href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link">Abrir Documento</a></div>
-    <div class="card"><h3>Mudanças do CRM Intergrall 05.02.2026</h3><p>Guia de consulta.</p><a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing&ouid=107732961993934821252&rtpof=true&sd=true">Abrir Documento</a></div>
+    <div class="card"><h3>Mudanças do CRM Intergrall 05.02.2026</h3><p>Guia de consulta.</p><a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing">Abrir Documento</a></div>
   </div>
 </div>
+
+<footer>
+  <div class="footer-container">
+    <div class="footer-col">
+      <h4>CX Resolve</h4>
+      <p>Portal interno de apoio ao time de Atendimento.</p>
+      <p>Centralização de materiais e treinamentos.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Navegação</h4>
+      <a href="index.html">Início</a>
+      <a href="materiais.html">Materiais</a>
+      <a href="informativos.html">Informativos</a>
+    </div>
+
+    <div class="footer-col">
+      <h4>Gestão</h4>
+      <p>Responsável: Priscila Baldo</p>
+      <p>Customer Experience</p>
+      <p>Leveros</p>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © <span id="anoAtual"></span> CX Resolve • Todos os direitos reservados
+  </div>
+</footer>
+
 </div>
 
 <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
+
+<script>
+document.getElementById("anoAtual").textContent = new Date().getFullYear();
+</script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = { apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", authDomain:"portal-atendimento-541ae.firebaseapp.com", projectId:"portal-atendimento-541ae"};
+const firebaseConfig = { 
+  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", 
+  authDomain:"portal-atendimento-541ae.firebaseapp.com", 
+  projectId:"portal-atendimento-541ae"
+};
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
