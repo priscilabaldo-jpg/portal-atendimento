@@ -6,12 +6,10 @@
   <title>Informativos - CX Resolve</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    /* Reset e estilo base */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body { background-color: #f5f5f5; color: #333; }
     a { text-decoration: none; color: inherit; }
 
-    /* Navbar */
     nav {
       background-color: #005A64;
       padding: 1rem 2rem;
@@ -23,13 +21,10 @@
     nav a { margin-left: 1.5rem; color: #fff; font-weight: 600; }
     nav a:hover { text-decoration: underline; }
 
-    /* Container principal */
     .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
 
-    /* Grid de cards */
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
 
-    /* Card */
     .card {
       background: #fff;
       border-radius: 12px;
@@ -42,10 +37,13 @@
       box-shadow: 0 6px 20px rgba(0,0,0,0.15);
     }
     .card h2 { margin-bottom: 1rem; color: #005A64; font-size: 1.25rem; }
-    .card ul { list-style: disc inside; }
-    .card li { margin-bottom: 0.5rem; }
 
-    /* Aniversariantes */
+    .meta-item { margin-bottom: 0.75rem; font-size: 0.95rem; }
+
+    .status-ok { color: #1B8A5A; font-weight: 600; }
+    .status-alerta { color: #D97706; font-weight: 600; }
+    .status-andamento { color: #2563EB; font-weight: 600; }
+
     .birthday {
       display: flex;
       align-items: center;
@@ -59,7 +57,6 @@
       object-fit: cover;
     }
 
-    /* Footer simples */
     footer {
       margin-top: 3rem;
       text-align: center;
@@ -71,7 +68,6 @@
 </head>
 <body>
 
-  <!-- Navbar -->
   <nav>
     <div><strong>CX Resolve</strong></div>
     <div>
@@ -81,12 +77,11 @@
     </div>
   </nav>
 
-  <!-- Conteúdo principal -->
   <div class="container">
     <h1>Informativos</h1>
     <div class="grid">
 
-      <!-- Card Recados da Semana -->
+      <!-- Recados -->
       <div class="card">
         <h2>Recados da Semana</h2>
         <ul>
@@ -96,17 +91,47 @@
         </ul>
       </div>
 
-      <!-- Card Metas -->
+      <!-- Metas -->
       <div class="card">
-        <h2>Metas</h2>
-        <ul>
-          <li>Atendimento médio diário: 95% de SLA.</li>
-          <li>Redução de tickets abertos: 10% no mês.</li>
-          <li>Implementar 2 melhorias no portal de clientes.</li>
-        </ul>
+        <h2>Metas – Temporada 25/26 (Acumulado Janeiro)</h2>
+
+        <div class="meta-item">
+          📊 <strong>NPS BOT + URA:</strong> 76% (Meta 75%) 
+          <span class="status-ok">✓ Atingida</span>
+        </div>
+
+        <div class="meta-item">
+          📦 <strong>T&D Geral:</strong> 1,76% (Meta ≤ 1,95%) 
+          <span class="status-ok">✓ Atingida</span>
+        </div>
+
+        <div class="meta-item">
+          🔄 <strong>Taxa Reversa:</strong> 3,59% (Meta 3,57%) 
+          <span class="status-alerta">⚠ Atenção</span>
+        </div>
+
+        <div class="meta-item">
+          💰 <strong>Marketplaces +90 dias:</strong> R$ 0,00 
+          <span class="status-ok">✓ Atingida</span>
+        </div>
+
+        <div class="meta-item">
+          🛒 <strong>Recuperação Marketplace:</strong> 45,95% (Meta 60%) 
+          <span class="status-alerta">⚠ Abaixo da Meta</span>
+        </div>
+
+        <div class="meta-item">
+          ⏱ <strong>Banco de Horas:</strong> Dentro do orçamento 
+          <span class="status-ok">✓ Atingida</span>
+        </div>
+
+        <div class="meta-item">
+          🏭 <strong>Defeito Fabricante (pré-2025):</strong> 473 volumes 
+          <span class="status-andamento">↻ Em andamento</span>
+        </div>
       </div>
 
-      <!-- Card Campanhas -->
+      <!-- Campanhas -->
       <div class="card">
         <h2>Campanhas</h2>
         <ul>
@@ -116,7 +141,7 @@
         </ul>
       </div>
 
-      <!-- Card Aniversariantes do Mês -->
+      <!-- Aniversariantes -->
       <div class="card">
         <h2>Aniversariantes do Mês</h2>
         <div class="birthday">
