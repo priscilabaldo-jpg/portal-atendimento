@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <title>Portal Atendimento</title>
 
 <style>
+/* ===== BODY ===== */
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -12,7 +13,7 @@ body {
     color: white;
 }
 
-/* LOGIN */
+/* ===== LOGIN ===== */
 .login-container {
     display: flex;
     justify-content: center;
@@ -30,19 +31,65 @@ body {
     cursor: pointer;
 }
 
-/* PORTAL */
+/* ===== HEADER / MENU ===== */
 header {
     background-color: #005A64;
-    padding: 20px;
-    text-align: center;
+    padding: 15px 20px;
+}
+
+header .menu-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header .menu-container h1 {
     font-size: 24px;
     font-weight: bold;
+    margin: 0;
 }
 
+header nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+header nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+header nav ul li a:hover {
+    background: #003f46;
+}
+
+/* ===== CONTAINER PRINCIPAL ===== */
 .container {
     padding: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
+.alert {
+    background-color: #FFCE00;
+    color: #002D32;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* ===== CARDS ===== */
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -54,11 +101,16 @@ header {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
-    transition: 0.3s;
+    transition: transform 0.3s, box-shadow 0.3s;
 }
 
 .card:hover {
     transform: scale(1.05);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+}
+
+.card h3 {
+    margin-top: 0;
 }
 
 .button {
@@ -70,71 +122,84 @@ header {
     text-decoration: none;
     font-weight: bold;
     margin-top: 10px;
+    transition: background 0.3s;
 }
 
-.alert {
-    background-color: #FFCE00;
-    color: #002D32;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 25px;
-    font-weight: bold;
+.button:hover {
+    background-color: #34b3b3;
+}
+
+/* ===== RESPONSIVO ===== */
+@media (max-width: 600px) {
+    header .menu-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .grid {
+        grid-template-columns: 1fr;
+    }
 }
 </style>
 </head>
-
 <body>
 
-<!-- LOGIN -->
+<!-- ===== LOGIN ===== -->
 <div id="login-area" class="login-container">
     <h2>Login Corporativo</h2>
     <p>Use seu e-mail da empresa</p>
     <button class="login-btn" id="loginBtn">Entrar com Google</button>
 </div>
 
-<!-- PORTAL -->
+<!-- ===== PORTAL ===== -->
 <div id="conteudo" style="display:none;">
 
 <header>
-Portal Oficial - Time de Atendimento
+  <div class="menu-container">
+    <h1>Portal Oficial - Time de Atendimento</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="materiais.html">Materiais</a></li>
+      </ul>
+    </nav>
+  </div>
 </header>
 
 <div class="container">
 
-<div class="alert">
-📢 Comunicado: Novo fluxo de Pedido Não Faturado ativo!
+    <div class="alert">
+        📢 Comunicado: Novo fluxo de Pedido Não Faturado ativo!
+    </div>
+
+    <h2>Acessos Rápidos</h2>
+    <div class="grid">
+
+        <div class="card">
+            <h3>GLPI</h3>
+            <a href="https://glpi.leveros.com.br" class="button">Acessar</a>
+        </div>
+
+        <div class="card">
+            <h3>Uappi</h3>
+            <a href="https://www.vendas.leveros.com.br" class="button">Acessar</a>
+        </div>
+
+        <div class="card">
+            <h3>BoxLink</h3>
+            <a href="https://matriz.boxlink.com.br/home" class="button">Acessar</a>
+        </div>
+
+        <div class="card">
+            <h3>Intergrall</h3>
+            <a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" class="button">Acessar</a>
+        </div>
+
+    </div>
 </div>
 
-<h2>Acessos Rápidos</h2>
-
-<div class="grid">
-
-<div class="card">
-<h3>GLPI</h3>
-<a href="https://glpi.leveros.com.br" class="button">Acessar</a>
 </div>
 
-<div class="card">
-<h3>Uappi</h3>
-<a href="https://www.vendas.leveros.com.br" class="button">Acessar</a>
-</div>
-
-<div class="card">
-<h3>BoxLink</h3>
-<a href="https://matriz.boxlink.com.br/home" class="button">Acessar</a>
-</div>
-
-<div class="card">
-<h3>Intergrall</h3>
-<a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" class="button">Acessar</a>
-</div>
-
-</div>
-</div>
-
-</div>
-
-<!-- FIREBASE -->
+<!-- ===== FIREBASE LOGIN ===== -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
