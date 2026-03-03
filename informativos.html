@@ -1,131 +1,204 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Metas - CX Resolve</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    body { background-color: #f5f5f5; color: #333; }
-    nav {
-      background-color: #005A64;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      color: #fff;
-    }
-    nav a { margin-left: 1.5rem; color: #fff; font-weight: 600; }
+<meta charset="UTF-8">
+<title>Informativos - CX Resolve</title>
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:linear-gradient(135deg,#002D32,#004D54,#00383E);
+  color:white;
+}
 
-    .container { padding: 2rem; max-width: 1200px; margin: 0 auto; }
+/* HEADER */
+header{
+  background:rgba(0,90,100,0.85);
+  backdrop-filter:blur(10px);
+  padding:18px 25px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
 
-    h1 { margin-bottom: 1.5rem; }
+.menu-container{
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
 
-    .section-title {
-      margin: 2rem 0 1rem 0;
-      color: #005A64;
-      font-size: 1.3rem;
-      border-left: 6px solid #005A64;
-      padding-left: 0.75rem;
-    }
+.menu-container h1{
+  font-size:20px;
+  margin:0;
+}
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+nav ul{
+  list-style:none;
+  display:flex;
+  gap:20px;
+  margin:0;
+  padding:0;
+  align-items:center;
+}
 
-    .card {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
+nav a{
+  color:white;
+  text-decoration:none;
+  font-weight:500;
+  transition:0.3s;
+}
 
-    .card h3 {
-      margin-bottom: 0.75rem;
-      color: #005A64;
-    }
+nav a:hover{
+  opacity:0.7;
+}
 
-    .card p {
-      font-size: 0.9rem;
-      line-height: 1.4rem;
-      margin-bottom: 0.5rem;
-    }
+.logout-btn{
+  padding:8px 18px;
+  border:none;
+  border-radius:20px;
+  background:#FFCE00;
+  font-weight:bold;
+  cursor:pointer;
+  color:#002D32;
+}
 
-    footer {
-      margin-top: 3rem;
-      text-align: center;
-      color: #666;
-      padding: 1rem;
-      font-size: 0.9rem;
-    }
-  </style>
+/* CONTAINER */
+.container{
+  padding:60px 20px;
+  max-width:1200px;
+  margin:0 auto;
+}
+
+.section-title{
+  font-size:22px;
+  margin-bottom:30px;
+  font-weight:bold;
+}
+
+/* GRID */
+.informativos-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:30px;
+}
+
+/* CARDS */
+.card{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  padding:25px;
+  transition:all 0.4s ease;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover{
+  transform:translateY(-10px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+}
+
+.card h3{
+  font-size:18px;
+  margin-bottom:15px;
+}
+
+.card p{
+  font-size:14px;
+  margin-bottom:10px;
+  line-height:1.5;
+}
+
+/* LOGO FIXA */
+.logo-fixo{
+  position:fixed;
+  bottom:25px;
+  left:25px;
+  width:110px;
+  opacity:0.6;
+  transition:0.3s;
+}
+
+.logo-fixo:hover{
+  opacity:1;
+}
+
+#informativos-content{
+  display:none;
+}
+</style>
 </head>
 <body>
 
-<nav>
-  <div><strong>CX Resolve</strong></div>
-  <div>
-    <a href="index.html">Home</a>
-    <a href="materiais.html">Materiais</a>
-    <a href="informativos.html">Informativos</a>
+<div id="informativos-content">
+<header>
+  <div class="menu-container">
+    <h1>Informativos</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="materiais.html">Materiais</a></li>
+        <li><a href="informativos.html">Informativos</a></li>
+        <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+      </ul>
+    </nav>
   </div>
-</nav>
+</header>
 
 <div class="container">
-  <h1>Guia de Metas – Temporada 25/26</h1>
 
-  <div class="section-title">Metas Compartilhadas</div>
-  <div class="grid">
+  <div class="section-title">Metas Compartilhadas – Temporada 25/26</div>
 
-    <div class="card">
-      <h3>GPTW</h3>
-      <p><strong>Meta:</strong> ≥ 96% adesão | ≥ 84% favorabilidade</p>
-      <p>Envolve toda a empresa.</p>
-    </div>
+  <div class="informativos-container">
 
     <div class="card">
-      <h3>NPS BOT + URA</h3>
+      <h3>📊 NPS BOT + URA</h3>
       <p><strong>Meta:</strong> 75%</p>
-      <p>Satisfação do cliente após atendimento.</p>
+      <p>Satisfação do cliente após atendimento (URA e BOT).</p>
     </div>
 
     <div class="card">
-      <h3>G&A (Despesas)</h3>
-      <p><strong>Meta:</strong> R$ 3.696.813 temporada</p>
-      <p>Controle orçamentário da área.</p>
+      <h3>💰 G&A (Despesas)</h3>
+      <p><strong>Meta Temporada:</strong> R$ 3.696.813</p>
+      <p>Controle orçamentário da área de Atendimento.</p>
     </div>
 
     <div class="card">
-      <h3>Marketplaces +90 dias</h3>
+      <h3>🛒 Marketplaces +90 dias</h3>
       <p><strong>Meta:</strong> R$ 0,00</p>
-      <p>Contas a receber sem pendência acima de 90 dias.</p>
+      <p>Pedidos com repasse pendente não podem ultrapassar 90 dias.</p>
     </div>
 
     <div class="card">
-      <h3>Recuperação Marketplace</h3>
+      <h3>🔄 Recuperação Marketplace</h3>
       <p><strong>Meta:</strong> 60%</p>
+      <p>Recuperar valores conciliados respeitando limite de perda.</p>
     </div>
 
     <div class="card">
-      <h3>Taxa Reversa</h3>
+      <h3>🔁 Taxa Reversa</h3>
       <p><strong>Meta:</strong> 3,57%</p>
+      <p>Percentual máximo de volumes devolvidos no CD.</p>
     </div>
 
     <div class="card">
-      <h3>Defeito Fabricante</h3>
+      <h3>🏭 Defeito Fabricante</h3>
       <p><strong>Meta:</strong> Zerar saldo pré-2025</p>
+      <p>Volumes alocados como defeito fabricante (CD 1021 e 1019).</p>
     </div>
 
     <div class="card">
-      <h3>Banco de Horas</h3>
-      <p>Manter saldo equilibrado.</p>
+      <h3>⏱ Banco de Horas</h3>
+      <p>Manter saldo equilibrado e dentro do orçamento.</p>
     </div>
 
   </div>
 
-  <div class="section-title">Meta Departamental – Atendimento</div>
-  <div class="grid">
+  <div class="section-title" style="margin-top:60px;">Meta Departamental – Atendimento</div>
+
+  <div class="informativos-container">
 
     <div class="card">
-      <h3>Trocas & Devoluções (T&D)</h3>
+      <h3>📦 Trocas & Devoluções (T&D)</h3>
       <p><strong>T&D Geral:</strong> ≤ 1,95%</p>
       <p><strong>Pós Vendas:</strong> ≤ 0,02%</p>
       <p><strong>Casos Exceção:</strong> ≤ 0,23%</p>
@@ -134,10 +207,35 @@
   </div>
 
 </div>
+</div>
 
-<footer>
-  CX Resolve &copy; 2026
-</footer>
+<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = { 
+  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", 
+  authDomain:"portal-atendimento-541ae.firebaseapp.com", 
+  projectId:"portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+onAuthStateChanged(auth,user=>{
+  if(user && user.email.endsWith("@leveros.com.br")){
+    document.getElementById("informativos-content").style.display="block";
+  } else {
+    window.location.href="index.html";
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  await signOut(auth);
+});
+</script>
 
 </body>
 </html>
