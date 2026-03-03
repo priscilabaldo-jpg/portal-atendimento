@@ -92,41 +92,46 @@ h1 {
 .card a:hover {
   background: #003f46;
 }
+
+/* ESCONDE O CONTEÚDO ATÉ VERIFICAR LOGIN */
+#materiais-content {
+  display: none;
+}
 </style>
 </head>
 <body>
 
-<!-- Setinha de voltar -->
-<a href="index.html" class="back-link">
-  <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-  Voltar para Acessos Rápidos
-</a>
+<div id="materiais-content">
+  <!-- Setinha de voltar -->
+  <a href="index.html" class="back-link">
+    <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+    Voltar para Acessos Rápidos
+  </a>
 
-<h1>Materiais</h1>
+  <h1>Materiais</h1>
 
-<div class="materiais-container">
+  <div class="materiais-container">
+    <div class="card">
+      <h3>Manual de Procedimentos</h3>
+      <p>Guia rápido para consultas e processos internos.</p>
+      <a href="LINK_DO_DRIVE_1" target="_blank">Abrir Documento</a>
+    </div>
 
-  <div class="card">
-    <h3>Manual de Procedimentos</h3>
-    <p>Guia rápido para consultas e processos internos.</p>
-    <a href="LINK_DO_DRIVE_1" target="_blank">Abrir Documento</a>
+    <div class="card">
+      <h3>Treinamento CX</h3>
+      <p>Conteúdo de treinamento da equipe de atendimento.</p>
+      <a href="LINK_DO_DRIVE_2" target="_blank">Abrir Documento</a>
+    </div>
+
+    <div class="card">
+      <h3>Checklist de Instalação</h3>
+      <p>Passo a passo completo para a equipe técnica.</p>
+      <a href="LINK_DO_DRIVE_3" target="_blank">Abrir Documento</a>
+    </div>
   </div>
-
-  <div class="card">
-    <h3>Treinamento CX</h3>
-    <p>Conteúdo de treinamento da equipe de atendimento.</p>
-    <a href="LINK_DO_DRIVE_2" target="_blank">Abrir Documento</a>
-  </div>
-
-  <div class="card">
-    <h3>Checklist de Instalação</h3>
-    <p>Passo a passo completo para a equipe técnica.</p>
-    <a href="LINK_DO_DRIVE_3" target="_blank">Abrir Documento</a>
-  </div>
-
 </div>
 
-<!-- FIREBASE: mantém sessão ativa -->
+<!-- FIREBASE: verifica login e mostra conteúdo -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -142,7 +147,11 @@ const auth = getAuth(app);
 
 // Verifica se usuário está logado
 onAuthStateChanged(auth, (user) => {
-  if (!user || !user.email.endsWith("@leveros.com.br")) {
+  if (user && user.email.endsWith("@leveros.com.br")) {
+    // Usuário logado: mostra conteúdo
+    document.getElementById("materiais-content").style.display = "block";
+  } else {
+    // Não logado: volta para index
     window.location.href = "index.html";
   }
 });
