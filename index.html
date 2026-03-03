@@ -12,12 +12,45 @@ body{
   color:white;
 }
 
+/* LOGIN COM IMAGEM */
 .login-container{
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
   flex-direction:column;
+  text-align:center;
+  background-image:url('https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=1600&auto=format&fit=crop');
+  background-size:cover;
+  background-position:center;
+  position:relative;
+}
+
+.login-container::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,45,50,0.8);
+}
+
+.login-box{
+  position:relative;
+  z-index:2;
+  background:rgba(0,90,100,0.85);
+  padding:40px;
+  border-radius:20px;
+  backdrop-filter:blur(6px);
+}
+
+.login-box h1{
+  margin:0;
+  font-size:32px;
+}
+
+.login-box h2{
+  margin:10px 0 20px 0;
+  font-weight:normal;
+  color:#4CDDDD;
 }
 
 .login-btn{
@@ -29,6 +62,17 @@ body{
   cursor:pointer;
 }
 
+.logout-btn{
+  padding:8px 15px;
+  background:#FFCE00;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+  color:#002D32;
+}
+
+/* HEADER */
 header{
   background:#005A64;
   padding:15px 20px;
@@ -43,8 +87,7 @@ header .menu-container{
 }
 
 header .menu-container h1{
-  font-size:24px;
-  font-weight:bold;
+  font-size:20px;
   margin:0;
 }
 
@@ -54,35 +97,19 @@ header nav ul{
   gap:15px;
   margin:0;
   padding:0;
+  align-items:center;
 }
 
 header nav ul li a{
   color:#fff;
   text-decoration:none;
   font-weight:bold;
-  padding:6px 12px;
-  border-radius:4px;
-  transition:0.3s;
-}
-
-header nav ul li a:hover{
-  background:#003f46;
 }
 
 .container{
   padding:30px;
   max-width:1000px;
   margin:0 auto;
-}
-
-.alert{
-  background:#FFCE00;
-  color:#002D32;
-  padding:15px;
-  border-radius:10px;
-  margin-bottom:25px;
-  font-weight:bold;
-  text-align:center;
 }
 
 .grid{
@@ -96,16 +123,6 @@ header nav ul li a:hover{
   padding:20px;
   border-radius:15px;
   text-align:center;
-  transition:transform 0.3s, box-shadow 0.3s;
-}
-
-.card:hover{
-  transform:scale(1.05);
-  box-shadow:0 6px 15px rgba(0,0,0,0.3);
-}
-
-.card h3{
-  margin-top:0;
 }
 
 .button{
@@ -117,28 +134,13 @@ header nav ul li a:hover{
   text-decoration:none;
   font-weight:bold;
   margin-top:10px;
-  transition:0.3s;
-}
-
-.button:hover{
-  background:#34b3b3;
-}
-
-@media (max-width:600px){
-  header .menu-container{
-    flex-direction:column;
-    gap:10px;
-  }
-  .grid{
-    grid-template-columns:1fr;
-  }
 }
 
 #conteudo{
   display:none;
 }
 
-/* LOGO FIXO INFERIOR ESQUERDO */
+/* LOGO FIXO */
 .logo-fixo{
   position:fixed;
   bottom:20px;
@@ -154,21 +156,25 @@ header nav ul li a:hover{
 
 <!-- LOGIN -->
 <div id="login-area" class="login-container">
-  <h2>Login Corporativo</h2>
-  <p>Use seu e-mail da empresa</p>
-  <button class="login-btn" id="loginBtn">Entrar com Google</button>
+  <div class="login-box">
+    <h1>CX Resolve</h1>
+    <h2>Portal Oficial do Time de Atendimento</h2>
+    <p>Use seu e-mail corporativo Leveros</p>
+    <button class="login-btn" id="loginBtn">Entrar com Google</button>
+  </div>
 </div>
 
 <!-- PORTAL -->
 <div id="conteudo">
 <header>
   <div class="menu-container">
-    <h1>Portal Oficial - Time de Atendimento</h1>
+    <h1>Portal - Time de Atendimento</h1>
     <nav>
       <ul>
         <li><a href="index.html">Início</a></li>
         <li><a href="materiais.html">Materiais</a></li>
         <li><a href="informativos.html">Informativos</a></li>
+        <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
       </ul>
     </nav>
   </div>
@@ -184,17 +190,16 @@ header nav ul li a:hover{
     <div class="card"><h3>Intergrall</h3><a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" class="button">Acessar</a></div>
     <div class="card"><h3>Assertiva</h3><a href="https://painel.assertivasolucoes.com.br/login" class="button">Acessar</a></div>
     <div class="card"><h3>Senior</h3><a href="https://platform.senior.com.br/senior-x/#/" class="button">Acessar</a></div>
-    <div class="card"><h3>E-mail</h3><a href="https://mail.google.com/mail/u/0/?ogbl#inbox" class="button">Acessar</a></div>
   </div>
 </div>
 </div>
 
-<!-- LOGO FIXO -->
+<!-- LOGO -->
 <img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -206,6 +211,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+/* VERIFICA LOGIN */
 onAuthStateChanged(auth,user=>{
   if(user && user.email.endsWith("@leveros.com.br")){
     document.getElementById("login-area").style.display="none";
@@ -216,23 +222,21 @@ onAuthStateChanged(auth,user=>{
   }
 });
 
+/* BOTÃO LOGIN */
 document.getElementById("loginBtn").addEventListener("click",async()=>{
-  try{
-    const result = await signInWithPopup(auth,provider);
-    const email = result.user.email;
-    if(email.endsWith("@leveros.com.br")){
-      document.getElementById("login-area").style.display="none";
-      document.getElementById("conteudo").style.display="block";
-    } else {
-      alert("Acesso permitido apenas para e-mails corporativos.");
-    }
-  } catch(error){
-    alert("Erro: "+error.message);
-    console.error(error);
+  const result = await signInWithPopup(auth,provider);
+  const email = result.user.email;
+  if(!email.endsWith("@leveros.com.br")){
+    alert("Acesso permitido apenas para e-mails corporativos.");
+    signOut(auth);
   }
+});
+
+/* BOTÃO SAIR */
+document.getElementById("logoutBtn").addEventListener("click",async()=>{
+  await signOut(auth);
 });
 </script>
 
 </body>
 </html>
-
