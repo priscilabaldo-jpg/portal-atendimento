@@ -108,6 +108,59 @@ nav a:hover{
   line-height:1.5;
 }
 
+/* FOOTER + FORM */
+.footer-section{
+  margin-top:80px;
+  padding:50px 20px;
+  background:rgba(0,0,0,0.25);
+  backdrop-filter:blur(10px);
+}
+
+.feedback-container{
+  max-width:600px;
+  margin:0 auto 40px auto;
+  text-align:center;
+}
+
+.feedback-container input,
+.feedback-container textarea{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  border-radius:12px;
+  border:none;
+}
+
+.feedback-container button{
+  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
+  color:#002D32;
+  border:none;
+  padding:12px 25px;
+  border-radius:30px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+.feedback-container button:hover{
+  transform:scale(1.05);
+}
+
+.success-message{
+  display:none;
+  background:#1B8A5A;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:20px;
+  font-size:14px;
+}
+
+.footer-bottom{
+  text-align:center;
+  font-size:13px;
+  opacity:0.7;
+}
+
 /* LOGO FIXA */
 .logo-fixo{
   position:fixed;
@@ -130,6 +183,7 @@ nav a:hover{
 <body>
 
 <div id="informativos-content">
+
 <header>
   <div class="menu-container">
     <h1>Informativos</h1>
@@ -149,64 +203,76 @@ nav a:hover{
   <div class="section-title">Metas Compartilhadas – Temporada 25/26</div>
 
   <div class="informativos-container">
-
     <div class="card">
       <h3>📊 NPS BOT + URA</h3>
       <p><strong>Meta:</strong> 75%</p>
-      <p>Satisfação do cliente após atendimento (URA e BOT).</p>
+      <p>Satisfação do cliente após atendimento.</p>
     </div>
 
     <div class="card">
       <h3>💰 G&A (Despesas)</h3>
       <p><strong>Meta Temporada:</strong> R$ 3.696.813</p>
-      <p>Controle orçamentário da área de Atendimento.</p>
-    </div>
-
-    <div class="card">
-      <h3>🛒 Marketplaces +90 dias</h3>
-      <p><strong>Meta:</strong> R$ 0,00</p>
-      <p>Pedidos com repasse pendente não podem ultrapassar 90 dias.</p>
-    </div>
-
-    <div class="card">
-      <h3>🔄 Recuperação Marketplace</h3>
-      <p><strong>Meta:</strong> 60%</p>
-      <p>Recuperar valores conciliados respeitando limite de perda.</p>
+      <p>Controle orçamentário da área.</p>
     </div>
 
     <div class="card">
       <h3>🔁 Taxa Reversa</h3>
       <p><strong>Meta:</strong> 3,57%</p>
-      <p>Percentual máximo de volumes devolvidos no CD.</p>
+      <p>Percentual máximo de devoluções permitidas.</p>
     </div>
 
     <div class="card">
-      <h3>🏭 Defeito Fabricante</h3>
-      <p><strong>Meta:</strong> Zerar saldo pré-2025</p>
-      <p>Volumes alocados como defeito fabricante (CD 1021 e 1019).</p>
+      <h3>🛒 Marketplaces</h3>
+      <p><strong>Meta:</strong> R$ 0,00 (+90 dias)</p>
+      <p>Sem repasses pendentes acima de 90 dias.</p>
     </div>
-
-    <div class="card">
-      <h3>⏱ Banco de Horas</h3>
-      <p>Manter saldo equilibrado e dentro do orçamento.</p>
-    </div>
-
   </div>
 
   <div class="section-title" style="margin-top:60px;">Meta Departamental – Atendimento</div>
 
   <div class="informativos-container">
-
     <div class="card">
       <h3>📦 Trocas & Devoluções (T&D)</h3>
       <p><strong>T&D Geral:</strong> ≤ 1,95%</p>
       <p><strong>Pós Vendas:</strong> ≤ 0,02%</p>
       <p><strong>Casos Exceção:</strong> ≤ 0,23%</p>
     </div>
-
   </div>
 
 </div>
+
+<!-- RODAPÉ + FORMULÁRIO -->
+<div class="footer-section">
+
+  <div class="feedback-container">
+
+    <div class="success-message" id="successMsg">
+      ✅ Sugestão enviada com sucesso!
+    </div>
+
+    <h3>Sugestões de Melhoria 💡</h3>
+    <p>Envie sua ideia para melhorar nossos processos.</p>
+
+    <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
+      <input type="hidden" name="_captcha" value="false">
+      <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
+      <input type="hidden" name="_next" value="">
+
+      <input type="text" name="nome" placeholder="Seu nome" required>
+      <input type="email" name="email" placeholder="Seu e-mail" required>
+      <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão..." required></textarea>
+
+      <button type="submit">Enviar Sugestão</button>
+    </form>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 CX Resolve | Portal Interno Atendimento
+  </div>
+
+</div>
+
 </div>
 
 <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
@@ -234,6 +300,11 @@ onAuthStateChanged(auth,user=>{
 
 document.getElementById("logoutBtn").addEventListener("click",async()=>{
   await signOut(auth);
+});
+
+// Mensagem de sucesso
+document.getElementById("feedbackForm").addEventListener("submit",function(){
+  document.getElementById("successMsg").style.display="block";
 });
 </script>
 
