@@ -3,35 +3,160 @@
 <head>
 <meta charset="UTF-8">
 <title>Portal Atendimento</title>
+
 <style>
-body { margin:0; font-family: Arial,sans-serif; background:#002D32; color:white; }
-.login-container { display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; }
-.login-btn { padding:12px 25px; background:#4CDDDD; border:none; border-radius:8px; font-weight:bold; cursor:pointer; }
-header { background:#005A64; padding:15px 20px; }
-header .menu-container { max-width:1000px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; }
-header .menu-container h1 { font-size:24px; font-weight:bold; margin:0; }
-header nav ul { list-style:none; display:flex; gap:15px; margin:0; padding:0; }
-header nav ul li a { color:#fff; text-decoration:none; font-weight:bold; padding:6px 12px; border-radius:4px; transition:0.3s; }
-header nav ul li a:hover { background:#003f46; }
-.container { padding:30px; max-width:1000px; margin:0 auto; }
-.alert { background:#FFCE00; color:#002D32; padding:15px; border-radius:10px; margin-bottom:25px; font-weight:bold; text-align:center; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:20px; }
-.card { background:#005A64; padding:20px; border-radius:15px; text-align:center; transition: transform 0.3s, box-shadow 0.3s; }
-.card:hover { transform:scale(1.05); box-shadow:0 6px 15px rgba(0,0,0,0.3); }
-.card h3 { margin-top:0; }
-.button { display:block; background:#4CDDDD; color:#002D32; padding:12px; border-radius:8px; text-decoration:none; font-weight:bold; margin-top:10px; transition:0.3s; }
-.button:hover { background:#34b3b3; }
-@media (max-width:600px){ header .menu-container{flex-direction:column; gap:10px;} .grid{grid-template-columns:1fr;} }
-#conteudo{display:none;}
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#002D32;
+  color:white;
+}
+
+.login-container{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  flex-direction:column;
+}
+
+.login-btn{
+  padding:12px 25px;
+  background:#4CDDDD;
+  border:none;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+header{
+  background:#005A64;
+  padding:15px 20px;
+}
+
+header .menu-container{
+  max-width:1000px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+header .menu-container h1{
+  font-size:24px;
+  font-weight:bold;
+  margin:0;
+}
+
+header nav ul{
+  list-style:none;
+  display:flex;
+  gap:15px;
+  margin:0;
+  padding:0;
+}
+
+header nav ul li a{
+  color:#fff;
+  text-decoration:none;
+  font-weight:bold;
+  padding:6px 12px;
+  border-radius:4px;
+  transition:0.3s;
+}
+
+header nav ul li a:hover{
+  background:#003f46;
+}
+
+.container{
+  padding:30px;
+  max-width:1000px;
+  margin:0 auto;
+}
+
+.alert{
+  background:#FFCE00;
+  color:#002D32;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:25px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#005A64;
+  padding:20px;
+  border-radius:15px;
+  text-align:center;
+  transition:transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover{
+  transform:scale(1.05);
+  box-shadow:0 6px 15px rgba(0,0,0,0.3);
+}
+
+.card h3{
+  margin-top:0;
+}
+
+.button{
+  display:block;
+  background:#4CDDDD;
+  color:#002D32;
+  padding:12px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:bold;
+  margin-top:10px;
+  transition:0.3s;
+}
+
+.button:hover{
+  background:#34b3b3;
+}
+
+@media (max-width:600px){
+  header .menu-container{
+    flex-direction:column;
+    gap:10px;
+  }
+  .grid{
+    grid-template-columns:1fr;
+  }
+}
+
+#conteudo{
+  display:none;
+}
+
+/* LOGO FIXO INFERIOR ESQUERDO */
+.logo-fixo{
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  width:110px;
+  opacity:0.9;
+  z-index:1000;
+}
 </style>
 </head>
+
 <body>
 
 <!-- LOGIN -->
 <div id="login-area" class="login-container">
-    <h2>Login Corporativo</h2>
-    <p>Use seu e-mail da empresa</p>
-    <button class="login-btn" id="loginBtn">Entrar com Google</button>
+  <h2>Login Corporativo</h2>
+  <p>Use seu e-mail da empresa</p>
+  <button class="login-btn" id="loginBtn">Entrar com Google</button>
 </div>
 
 <!-- PORTAL -->
@@ -40,17 +165,18 @@ header nav ul li a:hover { background:#003f46; }
   <div class="menu-container">
     <h1>Portal Oficial - Time de Atendimento</h1>
     <nav>
-  <ul>
-    <li><a href="index.html">Início</a></li>
-    <li><a href="materiais.html">Materiais</a></li>
-    <li><a href="informativos.html">Informativos</a></li> <!-- <- Aqui -->
-  </ul>
-</nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="materiais.html">Materiais</a></li>
+        <li><a href="informativos.html">Informativos</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
 <div class="container">
   <h2>Acessos Rápidos</h2>
+
   <div class="grid">
     <div class="card"><h3>GLPI</h3><a href="https://glpi.leveros.com.br" class="button">Acessar</a></div>
     <div class="card"><h3>Uappi</h3><a href="https://www.vendas.leveros.com.br" class="button">Acessar</a></div>
@@ -62,6 +188,9 @@ header nav ul li a:hover { background:#003f46; }
   </div>
 </div>
 </div>
+
+<!-- LOGO FIXO -->
+<img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -77,7 +206,6 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Mostra conteúdo apenas quando Firebase carrega
 onAuthStateChanged(auth,user=>{
   if(user && user.email.endsWith("@leveros.com.br")){
     document.getElementById("login-area").style.display="none";
@@ -95,13 +223,16 @@ document.getElementById("loginBtn").addEventListener("click",async()=>{
     if(email.endsWith("@leveros.com.br")){
       document.getElementById("login-area").style.display="none";
       document.getElementById("conteudo").style.display="block";
-    } else alert("Acesso permitido apenas para e-mails corporativos.");
-  } catch(error){alert("Erro: "+error.message); console.error(error);}
+    } else {
+      alert("Acesso permitido apenas para e-mails corporativos.");
+    }
+  } catch(error){
+    alert("Erro: "+error.message);
+    console.error(error);
+  }
 });
 </script>
 
 </body>
 </html>
-
-
 
