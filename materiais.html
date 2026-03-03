@@ -2,199 +2,185 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Materiais</title>
-
+<title>Materiais - CX Resolve</title>
 <style>
 body{
-  font-family:Arial,sans-serif;
-  background:#005A64;
   margin:0;
-  padding:20px;
+  font-family:'Segoe UI',Arial,sans-serif;
+  background:linear-gradient(135deg,#002D32,#004D54,#00383E);
+  color:white;
 }
 
-.back-link{
-  display:inline-flex;
+/* HEADER */
+header{
+  background:rgba(0,90,100,0.85);
+  backdrop-filter:blur(10px);
+  padding:18px 25px;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+
+.menu-container{
+  max-width:1200px;
+  margin:0 auto;
+  display:flex;
+  justify-content:space-between;
   align-items:center;
-  color:#fff;
+}
+
+.menu-container h1{
+  font-size:20px;
+  margin:0;
+}
+
+nav ul{
+  list-style:none;
+  display:flex;
+  gap:20px;
+  margin:0;
+  padding:0;
+  align-items:center;
+}
+
+nav a{
+  color:white;
   text-decoration:none;
+  font-weight:500;
+  transition:0.3s;
+}
+
+nav a:hover{
+  opacity:0.7;
+}
+
+.logout-btn{
+  padding:8px 18px;
+  border:none;
+  border-radius:20px;
+  background:#FFCE00;
   font-weight:bold;
-  margin-bottom:20px;
-  transition:color .3s;
+  cursor:pointer;
+  color:#002D32;
 }
 
-.back-link:hover{
-  color:#e0e0e0;
-}
-
-.back-link svg{
-  margin-right:8px;
-  width:18px;
-  height:18px;
-  fill:currentColor;
-  transition:transform .3s;
-}
-
-.back-link:hover svg{
-  transform:translateX(-3px);
+/* CONTAINER */
+.container{
+  padding:60px 20px;
+  max-width:1200px;
+  margin:0 auto;
 }
 
 h1{
-  color:#005A64;
-  text-align:center;
-  margin-bottom:30px;
+  font-size:28px;
+  margin-bottom:40px;
 }
 
+/* GRID */
 .materiais-container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:20px;
-  justify-content:center;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:30px;
 }
 
+/* CARDS */
 .card{
-  background:#fff;
-  border-radius:12px;
-  padding:20px;
-  width:260px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  transition:transform .3s,box-shadow .3s;
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(15px);
+  border-radius:25px;
+  padding:30px;
+  text-align:center;
+  transition:all 0.4s ease;
+  border:1px solid rgba(255,255,255,0.1);
 }
 
 .card:hover{
-  transform:translateY(-5px);
-  box-shadow:0 8px 20px rgba(0,0,0,0.2);
+  transform:translateY(-10px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
 .card h3{
-  margin-top:0;
-  color:#005A64;
+  font-size:20px;
+  margin-bottom:15px;
 }
 
 .card p{
   font-size:14px;
-  color:#333;
+  margin-bottom:15px;
 }
 
 .card a{
   display:inline-block;
-  margin-top:10px;
+  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
+  color:#002D32;
+  padding:10px 20px;
+  border-radius:30px;
   text-decoration:none;
-  color:#fff;
-  background:#005A64;
-  padding:10px 14px;
-  border-radius:6px;
   font-weight:bold;
-  transition:background .3s;
+  transition:0.3s;
 }
 
 .card a:hover{
-  background:#003f46;
+  transform:scale(1.05);
+}
+
+/* LOGO FIXA */
+.logo-fixo{
+  position:fixed;
+  bottom:25px;
+  left:25px;
+  width:110px;
+  opacity:0.6;
+  transition:0.3s;
+}
+
+.logo-fixo:hover{
+  opacity:1;
 }
 
 #materiais-content{
   display:none;
 }
-
-/* LOGO FIXO INFERIOR ESQUERDO */
-.logo-fixo{
-  position:fixed;
-  bottom:20px;
-  left:20px;
-  width:110px;
-  opacity:0.9;
-  z-index:1000;
-}
 </style>
 </head>
-
 <body>
 
 <div id="materiais-content">
-  <a href="index.html" class="back-link">
-    <svg viewBox="0 0 24 24">
-      <path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
-    </svg>
-    Voltar para Acessos Rápidos
-  </a>
+<header>
+  <div class="menu-container">
+    <h1>Materiais</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Início</a></li>
+        <li><a href="materiais.html">Materiais</a></li>
+        <li><a href="informativos.html">Informativos</a></li>
+        <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 
-  <h1>Materiais</h1>
-
+<div class="container">
   <div class="materiais-container">
-
-    <div class="card">
-      <h3>Book de Atendimento N1,N2,N3</h3>
-      <p>Guia rápido para consultas.</p>
-      <a href="https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Fluxo de Pedido não faturado</h3>
-      <p>Conteúdo de treinamento.</p>
-      <a href="https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Como consultar pedido na BoxLink</h3>
-      <p>Passo a passo completo.</p>
-      <a href="https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Como usar a Uappi</h3>
-      <p>Passo a passo completo.</p>
-      <a href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Como realizar consulta na FUP</h3>
-      <p>Passo a passo completo.</p>
-      <a href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>O que é Troca de titularidade p/ Marketplace e como atuar</h3>
-      <p>Guia de consulta.</p>
-      <a href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
-    <div class="card">
-      <h3>Mudanças do CRM Intergrall 05.02.2026</h3>
-      <p>Guia de consulta.</p>
-      <a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing&ouid=107732961993934821252&rtpof=true&sd=true" target="_blank">
-        Abrir Documento
-      </a>
-    </div>
-
+    <div class="card"><h3>Book de Atendimento N1,N2,N3</h3><p>Guia rápido para consultas.</p><a href="https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Fluxo de Pedido não faturado</h3><p>Conteúdo de treinamento.</p><a href="https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Como consultar pedido na BoxLink</h3><p>Passo a passo completo.</p><a href="https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Como usar a Uappi</h3><p>Passo a passo completo.</p><a href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>Como realizar consulta na FUP</h3><p>Passo a passo completo.</p><a href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>O que é Troca de titularidade p/ Marketplace</h3><p>Guia de consulta.</p><a href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>Mudanças do CRM Intergrall 05.02.2026</h3><p>Guia de consulta.</p><a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing&ouid=107732961993934821252&rtpof=true&sd=true">Abrir Documento</a></div>
   </div>
 </div>
+</div>
 
-<!-- LOGO FIXO -->
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Logo Leveros" class="logo-fixo">
+<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig={
-  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:"portal-atendimento-541ae.firebaseapp.com",
-  projectId:"portal-atendimento-541ae"
-};
+const firebaseConfig = { apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", authDomain:"portal-atendimento-541ae.firebaseapp.com", projectId:"portal-atendimento-541ae"};
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
 onAuthStateChanged(auth,user=>{
   if(user && user.email.endsWith("@leveros.com.br")){
@@ -203,6 +189,8 @@ onAuthStateChanged(auth,user=>{
     window.location.href="index.html";
   }
 });
+
+document.getElementById("logoutBtn").addEventListener("click",async()=>{await signOut(auth);});
 </script>
 
 </body>
