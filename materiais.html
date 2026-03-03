@@ -11,7 +11,7 @@ body {
   padding: 20px;
 }
 
-/* ===== VOLTAR ===== */
+/* VOLTAR */
 .back-link {
   display: inline-flex;
   align-items: center;
@@ -38,14 +38,14 @@ body {
   transform: translateX(-3px);
 }
 
-/* ===== TÍTULO ===== */
+/* TÍTULO */
 h1 {
   color: #005A64;
   text-align: center;
   margin-bottom: 30px;
 }
 
-/* ===== CARDS ===== */
+/* CARDS */
 .materiais-container {
   display: flex;
   flex-wrap: wrap;
@@ -125,6 +125,28 @@ h1 {
   </div>
 
 </div>
+
+<!-- FIREBASE: mantém sessão ativa -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+  authDomain: "portal-atendimento-541ae.firebaseapp.com",
+  projectId: "portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// Verifica se usuário está logado
+onAuthStateChanged(auth, (user) => {
+  if (!user || !user.email.endsWith("@leveros.com.br")) {
+    window.location.href = "index.html";
+  }
+});
+</script>
 
 </body>
 </html>
