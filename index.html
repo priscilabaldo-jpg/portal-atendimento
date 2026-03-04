@@ -3,322 +3,183 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CX Resolve — Portal de Atendimento</title>
+<title>Portal CX</title>
+
 <style>
-@font-face { font-family:'Soleto'; src:url('fonts/SOLETO_LT.TTF'); font-weight:300; }
-@font-face { font-family:'Soleto'; src:url('fonts/SOLETO_RG.TTF'); font-weight:400; }
-@font-face { font-family:'Soleto'; src:url('fonts/SOLETO_MD.TTF'); font-weight:500; }
-@font-face { font-family:'Soleto'; src:url('fonts/SOLETO_XBD.TTF'); font-weight:700; }
-@font-face { font-family:'Soleto'; src:url('fonts/SOLETO_BLK.TTF'); font-weight:900; }
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Soleto', 'Segoe UI', sans-serif;
-  background: linear-gradient(145deg, #002D32 0%, #004D54 55%, #003338 100%);
-  min-height: 100vh;
-  color: white;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
 }
 
-/* LOGIN */
-.login-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: linear-gradient(145deg, #002D32, #004D54);
+body{
+  background:#f4f7fb;
 }
-
-.login-box {
-  background: rgba(255,255,255,0.07);
-  padding: 52px 48px;
-  border-radius: 24px;
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(76,221,221,0.18);
-  text-align: center;
-  max-width: 420px;
-  width: 90%;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.35);
-}
-
-.login-box img { height: 40px; margin-bottom: 28px; opacity: 0.95; }
-.login-box h1 { font-size: 32px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 6px; }
-.login-box h2 { font-weight: 400; font-size: 16px; color: #4CDDDD; margin-bottom: 10px; }
-.login-box p  { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
-
-.login-btn {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  width: 100%; padding: 14px; border: none; border-radius: 14px;
-  background: linear-gradient(135deg, #4CDDDD, #2bbbbb);
-  font-family: 'Soleto', sans-serif; font-weight: 700; font-size: 15px;
-  color: #002D32; cursor: pointer; transition: transform .2s, box-shadow .2s;
-}
-.login-btn:hover { transform: scale(1.03); box-shadow: 0 8px 28px rgba(76,221,221,0.4); }
 
 /* HEADER */
-header {
-  background: rgba(0,45,50,0.9);
-  backdrop-filter: blur(16px);
-  padding: 0 32px;
-  border-bottom: 1px solid rgba(76,221,221,0.12);
-  position: sticky; top: 0; z-index: 100;
+.header{
+  background:#0F4C5C;
+  color:white;
+  padding:15px 25px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:fixed;
+  width:100%;
+  top:0;
+  z-index:1000;
 }
-.menu-container {
-  max-width: 1200px; margin: 0 auto;
-  height: 64px; display: flex;
-  justify-content: space-between; align-items: center;
-}
-.brand { display: flex; align-items: center; gap: 14px; }
-.brand img { height: 26px; opacity: 0.9; }
-.brand h1 { font-size: 17px; font-weight: 500; color: rgba(255,255,255,0.85); }
 
-nav ul { list-style: none; display: flex; gap: 4px; align-items: center; }
-nav a {
-  display: block; color: rgba(255,255,255,0.65); text-decoration: none;
-  font-weight: 500; font-size: 14px; padding: 7px 14px; border-radius: 8px; transition: all .2s;
+.header h1{
+  font-size:18px;
 }
-nav a:hover, nav a.active { color: #4CDDDD; background: rgba(76,221,221,0.08); }
 
-.logout-btn {
-  padding: 8px 20px; border: none; border-radius: 999px;
-  background: #FFCE00; font-family: 'Soleto', sans-serif;
-  font-weight: 700; font-size: 13px; cursor: pointer;
-  color: #002D32; margin-left: 8px; transition: transform .2s, box-shadow .2s;
+.hamburger{
+  font-size:24px;
+  cursor:pointer;
+  background:none;
+  border:none;
+  color:white;
 }
-.logout-btn:hover { transform: scale(1.04); box-shadow: 0 4px 16px rgba(255,206,0,0.3); }
 
-/* CONTAINER */
-.container { padding: 52px 24px 80px; max-width: 1200px; margin: 0 auto; }
-.container h2 { font-size: 26px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.3px; }
-.welcome { margin-bottom: 32px; font-size: 16px; color: #4CDDDD; font-weight: 400; }
+/* SIDEBAR */
+.sidebar{
+  position:fixed;
+  left:-250px;
+  top:0;
+  width:250px;
+  height:100%;
+  background:#012E40;
+  padding-top:70px;
+  transition:0.3s;
+  z-index:1001;
+}
+
+.sidebar a{
+  display:block;
+  padding:15px 25px;
+  color:white;
+  text-decoration:none;
+  transition:0.3s;
+}
+
+.sidebar a:hover{
+  background:#025373;
+}
+
+.overlay{
+  position:fixed;
+  display:none;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.4);
+  z-index:1000;
+}
+
+/* CONTENT */
+.content{
+  padding:100px 40px;
+}
+
+/* CARD */
+.card{
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 4px 12px rgba(0,0,0,0.08);
+  margin-bottom:20px;
+}
 
 /* BANNER */
-.banner-recados {
-  background: linear-gradient(135deg, #4CDDDD, #2bbbbb);
-  color: #002D32; padding: 14px 24px; border-radius: 12px;
-  font-weight: 700; font-size: 15px; margin-bottom: 44px;
-  text-align: center; min-height: 46px;
-  display: flex; align-items: center; justify-content: center;
+.banner{
+  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
+  color:#002D32;
+  padding:20px;
+  border-radius:12px;
+  font-weight:bold;
+  font-size:16px;
+  text-align:center;
+  margin-bottom:25px;
+  position:relative;
+  overflow:hidden;
 }
-.recado { display: none; }
-.recado.active { display: block; }
-
-/* GRID */
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-
-/* CARDS */
-.card {
-  background: rgba(255,255,255,0.07);
-  backdrop-filter: blur(12px);
-  border-radius: 20px; padding: 36px 28px; text-align: center;
-  transition: transform .3s, box-shadow .3s, border-color .3s;
-  border: 1px solid rgba(255,255,255,0.09);
-}
-.card:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(0,0,0,0.35); border-color: rgba(76,221,221,0.25); }
-.card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
-.card p  { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 22px; line-height: 1.5; }
-
-.button {
-  display: inline-block;
-  background: linear-gradient(135deg, #4CDDDD, #2bbbbb);
-  color: #002D32; padding: 11px 28px; border-radius: 999px;
-  text-decoration: none; font-family: 'Soleto', sans-serif;
-  font-weight: 700; font-size: 13px; transition: transform .2s, box-shadow .2s;
-}
-.button:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(76,221,221,0.35); }
-
-/* FOOTER */
-footer {
-  margin-top: 80px; padding: 48px 24px 32px;
-  background: rgba(0,0,0,0.2); backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255,255,255,0.08);
-}
-.footer-container {
-  max-width: 1200px; margin: 0 auto 32px;
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap: 32px;
-}
-.footer-col h4 { margin-bottom: 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #4CDDDD; }
-.footer-col p, .footer-col a { font-size: 13.5px; color: rgba(255,255,255,0.5); text-decoration: none; display: block; margin-bottom: 8px; transition: color .2s; }
-.footer-col a:hover { color: rgba(255,255,255,0.9); }
-.footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.07); text-align: center; font-size: 12px; color: rgba(255,255,255,0.3); }
-
-.logo-fixo { position: fixed; bottom: 24px; left: 24px; width: 100px; opacity: 0.5; transition: opacity .3s; }
-.logo-fixo:hover { opacity: 0.9; }
-
-#conteudo { display: none; }
-
-@media(max-width:600px){
-  header { padding: 0 16px; }
-  .brand h1 { display: none; }
-  .container { padding: 36px 16px 60px; }
-  .login-box { padding: 36px 24px; }
-  .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .card { padding: 24px 14px; }
-}
-
-/* HAMBURGER */
-.hamburger { display:flex; flex-direction:column; justify-content:center; gap:5px; width:42px; height:42px; background:none; border:none; cursor:pointer; padding:10px; border-radius:10px; transition:background .2s; }
-.hamburger:hover { background:rgba(76,221,221,0.1); }
-.hamburger span { display:block; height:2px; width:100%; background:rgba(255,255,255,0.85); border-radius:2px; transition:transform .35s cubic-bezier(.22,1,.36,1), opacity .25s; }
-.hamburger span:nth-child(3) { width:65%; }
-.hamburger.is-open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
-.hamburger.is-open span:nth-child(2) { opacity:0; }
-.hamburger.is-open span:nth-child(3) { width:100%; transform:translateY(-7px) rotate(-45deg); }
-.overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .35s; }
-.overlay.is-open { opacity:1; pointer-events:all; }
-.sidebar { position:fixed; top:0; right:0; bottom:0; width:300px; z-index:1001; background:linear-gradient(160deg,#002830 0%,#001e22 100%); border-left:1px solid rgba(76,221,221,0.18); box-shadow:-32px 0 80px rgba(0,0,0,0.6); transform:translateX(100%); transition:transform .4s cubic-bezier(.22,1,.36,1); display:flex; flex-direction:column; overflow:hidden; }
-.sidebar.is-open { transform:translateX(0); }
-.sb-head { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:64px; border-bottom:1px solid rgba(76,221,221,0.14); flex:0 0 64px; }
-.sb-title { font-size:12px; font-weight:700; color:#4CDDDD; letter-spacing:2px; }
-.sb-back { display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-radius:10px; background:rgba(76,221,221,0.08); color:#4CDDDD; font-family:'Soleto','Segoe UI',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:background .2s,transform .2s; }
-.sb-back:hover { background:rgba(76,221,221,0.18); transform:translateX(-3px); }
-.sb-nav { flex:1; padding:20px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:3px; }
-.sb-section-label { font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:rgba(200,240,240,0.5); padding:14px 10px 6px; }
-.sb-item { display:flex; align-items:center; gap:13px; padding:12px 14px; border-radius:12px; text-decoration:none; color:rgba(255,255,255,0.7); font-size:14px; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all .2s; }
-.sb-item:hover { background:rgba(76,221,221,0.08); color:#fff; transform:translateX(4px); border-color:rgba(76,221,221,0.15); }
-.sb-item.active { background:rgba(76,221,221,0.12); color:#4CDDDD; border-color:rgba(76,221,221,0.22); }
-.sb-item .ico { font-size:18px; width:28px; text-align:center; flex-shrink:0; }
-.sb-item .lbl { flex:1; }
-.sb-item .arr { font-size:11px; opacity:0; transition:opacity .2s,transform .2s; }
-.sb-item:hover .arr { opacity:1; transform:translateX(2px); }
-.sb-divider { height:1px; background:rgba(76,221,221,0.14); margin:8px 10px; }
-.sb-foot { padding:18px 20px; border-top:1px solid rgba(76,221,221,0.14); flex:0 0 auto; }
-.sb-user { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
-.sb-avatar { width:40px; height:40px; border-radius:999px; flex-shrink:0; background:linear-gradient(135deg,#4CDDDD,#2bbbbb); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:#002D32; }
-.sb-uname { font-size:13px; font-weight:700; color:#fff; }
-.sb-urole { font-size:11px; color:rgba(200,240,240,0.5); margin-top:2px; }
-.sb-logout { width:100%; padding:11px; background:rgba(255,206,0,0.1); border:1px solid rgba(255,206,0,0.25); border-radius:12px; font-family:'Soleto','Segoe UI',sans-serif; font-size:13px; font-weight:700; color:#FFCE00; cursor:pointer; transition:background .2s; }
-.sb-logout:hover { background:rgba(255,206,0,0.2); }
-
 </style>
 </head>
+
 <body>
 
-<div id="login-area" class="login-container">
-  <div class="login-box">
-    <img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Leveros">
-    <h1>CX Resolve</h1>
-    <h2>Portal Oficial do Time de Atendimento</h2>
-    <p>Use seu e-mail corporativo Leveros</p>
-    <button class="login-btn" id="loginBtn">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
-      Entrar com Google
-    </button>
-  </div>
+<div class="header">
+  <button class="hamburger" id="menuBtn">☰</button>
+  <h1>Portal CX</h1>
 </div>
 
-<div id="conteudo">
-  <header>
-    <div class="menu-container">
-      <div class="brand">
-        <img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Leveros">
-        <h1>Portal de Atendimento</h1>
-      </div>
-            <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
-    </div>
-  </header>
-
-  <div class="container">
-    <h2>Acessos Rápidos</h2>
-    <div class="welcome" id="welcomeUser"></div>
-    <div class="banner-recados">
-      <div class="recado active">🔔 Treinamento CX dia 09/03</div>
-      <div class="recado">📢 Atualização de metas disponível</div>
-      <div class="recado">📝 Pesquisa de satisfação do time</div>
-    </div>
-    <div class="grid">
-      <div class="card"><h3>🔧 GLPI</h3><p>Gestão de chamados e suporte técnico</p><a href="https://glpi.leveros.com.br" target="_blank" class="button">Acessar</a></div>
-      <div class="card"><h3>🛒 Uappi</h3><p>Plataforma de vendas e pedidos</p><a href="https://www.vendas.leveros.com.br" target="_blank" class="button">Acessar</a></div>
-      <div class="card"><h3>📦 BoxLink</h3><p>Rastreamento e logística</p><a href="https://matriz.boxlink.com.br/home" target="_blank" class="button">Acessar</a></div>
-      <div class="card"><h3>📞 Intergrall</h3><p>Central de atendimento</p><a href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank" class="button">Acessar</a></div>
-      <div class="card"><h3>📊 Assertiva</h3><p>Análise e soluções de dados</p><a href="https://painel.assertivasolucoes.com.br/login" target="_blank" class="button">Acessar</a></div>
-      <div class="card"><h3>👩‍💼 Senior</h3><p>Gestão de pessoas e RH</p><a href="https://platform.senior.com.br/senior-x/#/" target="_blank" class="button">Acessar</a></div>
-    </div>
-  </div>
-
-  <footer>
-    <div class="footer-container">
-      <div class="footer-col"><h4>CX Resolve</h4><p>Portal interno de apoio ao time de Atendimento.</p><p>Centralização de sistemas e acessos rápidos.</p></div>
-      <div class="footer-col"><h4>Navegação</h4><a href="index.html">Início</a><a href="materiais.html">Materiais</a><a href="informativos.html">Informativos</a></div>
-      <div class="footer-col"><h4>Gestão</h4><p>Responsável: Priscila Baldo</p><p>Customer Experience</p><p>Leveros</p></div>
-    </div>
-    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve • Todos os direitos reservados</div>
-  </footer>
+<div class="sidebar" id="sidebar">
+  <a href="index.html">🏠 Início</a>
+  <a href="informativos.html">📢 Informativos</a>
+  <a href="materiais.html">📚 Materiais</a>
+  <a href="#" id="logoutBtn">🚪 Sair</a>
 </div>
 
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo" alt="Leveros">
+<div class="overlay" id="overlay"></div>
+
+<div class="content">
+
+  <div class="banner" id="bannerRecado">
+    🔔 Treinamento CX dia 09/03 das 08h às 16h
+  </div>
+
+  <div class="card">
+    <h2>Dashboard Geral</h2>
+    <p>Bem-vinda ao Portal CX. Aqui você acompanha metas, comunicados e materiais.</p>
+  </div>
+
+</div>
 
 <script>
-document.getElementById("anoAtual").textContent = new Date().getFullYear();
-const recados = document.querySelectorAll('.recado');
-let idx = 0;
-setInterval(() => { recados[idx].classList.remove('active'); idx=(idx+1)%recados.length; recados[idx].classList.add('active'); }, 5000);
-</script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-const app = initializeApp({ apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", authDomain:"portal-atendimento-541ae.firebaseapp.com", projectId:"portal-atendimento-541ae" });
-const auth = getAuth(app); const provider = new GoogleAuthProvider();
-onAuthStateChanged(auth, user => {
-  if(user && user.email.endsWith("@leveros.com.br")){ document.getElementById("login-area").style.display="none"; document.getElementById("conteudo").style.display="block"; document.getElementById("welcomeUser").innerHTML="Olá, <strong>"+user.displayName+"</strong> 👋"; }
-  else { document.getElementById("login-area").style.display="flex"; document.getElementById("conteudo").style.display="none"; }
+/* SIDEBAR */
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+const menuBtn = document.getElementById("menuBtn");
+
+menuBtn.addEventListener("click", ()=>{
+  sidebar.style.left="0";
+  overlay.style.display="block";
 });
-document.getElementById("loginBtn").addEventListener("click", async()=>{ const r=await signInWithPopup(auth,provider); if(!r.user.email.endsWith("@leveros.com.br")){ alert("Acesso apenas para e-mails Leveros."); signOut(auth); } });
 
-function openSidebar(){
-  document.getElementById('sidebar').classList.add('is-open');
-  document.getElementById('overlay').classList.add('is-open');
-  document.querySelector('.hamburger').classList.add('is-open');
-}
-function closeSidebar(){
-  document.getElementById('sidebar').classList.remove('is-open');
-  document.getElementById('overlay').classList.remove('is-open');
-  document.querySelector('.hamburger').classList.remove('is-open');
-}
+overlay.addEventListener("click", ()=>{
+  sidebar.style.left="-250px";
+  overlay.style.display="none";
+});
 
-document.getElementById("logoutBtn") && document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth));
-  document.getElementById("logoutSide") && document.getElementById("logoutSide").addEventListener("click", ()=>signOut(auth));
+/* LOGOUT */
+document.getElementById("logoutBtn").addEventListener("click", ()=>{
+  alert("Logout realizado");
+  window.location.href="index.html";
+});
+
+/* BANNER ROTATIVO */
+const recados = [
+  "🔔 Treinamento CX dia 09/03 das 08h às 16h",
+  "📊 Atualização das metas disponível",
+  "📢 Cobertura de férias 30/03 a 13/04",
+  "📋 Pesquisa interna liberada"
+];
+
+let index = 0;
+const banner = document.getElementById("bannerRecado");
+
+setInterval(()=>{
+  index = (index + 1) % recados.length;
+  banner.style.opacity = 0;
+  setTimeout(()=>{
+    banner.innerText = recados[index];
+    banner.style.opacity = 1;
+  },300);
+},5000);
 </script>
-
-<!-- OVERLAY -->
-<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
-
-<!-- SIDEBAR -->
-<aside class="sidebar" id="sidebar">
-  <div class="sb-head">
-    <span class="sb-title">CX RESOLVE</span>
-    <button class="sb-back" onclick="closeSidebar()">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      Voltar
-    </button>
-  </div>
-  <nav class="sb-nav">
-    <div class="sb-section-label">Navegação</div>
-    <a class="sb-item" href="index.html"><span class="ico">🏠</span><span class="lbl">Início</span><span class="arr">→</span></a>
-    <a class="sb-item" href="materiais.html"><span class="ico">📚</span><span class="lbl">Materiais</span><span class="arr">→</span></a>
-    <a class="sb-item" href="informativos.html"><span class="ico">📊</span><span class="lbl">Informativos</span><span class="arr">→</span></a>
-    <div class="sb-divider"></div>
-    <div class="sb-section-label">Sistemas</div>
-    <a class="sb-item" href="https://glpi.leveros.com.br" target="_blank"><span class="ico">🔧</span><span class="lbl">GLPI</span><span class="arr">↗</span></a>
-    <a class="sb-item" href="https://www.vendas.leveros.com.br" target="_blank"><span class="ico">🛒</span><span class="lbl">Uappi</span><span class="arr">↗</span></a>
-    <a class="sb-item" href="https://matriz.boxlink.com.br/home" target="_blank"><span class="ico">📦</span><span class="lbl">BoxLink</span><span class="arr">↗</span></a>
-    <a class="sb-item" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank"><span class="ico">📞</span><span class="lbl">Intergrall</span><span class="arr">↗</span></a>
-    <a class="sb-item" href="https://painel.assertivasolucoes.com.br/login" target="_blank"><span class="ico">📊</span><span class="lbl">Assertiva</span><span class="arr">↗</span></a>
-    <a class="sb-item" href="https://platform.senior.com.br/senior-x/#/" target="_blank"><span class="ico">👩‍💼</span><span class="lbl">Senior</span><span class="arr">↗</span></a>
-  </nav>
-  <div class="sb-foot">
-    <div class="sb-user">
-      <div class="sb-avatar">P</div>
-      <div><div class="sb-uname">Priscila Baldo</div><div class="sb-urole">Customer Experience</div></div>
-    </div>
-    <button class="sb-logout" id="logoutSide">Sair da conta</button>
-  </div>
-</aside>
 
 </body>
 </html>
