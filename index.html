@@ -155,6 +155,41 @@ footer {
   .grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .card { padding: 24px 14px; }
 }
+
+/* HAMBURGER */
+.hamburger { display:flex; flex-direction:column; justify-content:center; gap:5px; width:42px; height:42px; background:none; border:none; cursor:pointer; padding:10px; border-radius:10px; transition:background .2s; }
+.hamburger:hover { background:rgba(76,221,221,0.1); }
+.hamburger span { display:block; height:2px; width:100%; background:rgba(255,255,255,0.85); border-radius:2px; transition:transform .35s cubic-bezier(.22,1,.36,1), opacity .25s; }
+.hamburger span:nth-child(3) { width:65%; }
+.hamburger.is-open span:nth-child(1) { transform:translateY(7px) rotate(45deg); }
+.hamburger.is-open span:nth-child(2) { opacity:0; }
+.hamburger.is-open span:nth-child(3) { width:100%; transform:translateY(-7px) rotate(-45deg); }
+.overlay { position:fixed; inset:0; z-index:1000; background:rgba(0,0,0,0.6); backdrop-filter:blur(3px); opacity:0; pointer-events:none; transition:opacity .35s; }
+.overlay.is-open { opacity:1; pointer-events:all; }
+.sidebar { position:fixed; top:0; right:0; bottom:0; width:300px; z-index:1001; background:linear-gradient(160deg,#002830 0%,#001e22 100%); border-left:1px solid rgba(76,221,221,0.18); box-shadow:-32px 0 80px rgba(0,0,0,0.6); transform:translateX(100%); transition:transform .4s cubic-bezier(.22,1,.36,1); display:flex; flex-direction:column; overflow:hidden; }
+.sidebar.is-open { transform:translateX(0); }
+.sb-head { display:flex; align-items:center; justify-content:space-between; padding:0 20px; height:64px; border-bottom:1px solid rgba(76,221,221,0.14); flex:0 0 64px; }
+.sb-title { font-size:12px; font-weight:700; color:#4CDDDD; letter-spacing:2px; }
+.sb-back { display:flex; align-items:center; gap:6px; padding:8px 16px; border:none; border-radius:10px; background:rgba(76,221,221,0.08); color:#4CDDDD; font-family:'Soleto','Segoe UI',sans-serif; font-size:13px; font-weight:700; cursor:pointer; transition:background .2s,transform .2s; }
+.sb-back:hover { background:rgba(76,221,221,0.18); transform:translateX(-3px); }
+.sb-nav { flex:1; padding:20px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:3px; }
+.sb-section-label { font-size:10px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; color:rgba(200,240,240,0.5); padding:14px 10px 6px; }
+.sb-item { display:flex; align-items:center; gap:13px; padding:12px 14px; border-radius:12px; text-decoration:none; color:rgba(255,255,255,0.7); font-size:14px; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all .2s; }
+.sb-item:hover { background:rgba(76,221,221,0.08); color:#fff; transform:translateX(4px); border-color:rgba(76,221,221,0.15); }
+.sb-item.active { background:rgba(76,221,221,0.12); color:#4CDDDD; border-color:rgba(76,221,221,0.22); }
+.sb-item .ico { font-size:18px; width:28px; text-align:center; flex-shrink:0; }
+.sb-item .lbl { flex:1; }
+.sb-item .arr { font-size:11px; opacity:0; transition:opacity .2s,transform .2s; }
+.sb-item:hover .arr { opacity:1; transform:translateX(2px); }
+.sb-divider { height:1px; background:rgba(76,221,221,0.14); margin:8px 10px; }
+.sb-foot { padding:18px 20px; border-top:1px solid rgba(76,221,221,0.14); flex:0 0 auto; }
+.sb-user { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+.sb-avatar { width:40px; height:40px; border-radius:999px; flex-shrink:0; background:linear-gradient(135deg,#4CDDDD,#2bbbbb); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:900; color:#002D32; }
+.sb-uname { font-size:13px; font-weight:700; color:#fff; }
+.sb-urole { font-size:11px; color:rgba(200,240,240,0.5); margin-top:2px; }
+.sb-logout { width:100%; padding:11px; background:rgba(255,206,0,0.1); border:1px solid rgba(255,206,0,0.25); border-radius:12px; font-family:'Soleto','Segoe UI',sans-serif; font-size:13px; font-weight:700; color:#FFCE00; cursor:pointer; transition:background .2s; }
+.sb-logout:hover { background:rgba(255,206,0,0.2); }
+
 </style>
 </head>
 <body>
@@ -184,12 +219,7 @@ footer {
         <img src="AF_MARCA_RGB_NEGATIVA-01.png" alt="Leveros">
         <h1>Portal de Atendimento</h1>
       </div>
-      <nav><ul>
-        <li><a href="index.html" class="active">Início</a></li>
-        <li><a href="materiais.html">Materiais</a></li>
-        <li><a href="informativos.html">Informativos</a></li>
-        <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-      </ul></nav>
+            <button class="hamburger" onclick="openSidebar()"><span></span><span></span><span></span></button>
     </div>
   </header>
 
@@ -239,8 +269,56 @@ onAuthStateChanged(auth, user => {
   else { document.getElementById("login-area").style.display="flex"; document.getElementById("conteudo").style.display="none"; }
 });
 document.getElementById("loginBtn").addEventListener("click", async()=>{ const r=await signInWithPopup(auth,provider); if(!r.user.email.endsWith("@leveros.com.br")){ alert("Acesso apenas para e-mails Leveros."); signOut(auth); } });
-document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth));
+
+function openSidebar(){
+  document.getElementById('sidebar').classList.add('is-open');
+  document.getElementById('overlay').classList.add('is-open');
+  document.querySelector('.hamburger').classList.add('is-open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('is-open');
+  document.getElementById('overlay').classList.remove('is-open');
+  document.querySelector('.hamburger').classList.remove('is-open');
+}
+
+document.getElementById("logoutBtn") && document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth));
+  document.getElementById("logoutSide") && document.getElementById("logoutSide").addEventListener("click", ()=>signOut(auth));
 </script>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-head">
+    <span class="sb-title">CX RESOLVE</span>
+    <button class="sb-back" onclick="closeSidebar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      Voltar
+    </button>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section-label">Navegação</div>
+    <a class="sb-item" href="index.html"><span class="ico">🏠</span><span class="lbl">Início</span><span class="arr">→</span></a>
+    <a class="sb-item" href="materiais.html"><span class="ico">📚</span><span class="lbl">Materiais</span><span class="arr">→</span></a>
+    <a class="sb-item" href="informativos.html"><span class="ico">📊</span><span class="lbl">Informativos</span><span class="arr">→</span></a>
+    <div class="sb-divider"></div>
+    <div class="sb-section-label">Sistemas</div>
+    <a class="sb-item" href="https://glpi.leveros.com.br" target="_blank"><span class="ico">🔧</span><span class="lbl">GLPI</span><span class="arr">↗</span></a>
+    <a class="sb-item" href="https://www.vendas.leveros.com.br" target="_blank"><span class="ico">🛒</span><span class="lbl">Uappi</span><span class="arr">↗</span></a>
+    <a class="sb-item" href="https://matriz.boxlink.com.br/home" target="_blank"><span class="ico">📦</span><span class="lbl">BoxLink</span><span class="arr">↗</span></a>
+    <a class="sb-item" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank"><span class="ico">📞</span><span class="lbl">Intergrall</span><span class="arr">↗</span></a>
+    <a class="sb-item" href="https://painel.assertivasolucoes.com.br/login" target="_blank"><span class="ico">📊</span><span class="lbl">Assertiva</span><span class="arr">↗</span></a>
+    <a class="sb-item" href="https://platform.senior.com.br/senior-x/#/" target="_blank"><span class="ico">👩‍💼</span><span class="lbl">Senior</span><span class="arr">↗</span></a>
+  </nav>
+  <div class="sb-foot">
+    <div class="sb-user">
+      <div class="sb-avatar">P</div>
+      <div><div class="sb-uname">Priscila Baldo</div><div class="sb-urole">Customer Experience</div></div>
+    </div>
+    <button class="sb-logout" id="logoutSide">Sair da conta</button>
+  </div>
+</aside>
+
 </body>
 </html>
-
