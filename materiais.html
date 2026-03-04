@@ -2,8 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Informativos - CX Resolve</title>
-
+<title>Materiais - CX Resolve</title>
 <style>
 body{
   margin:0;
@@ -28,7 +27,10 @@ header{
   align-items:center;
 }
 
-.menu-container h1{font-size:20px;margin:0;}
+.menu-container h1{
+  font-size:20px;
+  margin:0;
+}
 
 nav ul{
   list-style:none;
@@ -46,7 +48,9 @@ nav a{
   transition:0.3s;
 }
 
-nav a:hover{opacity:0.7;}
+nav a:hover{
+  opacity:0.7;
+}
 
 .logout-btn{
   padding:8px 18px;
@@ -65,16 +69,15 @@ nav a:hover{opacity:0.7;}
   margin:0 auto;
 }
 
-.section-title{
-  font-size:22px;
-  margin-bottom:30px;
-  font-weight:bold;
+h1{
+  font-size:28px;
+  margin-bottom:40px;
 }
 
 /* GRID */
-.informativos-container{
+.materiais-container{
   display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
   gap:30px;
 }
 
@@ -83,120 +86,113 @@ nav a:hover{opacity:0.7;}
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(15px);
   border-radius:25px;
-  padding:25px;
+  padding:30px;
+  text-align:center;
   transition:all 0.4s ease;
   border:1px solid rgba(255,255,255,0.1);
 }
 
 .card:hover{
-  transform:translateY(-8px);
-  box-shadow:0 15px 35px rgba(0,0,0,0.4);
+  transform:translateY(-10px);
+  box-shadow:0 20px 40px rgba(0,0,0,0.4);
 }
 
 .card h3{
-  font-size:18px;
-  margin-bottom:10px;
+  font-size:20px;
+  margin-bottom:15px;
 }
 
-.meta-highlight{
+.card p{
   font-size:14px;
-  color:#4CDDDD;
-  margin-bottom:10px;
-  font-weight:bold;
+  margin-bottom:15px;
 }
 
-.details{
-  display:none;
-  font-size:13px;
-  line-height:1.5;
-  margin-top:10px;
-  opacity:0.9;
-}
-
-.toggle-btn{
-  margin-top:10px;
+.card a{
+  display:inline-block;
   background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
-  border:none;
-  padding:8px 18px;
-  border-radius:20px;
-  font-size:12px;
-  font-weight:bold;
-  cursor:pointer;
   color:#002D32;
+  padding:10px 20px;
+  border-radius:30px;
+  text-decoration:none;
+  font-weight:bold;
   transition:0.3s;
 }
 
-.toggle-btn:hover{
+.card a:hover{
   transform:scale(1.05);
 }
 
-/* FOOTER */
-.footer-section{
-  margin-top:80px;
-  padding:50px 20px;
-  background:rgba(0,0,0,0.25);
-  backdrop-filter:blur(10px);
-}
-
-.feedback-container{
-  max-width:600px;
-  margin:0 auto 40px auto;
-  text-align:center;
-}
-
-.feedback-container input,
-.feedback-container textarea{
-  width:100%;
-  padding:12px;
-  margin-bottom:15px;
-  border-radius:12px;
-  border:none;
-}
-
-.feedback-container button{
-  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
-  color:#002D32;
-  border:none;
-  padding:12px 25px;
-  border-radius:30px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.success-message{
-  display:none;
-  background:#1B8A5A;
-  padding:12px;
-  border-radius:12px;
-  margin-bottom:20px;
-  font-size:14px;
-}
-
-.footer-bottom{
-  text-align:center;
-  font-size:13px;
-  opacity:0.7;
-}
-
+/* LOGO FIXA */
 .logo-fixo{
   position:fixed;
   bottom:25px;
   left:25px;
   width:110px;
   opacity:0.6;
+  transition:0.3s;
 }
 
-#informativos-content{display:none;}
+.logo-fixo:hover{
+  opacity:1;
+}
+
+/* RODAPÉ */
+footer{
+  margin-top:80px;
+  padding:40px 20px;
+  background:rgba(0,0,0,0.25);
+  backdrop-filter:blur(15px);
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.footer-container{
+  max-width:1200px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+  gap:30px;
+}
+
+.footer-col h4{
+  margin-bottom:15px;
+  font-size:16px;
+  font-weight:600;
+}
+
+.footer-col p,
+.footer-col a{
+  font-size:14px;
+  opacity:0.8;
+  text-decoration:none;
+  color:white;
+  display:block;
+  margin-bottom:8px;
+  transition:0.3s;
+}
+
+.footer-col a:hover{
+  opacity:1;
+  transform:translateX(5px);
+}
+
+.footer-bottom{
+  margin-top:30px;
+  text-align:center;
+  font-size:13px;
+  opacity:0.6;
+}
+
+#materiais-content{
+  display:none;
+}
 </style>
 </head>
-
 <body>
 
-<div id="informativos-content">
-
+<div id="materiais-content">
 <header>
   <div class="menu-container">
-    <h1>Informativos</h1>
+    <h1>Materiais</h1>
     <nav>
       <ul>
         <li><a href="index.html">Início</a></li>
@@ -209,179 +205,75 @@ nav a:hover{opacity:0.7;}
 </header>
 
 <div class="container">
-
-<!-- METAS OPERACIONAIS – 3 -->
-<div class="section-title">Metas Operacionais – Canal Atendimento</div>
-
-<div class="informativos-container">
-
-  <div class="card">
-    <h3>📊 NPS BOT + URA</h3>
-    <div class="meta-highlight">Meta: 75%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Índice de satisfação após atendimento via URA e BOT.  
-      Contribuímos com atendimento claro, seguro e objetivo.
-    </div>
+  <div class="materiais-container">
+    <div class="card"><h3>Book de Atendimento N1,N2,N3</h3><p>Guia rápido para consultas.</p><a href="https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Fluxo de Pedido não faturado</h3><p>Conteúdo de treinamento.</p><a href="https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Como consultar pedido na BoxLink</h3><p>Passo a passo completo.</p><a href="https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link" target="_blank">Abrir Documento</a></div>
+    <div class="card"><h3>Como usar a Uappi</h3><p>Passo a passo completo.</p><a href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>Como realizar consulta na FUP</h3><p>Passo a passo completo.</p><a href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>O que é Troca de titularidade p/ Marketplace</h3><p>Guia de consulta.</p><a href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link">Abrir Documento</a></div>
+    <div class="card"><h3>Mudanças do CRM Intergrall 05.02.2026</h3><p>Guia de consulta.</p><a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing">Abrir Documento</a></div>
   </div>
-
-  <div class="card">
-    <h3>💸 G&A</h3>
-    <div class="meta-highlight">Meta Temporada: R$ 3.696.813</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Controle de despesas da operação (folha, estrutura, benefícios, tecnologia).  
-      Redução de falhas evita impacto financeiro.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>📦 Trocas & Devoluções (T&D)</h3>
-    <div class="meta-highlight">
-      Geral 1,95% (70%)<br>
-      Pós Vendas 0,02% (15%)<br>
-      Exceções 0,23% (15%)
-    </div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Meta proporcional ao faturamento.  
-      Redução de erros operacionais e retenção eficiente impactam diretamente.
-    </div>
-  </div>
-
 </div>
 
-<!-- METAS COMPARTILHADAS – 6 -->
-<div class="section-title" style="margin-top:70px;">Metas Compartilhadas – Temporada 25/26</div>
+<footer>
+  <div class="footer-container">
+    <div class="footer-col">
+      <h4>CX Resolve</h4>
+      <p>Portal interno de apoio ao time de Atendimento.</p>
+      <p>Centralização de materiais e treinamentos.</p>
+    </div>
 
-<div class="informativos-container">
+    <div class="footer-col">
+      <h4>Navegação</h4>
+      <a href="index.html">Início</a>
+      <a href="materiais.html">Materiais</a>
+      <a href="informativos.html">Informativos</a>
+    </div>
 
-  <div class="card">
-    <h3>🏆 GPTW</h3>
-    <div class="meta-highlight">Manter selo GPTW</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Responder a pesquisa com visão ampla do período avaliado, contribuindo para manutenção da certificação.
+    <div class="footer-col">
+      <h4>Gestão</h4>
+      <p>Responsável: Priscila Baldo</p>
+      <p>Customer Experience</p>
+      <p>Leveros</p>
     </div>
   </div>
 
-  <div class="card">
-    <h3>🛒 Marketplaces +90 dias</h3>
-    <div class="meta-highlight">Meta: R$ 0,00</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Zerar valores pendentes há mais de 90 dias via conciliações e tratativas nas plataformas.
-    </div>
+  <div class="footer-bottom">
+    © <span id="anoAtual"></span> CX Resolve • Todos os direitos reservados
   </div>
-
-  <div class="card">
-    <h3>📦 Defeito Fabricante</h3>
-    <div class="meta-highlight">Zerar saldo anterior a 2025</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Regularizar volumes classificados como defeito fabricante nos CDs 1021 e 1019.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>⏱ Banco de Horas</h3>
-    <div class="meta-highlight">Saldo zerado</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Gestão eficiente junto à liderança para manter equilíbrio entre horas positivas e negativas.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>🔁 Taxa Reversa</h3>
-    <div class="meta-highlight">3,57%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Controle de volumes devolvidos ao CD dentro do percentual máximo permitido.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>💰 Conciliações Marketplaces</h3>
-    <div class="meta-highlight">Recuperar 60%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Recuperar valores respeitando o limite de perda orçado de R$ 76.000,00.
-    </div>
-  </div>
-
-</div>
-
-<!-- RODAPÉ -->
-<div class="footer-section">
-
-<div class="feedback-container">
-
-<div class="success-message" id="successMsg">
-✅ Sugestão enviada com sucesso!
-</div>
-
-<h3>Sugestões de Melhoria 💡</h3>
-
-<form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
-<input type="hidden" name="_captcha" value="false">
-<input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-
-<input type="text" name="nome" placeholder="Seu nome" required>
-<input type="email" name="email" placeholder="Seu e-mail" required>
-<textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão..." required></textarea>
-
-<button type="submit">Enviar Sugestão</button>
-</form>
-
-</div>
-
-<div class="footer-bottom">
-© 2026 CX Resolve | Portal Interno Atendimento
-</div>
-
-</div>
+</footer>
 
 </div>
 
 <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
 
+<script>
+document.getElementById("anoAtual").textContent = new Date().getFullYear();
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-authDomain:"portal-atendimento-541ae.firebaseapp.com",
-projectId:"portal-atendimento-541ae"
+const firebaseConfig = { 
+  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo", 
+  authDomain:"portal-atendimento-541ae.firebaseapp.com", 
+  projectId:"portal-atendimento-541ae"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 onAuthStateChanged(auth,user=>{
-if(user && user.email.endsWith("@leveros.com.br")){
-document.getElementById("informativos-content").style.display="block";
-}else{
-window.location.href="index.html";
-}
+  if(user && user.email.endsWith("@leveros.com.br")){
+    document.getElementById("materiais-content").style.display="block";
+  } else {
+    window.location.href="index.html";
+  }
 });
 
-document.getElementById("logoutBtn").addEventListener("click",async()=>{
-await signOut(auth);
-});
-
-document.getElementById("feedbackForm").addEventListener("submit",function(){
-document.getElementById("successMsg").style.display="block";
-});
-</script>
-
-<script>
-function toggle(button){
-const details = button.nextElementSibling;
-details.style.display = details.style.display === "block" ? "none" : "block";
-button.innerText = details.style.display === "block" ? "Ocultar detalhes" : "Ver detalhes";
-}
+document.getElementById("logoutBtn").addEventListener("click",async()=>{await signOut(auth);});
 </script>
 
 </body>
