@@ -120,9 +120,33 @@ nav a:hover{
 }
 
 .welcome{
-  margin-bottom:40px;
+  margin-bottom:30px;
   font-size:18px;
   color:#4CDDDD;
+}
+
+/* BANNER DE RECADOS */
+.banner-recados{
+  background: linear-gradient(135deg,#4CDDDD,#2bbbbb);
+  color:#002D32;
+  padding:15px 25px;
+  border-radius:12px;
+  font-weight:bold;
+  font-size:16px;
+  overflow:hidden;
+  position:relative;
+  max-width:100%;
+  margin-bottom:40px;
+  text-align:center;
+}
+
+.recado{
+  display:none;
+  transition: all 0.5s ease;
+}
+
+.recado.active{
+  display:block;
 }
 
 /* GRID */
@@ -267,6 +291,13 @@ footer{
   <h2>Acessos Rápidos</h2>
   <div class="welcome" id="welcomeUser"></div>
 
+  <!-- BANNER DE RECADOS -->
+  <div class="banner-recados">
+    <div class="recado active">🔔 Treinamento CX dia 09/03</div>
+    <div class="recado">📢 Atualização de metas disponível</div>
+    <div class="recado">📝 Pesquisa de satisfação do time</div>
+  </div>
+
   <div class="grid">
     <div class="card"><h3>🔧 GLPI</h3><a href="https://glpi.leveros.com.br" class="button">Acessar</a></div>
     <div class="card"><h3>🛒 Uappi</h3><a href="https://www.vendas.leveros.com.br" class="button">Acessar</a></div>
@@ -350,6 +381,17 @@ document.getElementById("loginBtn").addEventListener("click",async()=>{
 document.getElementById("logoutBtn").addEventListener("click",async()=>{
   await signOut(auth);
 });
+</script>
+
+<!-- SCRIPT DO BANNER -->
+<script>
+const recados = document.querySelectorAll('.recado');
+let indexRecado = 0;
+setInterval(() => {
+  recados[indexRecado].classList.remove('active');
+  indexRecado = (indexRecado + 1) % recados.length;
+  recados[indexRecado].classList.add('active');
+}, 5000); // troca a cada 5 segundos
 </script>
 
 </body>
