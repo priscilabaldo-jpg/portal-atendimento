@@ -267,6 +267,35 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
 .rapido-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
 .rapido-card p { font-size: 11px; opacity: 0.4; }
 
+/* FOOTER */
+footer {
+  position: relative; z-index: 5;
+  margin-top: 60px; padding: 40px 28px;
+  background: rgba(0,0,0,0.25);
+  border-top: 1px solid var(--glass-border);
+}
+.footer-inner {
+  max-width: 1160px; margin: auto;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px; margin-bottom: 24px;
+}
+.footer-col h4 {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--azul); margin-bottom: 14px;
+}
+.footer-col p, .footer-col a {
+  font-size: 11px; opacity: 0.5; color: white;
+  text-decoration: none; display: block; margin-bottom: 7px; transition: opacity 0.2s;
+}
+.footer-col a:hover { opacity: 0.85; }
+.footer-logo { height: 20px; filter: brightness(0) invert(1); opacity: 0.35; margin-bottom: 12px; }
+.footer-bottom {
+  max-width: 1160px; margin: 0 auto;
+  padding-top: 20px; border-top: 1px solid var(--glass-border);
+  text-align: center; font-size: 11px; opacity: 0.3;
+}
+
 /* ANIMAÇÕES */
 @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -398,9 +427,34 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
     </div>
 
   </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="footer-logo" alt="Leveros">
+        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <a href="index.html">Início</a>
+        <a href="materiais.html">Materiais</a>
+        <a href="informativos.html">Informativos</a>
+      </div>
+      <div class="footer-col">
+        <h4>Gestão</h4>
+        <p>Responsável: Priscila Baldo</p>
+        <p>Customer Experience · Leveros</p>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
 </div>
 
 <script>
+/* ANO */
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+
 /* DATA */
 const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
