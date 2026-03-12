@@ -376,6 +376,80 @@ signOut(auth);
 };
 
 </script>
+<script>
 
+const dadosBusca = [
+
+/* SISTEMAS */
+
+{ nome:"GLPI", link:"https://glpi.leveros.com.br" },
+{ nome:"Uappi", link:"https://www.vendas.leveros.com.br" },
+{ nome:"BoxLink", link:"https://matriz.boxlink.com.br/home" },
+{ nome:"Intergrall", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php" },
+{ nome:"Assertiva", link:"https://painel.assertivasolucoes.com.br/login" },
+{ nome:"Senior", link:"https://platform.senior.com.br/senior-x/#/" },
+
+/* MATERIAIS */
+
+{ nome:"Book de Atendimento N1 N2 N3", link:"materiais.html" },
+{ nome:"Fluxo de Pedido não faturado", link:"materiais.html" },
+{ nome:"Como consultar pedido na BoxLink", link:"materiais.html" },
+{ nome:"Como usar a Uappi", link:"materiais.html" },
+{ nome:"Consulta na FUP", link:"materiais.html" },
+{ nome:"Troca de titularidade Marketplace", link:"materiais.html" },
+{ nome:"Mudanças do CRM Intergrall", link:"materiais.html" },
+
+/* INFORMATIVOS */
+
+{ nome:"Meta NPS BOT URA", link:"informativos.html" },
+{ nome:"Meta G&A", link:"informativos.html" },
+{ nome:"Meta Trocas e Devoluções", link:"informativos.html" },
+{ nome:"Meta GPTW", link:"informativos.html" },
+{ nome:"Marketplaces +90 dias", link:"informativos.html" },
+{ nome:"Banco de Horas", link:"informativos.html" },
+{ nome:"Taxa Reversa", link:"informativos.html" },
+{ nome:"Conciliações Marketplaces", link:"informativos.html" }
+
+];
+
+const campoBusca = document.getElementById("busca");
+const resultados = document.getElementById("resultados");
+
+campoBusca.addEventListener("keyup", function(){
+
+let texto = this.value.toLowerCase();
+resultados.innerHTML = "";
+
+if(texto.length < 2){
+resultados.style.display="none";
+return;
+}
+
+let encontrados = dadosBusca.filter(item =>
+item.nome.toLowerCase().includes(texto)
+);
+
+if(encontrados.length === 0){
+resultados.innerHTML = "<div class='resultado'>Nenhum resultado encontrado</div>";
+}else{
+
+encontrados.forEach(item => {
+
+resultados.innerHTML += `
+<div class="resultado">
+<a href="${item.link}">${item.nome}</a>
+</div>
+`;
+
+});
+
+}
+
+resultados.style.display="block";
+
+});
+
+</script>
 </body>
 </html>
+
