@@ -4,392 +4,111 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informativos – CX Resolve</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 
 :root {
   --verde1: #002D32;
-  --verde2: #005A64;
   --azul:   #4CDDDD;
   --verde3: #6FFFAF;
-  --verde4: #CEFFAE;
   --amarelo:#FFCE00;
-  --glass:  rgba(255,255,255,0.06);
-  --glass-border: rgba(255,255,255,0.10);
+  --glass:  rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.09);
+  --font: Verdana, Geneva, Tahoma, sans-serif;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--verde1);
-  color: white;
-  min-height: 100vh;
-}
+body { font-family: var(--font); background: var(--verde1); color: white; min-height: 100vh; font-size: 13px; }
 
 .bg-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+  position: fixed; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 70% 50% at 90% 10%, rgba(111,255,175,0.09) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 10% 80%, rgba(76,221,221,0.09) 0%, transparent 55%),
-    linear-gradient(160deg, #002D32 0%, #005A64 55%, #002D32 100%);
+    radial-gradient(ellipse 70% 50% at 90% 10%, rgba(111,255,175,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 10% 80%, rgba(76,221,221,0.07) 0%, transparent 55%),
+    linear-gradient(160deg, #002D32 0%, #004A52 55%, #002D32 100%);
 }
 
-/* HEADER */
-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(0,45,50,0.82);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
-}
+header { position: sticky; top: 0; z-index: 100; background: rgba(0,40,46,0.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); }
+.header-inner { max-width: 1160px; margin: auto; padding: 0 28px; height: 58px; display: flex; align-items: center; justify-content: space-between; }
+.header-logo { height: 24px; filter: brightness(0) invert(1); }
 
-.header-inner {
-  max-width: 1240px;
-  margin: auto;
-  padding: 0 28px;
-  height: 66px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+nav ul { list-style: none; display: flex; align-items: center; gap: 2px; }
+nav a { color: rgba(255,255,255,0.55); text-decoration: none; font-family: var(--font); font-size: 11px; padding: 6px 13px; border-radius: 4px 4px 0 0; border-bottom: 2px solid transparent; transition: all 0.2s; }
+nav a:hover { color: rgba(255,255,255,0.85); }
+nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(76,221,221,0.07); }
 
-.header-logo { height: 28px; filter: brightness(0) invert(1); }
-
-nav ul { list-style: none; display: flex; align-items: center; gap: 8px; }
-
-nav a {
-  color: rgba(255,255,255,0.75);
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  padding: 7px 16px;
-  border-radius: 50px;
-  transition: all 0.2s;
-}
-
-nav a:hover, nav a.active { color: white; background: var(--glass); }
-
-.logout-btn {
-  padding: 8px 20px;
-  border: 1.5px solid var(--amarelo);
-  border-radius: 50px;
-  background: transparent;
-  color: var(--amarelo);
-  font-family: 'Syne', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
+.logout-btn { margin-left: 12px; padding: 6px 15px; border: 1px solid var(--amarelo); border-radius: 4px; background: transparent; color: var(--amarelo); font-family: var(--font); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .logout-btn:hover { background: var(--amarelo); color: var(--verde1); }
 
 .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; }
-.hamburger span { display: block; width: 24px; height: 2px; background: white; border-radius: 2px; }
+.hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
 
-.mobile-menu {
-  display: none;
-  position: fixed;
-  top: 66px; left: 0; right: 0;
-  background: rgba(0,45,50,0.97);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--glass-border);
-  padding: 20px 28px;
-  z-index: 99;
-  flex-direction: column;
-  gap: 8px;
-}
-
+.mobile-menu { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(0,40,46,0.98); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); padding: 16px 28px; z-index: 99; flex-direction: column; gap: 4px; }
 .mobile-menu.open { display: flex; }
-.mobile-menu a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 16px; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
-.mobile-menu .logout-btn { margin-top: 8px; width: fit-content; }
+.mobile-menu a { color: rgba(255,255,255,0.75); text-decoration: none; font-family: var(--font); font-size: 13px; padding: 11px 0; border-bottom: 1px solid var(--glass-border); }
+.mobile-menu .logout-btn { margin-top: 8px; margin-left: 0; width: fit-content; }
 
-/* MAIN */
 #informativos-content { display: none; position: relative; z-index: 5; }
 
-.container {
-  max-width: 1240px;
-  margin: auto;
-  padding: 52px 28px 100px;
-}
+.container { max-width: 1160px; margin: auto; padding: 44px 28px 80px; }
 
-.page-header {
-  margin-bottom: 48px;
-  animation: fadeUp 0.5s ease both;
-}
+.page-label { font-size: 10px; color: var(--verde3); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
+.page-header { margin-bottom: 40px; }
+.page-header h1 { font-family: var(--font); font-size: 20px; font-weight: 700; }
+.page-header p { font-size: 11px; opacity: 0.4; margin-top: 6px; }
 
-.page-header h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-}
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--azul); opacity: 0.8; margin-bottom: 14px; }
 
-.page-header h1 span { color: var(--verde3); }
+.metas-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin-bottom: 44px; }
 
-.page-header p { font-size: 14px; opacity: 0.45; margin-top: 8px; }
-
-/* SECTION */
-.section-label {
-  font-family: 'Syne', sans-serif;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--azul);
-  margin-bottom: 20px;
-  opacity: 0.8;
-}
-
-/* GRID */
-.metas-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 60px;
-}
-
-/* META CARD */
-.meta-card {
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 22px;
-  padding: 28px;
-  transition: all 0.3s ease;
-  animation: fadeUp 0.5s ease both;
-  position: relative;
-  overflow: hidden;
-}
-
-.meta-card::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--azul), var(--verde3));
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.meta-card:hover {
-  border-color: rgba(76,221,221,0.25);
-  transform: translateY(-4px);
-  box-shadow: 0 18px 45px rgba(0,0,0,0.3);
-}
-
+.meta-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; padding: 24px; transition: all 0.25s; position: relative; overflow: hidden; }
+.meta-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--azul), var(--verde3)); opacity: 0; transition: opacity 0.25s; }
+.meta-card:hover { border-color: rgba(76,221,221,0.22); transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
 .meta-card:hover::after { opacity: 1; }
 
-.meta-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
-.meta-emoji {
-  font-size: 28px;
-  line-height: 1;
-}
-
-.meta-tag {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  padding: 4px 10px;
-  border-radius: 50px;
-}
-
+.meta-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.meta-emoji { font-size: 22px; line-height: 1; }
+.meta-tag { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; font-family: var(--font); }
 .meta-tag.op { background: rgba(76,221,221,0.15); color: var(--azul); }
 .meta-tag.comp { background: rgba(111,255,175,0.15); color: var(--verde3); }
 
-.meta-card h3 {
-  font-family: 'Syne', sans-serif;
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.meta-valor {
-  font-family: 'Syne', sans-serif;
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--azul);
-  margin-bottom: 16px;
-  line-height: 1.2;
-}
-
-.meta-valor.verde { color: var(--verde3); }
+.meta-card h3 { font-family: var(--font); font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.meta-valor { font-family: var(--font); font-size: 17px; font-weight: 700; margin-bottom: 14px; line-height: 1.3; color: var(--azul); }
 .meta-valor.amarelo { color: var(--amarelo); }
+.meta-valor.verde { color: var(--verde3); }
 
-.meta-sep {
-  height: 1px;
-  background: var(--glass-border);
-  margin-bottom: 16px;
-}
+.meta-sep { height: 1px; background: var(--glass-border); margin-bottom: 12px; }
+.meta-details { display: none; font-size: 11px; line-height: 1.7; opacity: 0.55; margin-top: 10px; }
+.meta-details.open { display: block; }
 
-.meta-details {
-  font-size: 13px;
-  line-height: 1.7;
-  opacity: 0.6;
-  display: none;
-}
+.toggle-btn { background: none; border: 1px solid var(--glass-border); color: rgba(255,255,255,0.45); padding: 6px 14px; border-radius: 4px; font-family: var(--font); font-size: 10px; cursor: pointer; transition: all 0.2s; }
+.toggle-btn:hover { border-color: var(--azul); color: var(--azul); }
 
-.meta-details.open { display: block; animation: fadeIn 0.3s ease; }
+.feedback-section { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; padding: 32px; max-width: 620px; }
+.feedback-section h3 { font-family: var(--font); font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.feedback-section > p { font-size: 11px; opacity: 0.4; margin-bottom: 22px; }
 
-.toggle-btn {
-  background: none;
-  border: 1px solid var(--glass-border);
-  color: rgba(255,255,255,0.55);
-  padding: 7px 16px;
-  border-radius: 50px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 4px;
-}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.form-field label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; opacity: 0.45; text-transform: uppercase; }
+.form-field input, .form-field textarea { background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); border-radius: 5px; padding: 10px 13px; color: white; font-family: var(--font); font-size: 12px; outline: none; transition: border-color 0.2s; resize: none; }
+.form-field input::placeholder, .form-field textarea::placeholder { color: rgba(255,255,255,0.22); }
+.form-field input:focus, .form-field textarea:focus { border-color: var(--azul); }
+.form-full { margin-bottom: 18px; }
 
-.toggle-btn:hover {
-  border-color: var(--azul);
-  color: var(--azul);
-}
+.submit-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--azul); color: var(--verde1); border: none; padding: 10px 22px; border-radius: 4px; font-family: var(--font); font-size: 12px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; }
+.submit-btn:hover { opacity: 0.85; }
 
-/* FEEDBACK */
-.feedback-section {
-  margin-top: 20px;
-  background: var(--glass);
-  border: 1px solid var(--glass-border);
-  border-radius: 24px;
-  padding: 40px;
-  max-width: 680px;
-  animation: fadeUp 0.5s ease 0.3s both;
-}
+.success-msg { display: none; background: rgba(111,255,175,0.08); border: 1px solid rgba(111,255,175,0.25); border-radius: 5px; padding: 12px 16px; font-size: 12px; color: var(--verde3); margin-bottom: 18px; }
 
-.feedback-section h3 {
-  font-family: 'Syne', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.feedback-section > p {
-  font-size: 13px;
-  opacity: 0.45;
-  margin-bottom: 28px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.form-field label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  opacity: 0.55;
-  text-transform: uppercase;
-}
-
-.form-field input,
-.form-field textarea {
-  background: rgba(255,255,255,0.07);
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  padding: 12px 16px;
-  color: white;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s;
-  resize: none;
-}
-
-.form-field input::placeholder,
-.form-field textarea::placeholder { color: rgba(255,255,255,0.25); }
-
-.form-field input:focus,
-.form-field textarea:focus { border-color: var(--azul); }
-
-.form-full { margin-bottom: 20px; }
-
-.submit-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, var(--azul), #2bbbbb);
-  color: var(--verde1);
-  border: none;
-  padding: 13px 28px;
-  border-radius: 50px;
-  font-family: 'Syne', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(76,221,221,0.35);
-}
-
-.success-msg {
-  display: none;
-  background: rgba(111,255,175,0.12);
-  border: 1px solid rgba(111,255,175,0.3);
-  border-radius: 12px;
-  padding: 14px 18px;
-  font-size: 14px;
-  color: var(--verde3);
-  margin-bottom: 20px;
-}
-
-/* FOOTER */
-footer {
-  position: relative;
-  z-index: 5;
-  margin-top: 80px;
-  padding: 48px 28px;
-  background: rgba(0,0,0,0.3);
-  border-top: 1px solid var(--glass-border);
-}
-
-.footer-bottom {
-  max-width: 1240px;
-  margin: auto;
-  text-align: center;
-  font-size: 12px;
-  opacity: 0.35;
-}
-
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+footer { position: relative; z-index: 5; margin-top: 60px; padding: 32px 28px; background: rgba(0,0,0,0.25); border-top: 1px solid var(--glass-border); }
+.footer-bottom { max-width: 1160px; margin: auto; text-align: center; font-size: 11px; opacity: 0.3; }
 
 @media (max-width: 680px) {
   nav ul { display: none; }
   .hamburger { display: flex; }
   .form-row { grid-template-columns: 1fr; }
-  .feedback-section { padding: 28px 22px; }
+  .feedback-section { padding: 24px 18px; }
 }
 
 </style>
@@ -425,123 +144,86 @@ footer {
   <div class="container">
 
     <div class="page-header">
-      <h1>Metas & <span>Informativos</span></h1>
-      <p>Temporada 25/26 · Canal de Atendimento CX</p>
+      <p class="page-label">Temporada 25/26</p>
+      <h1>Metas & Informativos</h1>
+      <p>Canal de Atendimento CX</p>
     </div>
 
     <p class="section-label">Metas Operacionais</p>
-
     <div class="metas-grid">
 
-      <div class="meta-card" style="animation-delay:0.05s">
-        <div class="meta-top">
-          <span class="meta-emoji">📊</span>
-          <span class="meta-tag op">Operacional</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">📊</span><span class="meta-tag op">Operacional</span></div>
         <h3>NPS BOT + URA</h3>
         <div class="meta-valor">75%</div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Índice de satisfação após atendimento via URA e BOT. Contribuímos com atendimento claro, seguro e objetivo para atingir a meta.
-        </div>
+        <div class="meta-details">Índice de satisfação após atendimento via URA e BOT. Contribuímos com atendimento claro, seguro e objetivo para atingir a meta.</div>
       </div>
 
-      <div class="meta-card" style="animation-delay:0.1s">
-        <div class="meta-top">
-          <span class="meta-emoji">💸</span>
-          <span class="meta-tag op">Operacional</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">💸</span><span class="meta-tag op">Operacional</span></div>
         <h3>G&A</h3>
         <div class="meta-valor amarelo">R$ 3.696.813</div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Meta de despesas da operação para a temporada. Redução de falhas evita impacto financeiro direto nos resultados.
-        </div>
+        <div class="meta-details">Meta de despesas da operação para a temporada. Redução de falhas evita impacto financeiro direto nos resultados.</div>
       </div>
 
-      <div class="meta-card" style="animation-delay:0.15s">
-        <div class="meta-top">
-          <span class="meta-emoji">📦</span>
-          <span class="meta-tag op">Operacional</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">📦</span><span class="meta-tag op">Operacional</span></div>
         <h3>Trocas & Devoluções</h3>
-        <div class="meta-valor" style="font-size:16px;line-height:1.6;">
-          Geral 1,95% <span style="opacity:0.45;font-size:13px;">(70%)</span><br>
-          Pós Vendas 0,02% <span style="opacity:0.45;font-size:13px;">(15%)</span><br>
-          Exceções 0,23% <span style="opacity:0.45;font-size:13px;">(15%)</span>
+        <div class="meta-valor" style="font-size:14px;line-height:1.7;">
+          Geral 1,95% <span style="opacity:0.45;font-size:11px;">(70%)</span><br>
+          Pós Vendas 0,02% <span style="opacity:0.45;font-size:11px;">(15%)</span><br>
+          Exceções 0,23% <span style="opacity:0.45;font-size:11px;">(15%)</span>
         </div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Meta proporcional ao faturamento. Redução de erros operacionais e retenção eficiente impactam diretamente nos resultados.
-        </div>
+        <div class="meta-details">Meta proporcional ao faturamento. Redução de erros operacionais e retenção eficiente impactam diretamente nos resultados.</div>
       </div>
 
     </div>
 
     <p class="section-label">Metas Compartilhadas</p>
-
     <div class="metas-grid">
 
-      <div class="meta-card" style="animation-delay:0.2s">
-        <div class="meta-top">
-          <span class="meta-emoji">🏆</span>
-          <span class="meta-tag comp">Compartilhada</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">🏆</span><span class="meta-tag comp">Compartilhada</span></div>
         <h3>GPTW</h3>
         <div class="meta-valor verde">Manter Selo</div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Responder a pesquisa com visão ampla do período avaliado. Sua participação é essencial para manter o selo.
-        </div>
+        <div class="meta-details">Responder a pesquisa com visão ampla do período avaliado. Sua participação é essencial para manter o selo.</div>
       </div>
 
-      <div class="meta-card" style="animation-delay:0.25s">
-        <div class="meta-top">
-          <span class="meta-emoji">🛒</span>
-          <span class="meta-tag comp">Compartilhada</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">🛒</span><span class="meta-tag comp">Compartilhada</span></div>
         <h3>Marketplaces +90 dias</h3>
         <div class="meta-valor">R$ 0,00</div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Zerar valores pendentes há mais de 90 dias nos canais de marketplace. Meta de liquidação total.
-        </div>
+        <div class="meta-details">Zerar valores pendentes há mais de 90 dias nos canais de marketplace. Meta de liquidação total.</div>
       </div>
 
-      <div class="meta-card" style="animation-delay:0.3s">
-        <div class="meta-top">
-          <span class="meta-emoji">🔧</span>
-          <span class="meta-tag comp">Compartilhada</span>
-        </div>
+      <div class="meta-card">
+        <div class="meta-top"><span class="meta-emoji">🔧</span><span class="meta-tag comp">Compartilhada</span></div>
         <h3>Defeito Fabricante</h3>
         <div class="meta-valor verde">Zerar 2024</div>
         <div class="meta-sep"></div>
         <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-        <div class="meta-details">
-          Regularizar todos os volumes classificados como defeito fabricante anteriores a 2025.
-        </div>
+        <div class="meta-details">Regularizar todos os volumes classificados como defeito fabricante anteriores a 2025.</div>
       </div>
 
     </div>
 
-    <!-- FEEDBACK -->
     <div class="feedback-section">
       <h3>Sugestões de Melhoria 💡</h3>
       <p>Sua ideia pode melhorar o dia a dia do time</p>
-
-      <div class="success-msg" id="successMsg">
-        ✅ Sugestão enviada com sucesso! Obrigado pela contribuição.
-      </div>
-
+      <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
       <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
         <input type="hidden" name="_captcha" value="false">
         <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-
         <div class="form-row">
           <div class="form-field">
             <label>Seu nome</label>
@@ -552,12 +234,10 @@ footer {
             <input type="email" name="email" placeholder="nome@leveros.com.br" required>
           </div>
         </div>
-
         <div class="form-field form-full">
           <label>Sugestão</label>
           <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
         </div>
-
         <button type="submit" class="submit-btn">Enviar sugestão →</button>
       </form>
     </div>
@@ -576,11 +256,9 @@ function toggle(btn) {
   const isOpen = details.classList.toggle('open');
   btn.textContent = isOpen ? 'Ocultar detalhes' : 'Ver detalhes';
 }
-
 document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
-
 document.getElementById('feedbackForm').addEventListener('submit', function() {
   document.getElementById('successMsg').style.display = 'block';
 });
