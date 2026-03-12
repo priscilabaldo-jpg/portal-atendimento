@@ -2,364 +2,531 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Materiais - CX Resolve</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materiais – CX Resolve</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 
-body{
-  margin:0;
-  font-family:'Segoe UI',Arial,sans-serif;
-  background:linear-gradient(135deg,#002D32,#004D54,#00383E);
-  color:white;
+:root {
+  --verde1: #002D32;
+  --verde2: #005A64;
+  --azul:   #4CDDDD;
+  --verde3: #6FFFAF;
+  --verde4: #CEFFAE;
+  --amarelo:#FFCE00;
+  --glass:  rgba(255,255,255,0.06);
+  --glass-border: rgba(255,255,255,0.10);
 }
 
-/* BOTÃO VOLTAR */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.botao-voltar{
-position:fixed;
-top:20px;
-left:20px;
-width:45px;
-height:45px;
-display:flex;
-align-items:center;
-justify-content:center;
-background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
-color:#002D32;
-border-radius:50%;
-font-size:20px;
-font-weight:bold;
-text-decoration:none;
-box-shadow:0 5px 15px rgba(0,0,0,0.4);
-z-index:999;
-transition:0.3s;
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--verde1);
+  color: white;
+  min-height: 100vh;
 }
 
-.botao-voltar:hover{
-transform:scale(1.1);
+.bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 10% 20%, rgba(76,221,221,0.1) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 70%, rgba(111,255,175,0.07) 0%, transparent 55%),
+    linear-gradient(160deg, #002D32 0%, #005A64 55%, #002D32 100%);
 }
 
 /* HEADER */
-
-header{
-  background:rgba(0,90,100,0.85);
-  backdrop-filter:blur(10px);
-  padding:18px 25px;
-  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(0,45,50,0.82);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
 }
 
-.menu-container{
-  max-width:1200px;
-  margin:0 auto;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.header-inner {
+  max-width: 1240px;
+  margin: auto;
+  padding: 0 28px;
+  height: 66px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.menu-container h1{
-  font-size:20px;
-  margin:0;
+.header-logo { height: 28px; filter: brightness(0) invert(1); }
+
+nav ul { list-style: none; display: flex; align-items: center; gap: 8px; }
+
+nav a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 50px;
+  transition: all 0.2s;
 }
 
-nav ul{
-  list-style:none;
-  display:flex;
-  gap:20px;
-  margin:0;
-  padding:0;
-  align-items:center;
+nav a:hover, nav a.active { color: white; background: var(--glass); }
+
+.logout-btn {
+  padding: 8px 20px;
+  border: 1.5px solid var(--amarelo);
+  border-radius: 50px;
+  background: transparent;
+  color: var(--amarelo);
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-nav a{
-  color:white;
-  text-decoration:none;
-  font-weight:500;
-  transition:0.3s;
+.logout-btn:hover { background: var(--amarelo); color: var(--verde1); }
+
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; }
+.hamburger span { display: block; width: 24px; height: 2px; background: white; border-radius: 2px; }
+
+.mobile-menu {
+  display: none;
+  position: fixed;
+  top: 66px;
+  left: 0; right: 0;
+  background: rgba(0,45,50,0.97);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 20px 28px;
+  z-index: 99;
+  flex-direction: column;
+  gap: 8px;
 }
 
-nav a:hover{
-  opacity:0.7;
+.mobile-menu.open { display: flex; }
+.mobile-menu a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 16px; padding: 12px 0; border-bottom: 1px solid var(--glass-border); }
+.mobile-menu .logout-btn { margin-top: 8px; width: fit-content; }
+
+/* MAIN */
+#materiais-content { display: none; position: relative; z-index: 5; }
+
+.container {
+  max-width: 1240px;
+  margin: auto;
+  padding: 52px 28px 100px;
 }
 
-.logout-btn{
-  padding:8px 18px;
-  border:none;
-  border-radius:20px;
-  background:#FFCE00;
-  font-weight:bold;
-  cursor:pointer;
-  color:#002D32;
+.page-header {
+  margin-bottom: 44px;
+  animation: fadeUp 0.5s ease both;
 }
 
-/* CONTAINER */
-
-.container{
-  padding:60px 20px;
-  max-width:1200px;
-  margin:0 auto;
+.page-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
+  line-height: 1.1;
 }
 
-h1{
-  font-size:28px;
-  margin-bottom:40px;
+.page-header h1 span { color: var(--azul); }
+
+.page-header p {
+  font-size: 14px;
+  opacity: 0.45;
+  margin-top: 8px;
+}
+
+/* FILTROS */
+.filtros {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 36px;
+  animation: fadeUp 0.5s ease 0.1s both;
+}
+
+.filtro-btn {
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: rgba(255,255,255,0.65);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filtro-btn:hover, .filtro-btn.active {
+  background: var(--azul);
+  border-color: var(--azul);
+  color: var(--verde1);
+  font-weight: 600;
 }
 
 /* GRID */
-
-.materiais-container{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:30px;
+.materiais-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
 }
 
-/* CARDS */
-
-.card{
-  background:rgba(255,255,255,0.08);
-  backdrop-filter:blur(15px);
-  border-radius:25px;
-  padding:30px;
-  text-align:center;
-  transition:all 0.4s ease;
-  border:1px solid rgba(255,255,255,0.1);
+.card {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 22px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: all 0.3s ease;
+  animation: fadeUp 0.5s ease both;
+  position: relative;
+  overflow: hidden;
 }
 
-.card:hover{
-  transform:translateY(-10px);
-  box-shadow:0 20px 40px rgba(0,0,0,0.4);
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(76,221,221,0.04), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-.card h3{
-  font-size:20px;
-  margin-bottom:15px;
+.card:hover {
+  border-color: rgba(76,221,221,0.3);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.35);
 }
 
-.card p{
-  font-size:14px;
-  margin-bottom:15px;
+.card:hover::before { opacity: 1; }
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.card a{
-  display:inline-block;
-  background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
-  color:#002D32;
-  padding:10px 20px;
-  border-radius:30px;
-  text-decoration:none;
-  font-weight:bold;
-  transition:0.3s;
+.card-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(76,221,221,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
 
-.card a:hover{
-  transform:scale(1.05);
+.badge {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 50px;
 }
 
-/* LOGO FIXA */
-
-.logo-fixo{
-  position:fixed;
-  bottom:25px;
-  left:25px;
-  width:110px;
-  opacity:0.6;
-  transition:0.3s;
+.badge.guia { background: rgba(76,221,221,0.15); color: var(--azul); }
+.badge.passo { background: rgba(111,255,175,0.15); color: var(--verde3); }
+.badge.treinamento { background: rgba(255,206,0,0.15); color: var(--amarelo); }
+.badge.novo {
+  background: var(--verde3);
+  color: var(--verde1);
+  animation: pulseGreen 2s infinite;
 }
 
-.logo-fixo:hover{
-  opacity:1;
+.card h3 {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
 }
 
-/* RODAPÉ */
-
-footer{
-  margin-top:80px;
-  padding:40px 20px;
-  background:rgba(0,0,0,0.25);
-  backdrop-filter:blur(15px);
-  border-top:1px solid rgba(255,255,255,0.1);
+.card p {
+  font-size: 13px;
+  opacity: 0.45;
+  flex: 1;
 }
 
-.footer-container{
-  max-width:1200px;
-  margin:0 auto;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-  gap:30px;
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--azul), #2bbbbb);
+  color: var(--verde1);
+  padding: 10px 20px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  width: fit-content;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.footer-col h4{
-  margin-bottom:15px;
-  font-size:16px;
-  font-weight:600;
+.card-link:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(76,221,221,0.35);
 }
 
-.footer-col p,
-.footer-col a{
-  font-size:14px;
-  opacity:0.8;
-  text-decoration:none;
-  color:white;
-  display:block;
-  margin-bottom:8px;
-  transition:0.3s;
+/* FOOTER */
+footer {
+  position: relative;
+  z-index: 5;
+  margin-top: 80px;
+  padding: 48px 28px;
+  background: rgba(0,0,0,0.3);
+  border-top: 1px solid var(--glass-border);
 }
 
-.footer-col a:hover{
-  opacity:1;
-  transform:translateX(5px);
+.footer-inner {
+  max-width: 1240px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 36px;
 }
 
-.footer-bottom{
-  margin-top:30px;
-  text-align:center;
-  font-size:13px;
-  opacity:0.6;
+.footer-col h4 {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--azul);
+  margin-bottom: 16px;
 }
 
-#materiais-content{
-  display:none;
+.footer-col p, .footer-col a {
+  font-size: 13px;
+  opacity: 0.55;
+  color: white;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
+  transition: opacity 0.2s;
+}
+
+.footer-col a:hover { opacity: 1; }
+
+.footer-logo { height: 22px; filter: brightness(0) invert(1); opacity: 0.4; margin-bottom: 14px; }
+
+.footer-bottom {
+  max-width: 1240px;
+  margin: 32px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--glass-border);
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.35;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(111,255,175,0.4); }
+  50% { box-shadow: 0 0 0 5px rgba(111,255,175,0); }
+}
+
+@media (max-width: 680px) {
+  nav ul { display: none; }
+  .hamburger { display: flex; }
 }
 
 </style>
 </head>
-
 <body>
 
-<a href="index.html" class="botao-voltar">⬅</a>
+<div class="bg-layer"></div>
 
 <div id="materiais-content">
 
-<header>
-  <div class="menu-container">
-    <h1>Materiais</h1>
+  <header>
+    <div class="header-inner">
+      <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="materiais.html" class="active">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
 
-    <nav>
-      <ul>
-        <li><a href="index.html">Início</a></li>
-        <li><a href="materiais.html">Materiais</a></li>
-        <li><a href="informativos.html">Informativos</a></li>
-        <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-      </ul>
-    </nav>
-
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-</header>
 
-<div class="container">
+  <div class="container">
 
-<div class="materiais-container">
+    <div class="page-header">
+      <h1>Materiais de <span>Apoio</span></h1>
+      <p>Guias, fluxos e documentações do time de atendimento</p>
+    </div>
 
-<div class="card">
-<h3>Book de Atendimento N1,N2,N3</h3>
-<p>Guia rápido para consultas.</p>
-<a href="https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing" target="_blank">Abrir Documento</a>
+    <div class="filtros">
+      <button class="filtro-btn active" onclick="filtrar(this,'todos')">Todos</button>
+      <button class="filtro-btn" onclick="filtrar(this,'guia')">Guias</button>
+      <button class="filtro-btn" onclick="filtrar(this,'passo')">Passo a passo</button>
+      <button class="filtro-btn" onclick="filtrar(this,'treinamento')">Treinamento</button>
+    </div>
+
+    <div class="materiais-grid" id="materiaisGrid">
+
+      <div class="card" data-cat="guia" style="animation-delay:0.05s">
+        <div class="card-top">
+          <div class="card-icon">📖</div>
+          <span class="badge guia">Guia</span>
+        </div>
+        <h3>Book de Atendimento N1, N2, N3</h3>
+        <p>Guia rápido para consultas de atendimento em todos os níveis.</p>
+        <a class="card-link" href="https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="passo" style="animation-delay:0.1s">
+        <div class="card-top">
+          <div class="card-icon">🔄</div>
+          <span class="badge passo">Passo a passo</span>
+        </div>
+        <h3>Fluxo de Pedido não faturado</h3>
+        <p>Procedimento completo para pedidos pendentes de faturamento.</p>
+        <a class="card-link" href="https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="passo" style="animation-delay:0.15s">
+        <div class="card-top">
+          <div class="card-icon">📦</div>
+          <span class="badge passo">Passo a passo</span>
+        </div>
+        <h3>Como consultar pedido na BoxLink</h3>
+        <p>Passo a passo completo para consulta de pedidos na plataforma.</p>
+        <a class="card-link" href="https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="passo" style="animation-delay:0.2s">
+        <div class="card-top">
+          <div class="card-icon">🛒</div>
+          <span class="badge passo">Passo a passo</span>
+        </div>
+        <h3>Como usar a Uappi</h3>
+        <p>Guia de uso completo da plataforma de vendas Uappi.</p>
+        <a class="card-link" href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="passo" style="animation-delay:0.25s">
+        <div class="card-top">
+          <div class="card-icon">🔍</div>
+          <span class="badge passo">Passo a passo</span>
+        </div>
+        <h3>Como realizar consulta na FUP</h3>
+        <p>Passo a passo para consultas no sistema FUP.</p>
+        <a class="card-link" href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="guia" style="animation-delay:0.3s">
+        <div class="card-top">
+          <div class="card-icon">🔄</div>
+          <span class="badge guia">Guia</span>
+        </div>
+        <h3>Troca de titularidade p/ Marketplace</h3>
+        <p>O que é e como realizar troca de titularidade em marketplaces.</p>
+        <a class="card-link" href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link" target="_blank">Abrir documento ↗</a>
+      </div>
+
+      <div class="card" data-cat="treinamento" style="animation-delay:0.35s">
+        <div class="card-top">
+          <div class="card-icon">💡</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="badge treinamento">Treinamento</span>
+            <span class="badge novo">Novo</span>
+          </div>
+        </div>
+        <h3>Mudanças do CRM Intergrall 05.02.2026</h3>
+        <p>Guia de consulta sobre as atualizações recentes do CRM.</p>
+        <a class="card-link" href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing" target="_blank">Abrir documento ↗</a>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="footer-logo" alt="Leveros">
+        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <a href="index.html">Início</a>
+        <a href="materiais.html">Materiais</a>
+        <a href="informativos.html">Informativos</a>
+      </div>
+      <div class="footer-col">
+        <h4>Gestão</h4>
+        <p>Responsável: Priscila Baldo</p>
+        <p>Customer Experience</p>
+        <p>Leveros</p>
+      </div>
+    </div>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
 </div>
-
-<div class="card">
-<h3>Fluxo de Pedido não faturado</h3>
-<p>Conteúdo de treinamento.</p>
-<a href="https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link" target="_blank">Abrir Documento</a>
-</div>
-
-<div class="card">
-<h3>Como consultar pedido na BoxLink</h3>
-<p>Passo a passo completo.</p>
-<a href="https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link" target="_blank">Abrir Documento</a>
-</div>
-
-<div class="card">
-<h3>Como usar a Uappi</h3>
-<p>Passo a passo completo.</p>
-<a href="https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link">Abrir Documento</a>
-</div>
-
-<div class="card">
-<h3>Como realizar consulta na FUP</h3>
-<p>Passo a passo completo.</p>
-<a href="https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link">Abrir Documento</a>
-</div>
-
-<div class="card">
-<h3>O que é Troca de titularidade p/ Marketplace</h3>
-<p>Guia de consulta.</p>
-<a href="https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link">Abrir Documento</a>
-</div>
-
-<div class="card">
-<h3>Mudanças do CRM Intergrall 05.02.2026</h3>
-<p>Guia de consulta.</p>
-<a href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing">Abrir Documento</a>
-</div>
-
-</div>
-</div>
-
-<footer>
-
-<div class="footer-container">
-
-<div class="footer-col">
-<h4>CX Resolve</h4>
-<p>Portal interno de apoio ao time de Atendimento.</p>
-<p>Centralização de materiais e treinamentos.</p>
-</div>
-
-<div class="footer-col">
-<h4>Navegação</h4>
-<a href="index.html">Início</a>
-<a href="materiais.html">Materiais</a>
-<a href="informativos.html">Informativos</a>
-</div>
-
-<div class="footer-col">
-<h4>Gestão</h4>
-<p>Responsável: Priscila Baldo</p>
-<p>Customer Experience</p>
-<p>Leveros</p>
-</div>
-
-</div>
-
-<div class="footer-bottom">
-© <span id="anoAtual"></span> CX Resolve • Todos os direitos reservados
-</div>
-
-</footer>
-
-</div>
-
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
 
 <script>
-document.getElementById("anoAtual").textContent=new Date().getFullYear();
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+
+function filtrar(btn, cat) {
+  document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(card => {
+    card.style.display = (cat === 'todos' || card.dataset.cat === cat) ? 'flex' : 'none';
+  });
+}
+
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('open');
+});
 </script>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth,onAuthStateChanged,signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-authDomain:"portal-atendimento-541ae.firebaseapp.com",
-projectId:"portal-atendimento-541ae"
+const firebaseConfig = {
+  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+  authDomain:"portal-atendimento-541ae.firebaseapp.com",
+  projectId:"portal-atendimento-541ae"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-onAuthStateChanged(auth,user=>{
-if(user && user.email.endsWith("@leveros.com.br")){
-document.getElementById("materiais-content").style.display="block";
-}else{
-window.location.href="index.html";
-}
+onAuthStateChanged(auth, user => {
+  if (user && user.email.endsWith('@leveros.com.br')) {
+    document.getElementById('materiais-content').style.display = 'block';
+  } else {
+    window.location.href = 'index.html';
+  }
 });
 
-document.getElementById("logoutBtn").addEventListener("click",async()=>{
-await signOut(auth);
-});
-
+const logout = () => signOut(auth).then(() => window.location.href = 'index.html');
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
 
 </body>
