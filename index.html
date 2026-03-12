@@ -105,12 +105,13 @@ color:white;
 
 .resultados{
 position:absolute;
-top:50px;
+top:55px;
 width:100%;
 max-width:450px;
 background:#002D32;
 border-radius:10px;
 display:none;
+box-shadow:0 10px 20px rgba(0,0,0,0.4);
 }
 
 .resultado{
@@ -121,6 +122,12 @@ border-bottom:1px solid rgba(255,255,255,0.1);
 .resultado a{
 color:white;
 text-decoration:none;
+display:block;
+}
+
+.resultado small{
+opacity:0.7;
+font-size:12px;
 }
 
 /* GRID */
@@ -213,7 +220,7 @@ Entrar com Google
 
 <div class="search-box">
 
-<input type="text" id="busca" placeholder="Buscar sistema ou material">
+<input type="text" id="busca" placeholder="🔎 Buscar sistema, material ou informativo">
 
 <div id="resultados" class="resultados"></div>
 
@@ -221,9 +228,9 @@ Entrar com Google
 
 <div class="banner">
 
-<div class="recado active">Treinamento CX 09/03</div>
-<div class="recado">Atualização de metas disponível</div>
-<div class="recado">Pesquisa de satisfação do time</div>
+<div class="recado active">🔔 Treinamento CX dia 09/03</div>
+<div class="recado">📢 Atualização de metas disponível</div>
+<div class="recado">📝 Pesquisa de satisfação do time</div>
 
 </div>
 
@@ -257,16 +264,31 @@ Entrar com Google
 
 <script>
 
-/* DADOS DA BUSCA */
+/* BASE DA BUSCA GLOBAL */
 
 const dados=[
 
-{nome:"GLPI",link:"https://glpi.leveros.com.br"},
-{nome:"Uappi",link:"https://www.vendas.leveros.com.br"},
-{nome:"BoxLink",link:"https://matriz.boxlink.com.br/home"},
-{nome:"Intergrall",link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
-{nome:"Materiais de Treinamento",link:"materiais.html"},
-{nome:"Informativos do Atendimento",link:"informativos.html"}
+/* SISTEMAS */
+
+{nome:"GLPI",categoria:"Sistema",link:"https://glpi.leveros.com.br"},
+{nome:"Uappi",categoria:"Sistema",link:"https://www.vendas.leveros.com.br"},
+{nome:"BoxLink",categoria:"Sistema",link:"https://matriz.boxlink.com.br/home"},
+{nome:"Intergrall",categoria:"Sistema",link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
+
+/* MATERIAIS */
+
+{nome:"Book de Atendimento N1 N2 N3",categoria:"Material",link:"materiais.html"},
+{nome:"Fluxo de Pedido não faturado",categoria:"Material",link:"materiais.html"},
+{nome:"Como consultar pedido na BoxLink",categoria:"Material",link:"materiais.html"},
+{nome:"Como usar a Uappi",categoria:"Material",link:"materiais.html"},
+{nome:"Consulta na FUP",categoria:"Material",link:"materiais.html"},
+
+/* INFORMATIVOS */
+
+{nome:"Meta NPS BOT URA",categoria:"Informativo",link:"informativos.html"},
+{nome:"Meta G&A",categoria:"Informativo",link:"informativos.html"},
+{nome:"Banco de Horas",categoria:"Informativo",link:"informativos.html"},
+{nome:"Taxa Reversa",categoria:"Informativo",link:"informativos.html"}
 
 ];
 
@@ -275,7 +297,6 @@ const dados=[
 document.getElementById("busca").addEventListener("keyup",function(){
 
 let texto=this.value.toLowerCase();
-
 let resultados=document.getElementById("resultados");
 
 resultados.innerHTML="";
@@ -289,18 +310,31 @@ return;
 
 let encontrados=dados.filter(item=>item.nome.toLowerCase().includes(texto));
 
+if(encontrados.length===0){
+
+resultados.innerHTML="<div class='resultado'>Nenhum resultado encontrado</div>";
+
+}else{
+
 encontrados.forEach(item=>{
 
 resultados.innerHTML+=
-`<div class="resultado"><a href="${item.link}">${item.nome}</a></div>`;
+`<div class="resultado">
+<a href="${item.link}">
+<strong>${item.nome}</strong><br>
+<small>${item.categoria}</small>
+</a>
+</div>`;
 
 });
+
+}
 
 resultados.style.display="block";
 
 });
 
-/* BANNER */
+/* BANNER ROTATIVO */
 
 const recados=document.querySelectorAll(".recado");
 
@@ -329,17 +363,13 @@ from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 const firebaseConfig={
 
 apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-
 authDomain:"portal-atendimento-541ae.firebaseapp.com",
-
 projectId:"portal-atendimento-541ae"
 
 };
 
 const app=initializeApp(firebaseConfig);
-
 const auth=getAuth(app);
-
 const provider=new GoogleAuthProvider();
 
 onAuthStateChanged(auth,user=>{
@@ -347,16 +377,14 @@ onAuthStateChanged(auth,user=>{
 if(user && user.email.endsWith("@leveros.com.br")){
 
 document.getElementById("login-area").style.display="none";
-
 document.getElementById("conteudo").style.display="block";
 
 document.getElementById("welcomeUser").innerHTML=
-"Olá "+user.displayName;
+"Olá "+user.displayName+" 👋";
 
 }else{
 
 document.getElementById("login-area").style.display="flex";
-
 document.getElementById("conteudo").style.display="none";
 
 }
@@ -364,92 +392,14 @@ document.getElementById("conteudo").style.display="none";
 });
 
 document.getElementById("loginBtn").onclick=()=>{
-
 signInWithPopup(auth,provider);
-
 };
 
 document.getElementById("logoutBtn").onclick=()=>{
-
 signOut(auth);
-
 };
 
 </script>
-<script>
 
-const dadosBusca = [
-
-/* SISTEMAS */
-
-{ nome:"GLPI", link:"https://glpi.leveros.com.br" },
-{ nome:"Uappi", link:"https://www.vendas.leveros.com.br" },
-{ nome:"BoxLink", link:"https://matriz.boxlink.com.br/home" },
-{ nome:"Intergrall", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php" },
-{ nome:"Assertiva", link:"https://painel.assertivasolucoes.com.br/login" },
-{ nome:"Senior", link:"https://platform.senior.com.br/senior-x/#/" },
-
-/* MATERIAIS */
-
-{ nome:"Book de Atendimento N1 N2 N3", link:"materiais.html" },
-{ nome:"Fluxo de Pedido não faturado", link:"materiais.html" },
-{ nome:"Como consultar pedido na BoxLink", link:"materiais.html" },
-{ nome:"Como usar a Uappi", link:"materiais.html" },
-{ nome:"Consulta na FUP", link:"materiais.html" },
-{ nome:"Troca de titularidade Marketplace", link:"materiais.html" },
-{ nome:"Mudanças do CRM Intergrall", link:"materiais.html" },
-
-/* INFORMATIVOS */
-
-{ nome:"Meta NPS BOT URA", link:"informativos.html" },
-{ nome:"Meta G&A", link:"informativos.html" },
-{ nome:"Meta Trocas e Devoluções", link:"informativos.html" },
-{ nome:"Meta GPTW", link:"informativos.html" },
-{ nome:"Marketplaces +90 dias", link:"informativos.html" },
-{ nome:"Banco de Horas", link:"informativos.html" },
-{ nome:"Taxa Reversa", link:"informativos.html" },
-{ nome:"Conciliações Marketplaces", link:"informativos.html" }
-
-];
-
-const campoBusca = document.getElementById("busca");
-const resultados = document.getElementById("resultados");
-
-campoBusca.addEventListener("keyup", function(){
-
-let texto = this.value.toLowerCase();
-resultados.innerHTML = "";
-
-if(texto.length < 2){
-resultados.style.display="none";
-return;
-}
-
-let encontrados = dadosBusca.filter(item =>
-item.nome.toLowerCase().includes(texto)
-);
-
-if(encontrados.length === 0){
-resultados.innerHTML = "<div class='resultado'>Nenhum resultado encontrado</div>";
-}else{
-
-encontrados.forEach(item => {
-
-resultados.innerHTML += `
-<div class="resultado">
-<a href="${item.link}">${item.nome}</a>
-</div>
-`;
-
-});
-
-}
-
-resultados.style.display="block";
-
-});
-
-</script>
 </body>
 </html>
-
