@@ -12,7 +12,34 @@ body{
   color:white;
 }
 
+/* BOTÃO VOLTAR */
+
+.botao-voltar{
+position:fixed;
+top:20px;
+left:20px;
+width:45px;
+height:45px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:linear-gradient(135deg,#4CDDDD,#2bbbbb);
+color:#002D32;
+border-radius:50%;
+font-size:20px;
+font-weight:bold;
+text-decoration:none;
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+z-index:999;
+transition:0.3s;
+}
+
+.botao-voltar:hover{
+transform:scale(1.1);
+}
+
 /* HEADER */
+
 header{
   background:rgba(0,90,100,0.85);
   backdrop-filter:blur(10px);
@@ -59,6 +86,7 @@ nav a:hover{opacity:0.7;}
 }
 
 /* CONTAINER */
+
 .container{
   padding:60px 20px;
   max-width:1200px;
@@ -72,6 +100,7 @@ nav a:hover{opacity:0.7;}
 }
 
 /* GRID */
+
 .informativos-container{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
@@ -79,6 +108,7 @@ nav a:hover{opacity:0.7;}
 }
 
 /* CARDS */
+
 .card{
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(15px);
@@ -131,6 +161,7 @@ nav a:hover{opacity:0.7;}
 }
 
 /* FOOTER */
+
 .footer-section{
   margin-top:80px;
   padding:50px 20px;
@@ -187,10 +218,13 @@ nav a:hover{opacity:0.7;}
 }
 
 #informativos-content{display:none;}
+
 </style>
 </head>
 
 <body>
+
+<a href="index.html" class="botao-voltar">⬅</a>
 
 <div id="informativos-content">
 
@@ -208,181 +242,4 @@ nav a:hover{opacity:0.7;}
   </div>
 </header>
 
-<div class="container">
-
-<!-- METAS OPERACIONAIS – 3 -->
-<div class="section-title">Metas Operacionais – Canal Atendimento</div>
-
-<div class="informativos-container">
-
-  <div class="card">
-    <h3>📊 NPS BOT + URA</h3>
-    <div class="meta-highlight">Meta: 75%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Índice de satisfação após atendimento via URA e BOT.  
-      Contribuímos com atendimento claro, seguro e objetivo.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>💸 G&A</h3>
-    <div class="meta-highlight">Meta Temporada: R$ 3.696.813</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Controle de despesas da operação (folha, estrutura, benefícios, tecnologia).  
-      Redução de falhas evita impacto financeiro.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>📦 Trocas & Devoluções (T&D)</h3>
-    <div class="meta-highlight">
-      Geral 1,95% (70%)<br>
-      Pós Vendas 0,02% (15%)<br>
-      Exceções 0,23% (15%)
-    </div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Meta proporcional ao faturamento.  
-      Redução de erros operacionais e retenção eficiente impactam diretamente.
-    </div>
-  </div>
-
-</div>
-
-<!-- METAS COMPARTILHADAS – 6 -->
-<div class="section-title" style="margin-top:70px;">Metas Compartilhadas – Temporada 25/26</div>
-
-<div class="informativos-container">
-
-  <div class="card">
-    <h3>🏆 GPTW</h3>
-    <div class="meta-highlight">Manter selo GPTW</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Responder a pesquisa com visão ampla do período avaliado, contribuindo para manutenção da certificação.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>🛒 Marketplaces +90 dias</h3>
-    <div class="meta-highlight">Meta: R$ 0,00</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Zerar valores pendentes há mais de 90 dias via conciliações e tratativas nas plataformas.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>📦 Defeito Fabricante</h3>
-    <div class="meta-highlight">Zerar saldo anterior a 2025</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Regularizar volumes classificados como defeito fabricante nos CDs 1021 e 1019.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>⏱ Banco de Horas</h3>
-    <div class="meta-highlight">Saldo zerado</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Gestão eficiente junto à liderança para manter equilíbrio entre horas positivas e negativas.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>🔁 Taxa Reversa</h3>
-    <div class="meta-highlight">3,57%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Controle de volumes devolvidos ao CD dentro do percentual máximo permitido.
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>💰 Conciliações Marketplaces</h3>
-    <div class="meta-highlight">Recuperar 60%</div>
-    <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
-    <div class="details">
-      Recuperar valores respeitando o limite de perda orçado de R$ 76.000,00.
-    </div>
-  </div>
-
-</div>
-
-<!-- RODAPÉ -->
-<div class="footer-section">
-
-<div class="feedback-container">
-
-<div class="success-message" id="successMsg">
-✅ Sugestão enviada com sucesso!
-</div>
-
-<h3>Sugestões de Melhoria 💡</h3>
-
-<form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
-<input type="hidden" name="_captcha" value="false">
-<input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-
-<input type="text" name="nome" placeholder="Seu nome" required>
-<input type="email" name="email" placeholder="Seu e-mail" required>
-<textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão..." required></textarea>
-
-<button type="submit">Enviar Sugestão</button>
-</form>
-
-</div>
-
-<div class="footer-bottom">
-© 2026 CX Resolve | Portal Interno Atendimento
-</div>
-
-</div>
-
-</div>
-
-<img src="AF_MARCA_RGB_NEGATIVA-01.png" class="logo-fixo">
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-authDomain:"portal-atendimento-541ae.firebaseapp.com",
-projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-onAuthStateChanged(auth,user=>{
-if(user && user.email.endsWith("@leveros.com.br")){
-document.getElementById("informativos-content").style.display="block";
-}else{
-window.location.href="index.html";
-}
-});
-
-document.getElementById("logoutBtn").addEventListener("click",async()=>{
-await signOut(auth);
-});
-
-document.getElementById("feedbackForm").addEventListener("submit",function(){
-document.getElementById("successMsg").style.display="block";
-});
-</script>
-
-<script>
-function toggle(button){
-const details = button.nextElementSibling;
-details.style.display = details.style.display === "block" ? "none" : "block";
-button.innerText = details.style.display === "block" ? "Ocultar detalhes" : "Ver detalhes";
-}
-</script>
-
-</body>
-</html>
+<!-- TODO O RESTO DO SEU CÓDIGO CONTINUA IGUAL -->
