@@ -1,252 +1,280 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CX Resolve – Portal de Atendimento</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CX Resolve – Portal de Atendimento</title>
 
-<style>
-/* (SEU CSS NÃO FOI ALTERADO – mantive exatamente igual) */
-:root {
-  --verde1: #002D32;
-  --verde2: #005A64;
-  --azul: #4CDDDD;
-  --verde3: #6FFFAF;
-  --amarelo:#FFCE00;
-  --glass: rgba(255,255,255,0.05);
-  --glass-border: rgba(255,255,255,0.09);
-  --font: Verdana, Geneva, Tahoma, sans-serif;
-}
+  <style>
+    :root {
+      --verde1: #002D32;
+      --verde2: #005A64;
+      --azul: #4CDDDD;
+      --verde3: #6FFFAF;
+      --amarelo: #FFCE00;
+      --glass: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.09);
+      --font: Verdana, Geneva, Tahoma, sans-serif;
+    }
 
-/* ... (mantive todo seu CSS igual, pode deixar como está) */
-</style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--verde1);
+      color: white;
+      min-height: 100vh;
+      font-size: 13px;
+    }
+
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(76, 221, 221, 0.08), transparent 60%),
+        radial-gradient(circle at 80% 80%, rgba(111, 255, 175, 0.06), transparent 60%),
+        linear-gradient(160deg, #002D32, #004A52, #002D32);
+    }
+
+    /* LOGIN */
+    #login-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-card {
+      background: rgba(0, 80, 90, 0.3);
+      border: 1px solid var(--glass-border);
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .login-logo {
+      width: 140px;
+      margin-bottom: 20px;
+      filter: brightness(0) invert(1);
+    }
+
+    .login-btn {
+      margin-top: 20px;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      background: var(--azul);
+      color: var(--verde1);
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* HEADER */
+    header {
+      background: rgba(0, 40, 46, 0.9);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    nav a {
+      color: white;
+      margin-right: 10px;
+      text-decoration: none;
+    }
+
+    .logout-btn {
+      border: 1px solid var(--amarelo);
+      background: transparent;
+      color: var(--amarelo);
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    .section-label {
+      margin: 20px 0 10px;
+      color: var(--azul);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    /* SISTEMAS */
+    .sistema-card {
+      background: var(--glass);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .sistema-btn {
+      background: var(--azul);
+      color: var(--verde1);
+      padding: 5px 10px;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+
+    /* MURAL */
+    .form-aviso textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: white;
+    }
+
+    .btn-publicar {
+      background: var(--azul);
+      border: none;
+      padding: 8px 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .aviso-card {
+      background: var(--glass);
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 6px;
+    }
+
+  </style>
 </head>
 
 <body>
 
-<div class="bg-layer"></div>
+  <div class="bg-layer"></div>
 
-<!-- LOGIN -->
-<div id="login-area">
-  <div class="login-card">
-    <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="login-logo">
-    <h2>CX Resolve</h2>
-    <p>Portal interno do time de atendimento</p>
-
-    <button class="login-btn" id="loginBtn">
-      Entrar com Google
-    </button>
+  <!-- LOGIN -->
+  <div id="login-area">
+    <div class="login-card">
+      <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="login-logo">
+      <h2>CX Resolve</h2>
+      <p>Portal interno do time</p>
+      <button class="login-btn" id="loginBtn">Entrar com Google</button>
+    </div>
   </div>
-</div>
 
-<!-- CONTEÚDO -->
-<div id="conteudo">
+  <!-- CONTEÚDO -->
+  <div id="conteudo" style="display:none;">
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <img src="AF_MARCA_RGB_NEGATIVA-01.png" class="header-logo">
-
+    <header>
+      <div>CX Resolve</div>
       <nav>
-        <ul>
-          <li><a href="index.html" class="active">Início</a></li>
-          <li><a href="materiais.html">Materiais</a></li>
-          <li><a href="informativos.html">Informativos</a></li>
-          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-        </ul>
+        <a href="#">Início</a>
+        <a href="#">Materiais</a>
+        <a href="#">Informativos</a>
+        <button class="logout-btn" id="logoutBtn">Sair</button>
       </nav>
+    </header>
+
+    <div class="container">
+
+      <h2>Olá, <span id="welcomeUser"></span></h2>
+      <p id="welcomeDate"></p>
+
+      <!-- MURAL -->
+      <p class="section-label">Mural</p>
+
+      <div class="form-aviso">
+        <textarea id="textoAviso" placeholder="Digite um aviso"></textarea>
+        <button class="btn-publicar" onclick="publicarAviso()">Publicar</button>
+      </div>
+
+      <div id="avisosLista"></div>
+
+      <!-- SISTEMAS -->
+      <p class="section-label">Sistemas</p>
+
+      <div class="sistema-card">
+        <span>GLPI</span>
+        <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank">Abrir</a>
+      </div>
+
     </div>
-  </header>
-
-  <div class="container">
-
-    <!-- WELCOME -->
-    <h1>Olá, <span id="welcomeUser">bem-vindo</span></h1>
-    <p id="welcomeDate"></p>
-
-    <!-- MURAL -->
-    <h2>Mural de Avisos</h2>
-
-    <button onclick="toggleFormAviso()">Publicar aviso</button>
-
-    <div id="formAviso" style="display:none;">
-      <textarea id="textoAviso"></textarea>
-
-      <select id="catAviso">
-        <option value="informativo">Informativo</option>
-        <option value="urgente">Urgente</option>
-        <option value="treinamento">Treinamento</option>
-        <option value="geral">Geral</option>
-      </select>
-
-      <button onclick="publicarAviso()">Publicar</button>
-    </div>
-
-    <div id="avisosLista"></div>
 
   </div>
-</div>
 
-<script>
+  <script>
+    const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
-/* DATA */
-const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+    const agora = new Date();
 
-const agora = new Date();
+    document.getElementById('welcomeDate').textContent =
+      `${dias[agora.getDay()]}, ${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
 
-document.getElementById('welcomeDate').textContent =
-`${dias[agora.getDay()]}, ${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
-
-
-/* FORM */
-function toggleFormAviso(){
-  const form = document.getElementById('formAviso');
-  form.style.display = form.style.display === 'none' ? 'block' : 'none';
-}
-
-
-/* EMOJIS */
-const EMOJIS = {
-  urgente:'🚨',
-  informativo:'📋',
-  treinamento:'📚',
-  geral:'📌'
-};
-
-
-/* SEGURANÇA */
-function escapeHTML(str){
-  return str.replace(/[&<>"']/g, m => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  })[m]);
-}
-
-
-/* RENDER */
-function renderAvisos(avisos){
-
-  const lista = document.getElementById('avisosLista');
-
-  if(!avisos.length){
-    lista.innerHTML = 'Nenhum aviso';
-    return;
-  }
-
-  lista.innerHTML = avisos.map(a => {
-
-    return `
-      <div class="aviso-card ${a.categoria}">
-        
-        <div class="aviso-body">
-          
-          <div class="aviso-meta">
-            <span>${EMOJIS[a.categoria]}</span>
-            <span>${a.autor || ''}</span>
-          </div>
-
-          <!-- AQUI TAVA FALTANDO -->
-          <div class="aviso-texto">
-            ${escapeHTML(a.texto)}
-          </div>
-
+    function renderAvisos(lista) {
+      const el = document.getElementById('avisosLista');
+      el.innerHTML = lista.map(a => `
+        <div class="aviso-card">
+          ${a.texto}
         </div>
+      `).join('');
+    }
+  </script>
 
-      </div>
-    `;
+  <!-- FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  }).join('');
-}
+    const app = initializeApp({
+      apiKey: "SUA_KEY",
+      authDomain: "SEU_DOMINIO",
+      projectId: "SEU_ID"
+    });
 
-</script>
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
 
-<script type="module">
+    document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+    document.getElementById('logoutBtn').onclick = () => signOut(auth);
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup,
-  onAuthStateChanged, signOut
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        document.getElementById('login-area').style.display = 'none';
+        document.getElementById('conteudo').style.display = 'block';
+        document.getElementById('welcomeUser').textContent = user.displayName.split(' ')[0];
 
-import {
-  getFirestore, collection, addDoc,
-  onSnapshot, query, orderBy, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        onSnapshot(collection(db, 'avisos'), snap => {
+          const lista = snap.docs.map(d => d.data());
+          renderAvisos(lista);
+        });
 
+      } else {
+        document.getElementById('login-area').style.display = 'flex';
+        document.getElementById('conteudo').style.display = 'none';
+      }
+    });
 
-const firebaseConfig = {
-  apiKey:"SUA_KEY",
-  authDomain:"SEU_DOMINIO",
-  projectId:"SEU_ID"
-};
+    window.publicarAviso = async function () {
+      const texto = document.getElementById('textoAviso').value;
+      if (!texto) return;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-
-function carregarAvisos(){
-  const q = query(collection(db, 'avisos'), orderBy('criadoEm','desc'));
-
-  onSnapshot(q, snap => {
-    const avisos = snap.docs.map(d => ({ id:d.id, ...d.data() }));
-    renderAvisos(avisos);
-  });
-}
-
-
-window.publicarAviso = async function(){
-
-  const texto = document.getElementById('textoAviso').value.trim();
-  const cat = document.getElementById('catAviso').value;
-
-  if(!texto) return;
-
-  await addDoc(collection(db, 'avisos'), {
-    texto,
-    categoria: cat,
-    autor: auth.currentUser?.displayName || 'Usuário',
-    criadoEm: serverTimestamp()
-  });
-
-  document.getElementById('textoAviso').value = '';
-};
-
-
-onAuthStateChanged(auth, user => {
-
-  if(user){
-
-    document.getElementById('login-area').style.display = 'none';
-    document.getElementById('conteudo').style.display = 'block';
-
-    document.getElementById('welcomeUser').textContent =
-      user.displayName || 'Usuário';
-
-    carregarAvisos();
-
-  } else {
-
-    document.getElementById('login-area').style.display = 'block';
-    document.getElementById('conteudo').style.display = 'none';
-
-  }
-
-});
-
-
-document.getElementById('loginBtn').onclick =
-  () => signInWithPopup(auth, provider);
-
-document.getElementById('logoutBtn').onclick =
-  () => signOut(auth);
-
-</script>
+      await addDoc(collection(db, 'avisos'), { texto });
+      document.getElementById('textoAviso').value = '';
+    };
+  </script>
 
 </body>
 </html>
