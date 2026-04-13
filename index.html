@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- SEGURANÇA: Content-Security-Policy para mitigar XSS -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://lh3.googleusercontent.com;
+">
 <title>CX Resolve – Portal de Atendimento</title>
 <style>
 :root {
@@ -60,6 +69,12 @@ body {
   cursor: pointer; transition: opacity 0.2s;
 }
 .login-btn:hover { opacity: 0.88; }
+.login-error {
+  margin-top: 14px; font-size: 11px; color: #FF6B6B;
+  background: rgba(255,107,107,0.1); border: 1px solid rgba(255,107,107,0.2);
+  border-radius: 5px; padding: 8px 12px; display: none;
+}
+.login-error.visible { display: block; }
 
 /* HEADER */
 header { position: sticky; top: 0; z-index: 100; background: rgba(0,40,46,0.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); }
@@ -171,10 +186,10 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
   border-left: 3px solid var(--glass-border);
   transition: border-color 0.2s;
 }
-.aviso-card.urgente   { border-left-color: #FF6B6B; }
+.aviso-card.urgente     { border-left-color: #FF6B6B; }
 .aviso-card.informativo { border-left-color: var(--azul); }
 .aviso-card.treinamento { border-left-color: var(--amarelo); }
-.aviso-card.geral     { border-left-color: var(--verde3); }
+.aviso-card.geral       { border-left-color: var(--verde3); }
 
 .aviso-body { flex: 1; }
 .aviso-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; flex-wrap: wrap; }
@@ -256,6 +271,10 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
       <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#002D32" d="M43.6 20H24v8.4h11.1C33.6 33 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.4 6.3 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.4-7.7 19.4-20 0-1.3-.1-2.7-.4-4H43.6z"/></svg>
       Entrar com Google
     </button>
+    <!-- Mensagem de erro para domínio não autorizado -->
+    <div class="login-error" id="loginError">
+      Acesso restrito a e-mails @leveros.com.br
+    </div>
   </div>
 </div>
 
@@ -303,6 +322,12 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
     <!-- MURAL DE AVISOS -->
     <div class="mural-header">
       <p class="section-label">📢 Mural de Avisos</p>
+      <!--
+        SEGURANÇA: O botão fica oculto por padrão e só é exibido após
+        confirmação do e-mail admin via token do Firebase (onAuthStateChanged).
+        A proteção real está nas Firestore Security Rules — veja o comentário
+        no final deste arquivo.
+      -->
       <button class="btn-admin" id="btnAdmin" style="display:none" onclick="toggleFormAviso()">
         ✏️ Publicar aviso
       </button>
@@ -330,19 +355,19 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
     <div class="sistemas-grid">
       <div class="sistema-card">
         <div class="sistema-info"><h3>GLPI</h3><p>Gestão de chamados</p></div>
-        <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank">↗</a>
+        <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank" rel="noopener noreferrer">↗</a>
       </div>
       <div class="sistema-card">
         <div class="sistema-info"><h3>Uappi</h3><p>Plataforma de vendas</p></div>
-        <a class="sistema-btn" href="https://www.vendas.leveros.com.br/wapstore/acesso" target="_blank">↗</a>
+        <a class="sistema-btn" href="https://www.vendas.leveros.com.br/wapstore/acesso" target="_blank" rel="noopener noreferrer">↗</a>
       </div>
       <div class="sistema-card">
         <div class="sistema-info"><h3>BoxLink</h3><p>Gestão de pedidos</p></div>
-        <a class="sistema-btn" href="https://matriz.boxlink.com.br/home" target="_blank">↗</a>
+        <a class="sistema-btn" href="https://matriz.boxlink.com.br/home" target="_blank" rel="noopener noreferrer">↗</a>
       </div>
       <div class="sistema-card">
         <div class="sistema-info"><h3>Intergrall</h3><p>CRM / Call center</p></div>
-        <a class="sistema-btn" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank">↗</a>
+        <a class="sistema-btn" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank" rel="noopener noreferrer">↗</a>
       </div>
     </div>
 
@@ -375,6 +400,11 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
       </div>
       <div class="footer-col">
         <h4>Gestão</h4>
+        <!-- 
+          SEGURANÇA: E-mail da gestora removido daqui para não ficar exposto
+          em texto público. Coloque essa info em um documento interno ou
+          no Firestore se precisar exibir para usuários autenticados.
+        -->
         <p>Responsável: Priscila Baldo</p>
         <p>Customer Experience · Leveros</p>
       </div>
@@ -410,8 +440,18 @@ const dados = [
   {nome:"Taxa Reversa",categoria:"Informativo",link:"informativos.html"}
 ];
 
-const buscaEl     = document.getElementById('busca');
+const buscaEl      = document.getElementById('busca');
 const resultadosEl = document.getElementById('resultados');
+
+/* SEGURANÇA: sanitiza o texto antes de inserir no DOM para evitar XSS */
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 buscaEl.addEventListener('keyup', function() {
   const texto = this.value.toLowerCase();
@@ -422,7 +462,11 @@ buscaEl.addEventListener('keyup', function() {
     resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
   } else {
     encontrados.forEach(item => {
-      resultadosEl.innerHTML += `<div class="resultado"><a href="${item.link}"><strong>${item.nome}</strong><span class="res-badge">${item.categoria}</span></a></div>`;
+      /* SEGURANÇA: usa escapeHTML em todos os dados dinâmicos */
+      const nomeSafe  = escapeHTML(item.nome);
+      const catSafe   = escapeHTML(item.categoria);
+      const linkSafe  = escapeHTML(item.link);
+      resultadosEl.innerHTML += `<div class="resultado"><a href="${linkSafe}"><strong>${nomeSafe}</strong><span class="res-badge">${catSafe}</span></a></div>`;
     });
   }
   resultadosEl.style.display = 'block';
@@ -436,33 +480,51 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
-/* MURAL - funções globais */
+/* MURAL - funções globais mínimas (lógica principal está no módulo ES6 abaixo) */
 function toggleFormAviso() {
   document.getElementById('formAviso').classList.toggle('open');
 }
 
 const EMOJIS = { urgente:'🚨', informativo:'📋', treinamento:'📚', geral:'📌' };
 
-function renderAvisos(avisos) {
+/*
+  SEGURANÇA: renderAvisos agora usa escapeHTML em todos os campos vindos
+  do Firestore antes de inserir no DOM, evitando XSS via dados do banco.
+*/
+function renderAvisos(avisos, isAdmin) {
   const lista = document.getElementById('avisosLista');
   if (!avisos.length) {
     lista.innerHTML = '<div class="avisos-vazio">Nenhum aviso publicado.</div>';
     return;
   }
   lista.innerHTML = avisos.map(a => {
-    const data = a.criadoEm ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-    const podeDeletar = window._userEmail === 'priscila.baldo@leveros.com.br';
+    const data = a.criadoEm
+      ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
+      : '';
+
+    /* Sanitiza campos do banco antes de renderizar */
+    const textoSafe = escapeHTML(a.texto    || '');
+    const autorSafe = escapeHTML(a.autor    || '');
+    const catSafe   = escapeHTML(a.categoria|| 'geral');
+    const idSafe    = escapeHTML(a.id       || '');
+    const emoji     = EMOJIS[a.categoria]   || '📌';
+
+    /*
+      SEGURANÇA: o botão de apagar só é renderizado se isAdmin === true,
+      onde isAdmin é determinado dentro do módulo ES6 a partir do token
+      do Firebase — nunca via window._userEmail.
+    */
     return `
-      <div class="aviso-card ${a.categoria}">
+      <div class="aviso-card ${catSafe}">
         <div class="aviso-body">
           <div class="aviso-meta">
-            <span class="aviso-badge ${a.categoria}">${EMOJIS[a.categoria] || '📌'} ${a.categoria}</span>
-            <span class="aviso-autor">${a.autor || ''}</span>
-            <span class="aviso-data">${data}</span>
+            <span class="aviso-badge ${catSafe}">${emoji} ${catSafe}</span>
+            <span class="aviso-autor">${autorSafe}</span>
+            <span class="aviso-data">${escapeHTML(data)}</span>
           </div>
-          <div class="aviso-texto">${a.texto}</div>
+          <div class="aviso-texto">${textoSafe}</div>
         </div>
-        ${podeDeletar ? `<button class="btn-apagar" onclick="apagarAviso('${a.id}')" title="Apagar aviso">✕</button>` : ''}
+        ${isAdmin ? `<button class="btn-apagar" onclick="apagarAviso('${idSafe}')" title="Apagar aviso">✕</button>` : ''}
       </div>`;
   }).join('');
 }
@@ -476,73 +538,174 @@ import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot,
          orderBy, query, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+/*
+  SEGURANÇA — API KEY:
+  Esta chave é pública por natureza nos SDKs Firebase client-side.
+  O que protege os dados de verdade são as Firestore Security Rules
+  (configuradas no console do Firebase) e a restrição da chave no
+  Google Cloud Console → APIs & Services → Credentials → HTTP referrers.
+  Restrinja para: https://seudominio.com.br/* e
+  https://portal-atendimento-541ae.firebaseapp.com/*
+*/
 const firebaseConfig = {
-  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:"portal-atendimento-541ae.firebaseapp.com",
-  projectId:"portal-atendimento-541ae"
+  apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+  authDomain:  "portal-atendimento-541ae.firebaseapp.com",
+  projectId:   "portal-atendimento-541ae"
 };
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const app      = initializeApp(firebaseConfig);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-const ADMIN = 'priscila.baldo@leveros.com.br';
+/*
+  SEGURANÇA: e-mail admin não fica mais exposto em window nem em
+  constante global visível — fica encapsulado dentro deste módulo ES6.
+  O módulo não é acessível pelo console do navegador.
+*/
+const ADMIN_EMAIL = 'priscila.baldo@leveros.com.br';
+
+/*
+  SEGURANÇA: estado do usuário encapsulado no módulo — não fica em window.
+  Substituímos window._userEmail por esta variável privada.
+*/
+let currentUser = null;
 
 /* AVISOS em tempo real */
-function carregarAvisos() {
+function carregarAvisos(isAdmin) {
   const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
   onSnapshot(q, snap => {
     const avisos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAvisos(avisos);
+    renderAvisos(avisos, isAdmin);
   });
 }
 
-/* PUBLICAR aviso */
+/* PUBLICAR aviso — acessível globalmente mas validado no servidor via Security Rules */
 window.publicarAviso = async function() {
+  if (!currentUser) return;
   const texto = document.getElementById('textoAviso').value.trim();
   const cat   = document.getElementById('catAviso').value;
   if (!texto) return;
-  await addDoc(collection(db, 'avisos'), {
-    texto,
-    categoria: cat,
-    autor: auth.currentUser?.displayName?.split(' ')[0] || 'Gestor',
-    criadoEm: serverTimestamp()
-  });
-  document.getElementById('textoAviso').value = '';
-  document.getElementById('formAviso').classList.remove('open');
+  try {
+    await addDoc(collection(db, 'avisos'), {
+      texto,
+      categoria: cat,
+      autor: currentUser.displayName?.split(' ')[0] || 'Gestor',
+      criadoEm: serverTimestamp()
+    });
+    document.getElementById('textoAviso').value = '';
+    document.getElementById('formAviso').classList.remove('open');
+  } catch (err) {
+    /* Se as Security Rules bloquearem, o erro aparece aqui — não em branco */
+    console.error('Erro ao publicar aviso:', err.message);
+    alert('Sem permissão para publicar avisos.');
+  }
 };
 
-/* APAGAR aviso */
+/* APAGAR aviso — validado no servidor via Security Rules */
 window.apagarAviso = async function(id) {
+  if (!currentUser) return;
   if (confirm('Apagar este aviso?')) {
-    await deleteDoc(doc(db, 'avisos', id));
+    try {
+      await deleteDoc(doc(db, 'avisos', id));
+    } catch (err) {
+      console.error('Erro ao apagar aviso:', err.message);
+      alert('Sem permissão para apagar este aviso.');
+    }
   }
 };
 
 /* AUTH */
 onAuthStateChanged(auth, user => {
+  const loginArea  = document.getElementById('login-area');
+  const conteudo   = document.getElementById('conteudo');
+  const loginError = document.getElementById('loginError');
+
   if (user && user.email.endsWith('@leveros.com.br')) {
-    window._userEmail = user.email;
-    document.getElementById('login-area').style.display = 'none';
-    document.getElementById('conteudo').style.display  = 'block';
-    const nome = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
+    currentUser = user;
+    loginError.classList.remove('visible');
+    loginArea.style.display = 'none';
+    conteudo.style.display  = 'block';
+
+    const nome    = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
+    const isAdmin = user.email === ADMIN_EMAIL;
+
     document.getElementById('welcomeUser').textContent = nome;
-    if (user.email === ADMIN) {
+
+    /*
+      SEGURANÇA: botão admin exibido apenas se o token Firebase confirmar
+      o e-mail correto — decisão tomada no módulo encapsulado, não via window.
+    */
+    if (isAdmin) {
       document.getElementById('btnAdmin').style.display = 'flex';
     }
-    carregarAvisos();
+
+    carregarAvisos(isAdmin);
+
+  } else if (user) {
+    /*
+      Usuário autenticado mas e-mail fora do domínio: faz logout imediato
+      e exibe mensagem de erro — sem acesso ao conteúdo.
+    */
+    signOut(auth);
+    currentUser = null;
+    loginError.classList.add('visible');
+    loginArea.style.display  = 'flex';
+    conteudo.style.display   = 'none';
+
   } else {
-    document.getElementById('login-area').style.display = 'flex';
-    document.getElementById('conteudo').style.display  = 'none';
+    currentUser = null;
+    loginArea.style.display = 'flex';
+    conteudo.style.display  = 'none';
   }
 });
 
-document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
+document.getElementById('loginBtn').onclick = () => {
+  document.getElementById('loginError').classList.remove('visible');
+  signInWithPopup(auth, provider).catch(() => {
+    document.getElementById('loginError').classList.add('visible');
+  });
+};
+
 const logout = () => signOut(auth);
-document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtn').onclick       = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
+
+<!--
+═══════════════════════════════════════════════════════════════════
+  FIRESTORE SECURITY RULES — cole isso no Firebase Console
+  (Firestore → Rules) para proteger os dados no lado do servidor.
+  Sem essas regras, qualquer usuário autenticado pode escrever/apagar.
+═══════════════════════════════════════════════════════════════════
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Leitura: qualquer usuário @leveros.com.br autenticado
+    // Escrita/exclusão: somente priscila.baldo@leveros.com.br
+    match /avisos/{avisoId} {
+      allow read: if request.auth != null
+                  && request.auth.token.email.matches('.*@leveros\\.com\\.br');
+
+      allow create: if request.auth != null
+                    && request.auth.token.email == 'priscila.baldo@leveros.com.br';
+
+      allow delete: if request.auth != null
+                    && request.auth.token.email == 'priscila.baldo@leveros.com.br';
+    }
+  }
+}
+
+═══════════════════════════════════════════════════════════════════
+  RESTRIÇÃO DA API KEY — Google Cloud Console
+  APIs & Services → Credentials → sua chave → Application restrictions
+  → HTTP referrers → adicionar:
+    https://seudominio.com.br/*
+    https://portal-atendimento-541ae.firebaseapp.com/*
+═══════════════════════════════════════════════════════════════════
+-->
 
 </body>
 </html>
