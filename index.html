@@ -553,27 +553,23 @@ const firebaseConfig = {
   authDomain:  "portal-atendimento-541ae.firebaseapp.com",
   projectId:   "portal-atendimento-541ae"
 };
-
 const app      = initializeApp(firebaseConfig);
-const auth      = getAuth(app);
-const db        = getFirestore(app);
+const auth     = getAuth(app);
+const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
-
 /*
-  SEGURANÇA: e-mails admin encapsulados em uma Array (lista).
-  Agora o sistema verifica se o e-mail do usuário está dentro desta lista.
+  SEGURANÇA: e-mail admin não fica mais exposto em window nem em
+  constante global visível — fica encapsulado dentro deste módulo ES6.
+  O módulo não é acessível pelo console do navegador.
 */
-const ADMIN_EMAILS = [
-  'priscila.baldo@leveros.com.br',
-  'matheus.mendes@leveros.com.br'
-];
-
+const ADMIN_EMAIL = 'priscila.baldo@leveros.com.br';
 /*
-  SEGURANÇA: estado do usuário encapsulado no módulo.
+  SEGURANÇA: estado do usuário encapsulado no módulo — não fica em window.
+  Substituímos window._userEmail por esta variável privada.
 */
 let currentUser = null;
-
 /* AVISOS em tempo real */
+
 function carregarAvisos(isAdmin) {
   const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
   onSnapshot(q, snap => {
