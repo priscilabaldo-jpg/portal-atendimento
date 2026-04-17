@@ -217,30 +217,37 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 32px 28px; b
 
     </div>
 
-    <div class="feedback-section">
-      <h3>Sugestões de Melhoria 💡</h3>
-      <p>Sua ideia pode melhorar o dia a dia do time</p>
-      <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
-      <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-        <div class="form-row">
-          <div class="form-field">
-            <label>Seu nome</label>
-            <input type="text" name="nome" placeholder="Ex: Ana Silva" required>
-          </div>
-          <div class="form-field">
-            <label>Seu e-mail</label>
-            <input type="email" name="email" placeholder="nome@leveros.com.br" required>
-          </div>
-        </div>
-        <div class="form-field form-full">
-          <label>Sugestão</label>
-          <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Enviar sugestão →</button>
-      </form>
+   <div class="feedback-section">
+  <h3>Sugestões de Melhoria 💡</h3>
+  <p>Sua ideia pode melhorar o dia a dia do time</p>
+  <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
+  
+  <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
+    
+    <input type="hidden" name="_captcha" value="false">
+    <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
+    
+    <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
+    
+    <div class="form-row">
+      <div class="form-field">
+        <label>Seu nome</label>
+        <input type="text" name="nome" placeholder="Ex: Ana Silva" required>
+      </div>
+      <div class="form-field">
+        <label>Seu e-mail</label>
+        <input type="email" name="email" placeholder="nome@leveros.com.br" required>
+      </div>
     </div>
+    
+    <div class="form-field form-full">
+      <label>Sugestão</label>
+      <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
+    </div>
+    
+    <button type="submit" class="submit-btn">Enviar sugestão →</button>
+  </form>
+</div>
 
   </div>
 
