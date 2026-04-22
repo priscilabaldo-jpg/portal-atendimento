@@ -179,12 +179,20 @@
         <input type="date" id="dataFimLog">
         <button class="btn-admin" id="btnFiltrarLogs">Filtrar</button>
         <button class="btn-admin btn-limpar" id="btnLimparLogs">Limpar</button>
+        
+        <button class="btn-admin" id="btnExportarLogs" style="margin-left: auto; background: rgba(111,255,175,0.15); color: var(--verde3); border-color: rgba(111,255,175,0.3);">
+          📥 Exportar Excel
+        </button>
       </div>
       
       <div id="logsContainer">
         <div class="avisos-vazio">Carregando histórico...</div>
       </div>
-    </div> </div> <footer>
+    </div> 
+
+  </div> 
+
+  <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
@@ -224,25 +232,15 @@ const dados = [
   {nome:"Fluxo de Pedido não faturado",categoria:"Material",link:"materiais.html"},
   {nome:"Como consultar pedido na BoxLink",categoria:"Material",link:"materiais.html"},
   {nome:"Como usar a Uappi",categoria:"Material",link:"materiais.html"},
-  {nome:"Consulta na FUP",categoria:"Material",link:"materiais.html"},
-  {nome:"Meta NPS BOT URA",categoria:"Informativo",link:"informativos.html"},
-  {nome:"Meta G&A",categoria:"Informativo",link:"informativos.html"},
-  {nome:"Banco de Horas",categoria:"Informativo",link:"informativos.html"},
-  {nome:"Taxa Reversa",categoria:"Informativo",link:"informativos.html"}
+  {nome:"Consulta na FUP",categoria:"Material",link:"materiais.html"}
 ];
 
 const buscaEl      = document.getElementById('busca');
 const resultadosEl = document.getElementById('resultados');
 
 function escapeHTML(str) {
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-// Expõe a função para o módulo do Firebase poder usar nos logs
 window.escapeHTML = escapeHTML;
 
 buscaEl.addEventListener('keyup', function() {
@@ -254,88 +252,60 @@ buscaEl.addEventListener('keyup', function() {
     resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
   } else {
     encontrados.forEach(item => {
-      const nomeSafe  = escapeHTML(item.nome);
-      const catSafe   = escapeHTML(item.categoria);
-      const linkSafe  = escapeHTML(item.link);
-      resultadosEl.innerHTML += `<div class="resultado"><a href="${linkSafe}"><strong>${nomeSafe}</strong><span class="res-badge">${catSafe}</span></a></div>`;
+      resultadosEl.innerHTML += `<div class="resultado"><a href="${escapeHTML(item.link)}"><strong>${escapeHTML(item.nome)}</strong><span class="res-badge">${escapeHTML(item.categoria)}</span></a></div>`;
     });
   }
   resultadosEl.style.display = 'block';
 });
-document.addEventListener('click', e => {
-  if (!buscaEl.contains(e.target)) resultadosEl.style.display = 'none';
-});
-
-document.getElementById('hamburger').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.toggle('open');
-});
-
-document.getElementById('btnAdmin').addEventListener('click', () => {
-  document.getElementById('formAviso').classList.toggle('open');
-});
+document.addEventListener('click', e => { if (!buscaEl.contains(e.target)) resultadosEl.style.display = 'none'; });
+document.getElementById('hamburger').addEventListener('click', () => { document.getElementById('mobileMenu').classList.toggle('open'); });
+document.getElementById('btnAdmin').addEventListener('click', () => { document.getElementById('formAviso').classList.toggle('open'); });
 
 const EMOJIS = { urgente:'🚨', informativo:'📋', treinamento:'📚', geral:'📌' };
 
 function renderAvisos(avisos, isAdmin) {
   const lista = document.getElementById('avisosLista');
-  if (!avisos.length) {
-    lista.innerHTML = '<div class="avisos-vazio">Nenhum aviso publicado.</div>';
-    return;
-  }
+  if (!avisos.length) { lista.innerHTML = '<div class="avisos-vazio">Nenhum aviso publicado.</div>'; return; }
   lista.innerHTML = avisos.map(a => {
-    const data = a.criadoEm
-      ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})
-      : '';
-
-    const textoSafe = escapeHTML(a.texto    || '');
-    const autorSafe = escapeHTML(a.autor    || '');
-    const catSafe   = escapeHTML(a.categoria|| 'geral');
-    const idSafe    = escapeHTML(a.id       || '');
-    const emoji     = EMOJIS[a.categoria]   || '📌';
-
+    const data = a.criadoEm ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+    const catSafe = escapeHTML(a.categoria|| 'geral');
     return `
       <div class="aviso-card ${catSafe}">
         <div class="aviso-body">
           <div class="aviso-meta">
-            <span class="aviso-badge ${catSafe}">${emoji} ${catSafe}</span>
-            <span class="aviso-autor">${autorSafe}</span>
+            <span class="aviso-badge ${catSafe}">${EMOJIS[a.categoria] || '📌'} ${catSafe}</span>
+            <span class="aviso-autor">${escapeHTML(a.autor || '')}</span>
             <span class="aviso-data">${escapeHTML(data)}</span>
           </div>
-          <div class="aviso-texto">${textoSafe}</div>
+          <div class="aviso-texto">${escapeHTML(a.texto || '')}</div>
         </div>
-        ${isAdmin ? `<button class="btn-apagar btn-deletar-dinamico" data-id="${idSafe}" title="Apagar aviso">✕</button>` : ''}
+        ${isAdmin ? `<button class="btn-apagar btn-deletar-dinamico" data-id="${escapeHTML(a.id || '')}" title="Apagar aviso">✕</button>` : ''}
       </div>`;
   }).join('');
 }
 </script>
 
 <script type="module">
-// 🟢 IMPORTANTE: A importação do 'where' foi adicionada aqui
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot,
-         orderBy, query, serverTimestamp, where }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
   authDomain:  "portal-atendimento-541ae.firebaseapp.com",
   projectId:   "portal-atendimento-541ae"
 };
-const app      = initializeApp(firebaseConfig);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-const ADMIN_EMAILS = [
-  'priscila.baldo@leveros.com.br',
-  'matheus.mendes@leveros.com.br'
-];
-
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
 
-/* ── NAVEGAÇÃO DE TELAS (SPA) ── */
+/* 🟢 NOVIDADE: Variável global para guardar os dados da tela para exportação */
+let logsParaExportacao = [];
+
 document.getElementById('navInicio').addEventListener('click', (e) => {
   e.preventDefault();
   document.getElementById('homeView').style.display = 'block';
@@ -352,111 +322,78 @@ document.getElementById('navAdmin').addEventListener('click', (e) => {
   document.getElementById('navAdmin').classList.add('active');
 });
 
-/* ── SISTEMA DE AVISOS ── */
 function carregarAvisos(isAdmin) {
   const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
-  onSnapshot(q, snap => {
-    const avisos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderAvisos(avisos, isAdmin);
-  });
+  onSnapshot(q, snap => renderAvisos(snap.docs.map(d => ({ id: d.id, ...d.data() })), isAdmin));
 }
 
-async function publicarAviso() {
+document.getElementById('btnPublicarAviso').addEventListener('click', async () => {
   if (!currentUser) return;
   const textoInput = document.getElementById('textoAviso');
   const texto = textoInput.value.trim();
-  const cat   = document.getElementById('catAviso').value;
-  
+  const cat = document.getElementById('catAviso').value;
   if (!texto) return;
-  
   try {
-    await addDoc(collection(db, 'avisos'), {
-      texto,
-      categoria: cat,
-      autor: currentUser.displayName?.split(' ')[0] || 'Gestor',
-      criadoEm: serverTimestamp()
-    });
-    textoInput.value = '';
-    document.getElementById('formAviso').classList.remove('open');
-  } catch (err) {
-    console.error('Erro ao publicar aviso:', err.message);
-    alert('Sem permissão para publicar avisos.');
-  }
-}
-document.getElementById('btnPublicarAviso').addEventListener('click', publicarAviso);
+    await addDoc(collection(db, 'avisos'), { texto, categoria: cat, autor: currentUser.displayName?.split(' ')[0] || 'Gestor', criadoEm: serverTimestamp() });
+    textoInput.value = ''; document.getElementById('formAviso').classList.remove('open');
+  } catch (err) { alert('Sem permissão para publicar avisos.'); }
+});
 
-async function apagarAviso(id) {
-  if (!currentUser) return;
-  if (confirm('Apagar este aviso?')) {
-    try {
-      await deleteDoc(doc(db, 'avisos', id));
-    } catch (err) {
-      console.error('Erro ao apagar aviso:', err.message);
-      alert('Sem permissão para apagar este aviso.');
-    }
-  }
-}
-
-document.getElementById('avisosLista').addEventListener('click', function(event) {
+document.getElementById('avisosLista').addEventListener('click', async function(event) {
   if (event.target.classList.contains('btn-deletar-dinamico')) {
-    const avisoId = event.target.getAttribute('data-id');
-    apagarAviso(avisoId);
+    if (!currentUser || !confirm('Apagar este aviso?')) return;
+    try { await deleteDoc(doc(db, 'avisos', event.target.getAttribute('data-id'))); } 
+    catch (err) { alert('Sem permissão para apagar este aviso.'); }
   }
 });
 
-/* ── SISTEMA DE REGISTRO E LEITURA DE LOGS (COM FILTRO) ── */
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
-
   try {
-    await addDoc(collection(db, 'acessos'), {
-      nome: usuario.displayName || 'Usuário',
-      email: usuario.email,
-      dataAcesso: serverTimestamp()
-    });
+    await addDoc(collection(db, 'acessos'), { nome: usuario.displayName || 'Usuário', email: usuario.email, dataAcesso: serverTimestamp() });
     sessionStorage.setItem('logRegistrado', 'true');
-  } catch (error) {
-    console.error("Erro ao registrar log de acesso:", error);
-  }
+  } catch (error) { console.error("Erro ao registrar log", error); }
 }
 
-// 🟢 Função atualizada para aceitar datas e contar os acessos
 function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
   const container = document.getElementById('logsContainer');
   container.innerHTML = '<div class="avisos-vazio">Buscando histórico...</div>';
   
   let restricoes = [collection(db, 'acessos')];
-
-  // Se o usuário filtrou por data
   if (dataInicioStr && dataFimStr) {
     const start = new Date(dataInicioStr + 'T00:00:00');
     const end = new Date(dataFimStr + 'T23:59:59');
-    
     restricoes.push(where('dataAcesso', '>=', start));
     restricoes.push(where('dataAcesso', '<=', end));
   }
-
-  // Ordena sempre do mais recente pro mais antigo
   restricoes.push(orderBy('dataAcesso', 'desc'));
   
-  const q = query(...restricoes);
-  
-  onSnapshot(q, snap => {
+  onSnapshot(query(...restricoes), snap => {
     const logs = snap.docs.map(d => d.data());
     
+    // 🟢 LIMPA OS DADOS DE EXPORTAÇÃO E PREENCHE COM OS NOVOS DADOS FORMATADOS
+    logsParaExportacao = [];
+
     if (!logs.length) {
       container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado neste período.</div>';
       return;
     }
 
-    // Cria o cabeçalho de contagem total
     let html = `<div class="resumo-logs">Total de acessos encontrados: <strong>${logs.length}</strong></div>`;
-
     const grupos = {};
+    
     logs.forEach(log => {
       const dataLog = log.dataAcesso ? new Date(log.dataAcesso.seconds * 1000) : new Date();
       const dataFormatada = dataLog.toLocaleDateString('pt-BR');
       const horaFormatada = dataLog.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      // Salva na nossa lista invisível para o Excel
+      logsParaExportacao.push({
+        nome: log.nome || 'Desconhecido',
+        email: log.email || 'Sem e-mail',
+        data: dataFormatada,
+        hora: horaFormatada
+      });
 
       if (!grupos[dataFormatada]) grupos[dataFormatada] = [];
       grupos[dataFormatada].push({ ...log, horaFormatada });
@@ -468,52 +405,25 @@ function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
           <div class="log-date-header">🗓️ Data: ${data} <span style="opacity:0.5; font-size:9px; margin-left:auto;">(${grupos[data].length} acessos)</span></div>
           <div class="log-table-wrap">
             <table class="log-table">
-              <thead>
-                <tr>
-                  <th>Usuário</th>
-                  <th>E-mail Corporativo</th>
-                  <th>Horário</th>
-                </tr>
-              </thead>
+              <thead><tr><th>Usuário</th><th>E-mail Corporativo</th><th>Horário</th></tr></thead>
               <tbody>
       `;
-      
       grupos[data].forEach(item => {
-        const nomeSafe = window.escapeHTML ? window.escapeHTML(item.nome) : item.nome;
-        const emailSafe = window.escapeHTML ? window.escapeHTML(item.email) : item.email;
-        html += `
-          <tr>
-            <td><span class="badge-user">${nomeSafe}</span></td>
-            <td>${emailSafe}</td>
-            <td><span class="badge-time">⏱️ ${item.horaFormatada}</span></td>
-          </tr>
-        `;
+        html += `<tr><td><span class="badge-user">${window.escapeHTML(item.nome)}</span></td><td>${window.escapeHTML(item.email)}</td><td><span class="badge-time">⏱️ ${item.horaFormatada}</span></td></tr>`;
       });
       html += `</tbody></table></div></div>`;
     }
-    
     container.innerHTML = html;
   }, error => {
-    console.error("Erro ao carregar logs:", error);
     container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro ao buscar dados. Tente limpar os filtros.</div>';
   });
 }
 
-/* ── EVENTOS DOS BOTÕES DE FILTRO DE LOG ── */
 document.getElementById('btnFiltrarLogs').addEventListener('click', () => {
   const inicio = document.getElementById('dataInicioLog').value;
   const fim = document.getElementById('dataFimLog').value;
-  
-  if (!inicio || !fim) {
-    alert("Por favor, selecione a data de início e a data de fim.");
-    return;
-  }
-  
-  if (inicio > fim) {
-    alert("A data de início não pode ser maior que a data de fim.");
-    return;
-  }
-  
+  if (!inicio || !fim) return alert("Por favor, selecione a data de início e a data de fim.");
+  if (inicio > fim) return alert("A data de início não pode ser maior que a data de fim.");
   carregarLogsAdmin(inicio, fim);
 });
 
@@ -523,27 +433,52 @@ document.getElementById('btnLimparLogs').addEventListener('click', () => {
   carregarLogsAdmin();
 });
 
+/* ── 🟢 FUNÇÃO DE EXPORTAR PARA EXCEL (CSV) ── */
+document.getElementById('btnExportarLogs').addEventListener('click', () => {
+  if (logsParaExportacao.length === 0) {
+    alert('Nenhum dado na tela para exportar. Tente carregar ou filtrar os logs primeiro.');
+    return;
+  }
 
-/* ── AUTHENTICATION ── */
+  // 1. Cria o BOM (Byte Order Mark) para o Excel reconhecer os acentos do Brasil (UTF-8)
+  let csvContent = '\uFEFF'; 
+  
+  // 2. Cria o cabeçalho (Usamos ponto e vírgula porque o Excel em PT-BR usa ; para separar colunas)
+  csvContent += "Nome;E-mail;Data de Acesso;Hora de Acesso\n";
+
+  // 3. Adiciona cada linha de log
+  logsParaExportacao.forEach(log => {
+    csvContent += `${log.nome};${log.email};${log.data};${log.hora}\n`;
+  });
+
+  // 4. Cria o arquivo virtual no navegador
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  
+  // 5. Cria um link invisível e clica nele para forçar o download
+  const linkInvisivel = document.createElement("a");
+  linkInvisivel.href = url;
+  
+  // Define o nome do arquivo com a data de hoje
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  linkInvisivel.download = `Relatorio_Acessos_${hoje}.csv`;
+  
+  document.body.appendChild(linkInvisivel);
+  linkInvisivel.click();
+  document.body.removeChild(linkInvisivel);
+});
+
 onAuthStateChanged(auth, user => {
-  const loginArea  = document.getElementById('login-area');
-  const conteudo   = document.getElementById('conteudo');
-  const loginError = document.getElementById('loginError');
-
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
-    loginError.classList.remove('visible');
-    loginArea.style.display = 'none';
-    conteudo.style.display  = 'block';
-
-    const nome = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
-    const isAdmin = ADMIN_EMAILS.includes(user.email);
-
-    document.getElementById('welcomeUser').textContent = nome;
+    document.getElementById('loginError').classList.remove('visible');
+    document.getElementById('login-area').style.display = 'none';
+    document.getElementById('conteudo').style.display  = 'block';
+    document.getElementById('welcomeUser').textContent = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
     document.getElementById('feedbackNome').value = user.displayName || '';
     document.getElementById('feedbackEmail').value = user.email || '';
 
-    if (isAdmin) {
+    if (ADMIN_EMAILS.includes(user.email)) {
       document.getElementById('btnAdmin').style.display = 'flex';
       document.getElementById('menuAdminContainer').style.display = 'block';
       carregarLogsAdmin();
@@ -552,37 +487,27 @@ onAuthStateChanged(auth, user => {
       document.getElementById('formAviso').classList.remove('open');
       document.getElementById('menuAdminContainer').style.display = 'none';
     }
-
-    carregarAvisos(isAdmin);
+    carregarAvisos(ADMIN_EMAILS.includes(user.email));
     registrarAcesso(user);
-
   } else if (user) {
-    signOut(auth);
-    currentUser = null;
-    loginError.classList.add('visible');
-    loginArea.style.display  = 'flex';
-    conteudo.style.display   = 'none';
-
+    signOut(auth); currentUser = null;
+    document.getElementById('loginError').classList.add('visible');
+    document.getElementById('login-area').style.display  = 'flex';
+    document.getElementById('conteudo').style.display   = 'none';
   } else {
     currentUser = null;
-    loginArea.style.display = 'flex';
-    conteudo.style.display  = 'none';
+    document.getElementById('login-area').style.display = 'flex';
+    document.getElementById('conteudo').style.display  = 'none';
   }
 });
 
 document.getElementById('loginBtn').onclick = () => {
   document.getElementById('loginError').classList.remove('visible');
-  signInWithPopup(auth, provider).catch(() => {
-    document.getElementById('loginError').classList.add('visible');
-  });
+  signInWithPopup(auth, provider).catch(() => document.getElementById('loginError').classList.add('visible'));
 };
 
-const logout = () => {
-  sessionStorage.removeItem('logRegistrado');
-  signOut(auth);
-};
-
-document.getElementById('logoutBtn').onclick       = logout;
+const logout = () => { sessionStorage.removeItem('logRegistrado'); signOut(auth); };
+document.getElementById('logoutBtn').onclick = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
 
