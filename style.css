@@ -342,3 +342,49 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
   font-family: monospace;
   font-size: 12px;
 }
+
+/* BARRA DE FILTRO DE DATA */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0,0,0,0.15);
+  border: 1px solid var(--glass-border);
+  padding: 14px 20px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.filter-bar label, .filter-bar span {
+  font-size: 11px;
+  font-weight: bold;
+  color: var(--azul);
+}
+.filter-bar input[type="date"] {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--glass-border);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-family: var(--font);
+  font-size: 11px;
+  outline: none;
+  color-scheme: dark; /* Faz o calendário nativo ficar escuro */
+}
+.btn-limpar {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+}
+.btn-limpar:hover {
+  background: rgba(255,255,255,0.1);
+}
+.resumo-logs {
+  font-size: 12px;
+  margin-bottom: 20px;
+  padding: 10px 15px;
+  background: rgba(111,255,175,0.1);
+  border-left: 3px solid var(--verde3);
+  border-radius: 4px;
+  display: inline-block;
+}
