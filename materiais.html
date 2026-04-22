@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Materiais – CX Resolve</title>
 <style>
-
 :root {
   --verde1: #002D32;
   --verde2: #005A64;
@@ -84,41 +83,12 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
 .mobile-menu a { color: rgba(255,255,255,0.75); text-decoration: none; font-family: var(--font); font-size: 13px; padding: 11px 0; border-bottom: 1px solid var(--glass-border); }
 .mobile-menu .logout-btn { margin-top: 8px; margin-left: 0; width: fit-content; }
 
-/* MAIN */
-#materiais-content { display: none; position: relative; z-index: 5; }
-
-.container {
-  max-width: 1240px;
-  margin: auto;
-  padding: 52px 28px 100px;
-}
-
-.page-header {
-  margin-bottom: 44px;
-  animation: fadeUp 0.5s ease both;
-}
-
-.page-header h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-  line-height: 1.1;
-}
-
-.page-header h1 span { color: var(--azul); }
-
-.page-header p {
-  font-size: 14px;
-  opacity: 0.45;
-  margin-top: 8px;
-}
-
-/* MAIN */
+/* MAIN CONTAINER */
 #materiais-content { display: none; position: relative; z-index: 5; }
 
 .container { max-width: 1160px; margin: auto; padding: 44px 28px 80px; }
 
-.page-header { margin-bottom: 36px; }
+.page-header { margin-bottom: 36px; animation: fadeUp 0.5s ease both; }
 .page-header .page-label { font-size: 10px; color: var(--azul); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; opacity: 0.8; }
 .page-header h1 { font-family: var(--font); font-size: 20px; font-weight: 700; }
 .page-header p { font-size: 11px; opacity: 0.4; margin-top: 6px; line-height: 1.6; }
@@ -189,6 +159,8 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
   text-decoration: none; font-family: var(--font);
   font-size: 11px; font-weight: 700; width: fit-content;
   transition: opacity 0.2s;
+  /* 🟢 A MÁGICA ACONTECE AQUI: Empurra o botão pro final do card */
+  margin-top: auto; 
 }
 .card-link:hover { opacity: 0.85; }
 
@@ -226,16 +198,10 @@ footer {
 
 @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 
-@keyframes pulseGreen {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(111,255,175,0.4); }
-  50% { box-shadow: 0 0 0 5px rgba(111,255,175,0); }
-}
-
 @media (max-width: 680px) {
   nav ul { display: none; }
   .hamburger { display: flex; }
 }
-
 </style>
 </head>
 <body>
@@ -356,7 +322,6 @@ footer {
         <a class="card-link" href="https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing" target="_blank">Abrir documento ↗</a>
       </div>
       
-      
       <div class="card" data-cat="treinamento" style="animation-delay:0.35s">
         <div class="card-top">
           <div class="card-icon">💡</div>
@@ -369,11 +334,8 @@ footer {
         <p>Informações para abertura de Garantias p/ fabricante.</p>
         <a class="card-link" href="https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096" target="_blank">Abrir documento ↗</a>
       </div>
-      </div>
-     </div>
 
-
-  <footer>
+    </div> </div> <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
