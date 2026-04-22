@@ -226,7 +226,7 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
 .sistema-btn:hover { opacity: 0.85; }
 
 /* ACESSO RÁPIDO */
-.rapido-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.rapido-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 44px; }
 .rapido-card { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 8px; padding: 20px 22px; display: flex; align-items: center; gap: 14px; text-decoration: none; color: white; transition: all 0.25s; }
 .rapido-card:hover { background: rgba(255,206,0,0.06); border-color: rgba(255,206,0,0.2); transform: translateY(-2px); }
 .rapido-icon { width: 40px; height: 40px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
@@ -234,6 +234,31 @@ nav a.active { color: white; border-bottom-color: var(--azul); background: rgba(
 .rapido-icon.inf { background: rgba(111,255,175,0.12); }
 .rapido-card h4 { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
 .rapido-card p { font-size: 11px; opacity: 0.4; }
+
+/* FORMULÁRIO DE FEEDBACK */
+.feedback-section {
+  background: var(--glass); border: 1px solid var(--glass-border);
+  border-radius: 8px; padding: 24px; margin-bottom: 24px;
+}
+.feedback-section h3 { font-size: 14px; font-weight: 700; color: var(--azul); margin-bottom: 5px; }
+.feedback-section p { font-size: 11px; opacity: 0.6; margin-bottom: 16px; }
+.success-msg { display: none; color: var(--verde3); background: rgba(111,255,175,0.1); padding: 10px; border-radius: 5px; margin-bottom: 15px; font-size: 11px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; }
+.form-field label { font-size: 11px; opacity: 0.8; font-weight: bold; }
+.form-field input, .form-field textarea {
+  padding: 10px; border-radius: 5px; border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.06); color: white; font-family: var(--font); font-size: 11px; outline: none; transition: border-color 0.2s;
+}
+.form-field input:focus, .form-field textarea:focus { border-color: var(--azul); }
+.form-full { margin-bottom: 15px; }
+.submit-btn {
+  padding: 10px 20px; border-radius: 5px; border: none;
+  background: var(--azul); color: var(--verde1);
+  font-family: var(--font); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.submit-btn:hover { opacity: 0.85; }
 
 /* FOOTER */
 footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; background: rgba(0,0,0,0.25); border-top: 1px solid var(--glass-border); }
@@ -254,6 +279,7 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
   .search-wrap { max-width: 100%; }
   .login-card { padding: 40px 24px; }
   .form-aviso-row { flex-direction: column; align-items: flex-start; }
+  .form-row { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -371,9 +397,36 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
       </a>
     </div>
 
-  </div>
+    <div class="feedback-section">
+      <h3>Sugestões de Melhoria 💡</h3>
+      <p>Sua ideia pode melhorar o dia a dia do time</p>
+      <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
+      
+      <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
+        <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label>Seu nome</label>
+            <input type="text" name="nome" id="feedbackNome" placeholder="Ex: Ana Silva" required>
+          </div>
+          <div class="form-field">
+            <label>Seu e-mail</label>
+            <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
+          </div>
+        </div>
+        
+        <div class="form-field form-full">
+          <label>Sugestão</label>
+          <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
+        </div>
+        <button type="submit" class="submit-btn">Enviar sugestão →</button>
+      </form>
+    </div>
 
-  <footer>
+  </div> <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
@@ -484,7 +537,6 @@ function renderAvisos(avisos, isAdmin) {
     const idSafe    = escapeHTML(a.id       || '');
     const emoji     = EMOJIS[a.categoria]   || '📌';
 
-    // O botão agora usa classe e data-id em vez de onclick (Delegação de Eventos)
     return `
       <div class="aviso-card ${catSafe}">
         <div class="aviso-body">
@@ -519,7 +571,6 @@ const auth     = getAuth(app);
 const db       = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-// ARRAY DE ADMINS: Agora aceita múltiplos e-mails!
 const ADMIN_EMAILS = [
   'priscila.baldo@leveros.com.br',
   'matheus.mendes@leveros.com.br'
@@ -536,7 +587,7 @@ function carregarAvisos(isAdmin) {
   });
 }
 
-/* EVENT LISTENER: Publicar Aviso (em substituição ao window.publicarAviso) */
+/* EVENT LISTENER: Publicar Aviso */
 async function publicarAviso() {
   if (!currentUser) return;
   const textoInput = document.getElementById('textoAviso');
@@ -561,7 +612,7 @@ async function publicarAviso() {
 }
 document.getElementById('btnPublicarAviso').addEventListener('click', publicarAviso);
 
-/* EVENT LISTENER: Apagar Aviso (em substituição ao window.apagarAviso) */
+/* EVENT LISTENER: Apagar Aviso */
 async function apagarAviso(id) {
   if (!currentUser) return;
   if (confirm('Apagar este aviso?')) {
@@ -574,13 +625,34 @@ async function apagarAviso(id) {
   }
 }
 
-// Delegação de Eventos para os botões dinâmicos de exclusão
+// Delegação de Eventos
 document.getElementById('avisosLista').addEventListener('click', function(event) {
   if (event.target.classList.contains('btn-deletar-dinamico')) {
     const avisoId = event.target.getAttribute('data-id');
     apagarAviso(avisoId);
   }
 });
+
+/* ====================================================================
+   SISTEMA DE LOG DE ACESSOS (NOVO)
+   ==================================================================== */
+async function registrarAcesso(usuario) {
+  if (sessionStorage.getItem('logRegistrado')) {
+    return; 
+  }
+
+  try {
+    await addDoc(collection(db, 'acessos'), {
+      nome: usuario.displayName || 'Usuário',
+      email: usuario.email,
+      dataAcesso: serverTimestamp()
+    });
+    sessionStorage.setItem('logRegistrado', 'true');
+    console.log("Log de acesso registrado com sucesso!");
+  } catch (error) {
+    console.error("Erro ao registrar log de acesso:", error);
+  }
+}
 
 /* AUTH */
 onAuthStateChanged(auth, user => {
@@ -595,11 +667,13 @@ onAuthStateChanged(auth, user => {
     conteudo.style.display  = 'block';
 
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
-    
-    // VERIFICAÇÃO ATUALIZADA: Checa se o e-mail logado está na lista de ADMINS
     const isAdmin = ADMIN_EMAILS.includes(user.email);
 
     document.getElementById('welcomeUser').textContent = nome;
+
+    // Preenche automaticamente o nome e email no formulário de feedback (Opcional, mas melhora a experiência)
+    document.getElementById('feedbackNome').value = user.displayName || '';
+    document.getElementById('feedbackEmail').value = user.email || '';
 
     if (isAdmin) {
       document.getElementById('btnAdmin').style.display = 'flex';
@@ -609,6 +683,9 @@ onAuthStateChanged(auth, user => {
     }
 
     carregarAvisos(isAdmin);
+    
+    // Registra o log de acesso no Firebase
+    registrarAcesso(user);
 
   } else if (user) {
     signOut(auth);
@@ -631,7 +708,12 @@ document.getElementById('loginBtn').onclick = () => {
   });
 };
 
-const logout = () => signOut(auth);
+/* LOGOUT ATUALIZADO */
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth);
+};
+
 document.getElementById('logoutBtn').onclick       = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
