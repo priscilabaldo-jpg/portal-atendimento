@@ -43,9 +43,12 @@
       <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
       <nav>
         <ul>
-          <li><a href="index.html" class="active">Início</a></li>
+          <li><a href="#" id="navInicio" class="active">Início</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li id="menuAdminContainer" style="display: none;">
+            <a href="#" id="navAdmin">Painel Admin</a>
+          </li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -62,105 +65,117 @@
 
   <div class="container">
 
-    <div class="welcome-row">
-      <div class="welcome-text">
-        <p class="welcome-label">Portal de Atendimento</p>
-        <h1>Olá, <span id="welcomeUser">bem-vindo</span> 👋</h1>
-        <p id="welcomeDate"></p>
+    <div id="homeView">
+      <div class="welcome-row">
+        <div class="welcome-text">
+          <p class="welcome-label">Portal de Atendimento</p>
+          <h1>Olá, <span id="welcomeUser">bem-vindo</span> 👋</h1>
+          <p id="welcomeDate"></p>
+        </div>
+        <div class="search-wrap">
+          <span class="search-icon">🔎</span>
+          <input type="text" id="busca" placeholder="Buscar sistema, material…">
+          <div id="resultados" class="resultados"></div>
+        </div>
       </div>
-      <div class="search-wrap">
-        <span class="search-icon">🔎</span>
-        <input type="text" id="busca" placeholder="Buscar sistema, material…">
-        <div id="resultados" class="resultados"></div>
-      </div>
-    </div>
 
-    <div class="mural-header">
-      <p class="section-label">📢 Mural de Avisos</p>
-      <button class="btn-admin" id="btnAdmin" style="display:none">
-        ✏️ Publicar aviso
-      </button>
-    </div>
-
-    <div class="form-aviso" id="formAviso">
-      <textarea id="textoAviso" rows="3" placeholder="Digite o aviso para o time…"></textarea>
-      <div class="form-aviso-row">
-        <select class="cat-select" id="catAviso">
-          <option value="informativo">📋 Informativo</option>
-          <option value="urgente">🚨 Urgente</option>
-          <option value="treinamento">📚 Treinamento</option>
-          <option value="geral">📌 Geral</option>
-        </select>
-        <button class="btn-publicar" id="btnPublicarAviso">Publicar</button>
+      <div class="mural-header">
+        <p class="section-label">📢 Mural de Avisos</p>
+        <button class="btn-admin" id="btnAdmin" style="display:none">
+          ✏️ Publicar aviso
+        </button>
       </div>
-    </div>
 
-    <div class="avisos-lista" id="avisosLista">
-      <div class="avisos-vazio">Carregando avisos…</div>
-    </div>
+      <div class="form-aviso" id="formAviso">
+        <textarea id="textoAviso" rows="3" placeholder="Digite o aviso para o time…"></textarea>
+        <div class="form-aviso-row">
+          <select class="cat-select" id="catAviso">
+            <option value="informativo">📋 Informativo</option>
+            <option value="urgente">🚨 Urgente</option>
+            <option value="treinamento">📚 Treinamento</option>
+            <option value="geral">📌 Geral</option>
+          </select>
+          <button class="btn-publicar" id="btnPublicarAviso">Publicar</button>
+        </div>
+      </div>
 
-    <p class="section-label">Sistemas</p>
-    <div class="sistemas-grid">
-      <div class="sistema-card">
-        <div class="sistema-info"><h3>GLPI</h3><p>Gestão de chamados</p></div>
-        <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank" rel="noopener noreferrer">↗</a>
+      <div class="avisos-lista" id="avisosLista">
+        <div class="avisos-vazio">Carregando avisos…</div>
       </div>
-      <div class="sistema-card">
-        <div class="sistema-info"><h3>Uappi</h3><p>Plataforma de vendas</p></div>
-        <a class="sistema-btn" href="https://www.vendas.leveros.com.br/wapstore/acesso" target="_blank" rel="noopener noreferrer">↗</a>
-      </div>
-      <div class="sistema-card">
-        <div class="sistema-info"><h3>BoxLink</h3><p>Gestão de pedidos</p></div>
-        <a class="sistema-btn" href="https://matriz.boxlink.com.br/home" target="_blank" rel="noopener noreferrer">↗</a>
-      </div>
-      <div class="sistema-card">
-        <div class="sistema-info"><h3>Intergrall</h3><p>CRM / Call center</p></div>
-        <a class="sistema-btn" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank" rel="noopener noreferrer">↗</a>
-      </div>
-    </div>
 
-    <p class="section-label">Acesso Rápido</p>
-    <div class="rapido-grid">
-      <a href="materiais.html" class="rapido-card">
-        <div class="rapido-icon mat">📚</div>
-        <div><h4>Materiais</h4><p>Guias, fluxos e passo a passo</p></div>
-      </a>
-      <a href="informativos.html" class="rapido-card">
-        <div class="rapido-icon inf">📊</div>
-        <div><h4>Informativos</h4><p>Metas operacionais da temporada</p></div>
-      </a>
-    </div>
+      <p class="section-label">Sistemas</p>
+      <div class="sistemas-grid">
+        <div class="sistema-card">
+          <div class="sistema-info"><h3>GLPI</h3><p>Gestão de chamados</p></div>
+          <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank" rel="noopener noreferrer">↗</a>
+        </div>
+        <div class="sistema-card">
+          <div class="sistema-info"><h3>Uappi</h3><p>Plataforma de vendas</p></div>
+          <a class="sistema-btn" href="https://www.vendas.leveros.com.br/wapstore/acesso" target="_blank" rel="noopener noreferrer">↗</a>
+        </div>
+        <div class="sistema-card">
+          <div class="sistema-info"><h3>BoxLink</h3><p>Gestão de pedidos</p></div>
+          <a class="sistema-btn" href="https://matriz.boxlink.com.br/home" target="_blank" rel="noopener noreferrer">↗</a>
+        </div>
+        <div class="sistema-card">
+          <div class="sistema-info"><h3>Intergrall</h3><p>CRM / Call center</p></div>
+          <a class="sistema-btn" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank" rel="noopener noreferrer">↗</a>
+        </div>
+      </div>
 
-    <div class="feedback-section">
-      <h3>Sugestões de Melhoria 💡</h3>
-      <p>Sua ideia pode melhorar o dia a dia do time</p>
-      <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
+      <p class="section-label">Acesso Rápido</p>
+      <div class="rapido-grid">
+        <a href="materiais.html" class="rapido-card">
+          <div class="rapido-icon mat">📚</div>
+          <div><h4>Materiais</h4><p>Guias, fluxos e passo a passo</p></div>
+        </a>
+        <a href="informativos.html" class="rapido-card">
+          <div class="rapido-icon inf">📊</div>
+          <div><h4>Informativos</h4><p>Metas operacionais da temporada</p></div>
+        </a>
+      </div>
+
+      <div class="feedback-section">
+        <h3>Sugestões de Melhoria 💡</h3>
+        <p>Sua ideia pode melhorar o dia a dia do time</p>
+        <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
+        
+        <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
+          <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
+          
+          <div class="form-row">
+            <div class="form-field">
+              <label>Seu nome</label>
+              <input type="text" name="nome" id="feedbackNome" placeholder="Ex: Ana Silva" required>
+            </div>
+            <div class="form-field">
+              <label>Seu e-mail</label>
+              <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
+            </div>
+          </div>
+          
+          <div class="form-field form-full">
+            <label>Sugestão</label>
+            <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Enviar sugestão →</button>
+        </form>
+      </div>
+    </div> <div id="adminView" style="display: none;">
+      <div class="welcome-row">
+        <div class="welcome-text">
+          <p class="welcome-label">Área Restrita</p>
+          <h1>Painel de <span>Auditoria</span> 📊</h1>
+          <p>Histórico completo de acessos ao portal</p>
+        </div>
+      </div>
       
-      <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
-        <input type="hidden" name="_captcha" value="false">
-        <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-        <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
-        
-        <div class="form-row">
-          <div class="form-field">
-            <label>Seu nome</label>
-            <input type="text" name="nome" id="feedbackNome" placeholder="Ex: Ana Silva" required>
-          </div>
-          <div class="form-field">
-            <label>Seu e-mail</label>
-            <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
-          </div>
-        </div>
-        
-        <div class="form-field form-full">
-          <label>Sugestão</label>
-          <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
-        </div>
-        <button type="submit" class="submit-btn">Enviar sugestão →</button>
-      </form>
-    </div>
-
-  </div> <footer>
+      <div id="logsContainer">
+        <div class="avisos-vazio">Carregando histórico...</div>
+      </div>
+    </div> </div> <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
@@ -184,7 +199,6 @@
 </div>
 
 <script>
-/* ANO + DATA */
 document.getElementById('anoAtual').textContent = new Date().getFullYear();
 const dias  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -192,7 +206,6 @@ const agora = new Date();
 document.getElementById('welcomeDate').textContent =
   `${dias[agora.getDay()]}, ${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
 
-/* BUSCA */
 const dados = [
   {nome:"GLPI",categoria:"Sistema",link:"https://glpi.leveros.com.br"},
   {nome:"Uappi",categoria:"Sistema",link:"https://www.vendas.leveros.com.br/wapstore/acesso"},
@@ -220,6 +233,8 @@ function escapeHTML(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
+// 🟢 Expõe a função para o módulo do Firebase poder usar nos logs
+window.escapeHTML = escapeHTML;
 
 buscaEl.addEventListener('keyup', function() {
   const texto = this.value.toLowerCase();
@@ -242,12 +257,10 @@ document.addEventListener('click', e => {
   if (!buscaEl.contains(e.target)) resultadosEl.style.display = 'none';
 });
 
-/* HAMBURGER */
 document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
-/* MURAL - Toggle do formulário via Event Listener */
 document.getElementById('btnAdmin').addEventListener('click', () => {
   document.getElementById('formAviso').classList.toggle('open');
 });
@@ -312,7 +325,24 @@ const ADMIN_EMAILS = [
 
 let currentUser = null;
 
-/* Carregar Avisos em Tempo Real */
+/* ── NAVEGAÇÃO DE TELAS (SPA) ── */
+document.getElementById('navInicio').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('homeView').style.display = 'block';
+  document.getElementById('adminView').style.display = 'none';
+  document.getElementById('navInicio').classList.add('active');
+  document.getElementById('navAdmin').classList.remove('active');
+});
+
+document.getElementById('navAdmin').addEventListener('click', (e) => {
+  e.preventDefault();
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('adminView').style.display = 'block';
+  document.getElementById('navInicio').classList.remove('active');
+  document.getElementById('navAdmin').classList.add('active');
+});
+
+/* ── SISTEMA DE AVISOS ── */
 function carregarAvisos(isAdmin) {
   const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
   onSnapshot(q, snap => {
@@ -321,7 +351,6 @@ function carregarAvisos(isAdmin) {
   });
 }
 
-/* EVENT LISTENER: Publicar Aviso */
 async function publicarAviso() {
   if (!currentUser) return;
   const textoInput = document.getElementById('textoAviso');
@@ -346,7 +375,6 @@ async function publicarAviso() {
 }
 document.getElementById('btnPublicarAviso').addEventListener('click', publicarAviso);
 
-/* EVENT LISTENER: Apagar Aviso */
 async function apagarAviso(id) {
   if (!currentUser) return;
   if (confirm('Apagar este aviso?')) {
@@ -359,7 +387,6 @@ async function apagarAviso(id) {
   }
 }
 
-// Delegação de Eventos
 document.getElementById('avisosLista').addEventListener('click', function(event) {
   if (event.target.classList.contains('btn-deletar-dinamico')) {
     const avisoId = event.target.getAttribute('data-id');
@@ -367,13 +394,9 @@ document.getElementById('avisosLista').addEventListener('click', function(event)
   }
 });
 
-/* ====================================================================
-   SISTEMA DE LOG DE ACESSOS 
-   ==================================================================== */
+/* ── SISTEMA DE REGISTRO E LEITURA DE LOGS ── */
 async function registrarAcesso(usuario) {
-  if (sessionStorage.getItem('logRegistrado')) {
-    return; 
-  }
+  if (sessionStorage.getItem('logRegistrado')) return; 
 
   try {
     await addDoc(collection(db, 'acessos'), {
@@ -382,13 +405,76 @@ async function registrarAcesso(usuario) {
       dataAcesso: serverTimestamp()
     });
     sessionStorage.setItem('logRegistrado', 'true');
-    console.log("Log de acesso registrado com sucesso!");
   } catch (error) {
     console.error("Erro ao registrar log de acesso:", error);
   }
 }
 
-/* AUTH */
+function carregarLogsAdmin() {
+  const container = document.getElementById('logsContainer');
+  const q = query(collection(db, 'acessos'), orderBy('dataAcesso', 'desc'));
+  
+  onSnapshot(q, snap => {
+    const logs = snap.docs.map(d => d.data());
+    
+    if (!logs.length) {
+      container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado ainda.</div>';
+      return;
+    }
+
+    // Agrupa os logs pela data (ex: 22/04/2026)
+    const grupos = {};
+    logs.forEach(log => {
+      const dataLog = log.dataAcesso ? new Date(log.dataAcesso.seconds * 1000) : new Date();
+      const dataFormatada = dataLog.toLocaleDateString('pt-BR');
+      const horaFormatada = dataLog.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      if (!grupos[dataFormatada]) grupos[dataFormatada] = [];
+      grupos[dataFormatada].push({ ...log, horaFormatada });
+    });
+
+    // Monta as tabelas
+    let html = '';
+    for (const data in grupos) {
+      html += `
+        <div class="log-group">
+          <div class="log-date-header">🗓️ Data: ${data}</div>
+          <div class="log-table-wrap">
+            <table class="log-table">
+              <thead>
+                <tr>
+                  <th>Usuário</th>
+                  <th>E-mail Corporativo</th>
+                  <th>Horário</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+      
+      grupos[data].forEach(item => {
+        const nomeSafe = window.escapeHTML ? window.escapeHTML(item.nome) : item.nome;
+        const emailSafe = window.escapeHTML ? window.escapeHTML(item.email) : item.email;
+        
+        html += `
+          <tr>
+            <td><span class="badge-user">${nomeSafe}</span></td>
+            <td>${emailSafe}</td>
+            <td><span class="badge-time">⏱️ ${item.horaFormatada}</span></td>
+          </tr>
+        `;
+      });
+      
+      html += `</tbody></table></div></div>`;
+    }
+    
+    container.innerHTML = html;
+  }, error => {
+    console.error("Erro ao carregar logs:", error);
+    container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro de permissão ao ler dados de auditoria.</div>';
+  });
+}
+
+/* ── AUTHENTICATION ── */
 onAuthStateChanged(auth, user => {
   const loginArea  = document.getElementById('login-area');
   const conteudo   = document.getElementById('conteudo');
@@ -404,15 +490,18 @@ onAuthStateChanged(auth, user => {
     const isAdmin = ADMIN_EMAILS.includes(user.email);
 
     document.getElementById('welcomeUser').textContent = nome;
-
     document.getElementById('feedbackNome').value = user.displayName || '';
     document.getElementById('feedbackEmail').value = user.email || '';
 
+    // Libera os botões/telas de admin
     if (isAdmin) {
       document.getElementById('btnAdmin').style.display = 'flex';
+      document.getElementById('menuAdminContainer').style.display = 'block';
+      carregarLogsAdmin();
     } else {
       document.getElementById('btnAdmin').style.display = 'none';
       document.getElementById('formAviso').classList.remove('open');
+      document.getElementById('menuAdminContainer').style.display = 'none';
     }
 
     carregarAvisos(isAdmin);
