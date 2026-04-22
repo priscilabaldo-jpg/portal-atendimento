@@ -172,6 +172,15 @@
         </div>
       </div>
       
+      <div class="filter-bar">
+        <label>Período:</label>
+        <input type="date" id="dataInicioLog">
+        <span>até</span>
+        <input type="date" id="dataFimLog">
+        <button class="btn-admin" id="btnFiltrarLogs">Filtrar</button>
+        <button class="btn-admin btn-limpar" id="btnLimparLogs">Limpar</button>
+      </div>
+      
       <div id="logsContainer">
         <div class="avisos-vazio">Carregando histórico...</div>
       </div>
@@ -233,7 +242,7 @@ function escapeHTML(str) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 }
-// 🟢 Expõe a função para o módulo do Firebase poder usar nos logs
+// Expõe a função para o módulo do Firebase poder usar nos logs
 window.escapeHTML = escapeHTML;
 
 buscaEl.addEventListener('keyup', function() {
@@ -301,11 +310,12 @@ function renderAvisos(avisos, isAdmin) {
 </script>
 
 <script type="module">
+// 🟢 IMPORTANTE: A importação do 'where' foi adicionada aqui
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot,
-         orderBy, query, serverTimestamp }
+         orderBy, query, serverTimestamp, where }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -394,7 +404,7 @@ document.getElementById('avisosLista').addEventListener('click', function(event)
   }
 });
 
-/* ── SISTEMA DE REGISTRO E LEITURA DE LOGS ── */
+/* ── SISTEMA DE REGISTRO E LEITURA DE LOGS (COM FILTRO) ── */
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
 
@@ -410,19 +420,38 @@ async function registrarAcesso(usuario) {
   }
 }
 
-function carregarLogsAdmin() {
+// 🟢 Função atualizada para aceitar datas e contar os acessos
+function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
   const container = document.getElementById('logsContainer');
-  const q = query(collection(db, 'acessos'), orderBy('dataAcesso', 'desc'));
+  container.innerHTML = '<div class="avisos-vazio">Buscando histórico...</div>';
+  
+  let restricoes = [collection(db, 'acessos')];
+
+  // Se o usuário filtrou por data
+  if (dataInicioStr && dataFimStr) {
+    const start = new Date(dataInicioStr + 'T00:00:00');
+    const end = new Date(dataFimStr + 'T23:59:59');
+    
+    restricoes.push(where('dataAcesso', '>=', start));
+    restricoes.push(where('dataAcesso', '<=', end));
+  }
+
+  // Ordena sempre do mais recente pro mais antigo
+  restricoes.push(orderBy('dataAcesso', 'desc'));
+  
+  const q = query(...restricoes);
   
   onSnapshot(q, snap => {
     const logs = snap.docs.map(d => d.data());
     
     if (!logs.length) {
-      container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado ainda.</div>';
+      container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado neste período.</div>';
       return;
     }
 
-    // Agrupa os logs pela data (ex: 22/04/2026)
+    // Cria o cabeçalho de contagem total
+    let html = `<div class="resumo-logs">Total de acessos encontrados: <strong>${logs.length}</strong></div>`;
+
     const grupos = {};
     logs.forEach(log => {
       const dataLog = log.dataAcesso ? new Date(log.dataAcesso.seconds * 1000) : new Date();
@@ -433,12 +462,10 @@ function carregarLogsAdmin() {
       grupos[dataFormatada].push({ ...log, horaFormatada });
     });
 
-    // Monta as tabelas
-    let html = '';
     for (const data in grupos) {
       html += `
         <div class="log-group">
-          <div class="log-date-header">🗓️ Data: ${data}</div>
+          <div class="log-date-header">🗓️ Data: ${data} <span style="opacity:0.5; font-size:9px; margin-left:auto;">(${grupos[data].length} acessos)</span></div>
           <div class="log-table-wrap">
             <table class="log-table">
               <thead>
@@ -454,7 +481,6 @@ function carregarLogsAdmin() {
       grupos[data].forEach(item => {
         const nomeSafe = window.escapeHTML ? window.escapeHTML(item.nome) : item.nome;
         const emailSafe = window.escapeHTML ? window.escapeHTML(item.email) : item.email;
-        
         html += `
           <tr>
             <td><span class="badge-user">${nomeSafe}</span></td>
@@ -463,16 +489,40 @@ function carregarLogsAdmin() {
           </tr>
         `;
       });
-      
       html += `</tbody></table></div></div>`;
     }
     
     container.innerHTML = html;
   }, error => {
     console.error("Erro ao carregar logs:", error);
-    container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro de permissão ao ler dados de auditoria.</div>';
+    container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro ao buscar dados. Tente limpar os filtros.</div>';
   });
 }
+
+/* ── EVENTOS DOS BOTÕES DE FILTRO DE LOG ── */
+document.getElementById('btnFiltrarLogs').addEventListener('click', () => {
+  const inicio = document.getElementById('dataInicioLog').value;
+  const fim = document.getElementById('dataFimLog').value;
+  
+  if (!inicio || !fim) {
+    alert("Por favor, selecione a data de início e a data de fim.");
+    return;
+  }
+  
+  if (inicio > fim) {
+    alert("A data de início não pode ser maior que a data de fim.");
+    return;
+  }
+  
+  carregarLogsAdmin(inicio, fim);
+});
+
+document.getElementById('btnLimparLogs').addEventListener('click', () => {
+  document.getElementById('dataInicioLog').value = '';
+  document.getElementById('dataFimLog').value = '';
+  carregarLogsAdmin();
+});
+
 
 /* ── AUTHENTICATION ── */
 onAuthStateChanged(auth, user => {
@@ -493,7 +543,6 @@ onAuthStateChanged(auth, user => {
     document.getElementById('feedbackNome').value = user.displayName || '';
     document.getElementById('feedbackEmail').value = user.email || '';
 
-    // Libera os botões/telas de admin
     if (isAdmin) {
       document.getElementById('btnAdmin').style.display = 'flex';
       document.getElementById('menuAdminContainer').style.display = 'block';
