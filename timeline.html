@@ -23,7 +23,9 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
-          <li id="menuAdminContainer" style="display: none;"><a href="index.html">Painel Admin</a></li>
+          <li id="menuAdminContainer" style="display: none;">
+            <a href="index.html" id="navAdmin">Painel Admin</a>
+          </li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -39,7 +41,6 @@
     <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-
   <div class="container">
     
     <div class="feed-container">
@@ -160,10 +161,10 @@ function carregarFeed(isAdmin) {
       let commentsHtml = '';
       
       comentarios.forEach(c => {
-        // 🟢 É MEU COMENTÁRIO?
+        // LÓGICA DO COMENTÁRIO: Mostra o "X" apenas se quem está logado for o dono do comentário
         const isMyComment = currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase();
         
-        // 🟢 PODE APAGAR? (Se for dono do comentário OU se for gestor/admin)
+        // PODE APAGAR? (Se for dono do comentário OU se for gestor/admin)
         const podeApagar = isMyComment || isAdmin;
         
         const commentDataString = encodeURIComponent(JSON.stringify(c));
