@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Timeline – CX Resolve</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
@@ -66,7 +68,10 @@
         <div class="avisos-vazio">Carregando publicações...</div>
       </div>
 
-    </div> </div> <footer>
+    </div> 
+  </div> 
+
+  <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
@@ -155,11 +160,11 @@ function carregarFeed(isAdmin) {
       let commentsHtml = '';
       
       comentarios.forEach(c => {
-        // 🟢 LÓGICA DO COMENTÁRIO: Mostra o "X" apenas se quem está logado for o dono do comentário
-        const isMyComment = currentUser && currentUser.email === c.email;
+        // 🟢 NOVA LÓGICA: É meu comentário OU eu sou admin?
+        const isMyComment = (currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase()) || isAdmin;
         
-        // Empacotamos o comentário inteiro em uma string segura para o botão conseguir remover depois
-        const commentDataString = window.escapeHTML(JSON.stringify(c));
+        // 🟢 Correção de Segurança: Criptografa o objeto para não quebrar o HTML com aspas duplas/simples
+        const commentDataString = encodeURIComponent(JSON.stringify(c));
 
         commentsHtml += `
           <div class="comment-item" style="position: relative; align-items: flex-start;">
@@ -167,7 +172,7 @@ function carregarFeed(isAdmin) {
             <div class="comment-bubble" style="position: relative; padding-right: 30px;">
               <strong>${window.escapeHTML(c.autor)}</strong>
               ${window.escapeHTML(c.texto)}
-              ${isMyComment ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar meu comentário">✕</button>` : ''}
+              ${isMyComment ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar comentário">✕</button>` : ''}
             </div>
           </div>
         `;
@@ -215,7 +220,7 @@ function carregarFeed(isAdmin) {
   });
 }
 
-// 2. Publicar novo Post
+// Publicar novo Post
 document.getElementById('btnPublishPost').addEventListener('click', async () => {
   if (!currentUser) return;
   const textInput = document.getElementById('postText');
@@ -251,7 +256,7 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   }
 });
 
-// 3. Apagar Post Inteiro (Só Admins)
+// Apagar Post
 window.apagarPost = async function(postId) {
   if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
   
@@ -263,7 +268,7 @@ window.apagarPost = async function(postId) {
   }
 };
 
-// 4. Curtir Post
+// Curtir Post
 window.toggleLike = async function(postId) {
   if (!currentUser) return;
   const postRef = doc(db, 'timeline_posts', postId);
@@ -280,7 +285,7 @@ window.toggleLike = async function(postId) {
   } catch(e) { console.error("Erro ao curtir", e); }
 };
 
-// 🟢 5. Enviar Comentário (agora salvando o e-mail)
+// Enviar Comentário
 window.enviarComentario = async function(postId) {
   if (!currentUser) return;
   const input = document.getElementById(`comment-${postId}`);
@@ -293,7 +298,7 @@ window.enviarComentario = async function(postId) {
     await updateDoc(postRef, {
       comentarios: arrayUnion({
         autor: currentUser.displayName || 'Usuário',
-        email: currentUser.email, // Salva o email para podermos identificar o dono depois
+        email: currentUser.email.toLowerCase(), // Salva o email em minúsculo para garantir
         texto: texto,
         data: new Date().toISOString()
       })
@@ -306,19 +311,17 @@ window.enviarComentario = async function(postId) {
   }
 };
 
-// 🟢 6. Apagar O PRÓPRIO Comentário
+// 🟢 Nova função de Apagar Comentário super segura
 window.apagarComentario = async function(postId, commentDataString) {
-  if (!confirm('Deseja apagar o seu comentário?')) return;
+  if (!confirm('Deseja apagar este comentário?')) return;
   
   try {
-    // Transforma a string de volta em um objeto de dados real
-    // Desfazemos o escapeHTML manualmente por segurança
-    const rawString = commentDataString.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
-    const commentObject = JSON.parse(rawString);
+    // Descriptografa o objeto que escondemos no HTML
+    const commentObject = JSON.parse(decodeURIComponent(commentDataString));
 
     const postRef = doc(db, 'timeline_posts', postId);
     
-    // Pede ao Firebase para remover exatamente este objeto da lista
+    // Pede ao Firebase para remover exatamente aquele comentário da lista
     await updateDoc(postRef, {
       comentarios: arrayRemove(commentObject)
     });
