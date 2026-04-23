@@ -198,7 +198,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🟢 Lista de admins para controle do menu
+// 🟢 1. Adicionamos a lista de administradores nesta página também!
 const ADMIN_EMAILS = [
   'priscila.baldo@leveros.com.br',
   'matheus.mendes@leveros.com.br'
@@ -208,7 +208,7 @@ onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     document.getElementById('materiais-content').style.display = 'block';
     
-    // 🟢 Mostra o botão do painel admin se for gestor
+    // 🟢 2. A MÁGICA AQUI: Se for o Matheus ou a Priscila, mostra o botão!
     if (ADMIN_EMAILS.includes(user.email)) {
        document.getElementById('menuAdminContainer').style.display = 'block';
        document.getElementById('navAdminMobile').style.display = 'block';
@@ -227,6 +227,5 @@ const logout = () => {
 document.getElementById('logoutBtn').onclick = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
-
 </body>
 </html>
