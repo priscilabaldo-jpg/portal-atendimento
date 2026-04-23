@@ -111,6 +111,16 @@ function getInitials(name) {
   return name ? name.charAt(0).toUpperCase() : 'U';
 }
 window.getInitials = getInitials;
+
+// 🟢 Nova função para renderizar a foto de perfil ou a inicial
+function renderAvatar(nome, photoUrl) {
+  if (photoUrl) {
+    // Usamos o referrerpolicy para o Google não bloquear o carregamento da foto fora dos sites deles
+    return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+  }
+  return getInitials(nome);
+}
+window.renderAvatar = renderAvatar;
 </script>
 
 <script type="module">
@@ -161,17 +171,14 @@ function carregarFeed(isAdmin) {
       let commentsHtml = '';
       
       comentarios.forEach(c => {
-        // LÓGICA DO COMENTÁRIO: Mostra o "X" apenas se quem está logado for o dono do comentário
         const isMyComment = currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase();
-        
-        // PODE APAGAR? (Se for dono do comentário OU se for gestor/admin)
         const podeApagar = isMyComment || isAdmin;
-        
         const commentDataString = encodeURIComponent(JSON.stringify(c));
 
+        // 🟢 Mostrando a foto do autor do comentário
         commentsHtml += `
           <div class="comment-item" style="position: relative; align-items: flex-start;">
-            <div class="user-avatar">${window.getInitials(c.autor)}</div>
+            <div class="user-avatar">${window.renderAvatar(c.autor, c.foto)}</div>
             <div class="comment-bubble" style="position: relative; padding-right: 30px;">
               <strong>${window.escapeHTML(c.autor)}</strong>
               ${window.escapeHTML(c.texto)}
@@ -183,12 +190,13 @@ function carregarFeed(isAdmin) {
 
       const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
 
+      // 🟢 Mostrando a foto do autor do post
       html += `
         <div class="post-card" style="position: relative;">
           ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
           
           <div class="post-header">
-            <div class="user-avatar">${window.getInitials(post.autor)}</div>
+            <div class="user-avatar">${window.renderAvatar(post.autor, post.autorFoto)}</div>
             <div class="post-author-info">
               <h4>${window.escapeHTML(post.autor)}</h4>
               <span>${dataFormatada}</span>
@@ -239,11 +247,13 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   btn.disabled = true;
 
   try {
+    // 🟢 Salvando a foto do perfil junto com a publicação
     await addDoc(collection(db, 'timeline_posts'), {
       texto: texto,
       midiaUrl: midiaUrl,
       autor: currentUser.displayName || 'Usuário Leveros',
       autorEmail: currentUser.email,
+      autorFoto: currentUser.photoURL || null,
       likes: [],
       comentarios: [],
       criadoEm: serverTimestamp()
@@ -298,10 +308,12 @@ window.enviarComentario = async function(postId) {
   input.disabled = true;
   try {
     const postRef = doc(db, 'timeline_posts', postId);
+    // 🟢 Salvando a foto do perfil junto com o comentário
     await updateDoc(postRef, {
       comentarios: arrayUnion({
         autor: currentUser.displayName || 'Usuário',
         email: currentUser.email.toLowerCase(), 
+        foto: currentUser.photoURL || null,
         texto: texto,
         data: new Date().toISOString()
       })
@@ -345,8 +357,13 @@ onAuthStateChanged(auth, user => {
     currentUser = user;
     document.getElementById('timeline-content').style.display = 'block';
     
+    // 🟢 Configura a foto de perfil na caixa principal de "Criar Publicação"
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
-    document.getElementById('myAvatar').textContent = window.getInitials(nome);
+    if (user.photoURL) {
+      document.getElementById('myAvatar').innerHTML = `<img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    } else {
+      document.getElementById('myAvatar').textContent = window.getInitials(nome);
+    }
 
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
