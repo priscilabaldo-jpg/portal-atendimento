@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline – CX Resolve</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<div id="timeline-content" style="display:none; position: relative; z-index: 5;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html" class="active">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li id="menuAdminContainer" style="display: none;"><a href="index.html">Painel Admin</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container">
+    
+    <div class="feed-container">
+      
+      <div class="page-header" style="text-align: center; margin-bottom: 20px;">
+        <p class="page-label">Comunidade Leveros</p>
+        <h1>Nosso <span>Feed</span> 💬</h1>
+        <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
+      </div>
+
+      <div class="create-post-box">
+        <div class="create-post-header">
+          <div class="user-avatar" id="myAvatar">L</div>
+          <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
+        </div>
+        <div class="create-post-actions">
+          <div class="media-input-wrap">
+            <span>📷</span>
+            <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
+          </div>
+          <button class="submit-btn" id="btnPublishPost">Publicar</button>
+        </div>
+      </div>
+
+      <div id="feedList">
+        <div class="avisos-vazio">Carregando publicações...</div>
+      </div>
+
+    </div> </div> <footer>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('open');
+});
+
+// Função para sanitizar textos e evitar códigos maliciosos
+function escapeHTML(str) {
+  return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+}
+window.escapeHTML = escapeHTML;
+
+// Função para pegar a primeira letra do nome
+function getInitials(name) {
+  return name ? name.charAt(0).toUpperCase() : 'U';
+}
+window.getInitials = getInitials;
+</script>
+
+<script type="module">
+// 🟢 Importações expandidas para suportar atualizações de array (Curtidas e Comentários)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+  authDomain:"portal-atendimento-541ae.firebaseapp.com",
+  projectId:"portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+let currentUser = null;
+
+/* ====================================================================
+   LÓGICA DA TIMELINE
+   ==================================================================== */
+
+// 1. Carregar os Posts em tempo real
+function carregarFeed() {
+  const feedList = document.getElementById('feedList');
+  const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
+  
+  onSnapshot(q, snap => {
+    if (snap.empty) {
+      feedList.innerHTML = '<div class="avisos-vazio">Nenhuma publicação ainda. Seja o primeiro!</div>';
+      return;
+    }
+
+    let html = '';
+    snap.docs.forEach(docSnap => {
+      const post = docSnap.data();
+      const postId = docSnap.id;
+      
+      const dataFormatada = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : 'Agora';
+      
+      // Verifica se o usuário atual curtiu
+      const likes = post.likes || [];
+      const isLiked = currentUser && likes.includes(currentUser.email);
+      const heartIcon = isLiked ? '❤️' : '🤍';
+      const likeClass = isLiked ? 'liked' : '';
+      
+      // Comentários
+      const comentarios = post.comentarios || [];
+      let commentsHtml = '';
+      comentarios.forEach(c => {
+        commentsHtml += `
+          <div class="comment-item">
+            <div class="user-avatar">${window.getInitials(c.autor)}</div>
+            <div class="comment-bubble">
+              <strong>${window.escapeHTML(c.autor)}</strong>
+              ${window.escapeHTML(c.texto)}
+            </div>
+          </div>
+        `;
+      });
+
+      // Mídia (se houver)
+      const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
+
+      html += `
+        <div class="post-card">
+          <div class="post-header">
+            <div class="user-avatar">${window.getInitials(post.autor)}</div>
+            <div class="post-author-info">
+              <h4>${window.escapeHTML(post.autor)}</h4>
+              <span>${dataFormatada}</span>
+            </div>
+          </div>
+          
+          <div class="post-text">${window.escapeHTML(post.texto)}</div>
+          ${mediaHtml}
+          
+          <div class="post-actions">
+            <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
+              ${heartIcon} Curtir (${likes.length})
+            </button>
+            <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
+              💬 Comentar (${comentarios.length})
+            </button>
+          </div>
+          
+          <div class="comments-list">
+            ${commentsHtml}
+          </div>
+          
+          <div class="comment-input-wrap">
+            <input type="text" id="comment-${postId}" placeholder="Escreva um comentário..." onkeypress="handleComment(event, '${postId}')">
+            <button class="btn-send" onclick="enviarComentario('${postId}')">➤</button>
+          </div>
+        </div>
+      `;
+    });
+    
+    feedList.innerHTML = html;
+  });
+}
+
+// 2. Publicar novo Post
+document.getElementById('btnPublishPost').addEventListener('click', async () => {
+  if (!currentUser) return;
+  const textInput = document.getElementById('postText');
+  const mediaInput = document.getElementById('postMediaUrl');
+  
+  const texto = textInput.value.trim();
+  const midiaUrl = mediaInput.value.trim();
+  
+  if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
+
+  const btn = document.getElementById('btnPublishPost');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'timeline_posts'), {
+      texto: texto,
+      midiaUrl: midiaUrl,
+      autor: currentUser.displayName || 'Usuário Leveros',
+      autorEmail: currentUser.email,
+      likes: [],
+      comentarios: [],
+      criadoEm: serverTimestamp()
+    });
+    textInput.value = '';
+    mediaInput.value = '';
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao publicar. Verifique as permissões.");
+  } finally {
+    btn.textContent = 'Publicar';
+    btn.disabled = false;
+  }
+});
+
+// 3. Curtir Post
+window.toggleLike = async function(postId) {
+  if (!currentUser) return;
+  const postRef = doc(db, 'timeline_posts', postId);
+  
+  // Vamos buscar o post atual para saber se a pessoa já curtiu
+  // Isso poderia ser feito no frontend, mas no Firestore precisamos enviar a instrução certa
+  // Como temos o currentUser.email, podemos usar o ArrayUnion/ArrayRemove direto se soubermos o status,
+  // Para simplificar, como o DOM já tem a classe 'liked', vamos usar um truque visual:
+  const btn = event.currentTarget;
+  const isLiked = btn.classList.contains('liked');
+
+  try {
+    if (isLiked) {
+      await updateDoc(postRef, { likes: arrayRemove(currentUser.email) });
+    } else {
+      await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
+    }
+  } catch(e) { console.error("Erro ao curtir", e); }
+};
+
+// 4. Enviar Comentário
+window.enviarComentario = async function(postId) {
+  if (!currentUser) return;
+  const input = document.getElementById(`comment-${postId}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.disabled = true;
+  try {
+    const postRef = doc(db, 'timeline_posts', postId);
+    await updateDoc(postRef, {
+      comentarios: arrayUnion({
+        autor: currentUser.displayName || 'Usuário',
+        texto: texto,
+        data: new Date().toISOString()
+      })
+    });
+    input.value = '';
+  } catch(e) {
+    console.error("Erro ao comentar", e);
+  } finally {
+    input.disabled = false;
+  }
+};
+
+window.handleComment = function(event, postId) {
+  if (event.key === 'Enter') {
+    enviarComentario(postId);
+  }
+};
+
+/* ====================================================================
+   AUTENTICAÇÃO PADRÃO
+   ==================================================================== */
+onAuthStateChanged(auth, user => {
+  if (user && user.email.endsWith('@leveros.com.br')) {
+    currentUser = user;
+    document.getElementById('timeline-content').style.display = 'block';
+    
+    // Configura o avatar com a inicial do nome
+    const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
+    document.getElementById('myAvatar').textContent = window.getInitials(nome);
+
+    if (ADMIN_EMAILS.includes(user.email)) {
+       document.getElementById('menuAdminContainer').style.display = 'block';
+       document.getElementById('navAdminMobile').style.display = 'block';
+    }
+    
+    carregarFeed(); // Inicia a escuta dos posts
+    
+  } else {
+    window.location.href = 'index.html';
+  }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
+</script>
+
+</body>
+</html>
