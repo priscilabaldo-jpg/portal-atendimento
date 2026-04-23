@@ -4,9 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Timeline – CX Resolve</title>
-
 <link rel="stylesheet" href="style.css">
-
 </head>
 <body>
 
@@ -98,13 +96,11 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
-// Prevenção contra injeção de código
 function escapeHTML(str) {
   return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
 }
 window.escapeHTML = escapeHTML;
 
-// Pega a inicial do nome para o Avatar
 function getInitials(name) {
   return name ? name.charAt(0).toUpperCase() : 'U';
 }
@@ -114,7 +110,6 @@ window.getInitials = getInitials;
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-// 🟢 Importação do deleteDoc garantida aqui
 import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -158,13 +153,21 @@ function carregarFeed(isAdmin) {
       
       const comentarios = post.comentarios || [];
       let commentsHtml = '';
+      
       comentarios.forEach(c => {
+        // 🟢 LÓGICA DO COMENTÁRIO: Mostra o "X" apenas se quem está logado for o dono do comentário
+        const isMyComment = currentUser && currentUser.email === c.email;
+        
+        // Empacotamos o comentário inteiro em uma string segura para o botão conseguir remover depois
+        const commentDataString = window.escapeHTML(JSON.stringify(c));
+
         commentsHtml += `
-          <div class="comment-item">
+          <div class="comment-item" style="position: relative; align-items: flex-start;">
             <div class="user-avatar">${window.getInitials(c.autor)}</div>
-            <div class="comment-bubble">
+            <div class="comment-bubble" style="position: relative; padding-right: 30px;">
               <strong>${window.escapeHTML(c.autor)}</strong>
               ${window.escapeHTML(c.texto)}
+              ${isMyComment ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar meu comentário">✕</button>` : ''}
             </div>
           </div>
         `;
@@ -172,7 +175,6 @@ function carregarFeed(isAdmin) {
 
       const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
 
-      // 🟢 O botão de excluir agora é vermelho, com fonte maior e garantido de aparecer para Admins
       html += `
         <div class="post-card" style="position: relative;">
           ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
@@ -213,7 +215,7 @@ function carregarFeed(isAdmin) {
   });
 }
 
-// Publicar novo Post
+// 2. Publicar novo Post
 document.getElementById('btnPublishPost').addEventListener('click', async () => {
   if (!currentUser) return;
   const textInput = document.getElementById('postText');
@@ -249,7 +251,7 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   }
 });
 
-// Apagar Post
+// 3. Apagar Post Inteiro (Só Admins)
 window.apagarPost = async function(postId) {
   if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
   
@@ -261,7 +263,7 @@ window.apagarPost = async function(postId) {
   }
 };
 
-// Curtir Post
+// 4. Curtir Post
 window.toggleLike = async function(postId) {
   if (!currentUser) return;
   const postRef = doc(db, 'timeline_posts', postId);
@@ -278,7 +280,7 @@ window.toggleLike = async function(postId) {
   } catch(e) { console.error("Erro ao curtir", e); }
 };
 
-// Enviar Comentário
+// 🟢 5. Enviar Comentário (agora salvando o e-mail)
 window.enviarComentario = async function(postId) {
   if (!currentUser) return;
   const input = document.getElementById(`comment-${postId}`);
@@ -291,6 +293,7 @@ window.enviarComentario = async function(postId) {
     await updateDoc(postRef, {
       comentarios: arrayUnion({
         autor: currentUser.displayName || 'Usuário',
+        email: currentUser.email, // Salva o email para podermos identificar o dono depois
         texto: texto,
         data: new Date().toISOString()
       })
@@ -300,6 +303,28 @@ window.enviarComentario = async function(postId) {
     console.error("Erro ao comentar", e);
   } finally {
     input.disabled = false;
+  }
+};
+
+// 🟢 6. Apagar O PRÓPRIO Comentário
+window.apagarComentario = async function(postId, commentDataString) {
+  if (!confirm('Deseja apagar o seu comentário?')) return;
+  
+  try {
+    // Transforma a string de volta em um objeto de dados real
+    // Desfazemos o escapeHTML manualmente por segurança
+    const rawString = commentDataString.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+    const commentObject = JSON.parse(rawString);
+
+    const postRef = doc(db, 'timeline_posts', postId);
+    
+    // Pede ao Firebase para remover exatamente este objeto da lista
+    await updateDoc(postRef, {
+      comentarios: arrayRemove(commentObject)
+    });
+  } catch(e) {
+    console.error("Erro ao apagar comentário", e);
+    alert("Ocorreu um erro ao apagar. Tente novamente.");
   }
 };
 
@@ -320,7 +345,6 @@ onAuthStateChanged(auth, user => {
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
     document.getElementById('myAvatar').textContent = window.getInitials(nome);
 
-    // 🟢 Correção fundamental: transforma o email logado em minúsculas
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
