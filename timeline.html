@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Feed – CX Resolve</title>
+<title>Timeline – CX Resolve</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -43,7 +43,7 @@
     <div class="feed-container">
       
       <div class="page-header" style="text-align: center; margin-bottom: 20px;">
-        <p class="page-label">Comunidade CX-Resolve</p>
+        <p class="page-label">Comunidade Leveros</p>
         <h1>Nosso <span>Feed</span> 💬</h1>
         <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
       </div>
@@ -78,13 +78,11 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
-// Função para sanitizar textos e evitar códigos maliciosos
 function escapeHTML(str) {
   return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
 }
 window.escapeHTML = escapeHTML;
 
-// Função para pegar a primeira letra do nome
 function getInitials(name) {
   return name ? name.charAt(0).toUpperCase() : 'U';
 }
@@ -92,10 +90,10 @@ window.getInitials = getInitials;
 </script>
 
 <script type="module">
-// 🟢 Importações expandidas para suportar atualizações de array (Curtidas e Comentários)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// 🟢 deleteDoc importado aqui para podermos apagar os posts
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -114,8 +112,8 @@ let currentUser = null;
    LÓGICA DA TIMELINE
    ==================================================================== */
 
-// 1. Carregar os Posts em tempo real
-function carregarFeed() {
+// 🟢 1. Adicionado o parâmetro isAdmin
+function carregarFeed(isAdmin) {
   const feedList = document.getElementById('feedList');
   const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
   
@@ -132,13 +130,11 @@ function carregarFeed() {
       
       const dataFormatada = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : 'Agora';
       
-      // Verifica se o usuário atual curtiu
       const likes = post.likes || [];
       const isLiked = currentUser && likes.includes(currentUser.email);
       const heartIcon = isLiked ? '❤️' : '🤍';
       const likeClass = isLiked ? 'liked' : '';
       
-      // Comentários
       const comentarios = post.comentarios || [];
       let commentsHtml = '';
       comentarios.forEach(c => {
@@ -153,11 +149,13 @@ function carregarFeed() {
         `;
       });
 
-      // Mídia (se houver)
       const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
 
+      // 🟢 Adicionado o Botão de Excluir que só aparece se isAdmin for true
       html += `
-        <div class="post-card">
+        <div class="post-card" style="position: relative;">
+          ${isAdmin ? `<button class="btn-apagar" style="position: absolute; top: 20px; right: 20px;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
+          
           <div class="post-header">
             <div class="user-avatar">${window.getInitials(post.autor)}</div>
             <div class="post-author-info">
@@ -230,15 +228,23 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   }
 });
 
-// 3. Curtir Post
+// 🟢 3. Apagar Post
+window.apagarPost = async function(postId) {
+  if (!confirm('Apagar esta publicação de todos os usuários?')) return;
+  
+  try {
+    await deleteDoc(doc(db, 'timeline_posts', postId));
+  } catch(e) {
+    console.error("Erro ao apagar post", e);
+    alert("Sem permissão para apagar este post.");
+  }
+};
+
+// 4. Curtir Post
 window.toggleLike = async function(postId) {
   if (!currentUser) return;
   const postRef = doc(db, 'timeline_posts', postId);
   
-  // Vamos buscar o post atual para saber se a pessoa já curtiu
-  // Isso poderia ser feito no frontend, mas no Firestore precisamos enviar a instrução certa
-  // Como temos o currentUser.email, podemos usar o ArrayUnion/ArrayRemove direto se soubermos o status,
-  // Para simplificar, como o DOM já tem a classe 'liked', vamos usar um truque visual:
   const btn = event.currentTarget;
   const isLiked = btn.classList.contains('liked');
 
@@ -251,7 +257,7 @@ window.toggleLike = async function(postId) {
   } catch(e) { console.error("Erro ao curtir", e); }
 };
 
-// 4. Enviar Comentário
+// 5. Enviar Comentário
 window.enviarComentario = async function(postId) {
   if (!currentUser) return;
   const input = document.getElementById(`comment-${postId}`);
@@ -290,16 +296,18 @@ onAuthStateChanged(auth, user => {
     currentUser = user;
     document.getElementById('timeline-content').style.display = 'block';
     
-    // Configura o avatar com a inicial do nome
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
     document.getElementById('myAvatar').textContent = window.getInitials(nome);
 
-    if (ADMIN_EMAILS.includes(user.email)) {
+    const isAdmin = ADMIN_EMAILS.includes(user.email);
+
+    if (isAdmin) {
        document.getElementById('menuAdminContainer').style.display = 'block';
        document.getElementById('navAdminMobile').style.display = 'block';
     }
     
-    carregarFeed(); // Inicia a escuta dos posts
+    // 🟢 Passando a variável isAdmin para a função que cria a tela
+    carregarFeed(isAdmin);
     
   } else {
     window.location.href = 'index.html';
