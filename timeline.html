@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Timeline – CX Resolve</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
@@ -67,6 +69,24 @@
       </div>
 
     </div> </div> <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
+        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <a href="index.html">Início</a>
+        <a href="timeline.html">Timeline</a>
+        <a href="materiais.html">Materiais</a>
+        <a href="informativos.html">Informativos</a>
+      </div>
+      <div class="footer-col">
+        <h4>Gestão</h4>
+        <p>Responsável: Priscila Baldo | Matheus Alves</p>
+        <p>Customer Experience | Leveros</p>
+      </div>
+    </div>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
 
@@ -78,11 +98,13 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
+// Prevenção contra injeção de código
 function escapeHTML(str) {
   return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
 }
 window.escapeHTML = escapeHTML;
 
+// Pega a inicial do nome para o Avatar
 function getInitials(name) {
   return name ? name.charAt(0).toUpperCase() : 'U';
 }
@@ -92,7 +114,7 @@ window.getInitials = getInitials;
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-// 🟢 deleteDoc importado aqui para podermos apagar os posts
+// 🟢 Importação do deleteDoc garantida aqui
 import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -112,7 +134,6 @@ let currentUser = null;
    LÓGICA DA TIMELINE
    ==================================================================== */
 
-// 🟢 1. Adicionado o parâmetro isAdmin
 function carregarFeed(isAdmin) {
   const feedList = document.getElementById('feedList');
   const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
@@ -151,10 +172,10 @@ function carregarFeed(isAdmin) {
 
       const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
 
-      // 🟢 Adicionado o Botão de Excluir que só aparece se isAdmin for true
+      // 🟢 O botão de excluir agora é vermelho, com fonte maior e garantido de aparecer para Admins
       html += `
         <div class="post-card" style="position: relative;">
-          ${isAdmin ? `<button class="btn-apagar" style="position: absolute; top: 20px; right: 20px;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
+          ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
           
           <div class="post-header">
             <div class="user-avatar">${window.getInitials(post.autor)}</div>
@@ -192,7 +213,7 @@ function carregarFeed(isAdmin) {
   });
 }
 
-// 2. Publicar novo Post
+// Publicar novo Post
 document.getElementById('btnPublishPost').addEventListener('click', async () => {
   if (!currentUser) return;
   const textInput = document.getElementById('postText');
@@ -228,9 +249,9 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   }
 });
 
-// 🟢 3. Apagar Post
+// Apagar Post
 window.apagarPost = async function(postId) {
-  if (!confirm('Apagar esta publicação de todos os usuários?')) return;
+  if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
   
   try {
     await deleteDoc(doc(db, 'timeline_posts', postId));
@@ -240,7 +261,7 @@ window.apagarPost = async function(postId) {
   }
 };
 
-// 4. Curtir Post
+// Curtir Post
 window.toggleLike = async function(postId) {
   if (!currentUser) return;
   const postRef = doc(db, 'timeline_posts', postId);
@@ -257,7 +278,7 @@ window.toggleLike = async function(postId) {
   } catch(e) { console.error("Erro ao curtir", e); }
 };
 
-// 5. Enviar Comentário
+// Enviar Comentário
 window.enviarComentario = async function(postId) {
   if (!currentUser) return;
   const input = document.getElementById(`comment-${postId}`);
@@ -299,14 +320,15 @@ onAuthStateChanged(auth, user => {
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
     document.getElementById('myAvatar').textContent = window.getInitials(nome);
 
-    const isAdmin = ADMIN_EMAILS.includes(user.email);
+    // 🟢 Correção fundamental: transforma o email logado em minúsculas
+    const emailLogado = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
     if (isAdmin) {
        document.getElementById('menuAdminContainer').style.display = 'block';
        document.getElementById('navAdminMobile').style.display = 'block';
     }
     
-    // 🟢 Passando a variável isAdmin para a função que cria a tela
     carregarFeed(isAdmin);
     
   } else {
