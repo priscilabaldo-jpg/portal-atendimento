@@ -22,7 +22,9 @@
           <li><a href="index.html">Início</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html" class="active">Informativos</a></li>
-          <li id="menuAdminContainer" style="display: none;"> <a href="index.html" id="navAdmin">Painel Admin</a></li>
+          <li id="menuAdminContainer" style="display: none;">
+            <a href="index.html" id="navAdmin">Painel Admin</a>
+          </li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -34,6 +36,7 @@
     <a href="index.html">Início</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
 
@@ -113,47 +116,63 @@
 
     </div>
 
-   <div class="feedback-section">
-  <h3>Sugestões de Melhoria 💡</h3>
-  <p>Sua ideia pode melhorar o dia a dia do time</p>
-  <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
-  
-  <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
-    
-    <input type="hidden" name="_captcha" value="false">
-    <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-    
-    <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
-    
-    <div class="form-row">
-      <div class="form-field">
-        <label>Seu nome</label>
-        <input type="text" name="nome" placeholder="Ex: Ana Silva" required>
+    <div class="feedback-section">
+      <h3>Sugestões de Melhoria 💡</h3>
+      <p>Sua ideia pode melhorar o dia a dia do time</p>
+      <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
+      
+      <form id="feedbackForm" action="https://formsubmit.co/priscila.baldo@leveros.com.br" method="POST">
+        <input type="hidden" name="_captcha" value="false">
+        <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
+        <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label>Seu nome</label>
+            <input type="text" name="nome" id="feedbackNome" placeholder="Ex: Ana Silva" required>
+          </div>
+          <div class="form-field">
+            <label>Seu e-mail</label>
+            <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
+          </div>
+        </div>
+        
+        <div class="form-field form-full">
+          <label>Sugestão</label>
+          <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">Enviar sugestão →</button>
+      </form>
+    </div>
+
+  </div> <footer>
+    <div class="footer-inner">
+      <div class="footer-col">
+        <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
+        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
       </div>
-      <div class="form-field">
-        <label>Seu e-mail</label>
-        <input type="email" name="email" placeholder="nome@leveros.com.br" required>
+      <div class="footer-col">
+        <h4>Navegação</h4>
+        <a href="index.html">Início</a>
+        <a href="materiais.html">Materiais</a>
+        <a href="informativos.html">Informativos</a>
+      </div>
+      <div class="footer-col">
+        <h4>Gestão</h4>
+        <p>Responsável: Priscila Baldo | Matheus Alves</p>
+        <p>Customer Experience | Leveros</p>
       </div>
     </div>
-    
-    <div class="form-field form-full">
-      <label>Sugestão</label>
-      <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
-    </div>
-    
-    <button type="submit" class="submit-btn">Enviar sugestão →</button>
-  </form>
-</div>
-
-  </div>
-
-  <footer>
-    <div class="footer-bottom">© 2026 CX Resolve · Portal Interno Leveros</div>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
 
 </div>
 
 <script>
+// Ano dinâmico no rodapé
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+
 function toggle(btn) {
   const details = btn.nextElementSibling;
   const isOpen = details.classList.toggle('open');
@@ -180,15 +199,36 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// 🟢 Lista de admins
+const ADMIN_EMAILS = [
+  'priscila.baldo@leveros.com.br',
+  'matheus.mendes@leveros.com.br'
+];
+
 onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     document.getElementById('informativos-content').style.display = 'block';
+
+    // Preenche automaticamente o nome e email no formulário de feedback
+    document.getElementById('feedbackNome').value = user.displayName || '';
+    document.getElementById('feedbackEmail').value = user.email || '';
+    
+    // Mostra o botão do painel admin se for o Matheus ou a Priscila
+    if (ADMIN_EMAILS.includes(user.email)) {
+       document.getElementById('menuAdminContainer').style.display = 'block';
+       document.getElementById('navAdminMobile').style.display = 'block';
+    }
+    
   } else {
     window.location.href = 'index.html';
   }
 });
 
-const logout = () => signOut(auth).then(() => window.location.href = 'index.html');
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
 document.getElementById('logoutBtn').onclick = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
