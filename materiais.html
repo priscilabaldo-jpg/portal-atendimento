@@ -20,6 +20,7 @@
       <nav>
         <ul>
           <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
           <li><a href="materiais.html" class="active">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
           <li id="menuAdminContainer" style="display: none;">
@@ -34,12 +35,12 @@
 
   <div class="mobile-menu" id="mobileMenu">
     <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
     <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-
   <div class="container">
 
     <div class="page-header">
@@ -155,6 +156,7 @@
       <div class="footer-col">
         <h4>Navegação</h4>
         <a href="index.html">Início</a>
+        <a href="timeline.html">Timeline</a>
         <a href="materiais.html">Materiais</a>
         <a href="informativos.html">Informativos</a>
       </div>
@@ -198,7 +200,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// 🟢 1. Adicionamos a lista de administradores nesta página também!
 const ADMIN_EMAILS = [
   'priscila.baldo@leveros.com.br',
   'matheus.mendes@leveros.com.br'
@@ -208,8 +209,10 @@ onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     document.getElementById('materiais-content').style.display = 'block';
     
-    // 🟢 2. A MÁGICA AQUI: Se for o Matheus ou a Priscila, mostra o botão!
-    if (ADMIN_EMAILS.includes(user.email)) {
+    // Transforma o email em minúsculo para garantir a checagem
+    const emailLogado = user.email.toLowerCase();
+    
+    if (ADMIN_EMAILS.includes(emailLogado)) {
        document.getElementById('menuAdminContainer').style.display = 'block';
        document.getElementById('navAdminMobile').style.display = 'block';
     }
