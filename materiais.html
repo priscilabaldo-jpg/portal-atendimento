@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Materiais – CX Resolve</title>
+
 <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
@@ -20,7 +22,9 @@
           <li><a href="index.html">Início</a></li>
           <li><a href="materiais.html" class="active">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
-          <li id="menuAdminContainer" style="display: none;"><a href="index.html" id="navAdmin">Painel Admin</a></li>
+          <li id="menuAdminContainer" style="display: none;">
+            <a href="index.html" id="navAdmin">Painel Admin</a>
+          </li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -32,6 +36,7 @@
     <a href="index.html">Início</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
 
@@ -138,7 +143,10 @@
         <a class="card-link" href="https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096" target="_blank">Abrir documento ↗</a>
       </div>
 
-    </div> </div> <footer>
+    </div> 
+  </div> 
+
+  <footer>
     <div class="footer-inner">
       <div class="footer-col">
         <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
@@ -152,9 +160,8 @@
       </div>
       <div class="footer-col">
         <h4>Gestão</h4>
-        <p>Responsável: Priscila Baldo</p>
-        <p>Customer Experience</p>
-        <p>Leveros</p>
+        <p>Responsável: Priscila Baldo | Matheus Alves</p>
+        <p>Customer Experience | Leveros</p>
       </div>
     </div>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
@@ -191,15 +198,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
+// 🟢 Lista de admins para controle do menu
+const ADMIN_EMAILS = [
+  'priscila.baldo@leveros.com.br',
+  'matheus.mendes@leveros.com.br'
+];
+
 onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     document.getElementById('materiais-content').style.display = 'block';
+    
+    // 🟢 Mostra o botão do painel admin se for gestor
+    if (ADMIN_EMAILS.includes(user.email)) {
+       document.getElementById('menuAdminContainer').style.display = 'block';
+       document.getElementById('navAdminMobile').style.display = 'block';
+    }
+    
   } else {
     window.location.href = 'index.html';
   }
 });
 
-const logout = () => signOut(auth).then(() => window.location.href = 'index.html');
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
 document.getElementById('logoutBtn').onclick = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 </script>
