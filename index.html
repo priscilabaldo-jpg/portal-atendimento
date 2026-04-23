@@ -43,14 +43,13 @@
       <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
       <nav>
         <ul>
-          <li><a href="timeline.html">Feed</a></li>
           <li><a href="#" id="navInicio" class="active">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="#" id="navAdmin">Painel Admin</a>
           </li>
-            <li><a href="timeline.html">Feed</a></li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -59,12 +58,13 @@
   </header>
 
   <div class="mobile-menu" id="mobileMenu">
-    <a href="index.html">Início</a>
+    <a href="#" id="navInicioMobile">Início</a>
+    <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="#" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-
   <div class="container">
 
     <div id="homeView">
@@ -165,7 +165,9 @@
           <button type="submit" class="submit-btn">Enviar sugestão →</button>
         </form>
       </div>
-    </div> <div id="adminView" style="display: none;">
+    </div> 
+    
+    <div id="adminView" style="display: none;">
       <div class="welcome-row">
         <div class="welcome-text">
           <p class="welcome-label">Área Restrita</p>
@@ -203,6 +205,7 @@
       <div class="footer-col">
         <h4>Navegação</h4>
         <a href="index.html">Início</a>
+        <a href="timeline.html">Timeline</a>
         <a href="materiais.html">Materiais</a>
         <a href="informativos.html">Informativos</a>
       </div>
@@ -304,26 +307,37 @@ const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
-
-/* 🟢 NOVIDADE: Variável global para guardar os dados da tela para exportação */
 let logsParaExportacao = [];
 
-document.getElementById('navInicio').addEventListener('click', (e) => {
-  e.preventDefault();
+/* ====================================================================
+   NAVEGAÇÃO SPA (Desktop e Mobile)
+   ==================================================================== */
+function irParaHome(e) {
+  if(e) e.preventDefault();
   document.getElementById('homeView').style.display = 'block';
   document.getElementById('adminView').style.display = 'none';
   document.getElementById('navInicio').classList.add('active');
   document.getElementById('navAdmin').classList.remove('active');
-});
+  document.getElementById('mobileMenu').classList.remove('open');
+}
 
-document.getElementById('navAdmin').addEventListener('click', (e) => {
-  e.preventDefault();
+function irParaAdmin(e) {
+  if(e) e.preventDefault();
   document.getElementById('homeView').style.display = 'none';
   document.getElementById('adminView').style.display = 'block';
   document.getElementById('navInicio').classList.remove('active');
   document.getElementById('navAdmin').classList.add('active');
-});
+  document.getElementById('mobileMenu').classList.remove('open');
+}
 
+document.getElementById('navInicio').addEventListener('click', irParaHome);
+document.getElementById('navAdmin').addEventListener('click', irParaAdmin);
+document.getElementById('navInicioMobile').addEventListener('click', irParaHome);
+document.getElementById('navAdminMobile').addEventListener('click', irParaAdmin);
+
+/* ====================================================================
+   LÓGICA DOS AVISOS
+   ==================================================================== */
 function carregarAvisos(isAdmin) {
   const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
   onSnapshot(q, snap => renderAvisos(snap.docs.map(d => ({ id: d.id, ...d.data() })), isAdmin));
@@ -349,6 +363,9 @@ document.getElementById('avisosLista').addEventListener('click', async function(
   }
 });
 
+/* ====================================================================
+   LOGS DE AUDITORIA
+   ==================================================================== */
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
   try {
@@ -373,7 +390,6 @@ function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
   onSnapshot(query(...restricoes), snap => {
     const logs = snap.docs.map(d => d.data());
     
-    // 🟢 LIMPA OS DADOS DE EXPORTAÇÃO E PREENCHE COM OS NOVOS DADOS FORMATADOS
     logsParaExportacao = [];
 
     if (!logs.length) {
@@ -389,7 +405,6 @@ function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
       const dataFormatada = dataLog.toLocaleDateString('pt-BR');
       const horaFormatada = dataLog.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-      // Salva na nossa lista invisível para o Excel
       logsParaExportacao.push({
         nome: log.nome || 'Desconhecido',
         email: log.email || 'Sem e-mail',
@@ -435,33 +450,25 @@ document.getElementById('btnLimparLogs').addEventListener('click', () => {
   carregarLogsAdmin();
 });
 
-/* ── 🟢 FUNÇÃO DE EXPORTAR PARA EXCEL (CSV) ── */
 document.getElementById('btnExportarLogs').addEventListener('click', () => {
   if (logsParaExportacao.length === 0) {
     alert('Nenhum dado na tela para exportar. Tente carregar ou filtrar os logs primeiro.');
     return;
   }
 
-  // 1. Cria o BOM (Byte Order Mark) para o Excel reconhecer os acentos do Brasil (UTF-8)
   let csvContent = '\uFEFF'; 
-  
-  // 2. Cria o cabeçalho (Usamos ponto e vírgula porque o Excel em PT-BR usa ; para separar colunas)
   csvContent += "Nome;E-mail;Data de Acesso;Hora de Acesso\n";
 
-  // 3. Adiciona cada linha de log
   logsParaExportacao.forEach(log => {
     csvContent += `${log.nome};${log.email};${log.data};${log.hora}\n`;
   });
 
-  // 4. Cria o arquivo virtual no navegador
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   
-  // 5. Cria um link invisível e clica nele para forçar o download
   const linkInvisivel = document.createElement("a");
   linkInvisivel.href = url;
   
-  // Define o nome do arquivo com a data de hoje
   const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
   linkInvisivel.download = `Relatorio_Acessos_${hoje}.csv`;
   
@@ -470,27 +477,39 @@ document.getElementById('btnExportarLogs').addEventListener('click', () => {
   document.body.removeChild(linkInvisivel);
 });
 
+/* ====================================================================
+   AUTENTICAÇÃO
+   ==================================================================== */
 onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
     document.getElementById('loginError').classList.remove('visible');
     document.getElementById('login-area').style.display = 'none';
     document.getElementById('conteudo').style.display  = 'block';
+    
     document.getElementById('welcomeUser').textContent = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
     document.getElementById('feedbackNome').value = user.displayName || '';
     document.getElementById('feedbackEmail').value = user.email || '';
 
-    if (ADMIN_EMAILS.includes(user.email)) {
+    // Utiliza o .toLowerCase() para evitar erros
+    const emailLogado = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    if (isAdmin) {
       document.getElementById('btnAdmin').style.display = 'flex';
       document.getElementById('menuAdminContainer').style.display = 'block';
+      document.getElementById('navAdminMobile').style.display = 'block';
       carregarLogsAdmin();
     } else {
       document.getElementById('btnAdmin').style.display = 'none';
       document.getElementById('formAviso').classList.remove('open');
       document.getElementById('menuAdminContainer').style.display = 'none';
+      document.getElementById('navAdminMobile').style.display = 'none';
     }
-    carregarAvisos(ADMIN_EMAILS.includes(user.email));
+    
+    carregarAvisos(isAdmin);
     registrarAcesso(user);
+    
   } else if (user) {
     signOut(auth); currentUser = null;
     document.getElementById('loginError').classList.add('visible');
