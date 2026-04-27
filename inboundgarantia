@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbound Leveros | Garantia</title>
+    <style>
+        /* ====================================================================
+           1. VARIÁVEIS GLOBAIS E RESET (SEU PADRÃO)
+           ==================================================================== */
+        :root {
+            --verde1: #002D32;
+            --verde2: #005A64;
+            --azul:   #4CDDDD;
+            --verde3: #6FFFAF;
+            --amarelo:#FFCE00;
+            --glass:  rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.09);
+            --font: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--verde1);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 13px;
+        }
+
+        /* Fundo dinâmico conforme seu padrão */
+        .bg-layer {
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse 70% 50% at 15% 10%, rgba(76,221,221,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse 55% 45% at 85% 85%, rgba(111,255,175,0.06) 0%, transparent 55%),
+                linear-gradient(160deg, #002D32 0%, #004A52 50%, #002D32 100%);
+        }
+
+        .container { max-width: 1100px; margin: auto; padding: 44px 28px 80px; position: relative; z-index: 5; }
+
+        /* Estilo dos Cards (Glassmorphism) */
+        .glass-card {
+            background: rgba(0,80,90,0.28);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .section-label { 
+            font-size: 10px; font-weight: 700; letter-spacing: 0.14em; 
+            text-transform: uppercase; color: var(--azul); opacity: 0.8; margin-bottom: 18px; 
+        }
+
+        h2 { font-size: 32px; font-weight: 700; margin-bottom: 40px; text-align: center; }
+        h2 span { color: var(--azul); }
+
+        /* Inputs e Controles */
+        .input-group { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+        input[type="text"], select, input[type="file"] {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid var(--glass-border);
+            border-radius: 5px;
+            padding: 12px 16px;
+            color: white;
+            font-family: var(--font);
+            font-size: 12px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus, select:focus { border-color: var(--azul); background: rgba(255,255,255,0.1); }
+
+        .btn-primary {
+            background: var(--azul);
+            color: var(--verde1);
+            border: none;
+            border-radius: 5px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary:hover { opacity: 0.8; transform: translateY(-1px); }
+
+        /* Área de Resultado CPF/CNPJ */
+        #containerResultado {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(76,221,221,0.05);
+            border-radius: 8px;
+            border-left: 3px solid var(--azul);
+        }
+
+        #resultadoLimpo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--verde3);
+            cursor: pointer;
+            display: block;
+            letter-spacing: 1px;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 20px;
+            color: var(--verde3);
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+            margin-top: 10px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.4;
+            font-size: 11px;
+            position: relative;
+            z-index: 5;
+        }
+
+        @keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
+    </style>
+</head>
+<body>
+    <div class="bg-layer"></div>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-label">Operacional Leveros</div>
+            <h1>GARANTIA <span>Inbound</span></h1>
+            <p>Processamento automatizado de XML e limpeza de dados cadastrais.</p>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-label">Validação de Documento</div>
+            <div class="input-group">
+                <input type="text" id="inputLimpar" placeholder="Cole o CPF ou CNPJ aqui..." style="flex: 1; max-width: 400px;">
+                <button class="btn-primary" onclick="executarLimpeza()">Limpar Pontuação</button>
+            </div>
+            
+            <div id="containerResultado" style="display: none;">
+                <span id="resultadoLimpo" onclick="copiarTextoClick()" title="Clique para copiar"></span>
+                <p style="font-size: 10px; opacity: 0.5; margin-top: 8px;">✓ Clique no número para copiar</p>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-label">Entrada de Nota Fiscal</div>
+            <div class="input-group">
+                <select id="selectNome">
+                    <option value="Pedro">Operador: Pedro</option>
+                    <option value="Julia">Operador: Julia</option>
+                    <option value="Julia">Operador: Jackeline</option>
+
+                </select>
+                <input type="file" id="xmlFile" accept=".xml" style="flex: 1;">
+                <button class="btn-primary" onclick="processXML()">Gerar Dados Planilha</button>
+            </div>
+        </div>
+
+        <div class="glass-card">
+            <div class="section-label">Resultado para Planilha</div>
+            <textarea id="output" rows="12" placeholder="Os dados extraídos aparecerão aqui após o processamento..."></textarea>
+            <p style="font-size: 10px; opacity: 0.4; margin-top: 12px;">* Padrão de saída: Tabulação (TSV) compatível com Excel/Sheets.</p>
+        </div>
+    </div>
+
+    <footer>
+        Matheus Alves - Analista CX / Backoffice Leveros &copy; 2026 
+    </footer>
+
+    <script>
+        /* AS FUNÇÕES PERMANECEM AS MESMAS, APENAS O NOME DA VARIÁVEL Pedro/Julia FOI MANTIDO */
+        function executarLimpeza() {
+            const input = document.getElementById('inputLimpar').value;
+            if (!input) return alert('Insira um documento.');
+            const resultado = input.replace(/[^\d]/g, '');
+            const spanResultado = document.getElementById('resultadoLimpo');
+            spanResultado.innerText = resultado;
+            document.getElementById('containerResultado').style.display = 'block';
+            copiarParaAreaTransferencia(resultado);
+        }
+
+        function copiarTextoClick() {
+            const texto = document.getElementById('resultadoLimpo').innerText;
+            copiarParaAreaTransferencia(texto);
+            const span = document.getElementById('resultadoLimpo');
+            span.style.color = "#FFCE00"; 
+            setTimeout(() => span.style.color = "#6FFFAF", 500);
+        }
+
+        function copiarParaAreaTransferencia(texto) {
+            navigator.clipboard.writeText(texto);
+        }
+
+        function formatarDataBrasileira(dataISO) {
+            if (!dataISO) return '';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}/${ano}`;
+        }
+
+        function formatarHoraBrasileira(horaISO) {
+            if (!horaISO) return '';
+            const [hora, minuto] = horaISO.split(':');
+            return `${hora}:${minuto}`;
+        }
+
+        function processXML() {
+            const input = document.getElementById('xmlFile').files[0];
+            const nomeSelecionado = document.getElementById('selectNome').value;
+
+            if (!input) return alert('Selecione um XML');
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(event.target.result, "text/xml");
+
+                const fornecedores = {
+                    '04222931000195': '11014', '04222931000357': '11015',
+                    '02172568000620': '11126', '2172568000115': '11080',
+                    '76487032001954': '11047', '52556578000122': '11040',
+                    '07023429000143': '11215', '52556578000807': '11041',
+                    '07023429000577': '140003178', '43244771000137': '11037',
+                    '3519135000156': '11081', '43244771000560': '11095',
+                    '03519135000156': '11081', '33284522000626': '11060',
+                    '06114935001580': '11018', '01166372000155': '11003',
+                    '1166372001127': '11075', '07019308000128': '11146',
+                    '10948651000161': '11023', '10948651003934': '11065',
+                    '10948651003691': '11027', '10948651005040': '11029',
+                    '10948651001800': '11025', '10948651004663': '140000370',
+                    '10948651004906': '11255', '10948651005392': '11212',
+                    '10948651000242': '32456', '10948651004230': '11028',
+                    '26794410000226': '32455', '01610517001480': '11190',
+                    '01610517000165': '11179', '01610517001137': '11210',
+                    '17417928000179': '11077', '17417928000330': '11227',
+                    '01763720000171': '11125', '18871660000103': '140003386',
+                    '44822158000112': '140003437', 
+                    '64636971000105' : '32770'
+                };
+
+                const dhEmi = xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent;
+                const dataFaturamento = dhEmi ? formatarDataBrasileira(dhEmi.split("T")[0]) : '';
+                const numeroNF = xmlDoc.getElementsByTagName("nNF")[0]?.textContent || '';
+                const cnpjEmitente = (xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("CNPJ")[0]?.textContent || '').replace(/[^\d]/g, '');
+                const codFornecedor = fornecedores[cnpjEmitente] || 'Desconhecido';
+                const hoje = new Date();
+                const dataHoje = formatarDataBrasileira(hoje.toISOString().split('T')[0]);
+                const horaAgora = formatarHoraBrasileira(hoje.toTimeString().split(' ')[0]);
+                const codigoAcesso = xmlDoc.getElementsByTagName("chNFe")[0]?.textContent || '';
+
+                const produtos = xmlDoc.getElementsByTagName("det");
+                let resultados = [];
+
+                for (let i = 0; i < produtos.length; i++) {
+                    const qCom = produtos[i].getElementsByTagName("qCom")[0]?.textContent || '0';
+                    const ncm = produtos[i].getElementsByTagName("NCM")[0]?.textContent || '';
+                    const vUn = parseFloat(produtos[i].getElementsByTagName("vUnCom")[0]?.textContent || '0').toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+                    const ipi = produtos[i].getElementsByTagName("pIPI")[0]?.textContent || '0';
+
+                    const linha = [
+                        '', dataFaturamento, '', '', dataHoje, horaAgora, nomeSelecionado,
+                        numeroNF, codFornecedor, '', Math.floor(qCom), ncm, vUn, ipi, codigoAcesso
+                    ].join('\t');
+                    resultados.push(linha);
+                }
+                document.getElementById('output').value = resultados.join('\n');
+            };
+            reader.readAsText(input);
+        }
+    </script>
+</body>
+</html>
