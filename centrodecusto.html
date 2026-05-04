@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image" href="LogoLeveros.png">
+<title>Orçamento - CX Resolve</title>
+
+<!-- Usa a mesma folha de estilos do portal principal -->
+<link rel="stylesheet" href="style.css">
+
+<style>
+  /* Estilos específicos para a tabela e cards de orçamento (complementares ao teu style.css) */
+  .resumo-cards { display: flex; gap: 20px; margin: 20px 0; }
+  .resumo-card { background: white; padding: 20px; border-radius: 12px; flex: 1; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-left: 5px solid var(--verde1, #002D32); }
+  .resumo-card h3 { margin: 0 0 10px 0; font-size: 14px; color: #666; font-weight: normal; }
+  .resumo-card p { margin: 0; font-size: 28px; font-weight: bold; color: var(--verde1, #002D32); }
+  
+  .table-container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); margin-top: 20px; overflow-x: auto; }
+  .table-orcamento { width: 100%; border-collapse: collapse; text-align: left; }
+  .table-orcamento th { background-color: rgba(0, 45, 50, 0.05); color: var(--verde1, #002D32); padding: 12px; border-bottom: 2px solid var(--verde1, #002D32); }
+  .table-orcamento td { padding: 12px; border-bottom: 1px solid #eee; color: #444; }
+  .table-orcamento tr:hover { background-color: #fcfcfc; }
+  
+  /* Ajuste para o select ficar parecido com os teus inputs */
+  select.input-select { width: 100%; padding: 12px 14px; border: 1px solid #D5D9D9; border-radius: 8px; font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.2s;}
+  select.input-select:focus { border-color: var(--verde2, #007D69); }
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<!-- TELA DE LOGIN (Idêntica à página principal) -->
+<div id="login-area">
+  <div class="login-card">
+    <img src="LogoLeveros.png" class="login-logo" alt="Leveros">
+    <h2>CX Resolve</h2>
+    <p>Portal interno do time de atendimento</p>
+    <button class="login-btn" id="loginBtn">
+      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#002D32" d="M43.6 20H24v8.4h11.1C33.6 33 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.4 6.3 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.4-7.7 19.4-20 0-1.3-.1-2.7-.4-4H43.6z"/></svg>
+      Entrar com Google
+    </button>
+    <div class="login-error" id="loginError">
+      Acesso restrito a e-mails @leveros.com.br
+    </div>
+  </div>
+</div>
+
+<!-- CONTEÚDO PRINCIPAL (Protegido) -->
+<div id="conteudo" style="display: none;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="orcamento.html" class="active">Orçamento</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="orcamento.html" class="active">Orçamento</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="welcome-row">
+      <div class="welcome-text">
+        <p class="welcome-label">Gestão Financeira</p>
+        <h1>Lançamentos de <span>Orçamento</span> 💰</h1>
+        <p>Acompanhe e registre os gastos do setor.</p>
+      </div>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="resumo-cards">
+      <div class="resumo-card">
+        <h3>Total Gasto Registrado</h3>
+        <p id="totalGastoText">R$ 0,00</p>
+      </div>
+    </div>
+
+    <!-- Formulário usando as tuas classes da área de feedback -->
+    <div class="feedback-section" style="margin-top: 0;">
+      <h3>Novo Lançamento de NF</h3>
+      <p>Preencha os dados abaixo para registrar uma nova despesa no sistema.</p>
+      
+      <form id="formOrcamento">
+        <div class="form-row">
+          <div class="form-field">
+            <label>Número da NF</label>
+            <input type="text" id="numeroNf" placeholder="Ex: 123456" required>
+          </div>
+          <div class="form-field">
+            <label>Descrição do Gasto</label>
+            <input type="text" id="descricao" placeholder="Ex: Compra de headsets" required>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label>Data de Emissão</label>
+            <input type="date" id="dataEmissao" required>
+          </div>
+          <div class="form-field">
+            <label>Data de Lançamento</label>
+            <input type="date" id="dataLancamento" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label>Categoria</label>
+            <select id="categoria" class="input-select" required>
+              <option value="" disabled selected>Selecione uma categoria...</option>
+              <option value="Equipamentos">Equipamentos de TI</option>
+              <option value="Software">Licenças de Software</option>
+              <option value="Treinamento">Treinamento e Capacitação</option>
+              <option value="Infraestrutura">Infraestrutura</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>Valor Total (R$)</label>
+            <input type="number" id="valor" placeholder="0.00" step="0.01" required>
+          </div>
+        </div>
+        
+        <button type="submit" class="submit-btn" id="btnSalvar">Salvar Lançamento →</button>
+      </form>
+    </div>
+
+    <!-- Tabela de Registros -->
+    <div class="table-container">
+      <table class="table-orcamento">
+        <thead>
+          <tr>
+            <th>NF</th>
+            <th>Emissão</th>
+            <th>Lançamento</th>
+            <th>Descrição</th>
+            <th>Categoria</th>
+            <th>Usuário</th>
+            <th>Valor (R$)</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaOrcamento">
+          <tr><td colspan="7" style="text-align: center;">Carregando registros...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div> 
+</div>
+
+<!-- LÓGICA DO PORTAL E FIREBASE -->
+<script type="module">
+  // Usando exatamente as mesmas versões do teu portal principal
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // A chave de API extraída do teu código
+  const firebaseConfig = {
+    apiKey: "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+    authDomain: "portal-atendimento-541ae.firebaseapp.com",
+    projectId: "portal-atendimento-541ae"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const provider = new GoogleAuthProvider();
+
+  let currentUser = null;
+
+  // Interação básica de Menu
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.toggle('open');
+  });
+
+  // Preencher a Data de Lançamento com o dia atual por padrão
+  document.getElementById('dataLancamento').value = new Date().toISOString().split('T')[0];
+
+  /* ====================================================================
+     LÓGICA DO ORÇAMENTO (Salvar e Ler)
+     ==================================================================== */
+  
+  const formOrcamento = document.getElementById('formOrcamento');
+  const tabelaOrcamento = document.getElementById('tabelaOrcamento');
+  const totalGastoText = document.getElementById('totalGastoText');
+  const btnSalvar = document.getElementById('btnSalvar');
+
+  // Função para carregar os dados em tempo real
+  function carregarDadosOrcamento() {
+    const q = query(collection(db, 'notasFiscais'), orderBy('dataLancamento', 'desc'));
+    
+    onSnapshot(q, (snapshot) => {
+      let total = 0;
+      tabelaOrcamento.innerHTML = ''; // Limpa a tabela
+      
+      if(snapshot.empty) {
+        tabelaOrcamento.innerHTML = '<tr><td colspan="7" style="text-align: center;">Nenhum lançamento encontrado.</td></tr>';
+        totalGastoText.textContent = "R$ 0,00";
+        return;
+      }
+
+      snapshot.forEach((doc) => {
+        const dado = doc.data();
+        const valorNumerico = parseFloat(dado.valor) || 0;
+        total += valorNumerico;
+
+        // Converter datas para o formato brasileiro (dd/mm/yyyy) para ficar bonito na tela
+        const dataEmissaoFormatada = dado.dataEmissao.split('-').reverse().join('/');
+        const dataLancamentoFormatada = dado.dataLancamento.split('-').reverse().join('/');
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${dado.numeroNf}</strong></td>
+          <td>${dataEmissaoFormatada}</td>
+          <td>${dataLancamentoFormatada}</td>
+          <td>${dado.descricao}</td>
+          <td><span style="background: #eef2f3; padding: 4px 8px; border-radius: 4px; font-size: 12px;">${dado.categoria}</span></td>
+          <td>${dado.autor}</td>
+          <td style="font-weight: bold; color: #e74c3c;">R$ ${valorNumerico.toFixed(2).replace('.', ',')}</td>
+        `;
+        tabelaOrcamento.appendChild(tr);
+      });
+
+      // Atualiza o card de resumo
+      totalGastoText.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+    });
+  }
+
+  // Evento para Salvar Novo Lançamento
+  formOrcamento.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentUser) return;
+
+    btnSalvar.textContent = "Salvando...";
+    btnSalvar.disabled = true;
+
+    const novoLancamento = {
+      numeroNf: document.getElementById('numeroNf').value,
+      descricao: document.getElementById('descricao').value,
+      dataEmissao: document.getElementById('dataEmissao').value,
+      dataLancamento: document.getElementById('dataLancamento').value,
+      categoria: document.getElementById('categoria').value,
+      valor: document.getElementById('valor').value,
+      autor: currentUser.displayName ? currentUser.displayName.split(' ')[0] : 'Usuário',
+      emailAutor: currentUser.email,
+      criadoEm: serverTimestamp()
+    };
+
+    try {
+      await addDoc(collection(db, 'notasFiscais'), novoLancamento);
+      formOrcamento.reset(); // Limpa o formulário
+      document.getElementById('dataLancamento').value = new Date().toISOString().split('T')[0]; // Repõe a data de hoje
+    } catch (error) {
+      console.error("Erro ao salvar:", error);
+      alert("Erro ao salvar o lançamento.");
+    } finally {
+      btnSalvar.textContent = "Salvar Lançamento →";
+      btnSalvar.disabled = false;
+    }
+  });
+
+  /* ====================================================================
+     AUTENTICAÇÃO (Mesma lógica de proteção do index.html)
+     ==================================================================== */
+  onAuthStateChanged(auth, user => {
+    if (user && user.email.endsWith('@leveros.com.br')) {
+      currentUser = user;
+      document.getElementById('loginError').classList.remove('visible');
+      document.getElementById('login-area').style.display = 'none';
+      document.getElementById('conteudo').style.display  = 'block';
+      
+      // Carrega os dados apenas quando o utilizador estiver autenticado
+      carregarDadosOrcamento();
+      
+    } else if (user) {
+      signOut(auth); currentUser = null;
+      document.getElementById('loginError').classList.add('visible');
+      document.getElementById('login-area').style.display  = 'flex';
+      document.getElementById('conteudo').style.display   = 'none';
+    } else {
+      currentUser = null;
+      document.getElementById('login-area').style.display = 'flex';
+      document.getElementById('conteudo').style.display  = 'none';
+    }
+  });
+
+  document.getElementById('loginBtn').onclick = () => {
+    document.getElementById('loginError').classList.remove('visible');
+    signInWithPopup(auth, provider).catch(() => document.getElementById('loginError').classList.add('visible'));
+  };
+
+  const logout = () => { signOut(auth); };
+  document.getElementById('logoutBtn').onclick = logout;
+  document.getElementById('logoutBtnMobile').onclick = logout;
+</script>
+
+</body>
+</html>
