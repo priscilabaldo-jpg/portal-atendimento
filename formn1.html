@@ -295,15 +295,15 @@
             "Garantia": {
                 opcoes: [
                     { valor: "", texto: "Selecione..." },
-                    { valor: "defeito_fabrica", texto: "Defeito de Fabricação / Parou de Funcionar" },
-                    { valor: "falta_peca", texto: "Falta de Peça/Acessório" }
+                    { valor: "defeito_fabrica", texto: "Não Gela/Defeito de Fabricação/Parou de Funcionar" },
+                    { valor: "falta_peca", texto: "Peça/Acessório Faltante" }
                 ],
                 // Para garantia as respostas são dinâmicas via JS, mas mantemos o mapeamento base para falta de peças
                 respostas: {
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
-                        acao: "Identifique a peça no manual do produto junto ao cliente.", 
-                        crm: "Redirecionar para Peças e Acessórios / Garantia.",
+                        acao: "Primeiramente, verifique o prazo em que o cliente recebeu o produto, se estiver ok, Identifique se o cliente já checou o manual do produto, há casos em que a peça pode vir oculta dentro do produto ou não fazer parte do mesmo. Caso o cliente não consiga verificar, acesse o manual do produto!", 
+                        crm: "Abrir protocolo para Garantia, Reposiçãos de Peças / Item Faltante.",
                         regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo para reclamação de falta de componentes estéticos ou acessórios é de até 7 dias corridos após o recebimento."
                     }
                 }
