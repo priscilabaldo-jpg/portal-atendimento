@@ -193,7 +193,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
+                    <label for="dataNF">Data da Solicitação / Nota Fiscal:</label>
                     <input type="date" id="dataNF" onchange="processarResultado()">
                 </div>
 
@@ -271,7 +271,6 @@
     </div>
 
     <script>
-        // Dicionário atualizado com as Regras Operacionais para cada caminho
         const baseDeConhecimento = {
             "Entregas": {
                 opcoes: [
@@ -298,13 +297,12 @@
                     { valor: "defeito_fabrica", texto: "Não Gela/Defeito de Fabricação/Parou de Funcionar" },
                     { valor: "falta_peca", texto: "Peça/Acessório Faltante" }
                 ],
-                // Para garantia as respostas são dinâmicas via JS, mas mantemos o mapeamento base para falta de peças
                 respostas: {
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
                         acao: "Primeiramente, verifique o prazo em que o cliente recebeu o produto, se estiver ok, Identifique se o cliente já checou o manual do produto, há casos em que a peça pode vir oculta dentro do produto ou não fazer parte do mesmo. Caso o cliente não consiga verificar, acesse o manual do produto!", 
-                        crm: "Abrir protocolo para Garantia, Reposiçãos de Peças / Item Faltante.",
-                        regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo para reclamação de falta de componentes estéticos ou acessórios é de até 7 dias corridos após o recebimento."
+                        crm: "Abrir protocolo para Garantia, Reposição de Peças / Item Faltante.",
+                        regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo para reclamação de falta de componentes estéticos ou acessórios depende do fabricante (geralmente 7 ou 30 dias)."
                     }
                 }
             },
@@ -469,45 +467,91 @@
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
 
+                // Validações de campos obrigatórios
                 if (!marca || !dataNF || protocoloFab === "" || temParceiro === "") { resBox.classList.add("hidden"); return; }
                 if (["MIDEA_RAC", "MIDEA_CAC", "PHILCO", "TCL"].includes(marca) && !tec) { resBox.classList.add("hidden"); return; }
                 if (temParceiro === "SIM" && parceiroInstalou === "") { resBox.classList.add("hidden"); return; }
                 if (temParceiro === "NAO" && produtoInstalado === "") { resBox.classList.add("hidden"); return; }
 
-                const tipoInstalacaoCalculo = (temParceiro === "SIM" && parceiroInstalou === "SIM") ? "AUTORIZADO" : "LEGAL";
-
                 const dataInicial = new Date(dataNF + "T00:00:00");
-                const regra = calcularRegraGarantia(marca, tec, tipoInstalacaoCalculo, dataNF);
-                
-                const dataVencimento = new Date(dataInicial.getTime());
-                if (regra.meses > 0) dataVencimento.setMonth(dataVencimento.getMonth() + regra.meses);
-                if (regra.dias > 0) dataVencimento.setDate(dataVencimento.getDate() + regra.dias);
-
                 const hoje = new Date();
                 hoje.setHours(0,0,0,0);
-                const isValido = dataVencimento >= hoje;
 
-                const strPrazo = regra.meses > 0 ? `${regra.meses} meses` : `${regra.dias} dias`;
-                const strVencimento = dataVencimento.toLocaleDateString('pt-BR');
-                const tipoGarantiaTexto = (tipoInstalacaoCalculo === "AUTORIZADO") ? "(Garantia Contratual)" : "(Garantia Legal)";
-                
-                statBox.className = "status-box " + (isValido ? "status-ok" : "status-nok");
-                statBox.innerHTML = `
-                    <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">
-                        ${isValido ? '✅ DENTRO DO PRAZO DE GARANTIA' : '❌ FORA DO PRAZO DE GARANTIA'}
-                    </div>
-                    <div class="info-row"><span style="opacity:0.8">Regra Aplicada ${tipoGarantiaTexto}:</span> <strong>${strPrazo}</strong></div>
-                    <div class="info-row"><span style="opacity:0.8">Vencimento base:</span> <strong>${strVencimento}</strong></div>
-                    ${regra.obs ? `<div class="obs-text">${regra.obs}</div>` : ''}
-                `;
-                statBox.classList.remove("hidden");
+                // =================================================================
+                // NOVA LÓGICA: PEÇA FALTANTE (7 OU 30 DIAS)
+                // =================================================================
+                if (sub === "falta_peca") {
+                    
+                    // Passo 1: Determinar o prazo com base na marca. 
+                    // Se for LG, aplicamos 30 dias. Caso contrário, 7 dias padrão.
+                    const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 7;
+                    
+                    // Passo 2: Adicionar os dias à data que o utilizador escolheu no formulário
+                    const dataVencimentoFalta = new Date(dataInicial.getTime());
+                    dataVencimentoFalta.setDate(dataVencimentoFalta.getDate() + prazoDiasFalta);
+                    
+                    // Passo 3: Verificar se o prazo já passou comparando com a data atual
+                    const isFaltaValido = dataVencimentoFalta >= hoje;
+                    const strVencimento = dataVencimentoFalta.toLocaleDateString('pt-BR');
+                    
+                    // Passo 4: Atualizar a caixa visual especificamente para "Item Faltante"
+                    statBox.className = "status-box " + (isFaltaValido ? "status-ok" : "status-nok");
+                    statBox.innerHTML = `
+                        <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">
+                            ${isFaltaValido ? '✅ DENTRO DO PRAZO PARA ITEM FALTANTE' : '❌ FORA DO PRAZO PARA ITEM FALTANTE'}
+                        </div>
+                        <div class="info-row"><span style="opacity:0.8">Regra Aplicada:</span> <strong>${prazoDiasFalta} dias corridos</strong></div>
+                        <div class="info-row"><span style="opacity:0.8">Vencimento do Prazo:</span> <strong>${strVencimento}</strong></div>
+                    `;
+                    statBox.classList.remove("hidden");
+                    
+                    // Limpar alertas de instalação/parceiros, não se aplicam sempre a este fluxo
+                    avisoUappi.classList.add("hidden");
+                    avisoProtocolo.classList.add("hidden");
+                    avisoNaoInstalado.classList.add("hidden");
 
-                avisoUappi.classList.add("hidden");
-                avisoProtocolo.classList.add("hidden");
-                avisoNaoInstalado.classList.add("hidden");
+                    // Passo 5: Escrever dinamicamente o CRM com base na validação da data
+                    if (!isFaltaValido) {
+                        textoAcaoFinal = `O prazo de ${prazoDiasFalta} dias para reclamação de itens faltantes ou estéticos expirou. Não é possível seguir com a reposição em garantia.`;
+                        textoCrmFinal = "Orientar o cliente que o prazo expirou e finalizar o atendimento N1. Caso ele queira, pode adquirir a peça separadamente com um autorizado.";
+                        textoRegraFinal = `O fabricante determina que o aviso de falta de componentes ou acessórios ocorra em até ${prazoDiasFalta} dias da recepção do equipamento. A fábrica não cobre fora deste prazo.`;
+                    } else {
+                        textoRegraFinal = `Peças faltantes devem ser validadas cruzando a informação do manual. O prazo para a marca selecionada é de até ${prazoDiasFalta} dias corridos. Prossiga com o protocolo de reposição.`;
+                    }
 
-                // DEFINIÇÃO DA REGRA OPERACIONAL PARA GARANTIA (DEFEITO)
-                if (sub === "defeito_fabrica") {
+                // =================================================================
+                // LÓGICA ORIGINAL: DEFEITO DE FÁBRICA (GARANTIA EM MESES/ANOS)
+                // =================================================================
+                } else if (sub === "defeito_fabrica") {
+                    
+                    const tipoInstalacaoCalculo = (temParceiro === "SIM" && parceiroInstalou === "SIM") ? "AUTORIZADO" : "LEGAL";
+                    const regra = calcularRegraGarantia(marca, tec, tipoInstalacaoCalculo, dataNF);
+                    
+                    const dataVencimento = new Date(dataInicial.getTime());
+                    if (regra.meses > 0) dataVencimento.setMonth(dataVencimento.getMonth() + regra.meses);
+                    if (regra.dias > 0) dataVencimento.setDate(dataVencimento.getDate() + regra.dias);
+
+                    const isValido = dataVencimento >= hoje;
+
+                    const strPrazo = regra.meses > 0 ? `${regra.meses} meses` : `${regra.dias} dias`;
+                    const strVencimento = dataVencimento.toLocaleDateString('pt-BR');
+                    const tipoGarantiaTexto = (tipoInstalacaoCalculo === "AUTORIZADO") ? "(Garantia Contratual)" : "(Garantia Legal)";
+                    
+                    statBox.className = "status-box " + (isValido ? "status-ok" : "status-nok");
+                    statBox.innerHTML = `
+                        <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">
+                            ${isValido ? '✅ DENTRO DO PRAZO DE GARANTIA' : '❌ FORA DO PRAZO DE GARANTIA'}
+                        </div>
+                        <div class="info-row"><span style="opacity:0.8">Regra Aplicada ${tipoGarantiaTexto}:</span> <strong>${strPrazo}</strong></div>
+                        <div class="info-row"><span style="opacity:0.8">Vencimento base:</span> <strong>${strVencimento}</strong></div>
+                        ${regra.obs ? `<div class="obs-text">${regra.obs}</div>` : ''}
+                    `;
+                    statBox.classList.remove("hidden");
+
+                    avisoUappi.classList.add("hidden");
+                    avisoProtocolo.classList.add("hidden");
+                    avisoNaoInstalado.classList.add("hidden");
+
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
                         textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de confiança para realizar o conserto orçado e finalizar o atendimento N1.";
@@ -534,6 +578,7 @@
                     }
                 }
 
+                // Verifica protocolo em qualquer subcategoria de garantia
                 if (protocoloFab === "SIM") {
                     avisoProtocolo.classList.remove("hidden");
                     textoAcaoFinal = "Solicite ao cliente o número do protocolo em aberto com o fabricante. \n\n" + textoAcaoFinal;
@@ -547,7 +592,7 @@
                 avisoNaoInstalado.classList.add("hidden");
             }
 
-            // Exibição dos Textos
+            // Exibição dos Textos Finais
             document.getElementById("textoAcao").textContent = textoAcaoFinal;
             document.getElementById("textoCRM").textContent = textoCrmFinal;
             document.getElementById("textoRegra").textContent = textoRegraFinal;
