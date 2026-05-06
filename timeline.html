@@ -7,6 +7,27 @@
 
 <link rel="stylesheet" href="style.css">
 
+<style>
+  /* Corrige o container da imagem */
+  .post-media {
+    width: 100%;
+    height: auto !important;
+    margin-top: 15px;
+    border-radius: 8px; 
+    overflow: hidden;
+    background-color: transparent; /* Remove fundos estranhos se a imagem for menor */
+  }
+
+  /* Garante que a imagem mantenha a proporção sem cortar */
+  .post-media img {
+    width: 100%;
+    height: auto !important; 
+    max-height: 700px; /* Limita a altura máxima para não ocupar a tela inteira em imagens muito compridas */
+    object-fit: contain !important; /* contain garante que nada seja cortado */
+    display: block;
+  }
+</style>
+
 </head>
 <body>
 
