@@ -238,8 +238,17 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   const mediaInput = document.getElementById('postMediaUrl');
   
   const texto = textInput.value.trim();
-  const midiaUrl = mediaInput.value.trim();
+  let midiaUrl = mediaInput.value.trim();
   
+  // 🟢 MÁGICA: Verifica se é link do Drive e converte para foto direta
+  const regexDrive = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+  const matchDrive = midiaUrl.match(regexDrive);
+
+  if (matchDrive && matchDrive[1]) {
+    const idDoArquivo = matchDrive[1];
+    midiaUrl = `https://drive.google.com/thumbnail?id=${idDoArquivo}&sz=w1000`;
+  }
+
   if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
 
   const btn = document.getElementById('btnPublishPost');
