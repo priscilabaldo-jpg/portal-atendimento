@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<div id="saldoCoins" style="background: rgba(255,215,0,0.2); color: #FFD700; padding: 5px 15px; border-radius: 20px; font-weight: bold; border: 1px solid #FFD700; margin-right: 15px;">
-🪙 <span id="valSaldo">0</span>
-</div>
 <title>Timeline – CX Resolve</title>
 
 <link rel="stylesheet" href="style.css">
@@ -52,6 +49,11 @@
           <li id="menuAdminContainer" style="display: none;">
             <a href="index.html" id="navAdmin">Painel Admin</a>
           </li>
+          <li>
+            <div id="saldoCoins" style="background: rgba(255,215,0,0.15); color: #FFD700; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px; user-select: none;">
+              🪙 <span id="valSaldo">0</span>
+            </div>
+          </li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -60,6 +62,11 @@
   </header>
 
   <div class="mobile-menu" id="mobileMenu">
+    <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 5px;">
+      <span style="color: #FFD700; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+        🪙 Meu Saldo: <span id="valSaldoMobile">0</span>
+      </span>
+    </div>
     <a href="index.html">Início</a>
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
@@ -148,10 +155,10 @@ window.renderAvatar = renderAvatar;
 </script>
 
 <script type="module">
-// 🟢 IMPORTANTE: Adicionado getDoc e setDoc na importação do Firestore
+// 🟢 IMPORTANTE: increment adicionado aos imports do Firestore para permitir as somas seguras de saldo
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -290,13 +297,13 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
       criadoEm: serverTimestamp()
     });
 
-    // 🟢 2. LÓGICA DE NOTIFICAÇÃO POR E-MAIL (COM TRAVA DE 100/MÊS)
+    // 2. LÓGICA DE NOTIFICAÇÃO POR E-MAIL (COM TRAVA DE 100/MÊS)
     const emailLogado = currentUser.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
     if (isAdmin) {
       try {
-        const mesAtual = new Date().toISOString().slice(0, 7); // Ex: "2026-05"
+        const mesAtual = new Date().toISOString().slice(0, 7);
         const emailLimitRef = doc(db, 'system_config', 'email_limit');
         const limitSnap = await getDoc(emailLimitRef);
         
@@ -309,24 +316,16 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
         }
 
         if (disparosMes < 100) {
-          // Inicializa o EmailJS
           emailjs.init("SUA_PUBLIC_KEY_AQUI");
-
-          // Dispara o e-mail
           await emailjs.send("SEU_SERVICE_ID_AQUI", "SEU_TEMPLATE_ID_AQUI", {
             nome_autor: currentUser.displayName || 'Gestão CX Resolve',
             mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!',
-            destinatario: "time.atendimento@leveros.com.br" // E-mail da equipe
+            destinatario: "time.atendimento@leveros.com.br"
           });
-
-          // Atualiza a contagem no banco de dados para evitar estourar o limite
           await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
-          console.log(`Aviso por e-mail enviado com sucesso! (${disparosMes + 1}/100 este mês)`);
-        } else {
-          console.log("Limite seguro de 100 e-mails mensais atingido. Post publicado, mas aviso de e-mail não enviado.");
         }
       } catch (errEmail) {
-        console.error("Post publicado, mas houve um erro ao enviar o e-mail de aviso:", errEmail);
+        console.error("Post publicado, mas erro ao notificar:", errEmail);
       }
     }
 
@@ -423,9 +422,10 @@ window.handleComment = function(event, postId) {
 };
 
 /* ====================================================================
-   AUTENTICAÇÃO PADRÃO
+   AUTENTICAÇÃO PADRÃO E GESTÃO DE PONTOS
    ==================================================================== */
-onAuthStateChanged(auth, user => {
+// 🟢 Transformado em 'async' para lidar com os pontos
+onAuthStateChanged(auth, async user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
     document.getElementById('timeline-content').style.display = 'block';
@@ -446,6 +446,52 @@ onAuthStateChanged(auth, user => {
     }
     
     carregarFeed(isAdmin);
+
+    // 🟢 LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
+    try {
+        const userRef = doc(db, "usuarios", emailLogado);
+        const userSnap = await getDoc(userRef);
+        const hoje = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+
+        if (userSnap.exists()) {
+            const dados = userSnap.data();
+            let moedasAtuais = dados.pontos || 0;
+            
+            // Renderiza o saldo atual
+            document.getElementById('valSaldo').textContent = moedasAtuais;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+            }
+
+            // Verifica se é o primeiro login do dia
+            if (dados.ultimoLogin !== hoje) {
+                await updateDoc(userRef, {
+                    pontos: increment(10),
+                    ultimoLogin: hoje
+                });
+                moedasAtuais += 10;
+                document.getElementById('valSaldo').textContent = moedasAtuais;
+                if (document.getElementById('valSaldoMobile')) {
+                    document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+                }
+                alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
+            }
+        } else {
+            // Conta nova: 50 moedas de boas-vindas
+            await setDoc(userRef, {
+                nome: user.displayName || 'Usuário Leveros',
+                pontos: 50,
+                ultimoLogin: hoje
+            });
+            document.getElementById('valSaldo').textContent = 50;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = 50;
+            }
+            alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
+        }
+    } catch (err) {
+        console.error("Erro ao sincronizar saldo da carteira: ", err);
+    }
     
   } else {
     window.location.href = 'index.html';
