@@ -1,78 +1,168 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestão de Pontos - ADM</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .admin-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 15px; max-width: 500px; margin: 50px auto; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
-        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #1a1a1a; color: white; }
-        .btn-lancar { background: #FFD700; color: #000; font-weight: bold; cursor: pointer; border: none; padding: 12px 30px; border-radius: 8px; margin-top: 10px; }
-        .btn-lancar:hover { background: #fff; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão de Pontos – CX Resolve</title>
+
+<link rel="stylesheet" href="style.css">
+
 </head>
 <body>
-    <div id="admin-content" style="display:none;">
-        <header>
-            <div class="header-inner">
-                <a href="timeline.html" style="color: white; text-decoration: none;">← Voltar ao Feed</a>
-                <h2 style="color: #FFD700;">Gestão de Recompensas 🪙</h2>
-            </div>
-        </header>
 
-        <div class="admin-box">
-            <h3>Lançar Moedas para Colaborador</h3>
-            <p>Insira o e-mail exato do usuário para creditar os pontos.</p>
-            <input type="email" id="userEmail" placeholder="e-mail@leveros.com.br">
-            <input type="number" id="pontosValor" placeholder="Quantidade de moedas (ex: 50)">
-            <input type="text" id="motivo" placeholder="Motivo (ex: Elogio na Predize)">
-            <button class="btn-lancar" id="btnLancar">Confirmar Lançamento</button>
-        </div>
+<div class="bg-layer"></div>
+
+<div id="admin-content" style="display:none; position: relative; z-index: 5;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="admin_pontos.html" class="active">Painel Admin</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="admin_pontos.html">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container">
+    
+    <div class="page-header" style="text-align: center; margin-bottom: 40px;">
+      <p class="page-label">Acesso Restrito</p>
+      <h1>Gestão de <span>Recompensas</span> 🪙</h1>
+      <p>Lance moedas e reconheça o esforço do time de Atendimento.</p>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <div class="admin-pontos-container">
+        <div class="admin-icon-wrapper">
+            🏆
+        </div>
+        <h3>Bonificação Manual</h3>
+        <p class="desc">Transfira moedas virtuais diretamente para a carteira de um colaborador.</p>
 
-        const firebaseConfig = {
-            apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-            authDomain:"portal-atendimento-541ae.firebaseapp.com",
-            projectId:"portal-atendimento-541ae"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
-
-        onAuthStateChanged(auth, user => {
-            if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-                document.getElementById('admin-content').style.display = 'block';
-            } else {
-                alert("Acesso restrito a administradores.");
-                window.location.href = 'timeline.html';
-            }
-        });
-
-        document.getElementById('btnLancar').onclick = async () => {
-            const email = document.getElementById('userEmail').value.trim().toLowerCase();
-            const valor = parseInt(document.getElementById('pontosValor').value);
+        <div class="admin-form-group">
+            <div class="admin-field">
+                <label>E-mail do Colaborador</label>
+                <input type="email" id="userEmail" class="admin-input" placeholder="ex: nome@leveros.com.br">
+            </div>
             
-            if (!email || !valor) return alert("Preencha todos os campos!");
+            <div class="admin-field">
+                <label>Quantidade de Moedas</label>
+                <input type="number" id="pontosValor" class="admin-input" placeholder="Ex: 50">
+            </div>
 
-            const userRef = doc(db, "usuarios", email);
-            const userSnap = await getDoc(userRef);
+            <div class="admin-field">
+                <label>Motivo (Para Histórico)</label>
+                <input type="text" id="motivo" class="admin-input" placeholder="Ex: Elogio de cliente na Predize">
+            </div>
+        </div>
 
-            if (userSnap.exists()) {
-                await updateDoc(userRef, { pontos: increment(valor) });
-                alert(`Sucesso! ${valor} moedas creditadas para ${email}`);
-                document.getElementById('pontosValor').value = '';
-                document.getElementById('motivo').value = '';
-            } else {
-                alert("Usuário não encontrado. Peça para ele logar no portal pelo menos uma vez!");
-            }
-        };
-    </script>
+        <button class="btn-lancar-moedas" id="btnLancar">
+            ✅ Confirmar Transferência
+        </button>
+    </div>
+
+  </div> 
+
+  <footer>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('open');
+});
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+    authDomain:"portal-atendimento-541ae.firebaseapp.com",
+    projectId:"portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+
+onAuthStateChanged(auth, user => {
+    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        document.getElementById('admin-content').style.display = 'block';
+    } else if (user) {
+        alert("Área restrita. Apenas gestores podem acessar esta página.");
+        window.location.href = 'timeline.html';
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
+
+document.getElementById('btnLancar').onclick = async () => {
+    const email = document.getElementById('userEmail').value.trim().toLowerCase();
+    const valor = parseInt(document.getElementById('pontosValor').value);
+    const motivo = document.getElementById('motivo').value.trim();
+    const btn = document.getElementById('btnLancar');
+    
+    if (!email || !valor || !motivo) return alert("Preencha todos os campos!");
+
+    btn.textContent = 'Processando...';
+    btn.disabled = true;
+
+    try {
+        const userRef = doc(db, "usuarios", email);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+            await updateDoc(userRef, { pontos: increment(valor) });
+            alert(`Sucesso! ${valor} moedas foram enviadas para ${email}.`);
+            
+            // Limpa o formulário
+            document.getElementById('userEmail').value = '';
+            document.getElementById('pontosValor').value = '';
+            document.getElementById('motivo').value = '';
+        } else {
+            alert("Usuário não encontrado. Peça para o colaborador acessar o portal pelo menos uma vez para ativar a carteira!");
+        }
+    } catch (e) {
+        console.error(e);
+        alert("Ocorreu um erro ao lançar os pontos.");
+    } finally {
+        btn.innerHTML = '✅ Confirmar Transferência';
+        btn.disabled = false;
+    }
+};
+</script>
+
 </body>
 </html>
