@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Gestão – CX Resolve</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+  /* Estilos específicos para os Cards do Painel Admin */
+  .admin-hub-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+  }
+
+  .admin-module-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 30px 24px;
+    text-align: center;
+    text-decoration: none;
+    color: white;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-module-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--azul), var(--verde3));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .admin-module-card:hover {
+    transform: translateY(-5px);
+    background: rgba(76,221,221,0.08);
+    border-color: rgba(76,221,221,0.3);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+  }
+
+  .admin-module-card:hover::before {
+    opacity: 1;
+  }
+
+  .module-icon {
+    font-size: 40px;
+    margin-bottom: 15px;
+    height: 70px; width: 70px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--glass-border);
+  }
+
+  .admin-module-card h3 {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--azul);
+  }
+
+  .admin-module-card p {
+    font-size: 11px;
+    opacity: 0.6;
+    line-height: 1.5;
+  }
+</style>
+
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<div id="admin-content" style="display:none; position: relative; z-index: 5;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="admin.html" class="active">Painel Admin</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="container">
+    
+    <div class="page-header" style="text-align: center; margin-bottom: 40px;">
+      <p class="page-label">Acesso Restrito</p>
+      <h1>Central de <span>Gestão</span> ⚙️</h1>
+      <p>Selecione o módulo administrativo que deseja acessar.</p>
+    </div>
+
+    <div class="admin-hub-grid">
+      
+      <a href="admin_logs.html" class="admin-module-card">
+        <div class="module-icon">📊</div>
+        <h3>Auditoria de Acessos</h3>
+        <p>Acompanhe o histórico completo de logins, exporte relatórios e monitore o uso do portal pelo time.</p>
+      </a>
+
+      <a href="admin_pontos.html" class="admin-module-card" style="--azul: #FFD700; --verde3: #FFA500;">
+        <div class="module-icon">🪙</div>
+        <h3 style="color: #FFD700;">Gestão de Recompensas</h3>
+        <p>Lance moedas virtuais manualmente para reconhecer os colaboradores por metas e engajamento.</p>
+      </a>
+
+      <a href="centrodecusto.html" class="admin-module-card" style="--azul: #6FFFAF; --verde3: #4CDDDD;">
+        <div class="module-icon">💰</div>
+        <h3 style="color: var(--verde3);">Centro de Custo</h3>
+        <p>Controle as notas fiscais, verifique o orçamento e gerencie os gastos da área de atendimento.</p>
+      </a>
+
+    </div>
+
+  </div> 
+
+  <footer>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+    authDomain:"portal-atendimento-541ae.firebaseapp.com",
+    projectId:"portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+
+onAuthStateChanged(auth, user => {
+    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        document.getElementById('admin-content').style.display = 'block';
+    } else if (user) {
+        alert("Área restrita. Apenas gestores podem acessar a Central.");
+        window.location.href = 'index.html';
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+</script>
+
+</body>
+</html>
