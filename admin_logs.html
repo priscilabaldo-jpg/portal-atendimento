@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auditoria de Acessos – CX Resolve</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<div id="admin-content" style="display:none; position: relative; z-index: 5;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="admin.html" class="active">Painel Admin</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="admin.html">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container">
+    
+    <div style="margin-bottom: 20px;">
+        <a href="admin.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+            ← Voltar para Central
+        </a>
+    </div>
+
+    <div class="page-header" style="text-align: center; margin-bottom: 40px;">
+      <p class="page-label">Área Restrita</p>
+      <h1>Painel de <span>Auditoria</span> 📊</h1>
+      <p>Histórico completo de acessos ao portal</p>
+    </div>
+
+    <div class="filter-bar">
+      <label>Período:</label>
+      <input type="date" id="dataInicioLog">
+      <span>até</span>
+      <input type="date" id="dataFimLog">
+      <button class="btn-admin" id="btnFiltrarLogs">Filtrar</button>
+      <button class="btn-admin btn-limpar" id="btnLimparLogs">Limpar</button>
+      
+      <button class="btn-admin" id="btnExportarLogs" style="margin-left: auto; background: rgba(111,255,175,0.15); color: var(--verde3); border-color: rgba(111,255,175,0.3);">
+        📥 Exportar Excel
+      </button>
+    </div>
+    
+    <div id="logsContainer">
+      <div class="avisos-vazio">Carregando histórico...</div>
+    </div>
+
+  </div> 
+
+  <footer>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
+</div>
+
+<script>
+document.getElementById('anoAtual').textContent = new Date().getFullYear();
+document.getElementById('hamburger').addEventListener('click', () => {
+  document.getElementById('mobileMenu').classList.toggle('open');
+});
+
+function escapeHTML(str) {
+  return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+}
+window.escapeHTML = escapeHTML;
+</script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, onSnapshot, orderBy, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+    authDomain:"portal-atendimento-541ae.firebaseapp.com",
+    projectId:"portal-atendimento-541ae"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+let logsParaExportacao = [];
+
+/* ====================================================================
+   LOGS DE AUDITORIA
+   ==================================================================== */
+function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
+  const container = document.getElementById('logsContainer');
+  container.innerHTML = '<div class="avisos-vazio">Buscando histórico...</div>';
+  
+  let restricoes = [collection(db, 'acessos')];
+  if (dataInicioStr && dataFimStr) {
+    const start = new Date(dataInicioStr + 'T00:00:00');
+    const end = new Date(dataFimStr + 'T23:59:59');
+    restricoes.push(where('dataAcesso', '>=', start));
+    restricoes.push(where('dataAcesso', '<=', end));
+  }
+  restricoes.push(orderBy('dataAcesso', 'desc'));
+  
+  onSnapshot(query(...restricoes), snap => {
+    const logs = snap.docs.map(d => d.data());
+    
+    logsParaExportacao = [];
+
+    if (!logs.length) {
+      container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado neste período.</div>';
+      return;
+    }
+
+    let html = `<div class="resumo-logs">Total de acessos encontrados: <strong>${logs.length}</strong></div>`;
+    const grupos = {};
+    
+    logs.forEach(log => {
+      const dataLog = log.dataAcesso ? new Date(log.dataAcesso.seconds * 1000) : new Date();
+      const dataFormatada = dataLog.toLocaleDateString('pt-BR');
+      const horaFormatada = dataLog.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      logsParaExportacao.push({
+        nome: log.nome || 'Desconhecido',
+        email: log.email || 'Sem e-mail',
+        data: dataFormatada,
+        hora: horaFormatada
+      });
+
+      if (!grupos[dataFormatada]) grupos[dataFormatada] = [];
+      grupos[dataFormatada].push({ ...log, horaFormatada });
+    });
+
+    for (const data in grupos) {
+      html += `
+        <div class="log-group">
+          <div class="log-date-header">🗓️ Data: ${data} <span style="opacity:0.5; font-size:9px; margin-left:auto;">(${grupos[data].length} acessos)</span></div>
+          <div class="log-table-wrap">
+            <table class="log-table">
+              <thead><tr><th>Usuário</th><th>E-mail Corporativo</th><th>Horário</th></tr></thead>
+              <tbody>
+      `;
+      grupos[data].forEach(item => {
+        html += `<tr><td><span class="badge-user">${window.escapeHTML(item.nome)}</span></td><td>${window.escapeHTML(item.email)}</td><td><span class="badge-time">⏱️ ${item.horaFormatada}</span></td></tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    }
+    container.innerHTML = html;
+  }, error => {
+    container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro ao buscar dados. Tente limpar os filtros.</div>';
+  });
+}
+
+document.getElementById('btnFiltrarLogs').addEventListener('click', () => {
+  const inicio = document.getElementById('dataInicioLog').value;
+  const fim = document.getElementById('dataFimLog').value;
+  if (!inicio || !fim) return alert("Por favor, selecione a data de início e a data de fim.");
+  if (inicio > fim) return alert("A data de início não pode ser maior que a data de fim.");
+  carregarLogsAdmin(inicio, fim);
+});
+
+document.getElementById('btnLimparLogs').addEventListener('click', () => {
+  document.getElementById('dataInicioLog').value = '';
+  document.getElementById('dataFimLog').value = '';
+  carregarLogsAdmin();
+});
+
+document.getElementById('btnExportarLogs').addEventListener('click', () => {
+  if (logsParaExportacao.length === 0) {
+    alert('Nenhum dado na tela para exportar. Tente carregar ou filtrar os logs primeiro.');
+    return;
+  }
+
+  let csvContent = '\uFEFF'; 
+  csvContent += "Nome;E-mail;Data de Acesso;Hora de Acesso\n";
+
+  logsParaExportacao.forEach(log => {
+    csvContent += `${log.nome};${log.email};${log.data};${log.hora}\n`;
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  
+  const linkInvisivel = document.createElement("a");
+  linkInvisivel.href = url;
+  
+  const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+  linkInvisivel.download = `Relatorio_Acessos_${hoje}.csv`;
+  
+  document.body.appendChild(linkInvisivel);
+  linkInvisivel.click();
+  document.body.removeChild(linkInvisivel);
+});
+
+/* ====================================================================
+   AUTENTICAÇÃO
+   ==================================================================== */
+onAuthStateChanged(auth, user => {
+    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        document.getElementById('admin-content').style.display = 'block';
+        carregarLogsAdmin();
+    } else if (user) {
+        alert("Área restrita. Apenas gestores podem acessar os relatórios.");
+        window.location.href = 'index.html';
+    } else {
+        window.location.href = 'index.html';
+    }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
+</script>
+
+</body>
+</html>
