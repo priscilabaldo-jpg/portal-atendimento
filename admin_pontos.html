@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Gestão de Pontos - ADM</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-box { background: rgba(255,255,255,0.05); padding: 30px; border-radius: 15px; max-width: 500px; margin: 50px auto; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        input { width: 80%; padding: 12px; margin: 10px 0; border-radius: 8px; border: none; background: #1a1a1a; color: white; }
+        .btn-lancar { background: #FFD700; color: #000; font-weight: bold; cursor: pointer; border: none; padding: 12px 30px; border-radius: 8px; margin-top: 10px; }
+        .btn-lancar:hover { background: #fff; }
+    </style>
+</head>
+<body>
+    <div id="admin-content" style="display:none;">
+        <header>
+            <div class="header-inner">
+                <a href="timeline.html" style="color: white; text-decoration: none;">← Voltar ao Feed</a>
+                <h2 style="color: #FFD700;">Gestão de Recompensas 🪙</h2>
+            </div>
+        </header>
+
+        <div class="admin-box">
+            <h3>Lançar Moedas para Colaborador</h3>
+            <p>Insira o e-mail exato do usuário para creditar os pontos.</p>
+            <input type="email" id="userEmail" placeholder="e-mail@leveros.com.br">
+            <input type="number" id="pontosValor" placeholder="Quantidade de moedas (ex: 50)">
+            <input type="text" id="motivo" placeholder="Motivo (ex: Elogio na Predize)">
+            <button class="btn-lancar" id="btnLancar">Confirmar Lançamento</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+            authDomain:"portal-atendimento-541ae.firebaseapp.com",
+            projectId:"portal-atendimento-541ae"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+
+        onAuthStateChanged(auth, user => {
+            if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+                document.getElementById('admin-content').style.display = 'block';
+            } else {
+                alert("Acesso restrito a administradores.");
+                window.location.href = 'timeline.html';
+            }
+        });
+
+        document.getElementById('btnLancar').onclick = async () => {
+            const email = document.getElementById('userEmail').value.trim().toLowerCase();
+            const valor = parseInt(document.getElementById('pontosValor').value);
+            
+            if (!email || !valor) return alert("Preencha todos os campos!");
+
+            const userRef = doc(db, "usuarios", email);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                await updateDoc(userRef, { pontos: increment(valor) });
+                alert(`Sucesso! ${valor} moedas creditadas para ${email}`);
+                document.getElementById('pontosValor').value = '';
+                document.getElementById('motivo').value = '';
+            } else {
+                alert("Usuário não encontrado. Peça para ele logar no portal pelo menos uma vez!");
+            }
+        };
+    </script>
+</body>
+</html>
