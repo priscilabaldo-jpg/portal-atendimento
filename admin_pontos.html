@@ -7,6 +7,14 @@
 
 <link rel="stylesheet" href="style.css">
 
+<style>
+  /* Garante que as opções do seletor fiquem legíveis no tema escuro */
+  select.admin-input option {
+    background: #002D32; 
+    color: white;
+  }
+</style>
+
 </head>
 <body>
 
@@ -23,7 +31,7 @@
           <li><a href="timeline.html">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
-          <li><a href="admin_pontos.html" class="active">Painel Admin</a></li>
+          <li><a href="admin.html" class="active">Painel Admin</a></li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -31,49 +39,63 @@
     </div>
   </header>
 
-  <div class="mobile-menu" id="mobileMenu">
+  <div class="mobile-menu">
     <a href="index.html">Início</a>
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
-    <a href="admin_pontos.html">Painel Admin</a>
+    <a href="admin.html">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
 
   <div class="container">
     
+    <div style="margin-bottom: 20px;">
+        <a href="admin.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+            ← Voltar para Central
+        </a>
+    </div>
+
     <div class="page-header" style="text-align: center; margin-bottom: 40px;">
       <p class="page-label">Acesso Restrito</p>
       <h1>Gestão de <span>Recompensas</span> 🪙</h1>
-      <p>Lance moedas e reconheça o esforço do time de Atendimento.</p>
+      <p>Lance ou deduza moedas do time de Atendimento.</p>
     </div>
 
     <div class="admin-pontos-container">
         <div class="admin-icon-wrapper">
             🏆
         </div>
-        <h3>Bonificação Manual</h3>
-        <p class="desc">Transfira moedas virtuais diretamente para a carteira de um colaborador.</p>
+        <h3>Movimentação da Carteira</h3>
+        <p class="desc">Transfira moedas como reconhecimento ou deduza pontos em caso de resgate de prêmios.</p>
 
         <div class="admin-form-group">
             <div class="admin-field">
                 <label>E-mail do Colaborador</label>
                 <input type="email" id="userEmail" class="admin-input" placeholder="ex: nome@leveros.com.br">
             </div>
+
+            <div class="admin-field">
+                <label>Tipo de Operação</label>
+                <select id="tipoOperacao" class="admin-input">
+                    <option value="adicionar">➕ Adicionar Moedas (Premiação)</option>
+                    <option value="remover">➖ Remover Moedas (Resgate/Penalidade)</option>
+                </select>
+            </div>
             
             <div class="admin-field">
                 <label>Quantidade de Moedas</label>
-                <input type="number" id="pontosValor" class="admin-input" placeholder="Ex: 50">
+                <input type="number" id="pontosValor" class="admin-input" placeholder="Ex: 50" min="1">
             </div>
 
             <div class="admin-field">
                 <label>Motivo (Para Histórico)</label>
-                <input type="text" id="motivo" class="admin-input" placeholder="Ex: Elogio de cliente na Predize">
+                <input type="text" id="motivo" class="admin-input" placeholder="Ex: Resgate de Caneca Leveros">
             </div>
         </div>
 
         <button class="btn-lancar-moedas" id="btnLancar">
-            ✅ Confirmar Transferência
+            ✅ Confirmar Operação
         </button>
     </div>
 
@@ -88,7 +110,7 @@
 <script>
 document.getElementById('anoAtual').textContent = new Date().getFullYear();
 document.getElementById('hamburger').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.toggle('open');
+  document.querySelector('.mobile-menu').classList.toggle('open');
 });
 </script>
 
@@ -130,11 +152,13 @@ document.getElementById('logoutBtnMobile').onclick = logout;
 
 document.getElementById('btnLancar').onclick = async () => {
     const email = document.getElementById('userEmail').value.trim().toLowerCase();
-    const valor = parseInt(document.getElementById('pontosValor').value);
+    const valorInput = parseInt(document.getElementById('pontosValor').value);
     const motivo = document.getElementById('motivo').value.trim();
+    const operacao = document.getElementById('tipoOperacao').value;
     const btn = document.getElementById('btnLancar');
     
-    if (!email || !valor || !motivo) return alert("Preencha todos os campos!");
+    if (!email || !valorInput || !motivo) return alert("Preencha todos os campos!");
+    if (valorInput <= 0) return alert("O valor das moedas deve ser maior que zero!");
 
     btn.textContent = 'Processando...';
     btn.disabled = true;
@@ -144,8 +168,26 @@ document.getElementById('btnLancar').onclick = async () => {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-            await updateDoc(userRef, { pontos: increment(valor) });
-            alert(`Sucesso! ${valor} moedas foram enviadas para ${email}.`);
+            const dadosAtuais = userSnap.data();
+            const saldoAtual = dadosAtuais.pontos || 0;
+            
+            // 🟢 Lógica de Adição vs Remoção
+            let valorFinal = Math.abs(valorInput); // Garante que o número digitado seja positivo
+            
+            if (operacao === 'remover') {
+                if (saldoAtual < valorFinal) {
+                    alert(`Operação Cancelada: O colaborador tem apenas ${saldoAtual} moedas. Não é possível deduzir ${valorFinal}.`);
+                    btn.innerHTML = '✅ Confirmar Operação';
+                    btn.disabled = false;
+                    return;
+                }
+                valorFinal = -valorFinal; // Transforma em negativo para a função increment subtrair
+            }
+
+            await updateDoc(userRef, { pontos: increment(valorFinal) });
+            
+            const textoAcao = operacao === 'adicionar' ? 'enviadas para' : 'removidas de';
+            alert(`Sucesso! ${Math.abs(valorFinal)} moedas foram ${textoAcao} ${email}.`);
             
             // Limpa o formulário
             document.getElementById('userEmail').value = '';
@@ -156,9 +198,9 @@ document.getElementById('btnLancar').onclick = async () => {
         }
     } catch (e) {
         console.error(e);
-        alert("Ocorreu um erro ao lançar os pontos.");
+        alert("Ocorreu um erro ao processar os pontos.");
     } finally {
-        btn.innerHTML = '✅ Confirmar Transferência';
+        btn.innerHTML = '✅ Confirmar Operação';
         btn.disabled = false;
     }
 };
