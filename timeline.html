@@ -178,7 +178,8 @@
             </div>
         </div>
 
-    </div> </div> 
+    </div> 
+  </div> 
 
   <footer>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
@@ -230,11 +231,10 @@ const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.c
 let currentUser = null;
 
 /* ====================================================================
-   LÓGICA DO RANKING DE MOEDAS (NOVO)
+   LÓGICA DO RANKING DE MOEDAS
    ==================================================================== */
 function carregarRanking() {
     const list = document.getElementById('rankingList');
-    // Puxa os top 5 usuários com mais pontos
     const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'), limit(5));
     
     onSnapshot(q, snap => {
@@ -249,10 +249,13 @@ function carregarRanking() {
         snap.docs.forEach(docSnap => {
             const user = docSnap.data();
             const pontos = user.pontos || 0;
-            // Pegamos o primeiro e segundo nome para não ficar muito longo
-            const nomeCurto = user.nome ? user.nome.split(' ').slice(0, 2).join(' ') : 'Usuário';
             
-            // Define o ícone da posição
+            // 🟢 Ajuste para evitar erro se o nome for nulo, pegando a primeira parte ou limitado a 15 caracteres
+            let nomePuro = user.nome || 'Usuário';
+            let partesNome = nomePuro.split(' ');
+            let nomeCurto = partesNome.length > 1 ? `${partesNome[0]} ${partesNome[1]}` : nomePuro;
+            if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 15) + '...';
+            
             let iconPos = `${posicao}º`;
             if (posicao === 1) iconPos = '🥇';
             if (posicao === 2) iconPos = '🥈';
@@ -262,7 +265,7 @@ function carregarRanking() {
                 <div class="rank-item pos-${posicao}">
                     <div class="rank-info">
                         <span class="rank-pos">${iconPos}</span>
-                        <span class="rank-nome">${window.escapeHTML(nomeCurto)}</span>
+                        <span class="rank-nome" title="${window.escapeHTML(nomePuro)}">${window.escapeHTML(nomeCurto)}</span>
                     </div>
                     <span class="rank-moedas">${pontos} 🪙</span>
                 </div>
@@ -275,7 +278,7 @@ function carregarRanking() {
 }
 
 /* ====================================================================
-   LÓGICA DA TIMELINE (Mantida igual)
+   LÓGICA DA TIMELINE
    ==================================================================== */
 function carregarFeed(isAdmin) {
   const feedList = document.getElementById('feedList');
@@ -542,7 +545,7 @@ onAuthStateChanged(auth, async user => {
     }
     
     carregarFeed(isAdmin);
-    carregarRanking(); // 🟢 Chama a função do ranking ao logar
+    carregarRanking();
 
     // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
     try {
