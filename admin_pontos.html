@@ -37,6 +37,67 @@
     flex-wrap: wrap;
     justify-content: center;
   }
+
+  /* 🟢 Estilos para a Tabela de Resgates */
+  .pedidos-section {
+      margin-top: 50px;
+      margin-bottom: 50px;
+  }
+  .pedidos-section h2 {
+      font-size: 18px;
+      color: #FFD700;
+      margin-bottom: 20px;
+      text-align: center;
+  }
+  .table-container {
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      overflow-x: auto;
+  }
+  .table-pedidos {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+  }
+  .table-pedidos th, .table-pedidos td {
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 12px;
+  }
+  .table-pedidos th {
+      background: rgba(0,0,0,0.3);
+      color: var(--azul);
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+  }
+  .table-pedidos tr:last-child td { border-bottom: none; }
+  .table-pedidos tr:hover { background: rgba(255,255,255,0.02); }
+  
+  .status-badge {
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+  }
+  .status-pendente { background: rgba(255,206,0,0.15); color: #FFCE00; border: 1px solid rgba(255,206,0,0.3); }
+  .status-entregue { background: rgba(111,255,175,0.15); color: #6FFFAF; border: 1px solid rgba(111,255,175,0.3); }
+  
+  .btn-entregar {
+      background: var(--azul);
+      color: var(--verde1);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: opacity 0.2s;
+  }
+  .btn-entregar:hover { opacity: 0.8; }
 </style>
 
 </head>
@@ -91,7 +152,7 @@
             🏆
         </div>
         <h3>Movimentação da Carteira</h3>
-        <p class="desc">Transfira moedas como reconhecimento ou deduza pontos em caso de resgate de prêmios.</p>
+        <p class="desc">Transfira moedas como reconhecimento ou deduza pontos em caso de penalidade/ajuste.</p>
 
         <div class="admin-form-group">
             <div class="admin-field">
@@ -103,7 +164,7 @@
                 <label>Tipo de Operação</label>
                 <select id="tipoOperacao" class="admin-input">
                     <option value="adicionar">➕ Adicionar Moedas (Premiação)</option>
-                    <option value="remover">➖ Remover Moedas (Resgate/Penalidade)</option>
+                    <option value="remover">➖ Remover Moedas (Dedução Manual)</option>
                 </select>
             </div>
             
@@ -114,7 +175,7 @@
 
             <div class="admin-field">
                 <label>Motivo (Para Histórico)</label>
-                <input type="text" id="motivo" class="admin-input" placeholder="Ex: Resgate de Caneca Leveros">
+                <input type="text" id="motivo" class="admin-input" placeholder="Ex: Elogio Predize">
             </div>
         </div>
 
@@ -132,7 +193,27 @@
                 📥 Gerar Relatório (Excel/CSV)
             </button>
         </div>
+    </div>
 
+    <div class="pedidos-section">
+        <h2>🎁 Fila de Resgates da Lojinha</h2>
+        <div class="table-container">
+            <table class="table-pedidos">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Colaborador</th>
+                        <th>Prêmio Solicitado</th>
+                        <th>Valor Gasto</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody id="listaPedidos">
+                    <tr><td colspan="6" style="text-align:center; opacity:0.5;">Carregando pedidos...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
   </div> 
@@ -153,7 +234,7 @@ document.getElementById('hamburger').addEventListener('click', () => {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -168,10 +249,69 @@ const db = getFirestore(app);
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let usuarioAtual = null;
 
+/* ====================================================================
+   CARREGAR FILA DE PEDIDOS EM TEMPO REAL
+   ==================================================================== */
+function carregarPedidos() {
+    const lista = document.getElementById('listaPedidos');
+    const q = query(collection(db, "pedidos_lojinha"), orderBy("dataPedido", "desc"));
+    
+    onSnapshot(q, (snap) => {
+        if (snap.empty) {
+            lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Nenhum pedido de resgate encontrado.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        snap.docs.forEach(docSnap => {
+            const pedido = docSnap.data();
+            const pedidoId = docSnap.id;
+            
+            const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
+            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const isPendente = pedido.status === "Pendente";
+            const statusClass = isPendente ? "status-pendente" : "status-entregue";
+            
+            html += `
+                <tr>
+                    <td>${dataFormatada}</td>
+                    <td><strong>${pedido.colaboradorNome}</strong><br><span style="font-size:10px; opacity:0.6;">${pedido.colaboradorEmail}</span></td>
+                    <td>${pedido.produtoNome}</td>
+                    <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
+                    <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+                    <td>
+                        ${isPendente ? `<button class="btn-entregar" onclick="marcarEntregue('${pedidoId}')">Marcar Entregue</button>` : `<span style="opacity:0.5; font-size:10px;">OK ✅</span>`}
+                    </td>
+                </tr>
+            `;
+        });
+        lista.innerHTML = html;
+    });
+}
+
+// 🟢 FUNÇÃO DE DAR BAIXA NO PEDIDO (Disponível globalmente para o HTML acessar)
+window.marcarEntregue = async function(pedidoId) {
+    if(!confirm("Confirmar que o prêmio já foi entregue ao colaborador?")) return;
+    try {
+        await updateDoc(doc(db, "pedidos_lojinha", pedidoId), {
+            status: "Entregue"
+        });
+    } catch(e) {
+        console.error("Erro ao atualizar status:", e);
+        alert("Erro ao tentar atualizar o status do pedido.");
+    }
+}
+
+
+/* ====================================================================
+   AUTENTICAÇÃO PADRÃO
+   ==================================================================== */
 onAuthStateChanged(auth, user => {
     if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         usuarioAtual = user;
         document.getElementById('admin-content').style.display = 'block';
+        carregarPedidos(); // Chama a função para preencher a tabela assim que o admin loga
     } else if (user) {
         alert("Área restrita. Apenas gestores podem acessar esta página.");
         window.location.href = 'timeline.html';
