@@ -13,6 +13,30 @@
     background: #002D32; 
     color: white;
   }
+  
+  /* Estilos para a área de exportação */
+  .export-section {
+    margin-top: 40px;
+    padding-top: 30px;
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .export-section h4 {
+    color: var(--azul);
+    font-size: 13px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .export-filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
 </style>
 
 </head>
@@ -59,7 +83,7 @@
     <div class="page-header" style="text-align: center; margin-bottom: 40px;">
       <p class="page-label">Acesso Restrito</p>
       <h1>Gestão de <span>Recompensas</span> 🪙</h1>
-      <p>Lance ou deduza moedas do time de Atendimento.</p>
+      <p>Lance moedas, deduza resgates e exporte relatórios financeiros do portal.</p>
     </div>
 
     <div class="admin-pontos-container">
@@ -97,6 +121,18 @@
         <button class="btn-lancar-moedas" id="btnLancar">
             ✅ Confirmar Operação
         </button>
+
+        <div class="export-section">
+            <h4>📊 Relatório de Transações</h4>
+            <div class="export-filters">
+                <input type="date" id="relatorioInicio" class="admin-input" style="width: auto;">
+                <input type="date" id="relatorioFim" class="admin-input" style="width: auto;">
+            </div>
+            <button class="btn-lancar-moedas" id="btnExportar" style="background: rgba(76,221,221,0.15); color: var(--azul); border: 1px solid var(--azul);">
+                📥 Gerar Relatório (Excel/CSV)
+            </button>
+        </div>
+
     </div>
 
   </div> 
@@ -117,7 +153,7 @@ document.getElementById('hamburger').addEventListener('click', () => {
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -130,9 +166,11 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+let usuarioAtual = null;
 
 onAuthStateChanged(auth, user => {
     if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+        usuarioAtual = user;
         document.getElementById('admin-content').style.display = 'block';
     } else if (user) {
         alert("Área restrita. Apenas gestores podem acessar esta página.");
@@ -150,6 +188,7 @@ const logout = () => {
 document.getElementById('logoutBtn').onclick = logout;
 document.getElementById('logoutBtnMobile').onclick = logout;
 
+// ─── FUNÇÃO: LANÇAR OU REMOVER MOEDAS ───
 document.getElementById('btnLancar').onclick = async () => {
     const email = document.getElementById('userEmail').value.trim().toLowerCase();
     const valorInput = parseInt(document.getElementById('pontosValor').value);
@@ -171,8 +210,8 @@ document.getElementById('btnLancar').onclick = async () => {
             const dadosAtuais = userSnap.data();
             const saldoAtual = dadosAtuais.pontos || 0;
             
-            // 🟢 Lógica de Adição vs Remoção
-            let valorFinal = Math.abs(valorInput); // Garante que o número digitado seja positivo
+            let valorFinal = Math.abs(valorInput); 
+            let tipoString = "Adição";
             
             if (operacao === 'remover') {
                 if (saldoAtual < valorFinal) {
@@ -181,11 +220,23 @@ document.getElementById('btnLancar').onclick = async () => {
                     btn.disabled = false;
                     return;
                 }
-                valorFinal = -valorFinal; // Transforma em negativo para a função increment subtrair
+                valorFinal = -valorFinal; 
+                tipoString = "Remoção";
             }
 
+            // 1. Atualiza o saldo do colaborador
             await updateDoc(userRef, { pontos: increment(valorFinal) });
             
+            // 2. GRAVA O HISTÓRICO PARA O RELATÓRIO
+            await addDoc(collection(db, "historico_pontos"), {
+                adminNome: usuarioAtual.displayName || 'Gestor Admin',
+                colaborador: email,
+                tipoOperacao: tipoString,
+                valor: Math.abs(valorFinal),
+                motivo: motivo,
+                dataRealizada: serverTimestamp()
+            });
+
             const textoAcao = operacao === 'adicionar' ? 'enviadas para' : 'removidas de';
             alert(`Sucesso! ${Math.abs(valorFinal)} moedas foram ${textoAcao} ${email}.`);
             
@@ -201,6 +252,71 @@ document.getElementById('btnLancar').onclick = async () => {
         alert("Ocorreu um erro ao processar os pontos.");
     } finally {
         btn.innerHTML = '✅ Confirmar Operação';
+        btn.disabled = false;
+    }
+};
+
+// ─── FUNÇÃO: EXPORTAR RELATÓRIO ───
+document.getElementById('btnExportar').onclick = async () => {
+    const dataInicioStr = document.getElementById('relatorioInicio').value;
+    const dataFimStr = document.getElementById('relatorioFim').value;
+    const btn = document.getElementById('btnExportar');
+
+    if (!dataInicioStr || !dataFimStr) return alert("Por favor, selecione as datas de início e fim.");
+    if (dataInicioStr > dataFimStr) return alert("A data inicial não pode ser maior que a final.");
+
+    btn.textContent = 'Buscando dados...';
+    btn.disabled = true;
+
+    try {
+        const start = new Date(dataInicioStr + 'T00:00:00');
+        const end = new Date(dataFimStr + 'T23:59:59');
+
+        const q = query(
+            collection(db, "historico_pontos"),
+            where('dataRealizada', '>=', start),
+            where('dataRealizada', '<=', end),
+            orderBy('dataRealizada', 'desc')
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            alert("Nenhuma transação encontrada nesse período.");
+            return;
+        }
+
+        // Monta o arquivo CSV (Excel suporta nativamente)
+        let csvContent = '\uFEFF'; // Corrige acentos no Excel
+        csvContent += "Data da Transação;Horário;Administrador;Colaborador;Operação;Quantidade;Motivo\n";
+
+        querySnapshot.forEach((doc) => {
+            const row = doc.data();
+            const dataTimestamp = row.dataRealizada ? new Date(row.dataRealizada.seconds * 1000) : new Date();
+            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR');
+            const horaFormatada = dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+            csvContent += `${dataFormatada};${horaFormatada};${row.adminNome};${row.colaborador};${row.tipoOperacao};${row.valor};${row.motivo}\n`;
+        });
+
+        // Dispara o download do arquivo
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const linkInvisivel = document.createElement("a");
+        linkInvisivel.href = url;
+        
+        const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+        linkInvisivel.download = `Relatorio_Lojinha_${hoje}.csv`;
+        
+        document.body.appendChild(linkInvisivel);
+        linkInvisivel.click();
+        document.body.removeChild(linkInvisivel);
+
+    } catch (e) {
+        console.error("Erro ao gerar relatório:", e);
+        alert("Ocorreu um erro ao exportar o relatório. Tente novamente.");
+    } finally {
+        btn.innerHTML = '📥 Gerar Relatório (Excel/CSV)';
         btn.disabled = false;
     }
 };
