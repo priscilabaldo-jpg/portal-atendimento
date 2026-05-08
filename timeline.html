@@ -27,28 +27,33 @@
     display: block;
   }
 
-  /* 🟢 LAYOUT AJUSTADO: Mais elegante e centralizado */
+  /* 🟢 LAYOUT GRID: Feed no meio, Ranking encostado na direita */
   .timeline-layout {
-    display: flex;
-    gap: 24px; /* Reduzimos o buraco entre o feed e o ranking */
-    max-width: 920px; /* Tamanho exato para centralizar os dois elementos */
+    display: grid;
+    /* Cria 3 colunas virtuais: espaço vazio 1fr | Feed 600px | espaço do Ranking 1fr */
+    grid-template-columns: 1fr 600px 1fr;
+    gap: 20px;
+    max-width: 1160px; /* Largura total permitida na página */
     margin: 0 auto;
-    align-items: flex-start;
-    justify-content: center;
+    align-items: start;
   }
   
   .feed-container {
-    flex: 1;
-    min-width: 0; /* Evita que o feed quebre a tela */
-    max-width: 600px; /* Tamanho ideal de leitura (padrão de redes sociais) */
+    grid-column: 2; /* Obriga o feed a ficar preso na coluna central */
+    width: 100%;
+    min-width: 0;
+    margin: 0 !important;
+    padding-top: 0 !important;
   }
   
   .ranking-sidebar {
-    width: 260px; /* Afinamos a coluna do ranking */
+    grid-column: 3; /* Joga a caixinha de ranking para a terceira coluna (direita) */
+    width: 260px;
+    margin-left: auto; /* Empurra a caixinha para encostar na margem direita */
     background: var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    padding: 16px; /* Menos espaço sobrando nas bordas internas */
+    padding: 16px;
     position: sticky;
     top: 80px; 
   }
@@ -63,12 +68,12 @@
   .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; }
   .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
   
-  .ranking-list { display: flex; flex-direction: column; gap: 8px; /* Menos espaço entre os jogadores */ }
+  .ranking-list { display: flex; flex-direction: column; gap: 8px; }
   
   .rank-item {
     display: flex; align-items: center; justify-content: space-between;
     background: rgba(0,0,0,0.2); 
-    padding: 8px 12px; /* Caixinhas mais finas */
+    padding: 8px 12px; 
     border-radius: 8px;
     border: 1px solid transparent;
   }
@@ -85,10 +90,22 @@
   .rank-item.pos-3 { border-color: #CD7F32; background: rgba(205,127,50,0.05); }
   .rank-item.pos-3 .rank-pos { color: #CD7F32; }
 
-  /* Celular */
-  @media (max-width: 850px) {
-    .timeline-layout { flex-direction: column; align-items: center; }
-    .ranking-sidebar { width: 100%; max-width: 600px; position: relative; top: 0; margin-bottom: 40px; }
+  /* Celular e Telas Menores */
+  @media (max-width: 980px) {
+    .timeline-layout { 
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+    }
+    .feed-container { max-width: 100%; }
+    .ranking-sidebar { 
+        width: 100%; 
+        max-width: 600px; 
+        margin-left: 0;
+        position: relative; 
+        top: 0; 
+        margin-bottom: 40px; 
+    }
   }
 </style>
 
@@ -141,7 +158,7 @@
     
     <div class="timeline-layout">
         
-        <div class="feed-container" style="padding-top: 0;">
+        <div class="feed-container">
           
           <div class="page-header" style="text-align: center; margin-bottom: 20px;">
             <p class="page-label">Comunidade Leveros</p>
@@ -250,7 +267,6 @@ function carregarRanking() {
             const user = docSnap.data();
             const pontos = user.pontos || 0;
             
-            // 🟢 Ajuste para evitar erro se o nome for nulo, pegando a primeira parte ou limitado a 15 caracteres
             let nomePuro = user.nome || 'Usuário';
             let partesNome = nomePuro.split(' ');
             let nomeCurto = partesNome.length > 1 ? `${partesNome[0]} ${partesNome[1]}` : nomePuro;
