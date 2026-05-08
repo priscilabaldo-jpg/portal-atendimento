@@ -17,16 +17,71 @@
     margin-top: 15px;
     border-radius: 8px; 
     overflow: hidden;
-    background-color: transparent; /* Remove fundos estranhos se a imagem for menor */
+    background-color: transparent;
   }
-
-  /* Garante que a imagem mantenha a proporção sem cortar */
   .post-media img {
     width: 100%;
     height: auto !important; 
-    max-height: 700px; /* Limita a altura máxima para não ocupar a tela inteira em imagens muito compridas */
-    object-fit: contain !important; /* contain garante que nada seja cortado */
+    max-height: 700px; 
+    object-fit: contain !important; 
     display: block;
+  }
+
+  /* 🟢 NOVO: Layout da Timeline com Sidebar de Ranking */
+  .timeline-layout {
+    display: flex;
+    gap: 30px;
+    max-width: 1000px; /* Alargamos o container para caber a sidebar */
+    margin: 0 auto;
+    align-items: flex-start;
+  }
+  .feed-container {
+    flex: 1; /* O feed ocupa o espaço restante */
+    max-width: 680px;
+  }
+  .ranking-sidebar {
+    width: 300px;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 20px;
+    position: sticky;
+    top: 80px; /* Fica fixo ao rolar a página */
+  }
+  
+  /* 🟢 NOVO: Estilos do Ranking */
+  .ranking-header {
+    text-align: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 15px;
+  }
+  .ranking-header h3 { color: #FFD700; font-size: 16px; font-weight: bold; }
+  .ranking-header p { font-size: 11px; opacity: 0.6; margin-top: 5px; }
+  
+  .ranking-list { display: flex; flex-direction: column; gap: 12px; }
+  .rank-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px;
+    border: 1px solid transparent;
+  }
+  .rank-info { display: flex; align-items: center; gap: 10px; }
+  .rank-pos { font-weight: bold; font-size: 14px; width: 20px; text-align: center; }
+  .rank-nome { font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+  .rank-moedas { color: #FFD700; font-weight: bold; font-size: 12px; background: rgba(255,215,0,0.1); padding: 4px 8px; border-radius: 4px; }
+  
+  /* Pódio (Ouro, Prata, Bronze) */
+  .rank-item.pos-1 { border-color: #FFD700; background: rgba(255,215,0,0.05); }
+  .rank-item.pos-1 .rank-pos { color: #FFD700; }
+  .rank-item.pos-2 { border-color: #C0C0C0; background: rgba(192,192,192,0.05); }
+  .rank-item.pos-2 .rank-pos { color: #C0C0C0; }
+  .rank-item.pos-3 { border-color: #CD7F32; background: rgba(205,127,50,0.05); }
+  .rank-item.pos-3 .rank-pos { color: #CD7F32; }
+
+  /* Responsividade: No celular o ranking vai para o final do feed */
+  @media (max-width: 850px) {
+    .timeline-layout { flex-direction: column; align-items: center; }
+    .ranking-sidebar { width: 100%; max-width: 680px; position: relative; top: 0; margin-bottom: 40px; }
   }
 </style>
 
@@ -47,7 +102,7 @@
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
           <li id="menuAdminContainer" style="display: none;">
-            <a href="admin.html" id="navAdmin">Painel Admin</a>
+            <a href="admin.html">Painel Admin</a>
           </li>
           <li>
             <div id="saldoCoins" style="background: rgba(255,215,0,0.15); color: #FFD700; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px; user-select: none;">
@@ -71,59 +126,54 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
-    <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
+    <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-  <div class="container">
+  
+  <div class="container" style="padding-top: 20px;">
     
-    <div class="feed-container">
-      
-      <div class="page-header" style="text-align: center; margin-bottom: 20px;">
-        <p class="page-label">Comunidade Leveros</p>
-        <h1>Nosso <span>Feed</span> 💬</h1>
-        <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
-      </div>
-
-      <div class="create-post-box">
-        <div class="create-post-header">
-          <div class="user-avatar" id="myAvatar">L</div>
-          <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
-        </div>
-        <div class="create-post-actions">
-          <div class="media-input-wrap">
-            <span>📷</span>
-            <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
+    <div class="timeline-layout">
+        
+        <div class="feed-container" style="padding-top: 0;">
+          
+          <div class="page-header" style="text-align: center; margin-bottom: 20px;">
+            <p class="page-label">Comunidade Leveros</p>
+            <h1>Nosso <span>Feed</span> 💬</h1>
+            <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
           </div>
-          <button class="submit-btn" id="btnPublishPost">Publicar</button>
+
+          <div class="create-post-box">
+            <div class="create-post-header">
+              <div class="user-avatar" id="myAvatar">L</div>
+              <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
+            </div>
+            <div class="create-post-actions">
+              <div class="media-input-wrap">
+                <span>📷</span>
+                <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
+              </div>
+              <button class="submit-btn" id="btnPublishPost">Publicar</button>
+            </div>
+          </div>
+
+          <div id="feedList">
+            <div class="avisos-vazio">Carregando publicações...</div>
+          </div>
+        </div> 
+
+        <div class="ranking-sidebar">
+            <div class="ranking-header">
+                <h3>🏆 Top Acumuladores</h3>
+                <p>Quem tem mais moedas na equipe</p>
+            </div>
+            <div class="ranking-list" id="rankingList">
+                <div class="avisos-vazio" style="font-size: 10px;">Carregando ranking...</div>
+            </div>
         </div>
-      </div>
 
-      <div id="feedList">
-        <div class="avisos-vazio">Carregando publicações...</div>
-      </div>
-
-    </div> 
-  </div> 
+    </div> </div> 
 
   <footer>
-    <div class="footer-inner">
-      <div class="footer-col">
-        <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
-        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Navegação</h4>
-        <a href="index.html">Início</a>
-        <a href="timeline.html">Timeline</a>
-        <a href="materiais.html">Materiais</a>
-        <a href="informativos.html">Informativos</a>
-      </div>
-      <div class="footer-col">
-        <h4>Gestão</h4>
-        <p>Responsável: Priscila Baldo | Matheus Alves</p>
-        <p>Customer Experience | Leveros</p>
-      </div>
-    </div>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
 
@@ -155,10 +205,9 @@ window.renderAvatar = renderAvatar;
 </script>
 
 <script type="module">
-// 🟢 IMPORTANTE: increment adicionado aos imports do Firestore para permitir as somas seguras de saldo
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc, increment, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -174,9 +223,53 @@ const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.c
 let currentUser = null;
 
 /* ====================================================================
-   LÓGICA DA TIMELINE
+   LÓGICA DO RANKING DE MOEDAS (NOVO)
    ==================================================================== */
+function carregarRanking() {
+    const list = document.getElementById('rankingList');
+    // Puxa os top 5 usuários com mais pontos
+    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'), limit(5));
+    
+    onSnapshot(q, snap => {
+        if (snap.empty) {
+            list.innerHTML = '<div class="avisos-vazio" style="font-size: 10px;">Nenhum dado encontrado.</div>';
+            return;
+        }
 
+        let html = '';
+        let posicao = 1;
+        
+        snap.docs.forEach(docSnap => {
+            const user = docSnap.data();
+            const pontos = user.pontos || 0;
+            // Pegamos o primeiro e segundo nome para não ficar muito longo
+            const nomeCurto = user.nome ? user.nome.split(' ').slice(0, 2).join(' ') : 'Usuário';
+            
+            // Define o ícone da posição
+            let iconPos = `${posicao}º`;
+            if (posicao === 1) iconPos = '🥇';
+            if (posicao === 2) iconPos = '🥈';
+            if (posicao === 3) iconPos = '🥉';
+
+            html += `
+                <div class="rank-item pos-${posicao}">
+                    <div class="rank-info">
+                        <span class="rank-pos">${iconPos}</span>
+                        <span class="rank-nome">${window.escapeHTML(nomeCurto)}</span>
+                    </div>
+                    <span class="rank-moedas">${pontos} 🪙</span>
+                </div>
+            `;
+            posicao++;
+        });
+        
+        list.innerHTML = html;
+    });
+}
+
+/* ====================================================================
+   LÓGICA DA TIMELINE (Mantida igual)
+   ==================================================================== */
 function carregarFeed(isAdmin) {
   const feedList = document.getElementById('feedList');
   const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
@@ -285,7 +378,6 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
   btn.disabled = true;
 
   try {
-    // 1. Salva o post no banco de dados
     await addDoc(collection(db, 'timeline_posts'), {
       texto: texto,
       midiaUrl: midiaUrl,
@@ -297,7 +389,6 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
       criadoEm: serverTimestamp()
     });
 
-    // 2. LÓGICA DE NOTIFICAÇÃO POR E-MAIL (COM TRAVA DE 100/MÊS)
     const emailLogado = currentUser.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
@@ -329,7 +420,6 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
       }
     }
 
-    // Limpa os campos após sucesso
     textInput.value = '';
     mediaInput.value = '';
 
@@ -424,7 +514,6 @@ window.handleComment = function(event, postId) {
 /* ====================================================================
    AUTENTICAÇÃO PADRÃO E GESTÃO DE PONTOS
    ==================================================================== */
-// 🟢 Transformado em 'async' para lidar com os pontos
 onAuthStateChanged(auth, async user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
@@ -446,24 +535,23 @@ onAuthStateChanged(auth, async user => {
     }
     
     carregarFeed(isAdmin);
+    carregarRanking(); // 🟢 Chama a função do ranking ao logar
 
-    // 🟢 LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
+    // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
-        const hoje = new Date().toISOString().slice(0, 10); // Formato YYYY-MM-DD
+        const hoje = new Date().toISOString().slice(0, 10); 
 
         if (userSnap.exists()) {
             const dados = userSnap.data();
             let moedasAtuais = dados.pontos || 0;
             
-            // Renderiza o saldo atual
             document.getElementById('valSaldo').textContent = moedasAtuais;
             if (document.getElementById('valSaldoMobile')) {
                 document.getElementById('valSaldoMobile').textContent = moedasAtuais;
             }
 
-            // Verifica se é o primeiro login do dia
             if (dados.ultimoLogin !== hoje) {
                 await updateDoc(userRef, {
                     pontos: increment(10),
@@ -477,7 +565,6 @@ onAuthStateChanged(auth, async user => {
                 alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
             }
         } else {
-            // Conta nova: 50 moedas de boas-vindas
             await setDoc(userRef, {
                 nome: user.displayName || 'Usuário Leveros',
                 pontos: 50,
@@ -487,7 +574,7 @@ onAuthStateChanged(auth, async user => {
             if (document.getElementById('valSaldoMobile')) {
                 document.getElementById('valSaldoMobile').textContent = 50;
             }
-            alert("Bem-vindo(a) ao Portal CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
+            alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
         }
     } catch (err) {
         console.error("Erro ao sincronizar saldo da carteira: ", err);
