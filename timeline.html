@@ -27,48 +27,55 @@
     display: block;
   }
 
-  /* 🟢 NOVO: Layout da Timeline com Sidebar de Ranking */
+  /* 🟢 LAYOUT AJUSTADO: Mais elegante e centralizado */
   .timeline-layout {
     display: flex;
-    gap: 30px;
-    max-width: 1000px; /* Alargamos o container para caber a sidebar */
+    gap: 24px; /* Reduzimos o buraco entre o feed e o ranking */
+    max-width: 920px; /* Tamanho exato para centralizar os dois elementos */
     margin: 0 auto;
     align-items: flex-start;
+    justify-content: center;
   }
+  
   .feed-container {
-    flex: 1; /* O feed ocupa o espaço restante */
-    max-width: 680px;
+    flex: 1;
+    min-width: 0; /* Evita que o feed quebre a tela */
+    max-width: 600px; /* Tamanho ideal de leitura (padrão de redes sociais) */
   }
+  
   .ranking-sidebar {
-    width: 300px;
+    width: 260px; /* Afinamos a coluna do ranking */
     background: var(--glass);
     border: 1px solid var(--glass-border);
     border-radius: 12px;
-    padding: 20px;
+    padding: 16px; /* Menos espaço sobrando nas bordas internas */
     position: sticky;
-    top: 80px; /* Fica fixo ao rolar a página */
+    top: 80px; 
   }
   
-  /* 🟢 NOVO: Estilos do Ranking */
+  /* 🟢 Estilos do Ranking (Mais compactos) */
   .ranking-header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 15px;
+    padding-bottom: 12px;
   }
-  .ranking-header h3 { color: #FFD700; font-size: 16px; font-weight: bold; }
-  .ranking-header p { font-size: 11px; opacity: 0.6; margin-top: 5px; }
+  .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; }
+  .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
   
-  .ranking-list { display: flex; flex-direction: column; gap: 12px; }
+  .ranking-list { display: flex; flex-direction: column; gap: 8px; /* Menos espaço entre os jogadores */ }
+  
   .rank-item {
     display: flex; align-items: center; justify-content: space-between;
-    background: rgba(0,0,0,0.2); padding: 10px 15px; border-radius: 8px;
+    background: rgba(0,0,0,0.2); 
+    padding: 8px 12px; /* Caixinhas mais finas */
+    border-radius: 8px;
     border: 1px solid transparent;
   }
-  .rank-info { display: flex; align-items: center; gap: 10px; }
-  .rank-pos { font-weight: bold; font-size: 14px; width: 20px; text-align: center; }
-  .rank-nome { font-size: 12px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-  .rank-moedas { color: #FFD700; font-weight: bold; font-size: 12px; background: rgba(255,215,0,0.1); padding: 4px 8px; border-radius: 4px; }
+  .rank-info { display: flex; align-items: center; gap: 8px; }
+  .rank-pos { font-weight: bold; font-size: 13px; width: 18px; text-align: center; }
+  .rank-nome { font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px; }
+  .rank-moedas { color: #FFD700; font-weight: bold; font-size: 11px; background: rgba(255,215,0,0.1); padding: 4px 6px; border-radius: 4px; }
   
   /* Pódio (Ouro, Prata, Bronze) */
   .rank-item.pos-1 { border-color: #FFD700; background: rgba(255,215,0,0.05); }
@@ -78,10 +85,10 @@
   .rank-item.pos-3 { border-color: #CD7F32; background: rgba(205,127,50,0.05); }
   .rank-item.pos-3 .rank-pos { color: #CD7F32; }
 
-  /* Responsividade: No celular o ranking vai para o final do feed */
+  /* Celular */
   @media (max-width: 850px) {
     .timeline-layout { flex-direction: column; align-items: center; }
-    .ranking-sidebar { width: 100%; max-width: 680px; position: relative; top: 0; margin-bottom: 40px; }
+    .ranking-sidebar { width: 100%; max-width: 600px; position: relative; top: 0; margin-bottom: 40px; }
   }
 </style>
 
