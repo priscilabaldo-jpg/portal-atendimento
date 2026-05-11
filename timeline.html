@@ -438,13 +438,13 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
         }
 
         if (disparosMes < 100) {
-          // 🟢 CORREÇÃO: Bloco do EmailJS ajustado com tratamento de erros
+          // 🟢 CORREÇÃO: "to_email" em vez de "destinatario"
           try {
               const resposta = await emailjs.send(
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  destinatario: "matheusvan48@gmail.com",
+                  to_email: "matheusvan48@gmail.com",
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
                 }
