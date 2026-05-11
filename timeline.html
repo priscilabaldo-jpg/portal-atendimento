@@ -125,6 +125,7 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">Lojinha 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -150,6 +151,7 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="lojinha.html">Lojinha 🛒</a>
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
@@ -243,6 +245,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
+// 🟢 Inicialização do EmailJS movida para o topo
+emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
@@ -432,26 +437,30 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
           }
         }
 
-       if (disparosMes < 100) {
-  emailjs.init("AUZIT5qioj8fQ_cQ8");
-
-  await emailjs.send(
-    "service_rc58xfn",
-    "template_074uqfn",
-    {
-      destinatario: "matheusvan48@gmail.com",
-      nome_autor: currentUser.displayName || 'Gestão CX Resolve',
-      mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
+        if (disparosMes < 100) {
+          // 🟢 CORREÇÃO: Bloco do EmailJS ajustado com tratamento de erros
+          try {
+              const resposta = await emailjs.send(
+                "service_rc58xfn",
+                "template_074uqfn",
+                {
+                  destinatario: "matheusvan48@gmail.com",
+                  nome_autor: currentUser.displayName || 'Gestão CX Resolve',
+                  mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
+                }
+              );
+              console.log("Email enviado com sucesso!", resposta.status, resposta.text);
+              await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
+          } catch (emailError) {
+              console.error("FALHA CRÍTICA NO EMAILJS. Motivo:", emailError);
+          }
+        } else {
+          console.log("Limite seguro de 100 e-mails atingido no mês.");
+        }
+      } catch (errDb) {
+        console.error("Erro ao gerenciar cota no banco:", errDb);
+      }
     }
-  );
-
-  console.log("Email enviado com sucesso!");
-
-  await setDoc(emailLimitRef, {
-    mes: mesAtual,
-    contagem: disparosMes + 1
-  });
-}
 
     textInput.value = '';
     mediaInput.value = '';
