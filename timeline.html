@@ -246,7 +246,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Inicialização do EmailJS
+// 🟢 Inicialização do EmailJS com a sua Public Key
 emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
@@ -443,7 +443,8 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  email: "n1cx@leveros.com.br, n2cx@leveros.com.br, n3cx@leveros.com.br", // 🟢 Emails separados por vírgula
+                  // 🟢 Alterado para enviar para os três grupos simultaneamente
+                  email: "n1cx@leveros.com.br, n2cx@leveros.com.br, n3cx@leveros.com.br",
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
                 }
