@@ -125,6 +125,7 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">Lojinha 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -245,7 +246,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🟢 Inicialização do EmailJS com a sua Public Key
+// Inicialização do EmailJS
 emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
@@ -442,8 +443,8 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  // 🟢 Alterado para enviar para os três grupos simultaneamente
-                  email: "n1cx@leveros.com.br, n2cx@leveros.com.br, n3cx@leveros.com.br",
+                  // 🟢 Atualizado com a lista completa de e-mails da equipe
+                  email: "anapaula.gonçalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br",
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
                 }
