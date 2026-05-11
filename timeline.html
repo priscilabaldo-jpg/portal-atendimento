@@ -432,19 +432,26 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
           }
         }
 
-        if (disparosMes < 100) {
-          emailjs.init("AUZIT5qioj8fQ_cQ8");
-          await emailjs.send("service_rc58xfn", "template_074uqfn", {
-            nome_autor: currentUser.displayName || 'Gestão CX Resolve',
-            mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!',
-            destinatario: "matheusvan48@gmail.com"
-          });
-          await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
-        }
-      } catch (errEmail) {
-        console.error("Post publicado, mas erro ao notificar:", errEmail);
-      }
+       if (disparosMes < 100) {
+  emailjs.init("AUZIT5qioj8fQ_cQ8");
+
+  await emailjs.send(
+    "service_rc58xfn",
+    "template_074uqfn",
+    {
+      destinatario: "matheusvan48@gmail.com",
+      nome_autor: currentUser.displayName || 'Gestão CX Resolve',
+      mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
     }
+  );
+
+  console.log("Email enviado com sucesso!");
+
+  await setDoc(emailLimitRef, {
+    mes: mesAtual,
+    contagem: disparosMes + 1
+  });
+}
 
     textInput.value = '';
     mediaInput.value = '';
