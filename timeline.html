@@ -433,11 +433,11 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
         }
 
         if (disparosMes < 100) {
-          emailjs.init("SUA_PUBLIC_KEY_AQUI");
-          await emailjs.send("SEU_SERVICE_ID_AQUI", "SEU_TEMPLATE_ID_AQUI", {
+          emailjs.init("AUZIT5qioj8fQ_cQ8");
+          await emailjs.send("service_rc58xfn", "template_074uqfn", {
             nome_autor: currentUser.displayName || 'Gestão CX Resolve',
             mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!',
-            destinatario: "time.atendimento@leveros.com.br"
+            destinatario: "matheusvan48@gmail.com"
           });
           await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
         }
