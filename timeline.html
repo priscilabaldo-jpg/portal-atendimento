@@ -125,6 +125,7 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">Lojinha 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -437,13 +438,12 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
         }
 
         if (disparosMes < 100) {
-          // 🟢 CORREÇÃO: "to_email" em vez de "destinatario"
           try {
               const resposta = await emailjs.send(
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  to_email: "matheusvan48@gmail.com",
+                  to_email: "matheusvan48@gmail.com", // 🟢 Corrigido aqui
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
                 }
