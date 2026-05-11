@@ -246,7 +246,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 🟢 Inicialização do EmailJS movida para o topo
+// 🟢 Inicialização do EmailJS
 emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
@@ -443,7 +443,7 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  to_email: "matheusvan48@gmail.com", // 🟢 Corrigido aqui
+                  email: "matheusvan48@gmail.com", // 🟢 CORREÇÃO: Mudado para 'email' para bater com o template
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
                 }
