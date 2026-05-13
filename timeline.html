@@ -401,8 +401,9 @@ function carregarFeed(isAdmin) {
           ${mediaHtml}
           
           <div class="post-actions">
+            <!-- 🟢 Adicionada a contagem total de curtidas no botão -->
             <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
-              ${heartIcon} Curtir
+              ${heartIcon} Curtir (${likes.length})
             </button>
             <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
               💬 Comentar (${comentarios.length})
