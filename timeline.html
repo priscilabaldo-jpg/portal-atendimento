@@ -288,34 +288,8 @@ function formatNameFromEmail(email) {
 }
 window.formatNameFromEmail = formatNameFromEmail;
 
-// 🟢 FUNÇÕES DO MODAL DE CURTIDAS
-window.abrirModalLikes = function(likesStr) {
-    try {
-        const likesArray = JSON.parse(decodeURIComponent(likesStr));
-        const container = document.getElementById('likesListContainer');
-        let html = '';
-        
-        likesArray.forEach(email => {
-            const nome = window.formatNameFromEmail(email);
-            const inicial = window.getInitials(nome);
-            html += `
-                <div class="liker-item">
-                    <div class="liker-avatar">${inicial}</div>
-                    <div class="liker-info">
-                        <span class="liker-name">${window.escapeHTML(nome)}</span>
-                        <span class="liker-email">${window.escapeHTML(email)}</span>
-                    </div>
-                </div>
-            `;
-        });
-        
-        container.innerHTML = html;
-        document.getElementById('likesModal').style.display = 'flex';
-    } catch(e) { console.error("Erro ao abrir modal", e); }
-};
-
+// Função apenas para fechar o Modal (abrir está no outro script pois precisa do banco)
 window.fecharModalLikes = function(e) {
-    // Só fecha se clicar no X ou na parte escura (fora da caixa)
     if (e && e.target.id !== 'likesModal' && e.target.id !== 'closeModalBtn') return;
     document.getElementById('likesModal').style.display = 'none';
 };
@@ -341,6 +315,53 @@ emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
+
+// 🟢 FUNÇÃO DE ABRIR O MODAL BUSCANDO AS FOTOS NO BANCO
+window.abrirModalLikes = async function(likesStr) {
+    try {
+        const likesArray = JSON.parse(decodeURIComponent(likesStr));
+        const container = document.getElementById('likesListContainer');
+        
+        // Coloca um aviso de "Carregando" estiloso enquanto vai no banco de dados
+        container.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:rgba(255,255,255,0.6);">Carregando perfis...</div>';
+        document.getElementById('likesModal').style.display = 'flex';
+
+        // Busca todos os perfis simultaneamente para ser bem rápido (Promise.all)
+        const promises = likesArray.map(async (email) => {
+            let fotoUrl = null;
+            let nome = window.formatNameFromEmail(email);
+
+            try {
+                const userRef = doc(db, "usuarios", email);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.foto) fotoUrl = userData.foto; // Pega a foto do banco
+                    if (userData.nome) nome = userData.nome;    // Pega o nome certinho do banco
+                }
+            } catch(err) {
+                console.error("Erro ao buscar foto do usuário", err);
+            }
+            
+            const avatarContent = window.renderAvatar(nome, fotoUrl);
+            return `
+                <div class="liker-item">
+                    <div class="liker-avatar" style="padding:0; overflow:hidden; border:none; background:transparent;">
+                        ${avatarContent}
+                    </div>
+                    <div class="liker-info">
+                        <span class="liker-name">${window.escapeHTML(nome)}</span>
+                        <span class="liker-email">${window.escapeHTML(email)}</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        const results = await Promise.all(promises);
+        container.innerHTML = results.join('') || '<div style="text-align:center; padding:20px; font-size:12px; color:rgba(255,255,255,0.6);">Ninguém curtiu ainda.</div>';
+
+    } catch(e) { console.error("Erro ao abrir modal", e); }
+};
 
 /* ====================================================================
    LÓGICA DO RANKING DE MOEDAS
@@ -485,7 +506,7 @@ function carregarFeed(isAdmin) {
           ${mediaHtml}
           
           <div class="post-actions">
-            <!-- 🟢 Adicionada a contagem total de curtidas no botão -->
+            <!-- 🟢 Contagem total de curtidas e botão de coração -->
             <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
               ${heartIcon} Curtir (${likes.length})
             </button>
@@ -705,7 +726,7 @@ onAuthStateChanged(auth, async user => {
     carregarFeed(isAdmin);
     carregarRanking();
 
-    // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
+    // 🟢 LÓGICA DE RECOMPENSA E LOGIN DIÁRIO (Agora salva a foto no banco!)
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
@@ -721,9 +742,12 @@ onAuthStateChanged(auth, async user => {
             }
 
             if (dados.ultimoLogin !== hoje) {
+                // Primeiro login do dia - dá os pontos e atualiza a foto
                 await updateDoc(userRef, {
                     pontos: increment(10),
-                    ultimoLogin: hoje
+                    ultimoLogin: hoje,
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
                 });
                 moedasAtuais += 10;
                 document.getElementById('valSaldo').textContent = moedasAtuais;
@@ -731,10 +755,18 @@ onAuthStateChanged(auth, async user => {
                     document.getElementById('valSaldoMobile').textContent = moedasAtuais;
                 }
                 alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
+            } else {
+                // Já pegou o bônus hoje, apenas atualiza a foto caso ele tenha trocado no Google
+                await updateDoc(userRef, {
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
+                });
             }
         } else {
+            // Conta nova
             await setDoc(userRef, {
                 nome: user.displayName || 'Usuário Leveros',
+                foto: user.photoURL || null,
                 pontos: 50,
                 ultimoLogin: hoje
             });
