@@ -125,6 +125,7 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">Lojinha 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -150,6 +151,7 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="lojinha.html">Lojinha 🛒</a>
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
@@ -227,6 +229,15 @@ function renderAvatar(nome, photoUrl) {
   return getInitials(nome);
 }
 window.renderAvatar = renderAvatar;
+
+// 🟢 FUNÇÃO NOVA: Transforma o email (matheus.mendes@...) em nome (Matheus Mendes)
+function formatNameFromEmail(email) {
+  if (!email) return '';
+  let username = email.split('@')[0];
+  let nameParts = username.split('.');
+  return nameParts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
+window.formatNameFromEmail = formatNameFromEmail;
 </script>
 
 <script type="module">
@@ -320,6 +331,37 @@ function carregarFeed(isAdmin) {
       const isLiked = currentUser && likes.includes(currentUser.email);
       const heartIcon = isLiked ? '❤️' : '🤍';
       const likeClass = isLiked ? 'liked' : '';
+
+      // 🟢 LÓGICA DE QUEM CURTIU (ESTILO INSTAGRAM)
+      let likesTextHtml = '';
+      if (likes.length > 0) {
+          let textStr = '';
+          if (isLiked) {
+              if (likes.length === 1) {
+                  textStr = `Curtido por <strong>você</strong>`;
+              } else if (likes.length === 2) {
+                  let outroEmail = likes.find(e => e !== currentUser.email);
+                  textStr = `Curtido por <strong>você</strong> e <strong>${window.formatNameFromEmail(outroEmail)}</strong>`;
+              } else {
+                  let outroEmail = likes.find(e => e !== currentUser.email);
+                  textStr = `Curtido por <strong>você</strong>, <strong>${window.formatNameFromEmail(outroEmail)}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
+              }
+          } else {
+              if (likes.length === 1) {
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>`;
+              } else if (likes.length === 2) {
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong> e <strong>${window.formatNameFromEmail(likes[1])}</strong>`;
+              } else {
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>, <strong>${window.formatNameFromEmail(likes[1])}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
+              }
+          }
+          likesTextHtml = `
+            <div style="font-size: 11px; opacity: 0.8; margin: -5px 15px 15px 15px; display: flex; align-items: center; gap: 5px;">
+              <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
+            </div>
+          `;
+      }
+      // --------------------------------------------------------
       
       const comentarios = post.comentarios || [];
       let commentsHtml = '';
@@ -360,12 +402,14 @@ function carregarFeed(isAdmin) {
           
           <div class="post-actions">
             <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
-              ${heartIcon} Curtir (${likes.length})
+              ${heartIcon} Curtir
             </button>
             <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
               💬 Comentar (${comentarios.length})
             </button>
           </div>
+          
+          ${likesTextHtml}
           
           <div class="comments-list">
             ${commentsHtml}
@@ -441,7 +485,6 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
                 "service_rc58xfn",
                 "template_074uqfn",
                 {
-                  // 🟢 Atualizado com a lista completa de e-mails da equipe
                   email: "anapaula.goncalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br",
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
