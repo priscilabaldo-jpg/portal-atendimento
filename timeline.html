@@ -108,41 +108,51 @@
     }
   }
 
-  /* 🟢 Estilos do Modal de Curtidas */
-  .modal-overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.7); z-index: 1000;
-      display: flex; align-items: center; justify-content: center;
-      backdrop-filter: blur(5px);
+  /* 🟢 Estilos do Balãozinho de Curtidas (Popover) */
+  .likes-popover {
+      display: none;
+      position: absolute;
+      bottom: 100%; /* Abre para cima */
+      left: 0;
+      margin-bottom: 10px;
+      width: 250px;
+      max-height: 220px;
+      background: #002529; /* Fundo sólido para destacar */
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      z-index: 100;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+      flex-direction: column;
+      padding: 12px;
+      animation: fadeInUp 0.2s ease;
   }
-  .modal-content {
-      background: var(--glass); border: 1px solid var(--glass-border);
-      border-radius: 12px; width: 90%; max-width: 350px;
-      max-height: 70vh; display: flex; flex-direction: column;
-      overflow: hidden; animation: fadeUp 0.3s ease;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  }
-  .modal-header {
-      padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05);
-      display: flex; justify-content: space-between; align-items: center;
-  }
-  .modal-header h3 { margin: 0; font-size: 15px; color: white; }
-  .modal-header button { background: none; border: none; color: rgba(255,255,255,0.5); font-size: 18px; cursor: pointer; transition: 0.2s; }
-  .modal-header button:hover { color: white; }
   
-  .modal-body {
-      padding: 15px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px;
-  }
+  /* Scroll customizado para o balãozinho */
+  .likes-popover::-webkit-scrollbar { width: 4px; }
+  .likes-popover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+  
   .liker-item {
-      display: flex; align-items: center; gap: 12px;
+      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
   }
+  .liker-item:last-child { margin-bottom: 0; }
+  
+  /* 🟢 Correção da Foto/Letra Inicial */
   .liker-avatar {
-      width: 40px; height: 40px; border-radius: 50%; background: var(--amarelo); color: var(--verde1);
-      display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: 50%; 
+      background: #FFD700; color: #002D32; /* Fundo amarelo, letra escura */
+      display: flex; align-items: center; justify-content: center; 
+      font-weight: bold; font-size: 14px; flex-shrink: 0;
+      overflow: hidden; /* Corta a imagem redondinha */
   }
   .liker-info { display: flex; flex-direction: column; overflow: hidden; }
-  .liker-name { font-size: 13px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .liker-email { font-size: 10px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .liker-name { font-size: 12px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .liker-email { font-size: 10px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a0c4c4; }
+
+  @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
 </style>
 
 </head>
@@ -236,19 +246,6 @@
     </div> 
   </div> 
 
-  <!-- 🟢 Modal de Curtidas -->
-  <div id="likesModal" class="modal-overlay" style="display:none;" onclick="fecharModalLikes(event)">
-      <div class="modal-content" onclick="event.stopPropagation()">
-          <div class="modal-header">
-              <h3>Curtidas</h3>
-              <button id="closeModalBtn" onclick="fecharModalLikes(event)">✕</button>
-          </div>
-          <div class="modal-body" id="likesListContainer">
-              <!-- Lista de curtidas será injetada aqui -->
-          </div>
-      </div>
-  </div>
-
   <footer>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
@@ -271,15 +268,16 @@ function getInitials(name) {
 }
 window.getInitials = getInitials;
 
+// 🟢 Função padronizada de avatar (retorna a img se tiver foto, ou a inicial)
 function renderAvatar(nome, photoUrl) {
   if (photoUrl) {
-    return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
   }
   return getInitials(nome);
 }
 window.renderAvatar = renderAvatar;
 
-// Transforma o email (matheus.mendes@...) em nome (Matheus Mendes)
+// Transforma o email em nome
 function formatNameFromEmail(email) {
   if (!email) return '';
   let username = email.split('@')[0];
@@ -288,11 +286,10 @@ function formatNameFromEmail(email) {
 }
 window.formatNameFromEmail = formatNameFromEmail;
 
-// Função apenas para fechar o Modal (abrir está no outro script pois precisa do banco)
-window.fecharModalLikes = function(e) {
-    if (e && e.target.id !== 'likesModal' && e.target.id !== 'closeModalBtn') return;
-    document.getElementById('likesModal').style.display = 'none';
-};
+// Fecha os popovers de curtida se o usuário clicar em qualquer lugar da tela
+window.addEventListener('click', function() {
+    document.querySelectorAll('.likes-popover').forEach(p => p.style.display = 'none');
+});
 </script>
 
 <script type="module">
@@ -310,23 +307,35 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Inicialização do EmailJS
 emailjs.init("AUZIT5qioj8fQ_cQ8");
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
 
-// 🟢 FUNÇÃO DE ABRIR O MODAL BUSCANDO AS FOTOS NO BANCO
-window.abrirModalLikes = async function(likesStr) {
+// 🟢 FUNÇÃO DO BALÃOZINHO DE CURTIDAS (POPOVER)
+window.toggleLikesPopover = async function(event, postId, likesStr) {
+    event.stopPropagation(); // Evita que o clique feche imediatamente o balão
+    
+    const popover = document.getElementById(`popover-${postId}`);
+    
+    // Fecha todos os outros balõezinhos que estiverem abertos
+    document.querySelectorAll('.likes-popover').forEach(p => {
+        if (p.id !== `popover-${postId}`) p.style.display = 'none';
+    });
+
+    // Se já estiver aberto, ele fecha
+    if (popover.style.display === 'flex') {
+        popover.style.display = 'none';
+        return;
+    }
+
+    // Mostra carregando enquanto busca as fotos
+    popover.style.display = 'flex';
+    popover.innerHTML = '<div style="text-align:center; padding:10px; font-size:12px; color:rgba(255,255,255,0.6);">Carregando perfis...</div>';
+
     try {
         const likesArray = JSON.parse(decodeURIComponent(likesStr));
-        const container = document.getElementById('likesListContainer');
         
-        // Coloca um aviso de "Carregando" estiloso enquanto vai no banco de dados
-        container.innerHTML = '<div style="text-align:center; padding:20px; font-size:12px; color:rgba(255,255,255,0.6);">Carregando perfis...</div>';
-        document.getElementById('likesModal').style.display = 'flex';
-
-        // Busca todos os perfis simultaneamente para ser bem rápido (Promise.all)
         const promises = likesArray.map(async (email) => {
             let fotoUrl = null;
             let nome = window.formatNameFromEmail(email);
@@ -336,19 +345,17 @@ window.abrirModalLikes = async function(likesStr) {
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
                     const userData = userSnap.data();
-                    if (userData.foto) fotoUrl = userData.foto; // Pega a foto do banco
-                    if (userData.nome) nome = userData.nome;    // Pega o nome certinho do banco
+                    if (userData.foto) fotoUrl = userData.foto;
+                    if (userData.nome) nome = userData.nome;
                 }
             } catch(err) {
-                console.error("Erro ao buscar foto do usuário", err);
+                console.error("Erro ao buscar foto", err);
             }
             
             const avatarContent = window.renderAvatar(nome, fotoUrl);
             return `
                 <div class="liker-item">
-                    <div class="liker-avatar" style="padding:0; overflow:hidden; border:none; background:transparent;">
-                        ${avatarContent}
-                    </div>
+                    <div class="liker-avatar">${avatarContent}</div>
                     <div class="liker-info">
                         <span class="liker-name">${window.escapeHTML(nome)}</span>
                         <span class="liker-email">${window.escapeHTML(email)}</span>
@@ -358,9 +365,11 @@ window.abrirModalLikes = async function(likesStr) {
         });
 
         const results = await Promise.all(promises);
-        container.innerHTML = results.join('') || '<div style="text-align:center; padding:20px; font-size:12px; color:rgba(255,255,255,0.6);">Ninguém curtiu ainda.</div>';
+        popover.innerHTML = results.join('') || '<div style="text-align:center; font-size:12px; color:rgba(255,255,255,0.6);">Ninguém curtiu ainda.</div>';
 
-    } catch(e) { console.error("Erro ao abrir modal", e); }
+    } catch(e) { 
+        popover.innerHTML = '<div style="text-align:center; font-size:12px; color:red;">Erro ao carregar curtidas.</div>';
+    }
 };
 
 /* ====================================================================
@@ -434,8 +443,8 @@ function carregarFeed(isAdmin) {
       const heartIcon = isLiked ? '❤️' : '🤍';
       const likeClass = isLiked ? 'liked' : '';
 
-      // 🟢 LÓGICA DE QUEM CURTIU COM CLIQUE
-      let likesTextHtml = '';
+      // 🟢 LÓGICA DE QUEM CURTIU (COM BALÃOZINHO)
+      let likesSection = '';
       if (likes.length > 0) {
           let textStr = '';
           if (isLiked) {
@@ -460,13 +469,15 @@ function carregarFeed(isAdmin) {
           
           const encodedLikes = encodeURIComponent(JSON.stringify(likes));
           
-          likesTextHtml = `
-            <div onclick="abrirModalLikes('${encodedLikes}')" style="font-size: 11px; opacity: 0.8; margin: -5px 15px 15px 15px; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Ver quem curtiu">
-              <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
+          likesSection = `
+            <div style="position: relative; margin: -5px 15px 15px 15px;">
+                <div onclick="toggleLikesPopover(event, '${postId}', '${encodedLikes}')" style="font-size: 11px; opacity: 0.8; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Ver quem curtiu">
+                  <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
+                </div>
+                <div id="popover-${postId}" class="likes-popover" onclick="event.stopPropagation()"></div>
             </div>
           `;
       }
-      // --------------------------------------------------------
       
       const comentarios = post.comentarios || [];
       let commentsHtml = '';
@@ -478,7 +489,7 @@ function carregarFeed(isAdmin) {
 
         commentsHtml += `
           <div class="comment-item" style="position: relative; align-items: flex-start;">
-            <div class="user-avatar">${window.renderAvatar(c.autor, c.foto)}</div>
+            <div class="user-avatar" style="overflow: hidden; flex-shrink: 0;">${window.renderAvatar(c.autor, c.foto)}</div>
             <div class="comment-bubble" style="position: relative; padding-right: 30px;">
               <strong>${window.escapeHTML(c.autor)}</strong>
               ${window.escapeHTML(c.texto)}
@@ -495,7 +506,7 @@ function carregarFeed(isAdmin) {
           ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
           
           <div class="post-header">
-            <div class="user-avatar">${window.renderAvatar(post.autor, post.autorFoto)}</div>
+            <div class="user-avatar" style="overflow: hidden;">${window.renderAvatar(post.autor, post.autorFoto)}</div>
             <div class="post-author-info">
               <h4>${window.escapeHTML(post.autor)}</h4>
               <span>${dataFormatada}</span>
@@ -506,7 +517,6 @@ function carregarFeed(isAdmin) {
           ${mediaHtml}
           
           <div class="post-actions">
-            <!-- 🟢 Contagem total de curtidas e botão de coração -->
             <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
               ${heartIcon} Curtir (${likes.length})
             </button>
@@ -515,7 +525,7 @@ function carregarFeed(isAdmin) {
             </button>
           </div>
           
-          ${likesTextHtml}
+          ${likesSection}
           
           <div class="comments-list">
             ${commentsHtml}
@@ -726,7 +736,7 @@ onAuthStateChanged(auth, async user => {
     carregarFeed(isAdmin);
     carregarRanking();
 
-    // 🟢 LÓGICA DE RECOMPENSA E LOGIN DIÁRIO (Agora salva a foto no banco!)
+    // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
@@ -742,7 +752,6 @@ onAuthStateChanged(auth, async user => {
             }
 
             if (dados.ultimoLogin !== hoje) {
-                // Primeiro login do dia - dá os pontos e atualiza a foto
                 await updateDoc(userRef, {
                     pontos: increment(10),
                     ultimoLogin: hoje,
@@ -756,14 +765,12 @@ onAuthStateChanged(auth, async user => {
                 }
                 alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
             } else {
-                // Já pegou o bônus hoje, apenas atualiza a foto caso ele tenha trocado no Google
                 await updateDoc(userRef, {
                     foto: user.photoURL || null,
                     nome: user.displayName || 'Usuário Leveros'
                 });
             }
         } else {
-            // Conta nova
             await setDoc(userRef, {
                 nome: user.displayName || 'Usuário Leveros',
                 foto: user.photoURL || null,
