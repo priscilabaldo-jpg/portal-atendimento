@@ -116,6 +116,7 @@
           <li><a href="timeline.html">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">Lojinha 🛒</a></li>
           <li><a href="admin.html" class="active">Painel Admin</a></li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
@@ -129,6 +130,7 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
+    <a href="lojinha.html">Lojinha 🛒</a>
     <a href="admin.html">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
@@ -136,7 +138,7 @@
   <div class="container">
     
     <div style="margin-bottom: 20px;">
-        <a href="admin.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+        <a href="index.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
             ← Voltar para Central
         </a>
     </div>
@@ -202,6 +204,7 @@
                 <thead>
                     <tr>
                         <th>Data</th>
+                        <th>ID Pedido</th>
                         <th>Colaborador</th>
                         <th>Prêmio Solicitado</th>
                         <th>Valor Gasto</th>
@@ -210,7 +213,7 @@
                     </tr>
                 </thead>
                 <tbody id="listaPedidos">
-                    <tr><td colspan="6" style="text-align:center; opacity:0.5;">Carregando pedidos...</td></tr>
+                    <tr><td colspan="7" style="text-align:center; opacity:0.5;">Carregando pedidos...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -258,7 +261,7 @@ function carregarPedidos() {
     
     onSnapshot(q, (snap) => {
         if (snap.empty) {
-            lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Nenhum pedido de resgate encontrado.</td></tr>';
+            lista.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5;">Nenhum pedido de resgate encontrado.</td></tr>';
             return;
         }
 
@@ -270,12 +273,16 @@ function carregarPedidos() {
             const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
             const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             
+            // 🟢 Formata o ID do pedido idêntico ao comprovante (Ex: #A1B2C3D4)
+            const idFormatado = '#' + pedidoId.substring(0, 8).toUpperCase();
+
             const isPendente = pedido.status === "Pendente";
             const statusClass = isPendente ? "status-pendente" : "status-entregue";
             
             html += `
                 <tr>
                     <td>${dataFormatada}</td>
+                    <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
                     <td><strong>${pedido.colaboradorNome}</strong><br><span style="font-size:10px; opacity:0.6;">${pedido.colaboradorEmail}</span></td>
                     <td>${pedido.produtoNome}</td>
                     <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
@@ -290,7 +297,7 @@ function carregarPedidos() {
     });
 }
 
-// 🟢 FUNÇÃO DE DAR BAIXA NO PEDIDO (Disponível globalmente para o HTML acessar)
+// 🟢 FUNÇÃO DE DAR BAIXA NO PEDIDO
 window.marcarEntregue = async function(pedidoId) {
     if(!confirm("Confirmar que o prêmio já foi entregue ao colaborador?")) return;
     try {
@@ -303,7 +310,6 @@ window.marcarEntregue = async function(pedidoId) {
     }
 }
 
-
 /* ====================================================================
    AUTENTICAÇÃO PADRÃO
    ==================================================================== */
@@ -311,7 +317,7 @@ onAuthStateChanged(auth, user => {
     if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
         usuarioAtual = user;
         document.getElementById('admin-content').style.display = 'block';
-        carregarPedidos(); // Chama a função para preencher a tabela assim que o admin loga
+        carregarPedidos(); 
     } else if (user) {
         alert("Área restrita. Apenas gestores podem acessar esta página.");
         window.location.href = 'timeline.html';
@@ -426,17 +432,19 @@ document.getElementById('btnExportar').onclick = async () => {
             return;
         }
 
-        // Monta o arquivo CSV (Excel suporta nativamente)
+        // 🟢 Monta o arquivo CSV e inclui a coluna "ID Transacao"
         let csvContent = '\uFEFF'; // Corrige acentos no Excel
-        csvContent += "Data da Transação;Horário;Administrador;Colaborador;Operação;Quantidade;Motivo\n";
+        csvContent += "Data da Transação;Horário;Administrador;Colaborador;Operação;Quantidade;Motivo;ID Transacao\n";
 
-        querySnapshot.forEach((doc) => {
-            const row = doc.data();
+        querySnapshot.forEach((docSnap) => {
+            const row = docSnap.data();
+            const idFormatado = '#' + docSnap.id.substring(0, 8).toUpperCase(); // Gera o ID curto
+            
             const dataTimestamp = row.dataRealizada ? new Date(row.dataRealizada.seconds * 1000) : new Date();
             const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR');
             const horaFormatada = dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-            csvContent += `${dataFormatada};${horaFormatada};${row.adminNome};${row.colaborador};${row.tipoOperacao};${row.valor};${row.motivo}\n`;
+            csvContent += `${dataFormatada};${horaFormatada};${row.adminNome};${row.colaborador};${row.tipoOperacao};${row.valor};${row.motivo};${idFormatado}\n`;
         });
 
         // Dispara o download do arquivo
