@@ -149,7 +149,7 @@
       .recibo-body { color: #000 !important; }
       .recibo-linha { border-bottom: 1px dashed #ccc; }
       .recibo-destaque strong { color: #000 !important; }
-      .recibo-footer { display: none !important; } /* Esconde os botões */
+      .recibo-footer { display: none !important; } 
       .recibo-body p { color: #555 !important; opacity: 1; }
   }
 </style>
@@ -294,7 +294,6 @@ function fecharRecibo() {
 }
 window.fecharRecibo = fecharRecibo;
 
-// Alternar Abas (Catálogo vs Meus Pedidos)
 function mudarAba(aba) {
     if(aba === 'catalogo') {
         document.getElementById('catalogoSection').style.display = 'block';
@@ -306,7 +305,6 @@ function mudarAba(aba) {
         document.getElementById('meusPedidosSection').style.display = 'block';
         document.getElementById('btnAbaCatalogo').classList.remove('active');
         document.getElementById('btnAbaPedidos').classList.add('active');
-        // Chama a função global para puxar o histórico
         if(window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
     }
 }
@@ -316,7 +314,7 @@ window.mudarAba = mudarAba;
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -398,10 +396,8 @@ window.realizarResgate = async function(idProduto) {
         const userName = currentUser.displayName || 'Colaborador';
         const userRef = doc(db, "usuarios", userEmail);
 
-        // Deduzir o saldo
         await updateDoc(userRef, { pontos: increment(-produto.preco) });
 
-        // Gravar o pedido na fila
         const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
             colaboradorNome: userName,
             colaboradorEmail: userEmail,
@@ -412,7 +408,6 @@ window.realizarResgate = async function(idProduto) {
             dataPedido: serverTimestamp()
         });
 
-        // Gravar no Histórico
         await addDoc(collection(db, "historico_pontos"), {
             adminNome: "Sistema (Lojinha)",
             colaborador: userEmail,
@@ -422,7 +417,6 @@ window.realizarResgate = async function(idProduto) {
             dataRealizada: serverTimestamp()
         });
 
-        // Atualiza a tela
         saldoAtualUsuario -= produto.preco;
         document.getElementById('valSaldo').textContent = saldoAtualUsuario;
         if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
@@ -432,7 +426,6 @@ window.realizarResgate = async function(idProduto) {
         
         abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
 
-        // Se estiver na aba pedidos, recarrega a tabela
         if(document.getElementById('meusPedidosSection').style.display === 'block') {
             window.carregarHistoricoPedidos();
         }
@@ -447,7 +440,7 @@ window.realizarResgate = async function(idProduto) {
 };
 
 /* ====================================================================
-   4. HISTÓRICO DE PEDIDOS DO USUÁRIO
+   4. HISTÓRICO DE PEDIDOS DO USUÁRIO (Corrigido index do Firebase)
    ==================================================================== */
 window.carregarHistoricoPedidos = async function() {
     if(!currentUser) return;
@@ -456,10 +449,10 @@ window.carregarHistoricoPedidos = async function() {
     lista.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
     
     try {
+        // Removido o orderBy para não quebrar a consulta por falta de índice no Firebase
         const q = query(
             collection(db, "pedidos_lojinha"), 
-            where("colaboradorEmail", "==", currentUser.email.toLowerCase()),
-            orderBy("dataPedido", "desc")
+            where("colaboradorEmail", "==", currentUser.email.toLowerCase())
         );
         
         const snap = await getDocs(q);
@@ -469,17 +462,27 @@ window.carregarHistoricoPedidos = async function() {
             return;
         }
 
-        let html = '';
+        // Puxa tudo para um array para ordenar no JavaScript localmente
+        const pedidos = [];
         snap.forEach(docSnap => {
-            const pedido = docSnap.data();
-            const id = docSnap.id;
+            pedidos.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        // Ordena por data decrescente (mais novo primeiro)
+        pedidos.sort((a, b) => {
+            const timeA = a.dataPedido ? a.dataPedido.seconds : 0;
+            const timeB = b.dataPedido ? b.dataPedido.seconds : 0;
+            return timeB - timeA;
+        });
+
+        let html = '';
+        pedidos.forEach(pedido => {
             const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
             const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             
             const isPendente = pedido.status === "Pendente";
             const statusClass = isPendente ? "status-pendente" : "status-entregue";
             
-            // Emoji para o recibo antigo
             const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
 
             html += `
@@ -489,7 +492,7 @@ window.carregarHistoricoPedidos = async function() {
                     <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
                     <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
                     <td>
-                        <button class="btn-ver-recibo" onclick="abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${id}')">
+                        <button class="btn-ver-recibo" onclick="abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
                             Ver Recibo
                         </button>
                     </td>
@@ -535,7 +538,6 @@ onAuthStateChanged(auth, async user => {
     
     carregarVitrine();
 
-    // Puxa o saldo para liberar as compras
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
