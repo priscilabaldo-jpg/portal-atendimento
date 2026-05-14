@@ -100,6 +100,68 @@
     cursor: not-allowed;
     transform: none;
   }
+
+  /* 🟢 ESTILOS DO COMPROVANTE (VOUCHER) */
+  .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(5px);
+  }
+  .recibo-card {
+      background: var(--verde1); 
+      border: 2px solid var(--amarelo);
+      border-radius: 12px; 
+      width: 90%; max-width: 380px;
+      display: flex; flex-direction: column;
+      animation: fadeUp 0.4s ease;
+      box-shadow: 0 15px 40px rgba(255,215,0,0.15);
+      overflow: hidden;
+  }
+  .recibo-header {
+      background: var(--amarelo);
+      color: var(--verde1);
+      padding: 20px; text-align: center;
+  }
+  .recibo-header h2 { margin: 0; font-size: 18px; font-weight: 900; text-transform: uppercase; }
+  .recibo-header p { margin: 5px 0 0; font-size: 11px; font-weight: bold; opacity: 0.8; }
+  
+  .recibo-body {
+      padding: 25px 20px;
+      display: flex; flex-direction: column; gap: 15px;
+      color: white;
+  }
+  .recibo-linha { display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px;}
+  .recibo-linha span { opacity: 0.7; }
+  .recibo-linha strong { font-weight: bold; text-align: right; max-width: 60%; word-break: break-all;}
+  
+  .recibo-destaque { text-align: center; margin-top: 10px; }
+  .recibo-destaque span { font-size: 40px; display: block; margin-bottom: 10px; }
+  .recibo-destaque strong { font-size: 16px; color: var(--amarelo); display: block; }
+  
+  .recibo-footer {
+      padding: 15px 20px 20px; display: flex; gap: 10px;
+  }
+  .btn-recibo {
+      flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase; text-align: center; border: none; transition: 0.2s;
+  }
+  .btn-print { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-print:hover { background: rgba(255,255,255,0.2); }
+  .btn-close { background: var(--amarelo); color: var(--verde1); }
+  .btn-close:hover { background: white; }
+
+  /* Regra para impressão ficar bonita */
+  @media print {
+      body * { visibility: hidden; }
+      #reciboModal, #reciboModal * { visibility: visible; }
+      #reciboModal { position: absolute; left: 0; top: 0; background: none; }
+      .recibo-card { box-shadow: none; border-color: #000; color: #000 !important; background: #fff !important; }
+      .recibo-header { background: #eee !important; color: #000 !important; }
+      .recibo-body { color: #000 !important; }
+      .recibo-linha border-bottom { border-color: #ccc; }
+      .recibo-destaque strong { color: #000 !important; }
+      .recibo-footer { display: none; } /* Esconde os botões ao imprimir */
+  }
 </style>
 
 </head>
@@ -166,6 +228,44 @@
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
 
+  <div id="reciboModal" class="modal-overlay" style="display:none;">
+      <div class="recibo-card">
+          <div class="recibo-header">
+              <h2>Comprovante</h2>
+              <p>Resgate de Recompensa</p>
+          </div>
+          <div class="recibo-body">
+              <div class="recibo-destaque">
+                  <span id="reciboIcon">🎁</span>
+                  <strong id="reciboItem">Nome do Item</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Colaborador:</span>
+                  <strong id="reciboNome">Nome</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Valor Pago:</span>
+                  <strong style="color: var(--amarelo);" id="reciboValor">0 🪙</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Data do Resgate:</span>
+                  <strong id="reciboData">00/00/0000</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>ID do Pedido:</span>
+                  <strong id="reciboId" style="font-family: monospace; font-size: 11px;">#000000</strong>
+              </div>
+              <p style="font-size: 10px; opacity: 0.5; text-align: center; margin-top: 10px;">
+                  Tire um print ou salve este comprovante. Apresente ao seu gestor para retirar o prêmio.
+              </p>
+          </div>
+          <div class="recibo-footer">
+              <button class="btn-recibo btn-print" onclick="window.print()">🖨️ Imprimir</button>
+              <button class="btn-recibo btn-close" onclick="fecharRecibo()">Concluir</button>
+          </div>
+      </div>
+  </div>
+
 </div>
 
 <script>
@@ -173,6 +273,12 @@ document.getElementById('anoAtual').textContent = new Date().getFullYear();
 document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
+
+// Fecha o recibo
+function fecharRecibo() {
+    document.getElementById('reciboModal').style.display = 'none';
+}
+window.fecharRecibo = fecharRecibo;
 </script>
 
 <script type="module">
@@ -195,7 +301,7 @@ let currentUser = null;
 let saldoAtualUsuario = 0;
 
 /* ====================================================================
-   1. CATÁLOGO DE PRODUTOS (Edite esta lista para adicionar/remover prêmios)
+   1. CATÁLOGO DE PRODUTOS
    ==================================================================== */
 const produtos = [
     { 
@@ -243,7 +349,6 @@ function carregarVitrine() {
     let html = '';
 
     produtos.forEach((produto, index) => {
-        // Um delayzinho na animação para dar um efeito cascata bonito
         const delay = index * 0.1; 
         
         html += `
@@ -263,7 +368,7 @@ function carregarVitrine() {
 }
 
 /* ====================================================================
-   3. LÓGICA DE COMPRA (Exposta para o HTML poder chamar via onclick)
+   3. LÓGICA DE COMPRA E GERAÇÃO DE COMPROVANTE
    ==================================================================== */
 window.realizarResgate = async function(idProduto) {
     if (!currentUser) return;
@@ -284,14 +389,15 @@ window.realizarResgate = async function(idProduto) {
 
     try {
         const userEmail = currentUser.email.toLowerCase();
+        const userName = currentUser.displayName || 'Colaborador';
         const userRef = doc(db, "usuarios", userEmail);
 
-        // 1. Deduzir o saldo
+        // 1. Deduzir o saldo no banco de dados
         await updateDoc(userRef, { pontos: increment(-produto.preco) });
 
-        // 2. Gravar o pedido na fila da Gestão
-        await addDoc(collection(db, "pedidos_lojinha"), {
-            colaboradorNome: currentUser.displayName || 'Usuário',
+        // 2. Gravar o pedido na fila da Gestão e pegar o ID do pedido
+        const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
+            colaboradorNome: userName,
             colaboradorEmail: userEmail,
             produtoId: produto.id,
             produtoNome: produto.nome,
@@ -317,7 +423,21 @@ window.realizarResgate = async function(idProduto) {
             document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
         }
 
-        alert(`🎉 Parabéns! Você resgatou "${produto.nome}". Em breve a gestão fará a entrega.`);
+        // 4. Preencher e mostrar o Comprovante
+        document.getElementById('reciboIcon').textContent = produto.imagem;
+        document.getElementById('reciboItem').textContent = produto.nome;
+        document.getElementById('reciboNome').textContent = userName;
+        document.getElementById('reciboValor').textContent = produto.preco + ' 🪙';
+        
+        // Pega data/hora atual local do dispositivo
+        const dataAgora = new Date();
+        document.getElementById('reciboData').textContent = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        
+        // Usa o ID gerado pelo Firebase como protocolo da compra
+        document.getElementById('reciboId').textContent = '#' + pedidoRef.id.substring(0, 8).toUpperCase();
+        
+        // Abre o modal
+        document.getElementById('reciboModal').style.display = 'flex';
 
     } catch (e) {
         console.error("Erro no resgate:", e);
