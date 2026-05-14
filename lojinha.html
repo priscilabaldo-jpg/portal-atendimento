@@ -8,6 +8,32 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
+  /* 🟢 Abas de Navegação */
+  .loja-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+  }
+  .tab-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
+  }
+  .tab-btn:hover { background: rgba(255,255,255,0.1); }
+  .tab-btn.active {
+      background: var(--amarelo);
+      color: var(--verde1);
+      border-color: var(--amarelo);
+  }
+
+  /* Catálogo Grid */
   .loja-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -27,7 +53,6 @@
     flex-direction: column;
     animation: fadeUp 0.4s ease both;
   }
-
   .produto-card:hover {
     transform: translateY(-5px);
     border-color: var(--amarelo);
@@ -46,60 +71,33 @@
     margin: 0 auto 16px;
     border: 1px solid var(--glass-border);
   }
-
-  .produto-nome { 
-    font-size: 15px; 
-    font-weight: bold; 
-    margin-bottom: 8px; 
-    color: white; 
-  }
-
-  .produto-desc { 
-    font-size: 11px; 
-    opacity: 0.6; 
-    margin-bottom: 16px; 
-    flex: 1; 
-    line-height: 1.5; 
-  }
-
-  .produto-preco { 
-    font-size: 18px; 
-    font-weight: bold; 
-    color: var(--amarelo); 
-    margin-bottom: 16px; 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
+  .produto-nome { font-size: 15px; font-weight: bold; margin-bottom: 8px; color: white; }
+  .produto-desc { font-size: 11px; opacity: 0.6; margin-bottom: 16px; flex: 1; line-height: 1.5; }
+  .produto-preco { font-size: 18px; font-weight: bold; color: var(--amarelo); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
 
   .btn-comprar {
-    width: 100%; 
-    padding: 12px; 
-    border-radius: 6px; 
-    border: none;
-    background: var(--amarelo); 
-    color: var(--verde1); 
-    font-weight: bold;
-    font-family: var(--font);
-    cursor: pointer; 
-    transition: 0.2s;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 11px;
+    width: 100%; padding: 12px; border-radius: 6px; border: none;
+    background: var(--amarelo); color: var(--verde1); font-weight: bold;
+    font-family: var(--font); cursor: pointer; transition: 0.2s;
+    text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px;
   }
+  .btn-comprar:hover { background: white; transform: scale(1.02); }
+  .btn-comprar:disabled { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.5); cursor: not-allowed; transform: none; }
 
-  .btn-comprar:hover { 
-    background: white; 
-    transform: scale(1.02);
-  }
+  /* 🟢 Tabela de Meus Pedidos */
+  #meusPedidosSection { margin-top: 30px; margin-bottom: 50px; }
+  .table-container { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; overflow-x: auto; }
+  .table-pedidos { width: 100%; border-collapse: collapse; text-align: left; }
+  .table-pedidos th, .table-pedidos td { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+  .table-pedidos th { background: rgba(0,0,0,0.3); color: var(--azul); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; }
+  .table-pedidos tr:last-child td { border-bottom: none; }
+  .table-pedidos tr:hover { background: rgba(255,255,255,0.02); }
   
-  .btn-comprar:disabled {
-    background: rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.5);
-    cursor: not-allowed;
-    transform: none;
-  }
+  .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
+  .status-pendente { background: rgba(255,206,0,0.15); color: #FFCE00; border: 1px solid rgba(255,206,0,0.3); }
+  .status-entregue { background: rgba(111,255,175,0.15); color: #6FFFAF; border: 1px solid rgba(111,255,175,0.3); }
+  .btn-ver-recibo { background: transparent; color: var(--azul); border: 1px solid var(--azul); padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .btn-ver-recibo:hover { background: var(--azul); color: var(--verde1); }
 
   /* 🟢 ESTILOS DO COMPROVANTE (VOUCHER) */
   .modal-overlay {
@@ -109,28 +107,16 @@
       backdrop-filter: blur(5px);
   }
   .recibo-card {
-      background: var(--verde1); 
-      border: 2px solid var(--amarelo);
-      border-radius: 12px; 
-      width: 90%; max-width: 380px;
-      display: flex; flex-direction: column;
-      animation: fadeUp 0.4s ease;
-      box-shadow: 0 15px 40px rgba(255,215,0,0.15);
-      overflow: hidden;
+      background: var(--verde1); border: 2px solid var(--amarelo);
+      border-radius: 12px; width: 90%; max-width: 380px;
+      display: flex; flex-direction: column; animation: fadeUp 0.4s ease;
+      box-shadow: 0 15px 40px rgba(255,215,0,0.15); overflow: hidden;
   }
-  .recibo-header {
-      background: var(--amarelo);
-      color: var(--verde1);
-      padding: 20px; text-align: center;
-  }
+  .recibo-header { background: var(--amarelo); color: var(--verde1); padding: 20px; text-align: center; }
   .recibo-header h2 { margin: 0; font-size: 18px; font-weight: 900; text-transform: uppercase; }
   .recibo-header p { margin: 5px 0 0; font-size: 11px; font-weight: bold; opacity: 0.8; }
   
-  .recibo-body {
-      padding: 25px 20px;
-      display: flex; flex-direction: column; gap: 15px;
-      color: white;
-  }
+  .recibo-body { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; color: white; }
   .recibo-linha { display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px;}
   .recibo-linha span { opacity: 0.7; }
   .recibo-linha strong { font-weight: bold; text-align: right; max-width: 60%; word-break: break-all;}
@@ -139,28 +125,32 @@
   .recibo-destaque span { font-size: 40px; display: block; margin-bottom: 10px; }
   .recibo-destaque strong { font-size: 16px; color: var(--amarelo); display: block; }
   
-  .recibo-footer {
-      padding: 15px 20px 20px; display: flex; gap: 10px;
-  }
-  .btn-recibo {
-      flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase; text-align: center; border: none; transition: 0.2s;
-  }
+  .recibo-footer { padding: 15px 20px 20px; display: flex; gap: 10px; }
+  .btn-recibo { flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase; text-align: center; border: none; transition: 0.2s; }
   .btn-print { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
   .btn-print:hover { background: rgba(255,255,255,0.2); }
   .btn-close { background: var(--amarelo); color: var(--verde1); }
   .btn-close:hover { background: white; }
 
-  /* Regra para impressão ficar bonita */
+  /* 🟢 REGRA DE IMPRESSÃO MELHORADA */
   @media print {
       body * { visibility: hidden; }
       #reciboModal, #reciboModal * { visibility: visible; }
-      #reciboModal { position: absolute; left: 0; top: 0; background: none; }
-      .recibo-card { box-shadow: none; border-color: #000; color: #000 !important; background: #fff !important; }
-      .recibo-header { background: #eee !important; color: #000 !important; }
+      #reciboModal { 
+          position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+          background: white !important; display: block; padding-top: 20px;
+      }
+      .recibo-card { 
+          margin: 0 auto; box-shadow: none; border: 2px solid #000; 
+          background: white !important; color: #000 !important;
+          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .recibo-header { background: #f0f0f0 !important; color: #000 !important; border-bottom: 2px solid #000; }
       .recibo-body { color: #000 !important; }
-      .recibo-linha border-bottom { border-color: #ccc; }
+      .recibo-linha { border-bottom: 1px dashed #ccc; }
       .recibo-destaque strong { color: #000 !important; }
-      .recibo-footer { display: none; } /* Esconde os botões ao imprimir */
+      .recibo-footer { display: none !important; } /* Esconde os botões */
+      .recibo-body p { color: #555 !important; opacity: 1; }
   }
 </style>
 
@@ -219,8 +209,33 @@
       <p>Troque suas moedas de engajamento por prêmios reais!</p>
     </div>
 
-    <div class="loja-grid" id="lojaGrid">
+    <div class="loja-tabs">
+        <button id="btnAbaCatalogo" class="tab-btn active" onclick="mudarAba('catalogo')">🎁 Catálogo de Prêmios</button>
+        <button id="btnAbaPedidos" class="tab-btn" onclick="mudarAba('pedidos')">📜 Meus Resgates</button>
+    </div>
+
+    <div id="catalogoSection">
+        <div class="loja-grid" id="lojaGrid"></div>
+    </div>
+
+    <div id="meusPedidosSection" style="display: none;">
+        <div class="table-container">
+            <table class="table-pedidos">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Prêmio</th>
+                        <th>Valor</th>
+                        <th>Status</th>
+                        <th>Comprovante</th>
+                    </tr>
+                </thead>
+                <tbody id="listaMeusPedidos">
+                    <tr><td colspan="5" style="text-align:center; opacity:0.5;">Carregando seus pedidos...</td></tr>
+                </tbody>
+            </table>
         </div>
+    </div>
 
   </div> 
 
@@ -261,7 +276,7 @@
           </div>
           <div class="recibo-footer">
               <button class="btn-recibo btn-print" onclick="window.print()">🖨️ Imprimir</button>
-              <button class="btn-recibo btn-close" onclick="fecharRecibo()">Concluir</button>
+              <button class="btn-recibo btn-close" onclick="fecharRecibo()">Fechar</button>
           </div>
       </div>
   </div>
@@ -274,17 +289,34 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
-// Fecha o recibo
 function fecharRecibo() {
     document.getElementById('reciboModal').style.display = 'none';
 }
 window.fecharRecibo = fecharRecibo;
+
+// Alternar Abas (Catálogo vs Meus Pedidos)
+function mudarAba(aba) {
+    if(aba === 'catalogo') {
+        document.getElementById('catalogoSection').style.display = 'block';
+        document.getElementById('meusPedidosSection').style.display = 'none';
+        document.getElementById('btnAbaCatalogo').classList.add('active');
+        document.getElementById('btnAbaPedidos').classList.remove('active');
+    } else {
+        document.getElementById('catalogoSection').style.display = 'none';
+        document.getElementById('meusPedidosSection').style.display = 'block';
+        document.getElementById('btnAbaCatalogo').classList.remove('active');
+        document.getElementById('btnAbaPedidos').classList.add('active');
+        // Chama a função global para puxar o histórico
+        if(window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
+    }
+}
+window.mudarAba = mudarAba;
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, increment, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -304,42 +336,17 @@ let saldoAtualUsuario = 0;
    1. CATÁLOGO DE PRODUTOS
    ==================================================================== */
 const produtos = [
-    { 
-        id: "item_01", 
-        nome: "Caixa de Bombom", 
-        preco: 150, 
-        imagem: "🍫", 
-        desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." 
-    },
-    { 
-        id: "item_02", 
-        nome: "Caneca Térmica", 
-        preco: 500, 
-        imagem: "☕", 
-        desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." 
-    },
-    { 
-        id: "item_03", 
-        nome: "Kit Escritório", 
-        preco: 800, 
-        imagem: "📓", 
-        desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." 
-    },
-    { 
-        id: "item_04", 
-        nome: "Moletom CX Resolve", 
-        preco: 1200, 
-        imagem: "🧥", 
-        desc: "Moletom super confortável com a marca do nosso time." 
-    },
-    { 
-        id: "item_05", 
-        nome: "Day-Off (Folga)", 
-        preco: 2500, 
-        imagem: "🏖️", 
-        desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." 
-    }
+    { id: "item_01", nome: "Caixa de Bombom", preco: 150, imagem: "🍫", desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." },
+    { id: "item_02", nome: "Caneca Térmica", preco: 500, imagem: "☕", desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." },
+    { id: "item_03", nome: "Kit Escritório", preco: 800, imagem: "📓", desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." },
+    { id: "item_04", nome: "Moletom CX Resolve", preco: 1200, imagem: "🧥", desc: "Moletom super confortável com a marca do nosso time." },
+    { id: "item_05", nome: "Day-Off (Folga)", preco: 2500, imagem: "🏖️", desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." }
 ];
+
+function getEmojiPorProdutoId(idProduto) {
+    const prod = produtos.find(p => p.id === idProduto);
+    return prod ? prod.imagem : "🎁";
+}
 
 /* ====================================================================
    2. RENDERIZAR PRODUTOS NA TELA
@@ -363,7 +370,6 @@ function carregarVitrine() {
             </div>
         `;
     });
-
     grid.innerHTML = html;
 }
 
@@ -392,10 +398,10 @@ window.realizarResgate = async function(idProduto) {
         const userName = currentUser.displayName || 'Colaborador';
         const userRef = doc(db, "usuarios", userEmail);
 
-        // 1. Deduzir o saldo no banco de dados
+        // Deduzir o saldo
         await updateDoc(userRef, { pontos: increment(-produto.preco) });
 
-        // 2. Gravar o pedido na fila da Gestão e pegar o ID do pedido
+        // Gravar o pedido na fila
         const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
             colaboradorNome: userName,
             colaboradorEmail: userEmail,
@@ -406,7 +412,7 @@ window.realizarResgate = async function(idProduto) {
             dataPedido: serverTimestamp()
         });
 
-        // 3. Gravar no Histórico de Transações
+        // Gravar no Histórico
         await addDoc(collection(db, "historico_pontos"), {
             adminNome: "Sistema (Lojinha)",
             colaborador: userEmail,
@@ -416,28 +422,20 @@ window.realizarResgate = async function(idProduto) {
             dataRealizada: serverTimestamp()
         });
 
-        // Atualizar saldo na tela em tempo real
+        // Atualiza a tela
         saldoAtualUsuario -= produto.preco;
         document.getElementById('valSaldo').textContent = saldoAtualUsuario;
-        if(document.getElementById('valSaldoMobile')) {
-            document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
-        }
+        if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
 
-        // 4. Preencher e mostrar o Comprovante
-        document.getElementById('reciboIcon').textContent = produto.imagem;
-        document.getElementById('reciboItem').textContent = produto.nome;
-        document.getElementById('reciboNome').textContent = userName;
-        document.getElementById('reciboValor').textContent = produto.preco + ' 🪙';
-        
-        // Pega data/hora atual local do dispositivo
         const dataAgora = new Date();
-        document.getElementById('reciboData').textContent = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
         
-        // Usa o ID gerado pelo Firebase como protocolo da compra
-        document.getElementById('reciboId').textContent = '#' + pedidoRef.id.substring(0, 8).toUpperCase();
-        
-        // Abre o modal
-        document.getElementById('reciboModal').style.display = 'flex';
+        abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
+
+        // Se estiver na aba pedidos, recarrega a tabela
+        if(document.getElementById('meusPedidosSection').style.display === 'block') {
+            window.carregarHistoricoPedidos();
+        }
 
     } catch (e) {
         console.error("Erro no resgate:", e);
@@ -449,7 +447,78 @@ window.realizarResgate = async function(idProduto) {
 };
 
 /* ====================================================================
-   4. AUTENTICAÇÃO E CARREGAMENTO DE SALDO
+   4. HISTÓRICO DE PEDIDOS DO USUÁRIO
+   ==================================================================== */
+window.carregarHistoricoPedidos = async function() {
+    if(!currentUser) return;
+    
+    const lista = document.getElementById('listaMeusPedidos');
+    lista.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
+    
+    try {
+        const q = query(
+            collection(db, "pedidos_lojinha"), 
+            where("colaboradorEmail", "==", currentUser.email.toLowerCase()),
+            orderBy("dataPedido", "desc")
+        );
+        
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            lista.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:0.5;">Você ainda não resgatou nenhum prêmio.</td></tr>';
+            return;
+        }
+
+        let html = '';
+        snap.forEach(docSnap => {
+            const pedido = docSnap.data();
+            const id = docSnap.id;
+            const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
+            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const isPendente = pedido.status === "Pendente";
+            const statusClass = isPendente ? "status-pendente" : "status-entregue";
+            
+            // Emoji para o recibo antigo
+            const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
+
+            html += `
+                <tr>
+                    <td>${dataTimestamp.toLocaleDateString('pt-BR')}</td>
+                    <td>${pedido.produtoNome}</td>
+                    <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
+                    <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+                    <td>
+                        <button class="btn-ver-recibo" onclick="abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${id}')">
+                            Ver Recibo
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        lista.innerHTML = html;
+        
+    } catch(e) {
+        console.error("Erro ao puxar histórico", e);
+        lista.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Erro ao carregar pedidos. Tente atualizar a página.</td></tr>';
+    }
+}
+
+// 🟢 Função Auxiliar: Preenche o Modal e Exibe
+window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
+    document.getElementById('reciboIcon').textContent = imagem;
+    document.getElementById('reciboItem').textContent = nomeItem;
+    document.getElementById('reciboNome').textContent = nomeColab;
+    document.getElementById('reciboValor').textContent = valor + ' 🪙';
+    document.getElementById('reciboData').textContent = dataStr;
+    document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
+    
+    document.getElementById('reciboModal').style.display = 'flex';
+}
+
+/* ====================================================================
+   5. AUTENTICAÇÃO E CARREGAMENTO DE SALDO
    ==================================================================== */
 onAuthStateChanged(auth, async user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
