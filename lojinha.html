@@ -132,25 +132,48 @@
   .btn-close { background: var(--amarelo); color: var(--verde1); }
   .btn-close:hover { background: white; }
 
-  /* 🟢 REGRA DE IMPRESSÃO MELHORADA */
+  /* 🟢 REGRA DE IMPRESSÃO PERFEITA (PDF/Papel) */
   @media print {
-      body * { visibility: hidden; }
-      #reciboModal, #reciboModal * { visibility: visible; }
-      #reciboModal { 
-          position: absolute; left: 0; top: 0; width: 100%; height: 100%;
-          background: white !important; display: block; padding-top: 20px;
+      /* Esconde TODO o sistema (portal, header, menus, etc) */
+      body * { visibility: hidden !important; }
+      
+      /* Remove margens da página padrão */
+      @page { margin: 0; size: auto; }
+      
+      body { 
+          background: white !important; 
+          margin: 0; padding: 0;
       }
-      .recibo-card { 
-          margin: 0 auto; box-shadow: none; border: 2px solid #000; 
-          background: white !important; color: #000 !important;
+      
+      /* Isola apenas a caixa do recibo e joga ela pro meio do papel A4 */
+      #reciboModal, #reciboModal .recibo-card, #reciboModal .recibo-card * {
+          visibility: visible !important;
+      }
+      
+      #reciboModal {
+          position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+          background: transparent !important; display: flex; 
+          align-items: flex-start; justify-content: center; padding-top: 50px;
+          backdrop-filter: none;
+      }
+      
+      .recibo-card {
+          width: 80% !important; max-width: 400px !important;
+          border: 2px solid #000 !important; border-radius: 8px !important;
+          box-shadow: none !important; background: white !important; color: #000 !important;
           -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
-      .recibo-header { background: #f0f0f0 !important; color: #000 !important; border-bottom: 2px solid #000; }
+      
+      .recibo-header { background: #f4f4f4 !important; color: #000 !important; border-bottom: 2px solid #000 !important; }
       .recibo-body { color: #000 !important; }
-      .recibo-linha { border-bottom: 1px dashed #ccc; }
       .recibo-destaque strong { color: #000 !important; }
-      .recibo-footer { display: none !important; } 
-      .recibo-body p { color: #555 !important; opacity: 1; }
+      .recibo-linha { border-bottom: 1px dashed #aaa !important; }
+      .recibo-linha span { opacity: 1 !important; color: #555 !important; }
+      .recibo-linha strong { color: #000 !important; }
+      .recibo-body p { color: #555 !important; opacity: 1 !important; }
+      
+      /* Esconde os botões de "Imprimir" e "Fechar" na hora do print */
+      .recibo-footer { display: none !important; }
   }
 </style>
 
@@ -275,7 +298,7 @@
               </p>
           </div>
           <div class="recibo-footer">
-              <button class="btn-recibo btn-print" onclick="window.print()">🖨️ Imprimir</button>
+              <button class="btn-recibo btn-print" onclick="imprimirRecibo()">🖨️ Imprimir</button>
               <button class="btn-recibo btn-close" onclick="fecharRecibo()">Fechar</button>
           </div>
       </div>
@@ -293,6 +316,11 @@ function fecharRecibo() {
     document.getElementById('reciboModal').style.display = 'none';
 }
 window.fecharRecibo = fecharRecibo;
+
+function imprimirRecibo() {
+    window.print();
+}
+window.imprimirRecibo = imprimirRecibo;
 
 function mudarAba(aba) {
     if(aba === 'catalogo') {
@@ -440,7 +468,7 @@ window.realizarResgate = async function(idProduto) {
 };
 
 /* ====================================================================
-   4. HISTÓRICO DE PEDIDOS DO USUÁRIO (Corrigido index do Firebase)
+   4. HISTÓRICO DE PEDIDOS DO USUÁRIO
    ==================================================================== */
 window.carregarHistoricoPedidos = async function() {
     if(!currentUser) return;
@@ -449,7 +477,6 @@ window.carregarHistoricoPedidos = async function() {
     lista.innerHTML = '<tr><td colspan="5" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
     
     try {
-        // Removido o orderBy para não quebrar a consulta por falta de índice no Firebase
         const q = query(
             collection(db, "pedidos_lojinha"), 
             where("colaboradorEmail", "==", currentUser.email.toLowerCase())
@@ -462,13 +489,11 @@ window.carregarHistoricoPedidos = async function() {
             return;
         }
 
-        // Puxa tudo para um array para ordenar no JavaScript localmente
         const pedidos = [];
         snap.forEach(docSnap => {
             pedidos.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        // Ordena por data decrescente (mais novo primeiro)
         pedidos.sort((a, b) => {
             const timeA = a.dataPedido ? a.dataPedido.seconds : 0;
             const timeB = b.dataPedido ? b.dataPedido.seconds : 0;
