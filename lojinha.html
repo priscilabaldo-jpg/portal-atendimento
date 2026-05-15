@@ -17,27 +17,34 @@
   }
   .loja-main { min-width: 0; }
 
-  /* 🟢 Estilos do Ranking Lateral */
+  /* 🟢 Estilos do Ranking Lateral (Rolagem Otimizada) */
   .ranking-sidebar {
       background: var(--glass);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 16px;
       position: sticky;
-      top: 80px;
+      top: 90px; /* Respiro do topo */
+      height: fit-content;
+      max-height: calc(100vh - 110px); /* Nunca passa do limite inferior da tela */
+      display: flex;
+      flex-direction: column;
   }
   .ranking-header {
       text-align: center;
       margin-bottom: 16px;
       border-bottom: 1px solid var(--glass-border);
       padding-bottom: 12px;
+      flex-shrink: 0; /* Garante que o cabeçalho não diminua */
   }
   .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; margin: 0; }
   .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
   
   .ranking-list { 
       display: flex; flex-direction: column; gap: 8px; 
-      max-height: 450px; overflow-y: auto; padding-right: 5px;
+      overflow-y: auto; padding-right: 5px;
+      flex: 1; /* Preenche o resto do espaço disponível */
+      overscroll-behavior: contain; /* 🟢 MÁGICA: Impede o "tranco" da página rolar junto */
   }
   
   /* Scroll customizado para o Ranking */
@@ -63,7 +70,7 @@
 
   @media (max-width: 980px) {
       .loja-layout { grid-template-columns: 1fr; }
-      .ranking-sidebar { position: relative; top: 0; margin-top: 30px; }
+      .ranking-sidebar { position: relative; top: 0; margin-top: 30px; max-height: 400px; }
   }
 
   /* 🟢 Abas de Navegação */
@@ -437,7 +444,7 @@ function getEmojiPorProdutoId(idProduto) {
     return prod ? prod.imagem : "🎁";
 }
 
-// 🟢 CARREGAR RANKING LATERAL (Mostra Todos com Scroll)
+// 🟢 CARREGAR RANKING LATERAL 
 function carregarRanking() {
     const list = document.getElementById('rankingList');
     const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
@@ -616,7 +623,6 @@ window.carregarHistoricoPedidos = async function() {
             const statusClass = isPendente ? "status-pendente" : "status-entregue";
             const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
             
-            // 🟢 Formata o ID do pedido idêntico ao comprovante (Ex: #A1B2C3D4)
             const idFormatado = '#' + pedido.id.substring(0, 8).toUpperCase();
 
             html += `
@@ -672,7 +678,7 @@ onAuthStateChanged(auth, async user => {
     }
     
     carregarVitrine();
-    carregarRanking(); // Puxa o Ranking na Lojinha
+    carregarRanking();
 
     try {
         const userRef = doc(db, "usuarios", emailLogado);
