@@ -1,15 +1,4 @@
-Aqui está o código completo com as alterações aplicadas.
 
-Fiz duas modificações importantes na parte do script (deixei comentários com a tag `// ALTERADO` para você encontrar facilmente onde mexi):
-
-1. **Mudei a estrutura do link gerado pelo Google Drive** na hora da publicação (de `/thumbnail` para `/uc?export=view`).
-2. **Removi a ocultação de erro (`onerror`)** na renderização da imagem do post, para que você possa ver se o link quebrou por falta de permissão.
-
-**Lembrete de ouro:** O arquivo da imagem no Google Drive **deve** estar configurado como "Qualquer pessoa com o link" (Leitor), senão a imagem ainda vai aparecer como um ícone quebrado.
-
-Pode copiar e colar tudo:
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
