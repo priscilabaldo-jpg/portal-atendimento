@@ -1,84 +1,67 @@
+Entendi perfeitamente! Quando a gente atrela o tamanho da caixa ao tamanho da tela (usando `100vh`), às vezes o navegador se confunde dependendo de onde está a barra de rolagem, e isso causa uma sensação de "pulo" ou instabilidade.
+
+Para resolver isso de forma definitiva e deixar com cara de aplicativo nativo, eu **fixei o tamanho da lista**.
+
+Agora, a caixinha do ranking tem uma altura máxima definida (`max-height: 380px;`). Não importa se a sua tela é gigante ou pequena, ou se você rolou a página principal lá para baixo: a lista do ranking será sempre um quadradinho independente que você pode rolar suavemente por dentro, sem afetar o resto do site!
+
+Substitua todo o seu arquivo `lojinha.html` por este aqui:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Timeline – CX Resolve</title>
+<title>Lojinha – CX Resolve</title>
 
 <link rel="stylesheet" href="style.css">
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <style>
-  /* Corrige o container da imagem */
-  .post-media {
-    width: 100%;
-    height: auto !important;
-    margin-top: 15px;
-    border-radius: 8px; 
-    overflow: hidden;
-    background-color: transparent;
+  /* 🟢 LAYOUT DA PÁGINA (Com Barra Lateral) */
+  .loja-layout {
+      display: grid;
+      grid-template-columns: 1fr 280px; /* Conteúdo esquerdo + Barra direita */
+      gap: 30px;
+      align-items: start;
   }
-  .post-media img {
-    width: 100%;
-    height: auto !important; 
-    max-height: 700px; 
-    object-fit: contain !important; 
-    display: block;
-  }
+  .loja-main { min-width: 0; }
 
-  /* 🟢 LAYOUT GRID: Feed no meio, Ranking encostado na direita */
-  .timeline-layout {
-    display: grid;
-    /* Cria 3 colunas virtuais: espaço vazio 1fr | Feed 600px | espaço do Ranking 1fr */
-    grid-template-columns: 1fr 600px 1fr;
-    gap: 20px;
-    max-width: 1160px; /* Largura total permitida na página */
-    margin: 0 auto;
-    align-items: start;
-  }
-  
-  .feed-container {
-    grid-column: 2; /* Obriga o feed a ficar preso na coluna central */
-    width: 100%;
-    min-width: 0;
-    margin: 0 !important;
-    padding-top: 0 !important;
-  }
-  
+  /* 🟢 Estilos do Ranking Lateral (Rolagem Fixa e Otimizada) */
   .ranking-sidebar {
-    grid-column: 3; /* Joga a caixinha de ranking para a terceira coluna (direita) */
-    width: 260px;
-    margin-left: auto; /* Empurra a caixinha para encostar na margem direita */
-    background: var(--glass);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
-    padding: 16px;
-    position: sticky;
-    top: 80px; 
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 16px;
+      position: sticky;
+      top: 90px; /* Respiro do topo */
   }
-  
-  /* 🟢 Estilos do Ranking (Mais compactos) */
   .ranking-header {
-    text-align: center;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--glass-border);
-    padding-bottom: 12px;
+      text-align: center;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 12px;
   }
-  .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; }
+  .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; margin: 0; }
   .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
   
-  .ranking-list { display: flex; flex-direction: column; gap: 8px; }
+  .ranking-list { 
+      display: flex; flex-direction: column; gap: 8px; 
+      max-height: 380px; /* 🟢 Tamanho fixo e independente da tela */
+      overflow-y: auto; padding-right: 5px;
+      overscroll-behavior: contain; /* 🟢 MÁGICA: Impede o "tranco" da página rolar junto */
+  }
+  
+  /* Scroll customizado para o Ranking */
+  .ranking-list::-webkit-scrollbar { width: 4px; }
+  .ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
   
   .rank-item {
-    display: flex; align-items: center; justify-content: space-between;
-    background: rgba(0,0,0,0.2); 
-    padding: 8px 12px; 
-    border-radius: 8px;
-    border: 1px solid transparent;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; border: 1px solid transparent;
   }
   .rank-info { display: flex; align-items: center; gap: 8px; }
   .rank-pos { font-weight: bold; font-size: 13px; width: 18px; text-align: center; }
-  .rank-nome { font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px; }
+  .rank-nome { font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; color: white;}
   .rank-moedas { color: #FFD700; font-weight: bold; font-size: 11px; background: rgba(255,215,0,0.1); padding: 4px 6px; border-radius: 4px; }
   
   /* Pódio (Ouro, Prata, Bronze) */
@@ -89,68 +72,162 @@
   .rank-item.pos-3 { border-color: #CD7F32; background: rgba(205,127,50,0.05); }
   .rank-item.pos-3 .rank-pos { color: #CD7F32; }
 
-  /* Celular e Telas Menores */
   @media (max-width: 980px) {
-    .timeline-layout { 
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-    }
-    .feed-container { max-width: 100%; }
-    .ranking-sidebar { 
-        width: 100%; 
-        max-width: 600px; 
-        margin-left: 0;
-        position: relative; 
-        top: 0; 
-        margin-bottom: 40px; 
-    }
+      .loja-layout { grid-template-columns: 1fr; }
+      .ranking-sidebar { position: relative; top: 0; margin-top: 30px; }
   }
 
-  /* 🟢 Estilos do Balãozinho de Curtidas (Popover) */
-  .likes-popover {
-      display: none;
-      position: absolute;
-      bottom: 100%; /* Abre para cima */
-      left: 0;
-      margin-bottom: 10px;
-      width: 250px;
-      max-height: 220px;
-      background: #002529; /* Fundo sólido para destacar */
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      z-index: 100;
-      overflow-y: auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-      flex-direction: column;
-      padding: 12px;
-      animation: fadeInUp 0.2s ease;
+  /* 🟢 Abas de Navegação */
+  .loja-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
   }
-  
-  /* Scroll customizado para o balãozinho */
-  .likes-popover::-webkit-scrollbar { width: 4px; }
-  .likes-popover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-  
-  .liker-item {
-      display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  .tab-btn {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--glass-border);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s;
   }
-  .liker-item:last-child { margin-bottom: 0; }
-  
-  /* 🟢 Correção da Foto/Letra Inicial */
-  .liker-avatar {
-      width: 32px; height: 32px; border-radius: 50%; 
-      background: #FFD700; color: #002D32; /* Fundo amarelo, letra escura */
-      display: flex; align-items: center; justify-content: center; 
-      font-weight: bold; font-size: 14px; flex-shrink: 0;
-      overflow: hidden; /* Corta a imagem redondinha */
+  .tab-btn:hover { background: rgba(255,255,255,0.1); }
+  .tab-btn.active {
+      background: var(--amarelo);
+      color: var(--verde1);
+      border-color: var(--amarelo);
   }
-  .liker-info { display: flex; flex-direction: column; overflow: hidden; }
-  .liker-name { font-size: 12px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .liker-email { font-size: 10px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a0c4c4; }
 
-  @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+  /* Catálogo Grid */
+  .loja-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+    margin-bottom: 50px;
+  }
+
+  .produto-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    animation: fadeUp 0.4s ease both;
+  }
+  .produto-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--amarelo);
+    box-shadow: 0 10px 30px rgba(255,215,0,0.1);
+  }
+
+  .produto-img {
+    font-size: 50px;
+    height: 100px; 
+    width: 100px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    margin: 0 auto 16px;
+    border: 1px solid var(--glass-border);
+  }
+  .produto-nome { font-size: 15px; font-weight: bold; margin-bottom: 8px; color: white; }
+  .produto-desc { font-size: 11px; opacity: 0.6; margin-bottom: 16px; flex: 1; line-height: 1.5; }
+  .produto-preco { font-size: 18px; font-weight: bold; color: var(--amarelo); margin-bottom: 16px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+
+  .btn-comprar {
+    width: 100%; padding: 12px; border-radius: 6px; border: none;
+    background: var(--amarelo); color: var(--verde1); font-weight: bold;
+    font-family: var(--font); cursor: pointer; transition: 0.2s;
+    text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px;
+  }
+  .btn-comprar:hover { background: white; transform: scale(1.02); }
+  .btn-comprar:disabled { background: rgba(255,255,255,0.2); color: rgba(255,255,255,0.5); cursor: not-allowed; transform: none; }
+
+  /* 🟢 Tabela de Meus Pedidos */
+  #meusPedidosSection { margin-top: 30px; margin-bottom: 50px; }
+  .table-container { background: var(--glass); border: 1px solid var(--glass-border); border-radius: 12px; overflow-x: auto; }
+  .table-pedidos { width: 100%; border-collapse: collapse; text-align: left; }
+  .table-pedidos th, .table-pedidos td { padding: 15px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 12px; }
+  .table-pedidos th { background: rgba(0,0,0,0.3); color: var(--azul); text-transform: uppercase; font-size: 10px; letter-spacing: 0.1em; }
+  .table-pedidos tr:last-child td { border-bottom: none; }
+  .table-pedidos tr:hover { background: rgba(255,255,255,0.02); }
+  
+  .status-badge { padding: 4px 10px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; }
+  .status-pendente { background: rgba(255,206,0,0.15); color: #FFCE00; border: 1px solid rgba(255,206,0,0.3); }
+  .status-entregue { background: rgba(111,255,175,0.15); color: #6FFFAF; border: 1px solid rgba(111,255,175,0.3); }
+  .btn-ver-recibo { background: transparent; color: var(--azul); border: 1px solid var(--azul); padding: 6px 12px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+  .btn-ver-recibo:hover { background: var(--azul); color: var(--verde1); }
+
+  /* 🟢 ESTILOS DO COMPROVANTE (VOUCHER) */
+  .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.8); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      backdrop-filter: blur(5px);
+  }
+  .recibo-card {
+      background: var(--verde1); border: 2px solid var(--amarelo);
+      border-radius: 12px; width: 90%; max-width: 380px;
+      display: flex; flex-direction: column; animation: fadeUp 0.4s ease;
+      box-shadow: 0 15px 40px rgba(255,215,0,0.15); overflow: hidden;
+  }
+  .recibo-header { background: var(--amarelo); color: var(--verde1); padding: 20px; text-align: center; }
+  .recibo-header h2 { margin: 0; font-size: 18px; font-weight: 900; text-transform: uppercase; }
+  .recibo-header p { margin: 5px 0 0; font-size: 11px; font-weight: bold; opacity: 0.8; }
+  
+  .recibo-body { padding: 25px 20px; display: flex; flex-direction: column; gap: 15px; color: white; }
+  .recibo-linha { display: flex; justify-content: space-between; align-items: center; font-size: 13px; border-bottom: 1px dashed rgba(255,255,255,0.1); padding-bottom: 8px;}
+  .recibo-linha span { opacity: 0.7; }
+  .recibo-linha strong { font-weight: bold; text-align: right; max-width: 60%; word-break: break-all;}
+  
+  .recibo-destaque { text-align: center; margin-top: 10px; }
+  .recibo-destaque span { font-size: 40px; display: block; margin-bottom: 10px; }
+  .recibo-destaque strong { font-size: 16px; color: var(--amarelo); display: block; }
+  
+  .recibo-footer { padding: 15px 20px 20px; display: flex; gap: 10px; }
+  .btn-recibo { flex: 1; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 11px; cursor: pointer; text-transform: uppercase; text-align: center; border: none; transition: 0.2s; }
+  .btn-print { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.3); }
+  .btn-print:hover { background: rgba(255,255,255,0.2); }
+  .btn-close { background: var(--amarelo); color: var(--verde1); }
+  .btn-close:hover { background: white; }
+
+  /* 🟢 REGRA DE IMPRESSÃO PERFEITA (PDF/Papel) */
+  @media print {
+      body * { visibility: hidden !important; }
+      @page { margin: 0; size: auto; }
+      body { background: white !important; margin: 0; padding: 0; }
+      #reciboModal, #reciboModal .recibo-card, #reciboModal .recibo-card * { visibility: visible !important; }
+      
+      #reciboModal {
+          position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+          background: transparent !important; display: flex; 
+          align-items: flex-start; justify-content: center; padding-top: 50px;
+          backdrop-filter: none;
+      }
+      .recibo-card {
+          width: 80% !important; max-width: 400px !important;
+          border: 2px solid #000 !important; border-radius: 8px !important;
+          box-shadow: none !important; background: white !important; color: #000 !important;
+          -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .recibo-header { background: #f4f4f4 !important; color: #000 !important; border-bottom: 2px solid #000 !important; }
+      .recibo-body { color: #000 !important; }
+      .recibo-destaque strong { color: #000 !important; }
+      .recibo-linha { border-bottom: 1px dashed #aaa !important; }
+      .recibo-linha span { opacity: 1 !important; color: #555 !important; }
+      .recibo-linha strong { color: #000 !important; }
+      .recibo-body p { color: #555 !important; opacity: 1 !important; }
+      .recibo-footer { display: none !important; }
   }
 </style>
 
@@ -159,7 +236,7 @@
 
 <div class="bg-layer"></div>
 
-<div id="timeline-content" style="display:none; position: relative; z-index: 5;">
+<div id="lojinha-content" style="display:none; position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -167,9 +244,10 @@
       <nav>
         <ul>
           <li><a href="index.html">Início</a></li>
-          <li><a href="timeline.html" class="active">Timeline</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html" class="active">Lojinha 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -199,54 +277,101 @@
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-  
-  <div class="container" style="padding-top: 20px;">
-    
-    <div class="timeline-layout">
-        
-        <div class="feed-container">
+
+  <div class="container">
+      <div class="loja-layout">
           
-          <div class="page-header" style="text-align: center; margin-bottom: 20px;">
-            <p class="page-label">Comunidade Leveros</p>
-            <h1>Nosso <span>Feed</span> 💬</h1>
-            <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
-          </div>
-
-          <div class="create-post-box">
-            <div class="create-post-header">
-              <div class="user-avatar" id="myAvatar">L</div>
-              <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
-            </div>
-            <div class="create-post-actions">
-              <div class="media-input-wrap">
-                <span>📷</span>
-                <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
+          <div class="loja-main">
+              <div class="page-header" style="text-align: center;">
+                <p class="page-label">Recompensas Exclusivas</p>
+                <h1>CX <span>Store</span> 🎁</h1>
+                <p>Troque suas CX Coins por prêmios reais!</p>
               </div>
-              <button class="submit-btn" id="btnPublishPost">Publicar</button>
-            </div>
+
+              <div class="loja-tabs">
+                  <button id="btnAbaCatalogo" class="tab-btn active" onclick="mudarAba('catalogo')">🎁 Catálogo de Prêmios</button>
+                  <button id="btnAbaPedidos" class="tab-btn" onclick="mudarAba('pedidos')">📜 Meus Resgates</button>
+              </div>
+
+              <div id="catalogoSection">
+                  <div class="loja-grid" id="lojaGrid"></div>
+              </div>
+
+              <div id="meusPedidosSection" style="display: none;">
+                  <div class="table-container">
+                      <table class="table-pedidos">
+                          <thead>
+                              <tr>
+                                  <th>Data</th>
+                                  <th>ID Pedido</th>
+                                  <th>Prêmio</th>
+                                  <th>Valor</th>
+                                  <th>Status</th>
+                                  <th>Comprovante</th>
+                              </tr>
+                          </thead>
+                          <tbody id="listaMeusPedidos">
+                              <tr><td colspan="6" style="text-align:center; opacity:0.5;">Carregando seus pedidos...</td></tr>
+                          </tbody>
+                      </table>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="ranking-sidebar">
+              <div class="ranking-header">
+                  <h3>🏆 Ranking CX</h3>
+                  <p>Saldo atual de toda equipe</p>
+              </div>
+              <div class="ranking-list" id="rankingList">
+                  <div class="avisos-vazio" style="font-size: 10px;">Carregando ranking...</div>
+              </div>
           </div>
 
-          <div id="feedList">
-            <div class="avisos-vazio">Carregando publicações...</div>
-          </div>
-        </div> 
-
-        <div class="ranking-sidebar">
-            <div class="ranking-header">
-                <h3>🏆 Top Acumuladores</h3>
-                <p>Quem tem mais moedas na equipe</p>
-            </div>
-            <div class="ranking-list" id="rankingList">
-                <div class="avisos-vazio" style="font-size: 10px;">Carregando ranking...</div>
-            </div>
-        </div>
-
-    </div> 
+      </div>
   </div> 
 
   <footer>
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
+
+  <div id="reciboModal" class="modal-overlay" style="display:none;">
+      <div class="recibo-card">
+          <div class="recibo-header">
+              <h2>Comprovante</h2>
+              <p>Resgate de Recompensa</p>
+          </div>
+          <div class="recibo-body">
+              <div class="recibo-destaque">
+                  <span id="reciboIcon">🎁</span>
+                  <strong id="reciboItem">Nome do Item</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Colaborador:</span>
+                  <strong id="reciboNome">Nome</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Valor Pago:</span>
+                  <strong style="color: var(--amarelo);" id="reciboValor">0 🪙</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>Data do Resgate:</span>
+                  <strong id="reciboData">00/00/0000</strong>
+              </div>
+              <div class="recibo-linha">
+                  <span>ID do Pedido:</span>
+                  <strong id="reciboId" style="font-family: monospace; font-size: 11px;">#000000</strong>
+              </div>
+              <p style="font-size: 10px; opacity: 0.5; text-align: center; margin-top: 10px;">
+                  Tire um print ou salve este comprovante. Apresente ao seu gestor para retirar o prêmio.
+              </p>
+          </div>
+          <div class="recibo-footer">
+              <button class="btn-recibo btn-print" onclick="imprimirRecibo()">🖨️ Imprimir</button>
+              <button class="btn-recibo btn-close" onclick="fecharRecibo()">Fechar</button>
+          </div>
+      </div>
+  </div>
 
 </div>
 
@@ -256,44 +381,42 @@ document.getElementById('hamburger').addEventListener('click', () => {
   document.getElementById('mobileMenu').classList.toggle('open');
 });
 
+function fecharRecibo() {
+    document.getElementById('reciboModal').style.display = 'none';
+}
+window.fecharRecibo = fecharRecibo;
+
+function imprimirRecibo() {
+    window.print();
+}
+window.imprimirRecibo = imprimirRecibo;
+
+function mudarAba(aba) {
+    if(aba === 'catalogo') {
+        document.getElementById('catalogoSection').style.display = 'block';
+        document.getElementById('meusPedidosSection').style.display = 'none';
+        document.getElementById('btnAbaCatalogo').classList.add('active');
+        document.getElementById('btnAbaPedidos').classList.remove('active');
+    } else {
+        document.getElementById('catalogoSection').style.display = 'none';
+        document.getElementById('meusPedidosSection').style.display = 'block';
+        document.getElementById('btnAbaCatalogo').classList.remove('active');
+        document.getElementById('btnAbaPedidos').classList.add('active');
+        if(window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
+    }
+}
+window.mudarAba = mudarAba;
+
 function escapeHTML(str) {
   return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
 }
 window.escapeHTML = escapeHTML;
-
-function getInitials(name) {
-  return name ? name.charAt(0).toUpperCase() : 'U';
-}
-window.getInitials = getInitials;
-
-// 🟢 Função padronizada de avatar (retorna a img se tiver foto, ou a inicial)
-function renderAvatar(nome, photoUrl) {
-  if (photoUrl) {
-    return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
-  }
-  return getInitials(nome);
-}
-window.renderAvatar = renderAvatar;
-
-// Transforma o email em nome
-function formatNameFromEmail(email) {
-  if (!email) return '';
-  let username = email.split('@')[0];
-  let nameParts = username.split('.');
-  return nameParts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
-}
-window.formatNameFromEmail = formatNameFromEmail;
-
-// Fecha os popovers de curtida se o usuário clicar em qualquer lugar da tela
-window.addEventListener('click', function() {
-    document.querySelectorAll('.likes-popover').forEach(p => p.style.display = 'none');
-});
 </script>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc, increment, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -305,77 +428,30 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-emailjs.init("AUZIT5qioj8fQ_cQ8");
-
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
-
-// 🟢 FUNÇÃO DO BALÃOZINHO DE CURTIDAS (POPOVER)
-window.toggleLikesPopover = async function(event, postId, likesStr) {
-    event.stopPropagation(); // Evita que o clique feche imediatamente o balão
-    
-    const popover = document.getElementById(`popover-${postId}`);
-    
-    // Fecha todos os outros balõezinhos que estiverem abertos
-    document.querySelectorAll('.likes-popover').forEach(p => {
-        if (p.id !== `popover-${postId}`) p.style.display = 'none';
-    });
-
-    // Se já estiver aberto, ele fecha
-    if (popover.style.display === 'flex') {
-        popover.style.display = 'none';
-        return;
-    }
-
-    // Mostra carregando enquanto busca as fotos
-    popover.style.display = 'flex';
-    popover.innerHTML = '<div style="text-align:center; padding:10px; font-size:12px; color:rgba(255,255,255,0.6);">Carregando perfis...</div>';
-
-    try {
-        const likesArray = JSON.parse(decodeURIComponent(likesStr));
-        
-        const promises = likesArray.map(async (email) => {
-            let fotoUrl = null;
-            let nome = window.formatNameFromEmail(email);
-
-            try {
-                const userRef = doc(db, "usuarios", email);
-                const userSnap = await getDoc(userRef);
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    if (userData.foto) fotoUrl = userData.foto;
-                    if (userData.nome) nome = userData.nome;
-                }
-            } catch(err) {
-                console.error("Erro ao buscar foto", err);
-            }
-            
-            const avatarContent = window.renderAvatar(nome, fotoUrl);
-            return `
-                <div class="liker-item">
-                    <div class="liker-avatar">${avatarContent}</div>
-                    <div class="liker-info">
-                        <span class="liker-name">${window.escapeHTML(nome)}</span>
-                        <span class="liker-email">${window.escapeHTML(email)}</span>
-                    </div>
-                </div>
-            `;
-        });
-
-        const results = await Promise.all(promises);
-        popover.innerHTML = results.join('') || '<div style="text-align:center; font-size:12px; color:rgba(255,255,255,0.6);">Ninguém curtiu ainda.</div>';
-
-    } catch(e) { 
-        popover.innerHTML = '<div style="text-align:center; font-size:12px; color:red;">Erro ao carregar curtidas.</div>';
-    }
-};
+let saldoAtualUsuario = 0;
 
 /* ====================================================================
-   LÓGICA DO RANKING DE MOEDAS
+   1. CATÁLOGO DE PRODUTOS E RANKING
    ==================================================================== */
+const produtos = [
+    { id: "item_01", nome: "Caixa de Bombom", preco: 150, imagem: "🍫", desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." },
+    { id: "item_02", nome: "Caneca Térmica", preco: 500, imagem: "☕", desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." },
+    { id: "item_03", nome: "Kit Escritório", preco: 800, imagem: "📓", desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." },
+    { id: "item_04", nome: "Moletom CX Resolve", preco: 1200, imagem: "🧥", desc: "Moletom super confortável com a marca do nosso time." },
+    { id: "item_05", nome: "Day-Off (Folga)", preco: 2500, imagem: "🏖️", desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." }
+];
+
+function getEmojiPorProdutoId(idProduto) {
+    const prod = produtos.find(p => p.id === idProduto);
+    return prod ? prod.imagem : "🎁";
+}
+
+// 🟢 CARREGAR RANKING LATERAL 
 function carregarRanking() {
     const list = document.getElementById('rankingList');
-    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'), limit(5));
+    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
     
     onSnapshot(q, snap => {
         if (snap.empty) {
@@ -393,7 +469,7 @@ function carregarRanking() {
             let nomePuro = user.nome || 'Usuário';
             let partesNome = nomePuro.split(' ');
             let nomeCurto = partesNome.length > 1 ? `${partesNome[0]} ${partesNome[1]}` : nomePuro;
-            if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 15) + '...';
+            if(nomeCurto.length > 18) nomeCurto = nomeCurto.substring(0, 18) + '...';
             
             let iconPos = `${posicao}º`;
             if (posicao === 1) iconPos = '🥇';
@@ -417,319 +493,185 @@ function carregarRanking() {
 }
 
 /* ====================================================================
-   LÓGICA DA TIMELINE
+   2. RENDERIZAR PRODUTOS NA TELA
    ==================================================================== */
-function carregarFeed(isAdmin) {
-  const feedList = document.getElementById('feedList');
-  const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
-  
-  onSnapshot(q, snap => {
-    if (snap.empty) {
-      feedList.innerHTML = '<div class="avisos-vazio">Nenhuma publicação ainda. Seja o primeiro!</div>';
-      return;
-    }
-
+function carregarVitrine() {
+    const grid = document.getElementById('lojaGrid');
     let html = '';
-    snap.docs.forEach(docSnap => {
-      const post = docSnap.data();
-      const postId = docSnap.id;
-      
-      const dataFormatada = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : 'Agora';
-      
-      const likes = post.likes || [];
-      const isLiked = currentUser && likes.includes(currentUser.email);
-      const heartIcon = isLiked ? '❤️' : '🤍';
-      const likeClass = isLiked ? 'liked' : '';
 
-      // 🟢 LÓGICA DE QUEM CURTIU (COM BALÃOZINHO)
-      let likesSection = '';
-      if (likes.length > 0) {
-          let textStr = '';
-          if (isLiked) {
-              if (likes.length === 1) {
-                  textStr = `Curtido por <strong>você</strong>`;
-              } else if (likes.length === 2) {
-                  let outroEmail = likes.find(e => e !== currentUser.email);
-                  textStr = `Curtido por <strong>você</strong> e <strong>${window.formatNameFromEmail(outroEmail)}</strong>`;
-              } else {
-                  let outroEmail = likes.find(e => e !== currentUser.email);
-                  textStr = `Curtido por <strong>você</strong>, <strong>${window.formatNameFromEmail(outroEmail)}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
-              }
-          } else {
-              if (likes.length === 1) {
-                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>`;
-              } else if (likes.length === 2) {
-                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong> e <strong>${window.formatNameFromEmail(likes[1])}</strong>`;
-              } else {
-                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>, <strong>${window.formatNameFromEmail(likes[1])}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
-              }
-          }
-          
-          const encodedLikes = encodeURIComponent(JSON.stringify(likes));
-          
-          likesSection = `
-            <div style="position: relative; margin: -5px 15px 15px 15px;">
-                <div onclick="toggleLikesPopover(event, '${postId}', '${encodedLikes}')" style="font-size: 11px; opacity: 0.8; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Ver quem curtiu">
-                  <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
-                </div>
-                <div id="popover-${postId}" class="likes-popover" onclick="event.stopPropagation()"></div>
+    produtos.forEach((produto, index) => {
+        const delay = index * 0.1; 
+        
+        html += `
+            <div class="produto-card" style="animation-delay: ${delay}s">
+                <div class="produto-img">${produto.imagem}</div>
+                <div class="produto-nome">${produto.nome}</div>
+                <div class="produto-desc">${produto.desc}</div>
+                <div class="produto-preco">🪙 ${produto.preco}</div>
+                <button class="btn-comprar" onclick="realizarResgate('${produto.id}')" id="btn-${produto.id}">
+                    Resgatar Prêmio
+                </button>
             </div>
-          `;
-      }
-      
-      const comentarios = post.comentarios || [];
-      let commentsHtml = '';
-      
-      comentarios.forEach(c => {
-        const isMyComment = currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase();
-        const podeApagar = isMyComment || isAdmin;
-        const commentDataString = encodeURIComponent(JSON.stringify(c));
-
-        commentsHtml += `
-          <div class="comment-item" style="position: relative; align-items: flex-start;">
-            <div class="user-avatar" style="overflow: hidden; flex-shrink: 0;">${window.renderAvatar(c.autor, c.foto)}</div>
-            <div class="comment-bubble" style="position: relative; padding-right: 30px;">
-              <strong>${window.escapeHTML(c.autor)}</strong>
-              ${window.escapeHTML(c.texto)}
-              ${podeApagar ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar comentário">✕</button>` : ''}
-            </div>
-          </div>
         `;
-      });
-
-      const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post"></div>` : '';
-
-      html += `
-        <div class="post-card" style="position: relative;">
-          ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
-          
-          <div class="post-header">
-            <div class="user-avatar" style="overflow: hidden;">${window.renderAvatar(post.autor, post.autorFoto)}</div>
-            <div class="post-author-info">
-              <h4>${window.escapeHTML(post.autor)}</h4>
-              <span>${dataFormatada}</span>
-            </div>
-          </div>
-          
-          <div class="post-text">${window.escapeHTML(post.texto)}</div>
-          ${mediaHtml}
-          
-          <div class="post-actions">
-            <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
-              ${heartIcon} Curtir (${likes.length})
-            </button>
-            <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
-              💬 Comentar (${comentarios.length})
-            </button>
-          </div>
-          
-          ${likesSection}
-          
-          <div class="comments-list">
-            ${commentsHtml}
-          </div>
-          
-          <div class="comment-input-wrap">
-            <input type="text" id="comment-${postId}" placeholder="Escreva um comentário..." onkeypress="handleComment(event, '${postId}')">
-            <button class="btn-send" onclick="enviarComentario('${postId}')">➤</button>
-          </div>
-        </div>
-      `;
     });
-    
-    feedList.innerHTML = html;
-  });
+    grid.innerHTML = html;
 }
 
-// Publicar novo Post
-document.getElementById('btnPublishPost').addEventListener('click', async () => {
-  if (!currentUser) return;
-  const textInput = document.getElementById('postText');
-  const mediaInput = document.getElementById('postMediaUrl');
-  
-  const texto = textInput.value.trim();
-  let midiaUrl = mediaInput.value.trim();
-  
-  // 🟢 NOVO SISTEMA DE CAPTURA DO GOOGLE DRIVE 🟢
-  let idDoArquivo = null;
-  const regexDrive1 = /file\/d\/([a-zA-Z0-9_-]+)/;
-  const regexDrive2 = /id=([a-zA-Z0-9_-]+)/;
-
-  if (midiaUrl.match(regexDrive1)) {
-    idDoArquivo = midiaUrl.match(regexDrive1)[1];
-  } else if (midiaUrl.match(regexDrive2)) {
-    idDoArquivo = midiaUrl.match(regexDrive2)[1];
-  }
-
-  if (idDoArquivo) {
-    // Link mágico do Google para renderizar imagens diretas sem bloqueio de CORS
-    midiaUrl = `https://lh3.googleusercontent.com/d/${idDoArquivo}`;
-  }
-
-  if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
-
-  const btn = document.getElementById('btnPublishPost');
-  btn.textContent = 'Enviando...';
-  btn.disabled = true;
-
-  try {
-    await addDoc(collection(db, 'timeline_posts'), {
-      texto: texto,
-      midiaUrl: midiaUrl,
-      autor: currentUser.displayName || 'Usuário Leveros',
-      autorEmail: currentUser.email,
-      autorFoto: currentUser.photoURL || null,
-      likes: [],
-      comentarios: [],
-      criadoEm: serverTimestamp()
-    });
-
-    const emailLogado = currentUser.email.toLowerCase();
-    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
-
-    if (isAdmin) {
-      try {
-        const mesAtual = new Date().toISOString().slice(0, 7);
-        const emailLimitRef = doc(db, 'system_config', 'email_limit');
-        const limitSnap = await getDoc(emailLimitRef);
-        
-        let disparosMes = 0;
-        if (limitSnap.exists()) {
-          const data = limitSnap.data();
-          if (data.mes === mesAtual) {
-            disparosMes = data.contagem || 0;
-          }
-        }
-
-        if (disparosMes < 100) {
-          try {
-              const resposta = await emailjs.send(
-                "service_rc58xfn",
-                "template_074uqfn",
-                {
-                  email: "anapaula.goncalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br",
-                  nome_autor: currentUser.displayName || 'Gestão CX Resolve',
-                  mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
-                }
-              );
-              console.log("Email enviado com sucesso!", resposta.status, resposta.text);
-              await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
-          } catch (emailError) {
-              console.error("FALHA CRÍTICA NO EMAILJS. Motivo:", emailError);
-          }
-        } else {
-          console.log("Limite seguro de 100 e-mails atingido no mês.");
-        }
-      } catch (errDb) {
-        console.error("Erro ao gerenciar cota no banco:", errDb);
-      }
-    }
-
-    textInput.value = '';
-    mediaInput.value = '';
-
-  } catch (e) {
-    console.error(e);
-    alert("Erro ao publicar. Verifique as permissões.");
-  } finally {
-    btn.textContent = 'Publicar';
-    btn.disabled = false;
-  }
-});
-
-// Apagar Post
-window.apagarPost = async function(postId) {
-  if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
-  
-  try {
-    await deleteDoc(doc(db, 'timeline_posts', postId));
-  } catch(e) {
-    console.error("Erro ao apagar post", e);
-    alert("Sem permissão para apagar este post.");
-  }
-};
-
-// Curtir Post
-window.toggleLike = async function(postId) {
-  if (!currentUser) return;
-  const postRef = doc(db, 'timeline_posts', postId);
-  
-  const btn = event.currentTarget;
-  const isLiked = btn.classList.contains('liked');
-
-  try {
-    if (isLiked) {
-      await updateDoc(postRef, { likes: arrayRemove(currentUser.email) });
-    } else {
-      await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
-    }
-  } catch(e) { console.error("Erro ao curtir", e); }
-};
-
-// Enviar Comentário
-window.enviarComentario = async function(postId) {
-  if (!currentUser) return;
-  const input = document.getElementById(`comment-${postId}`);
-  const texto = input.value.trim();
-  if (!texto) return;
-
-  input.disabled = true;
-  try {
-    const postRef = doc(db, 'timeline_posts', postId);
-    await updateDoc(postRef, {
-      comentarios: arrayUnion({
-        autor: currentUser.displayName || 'Usuário',
-        email: currentUser.email.toLowerCase(), 
-        foto: currentUser.photoURL || null,
-        texto: texto,
-        data: new Date().toISOString()
-      })
-    });
-    input.value = '';
-  } catch(e) {
-    console.error("Erro ao comentar", e);
-  } finally {
-    input.disabled = false;
-  }
-};
-
-// Apagar Comentário
-window.apagarComentario = async function(postId, commentDataString) {
-  if (!confirm('Deseja apagar este comentário?')) return;
-  
-  try {
-    const commentObject = JSON.parse(decodeURIComponent(commentDataString));
-    const postRef = doc(db, 'timeline_posts', postId);
+/* ====================================================================
+   3. LÓGICA DE COMPRA E GERAÇÃO DE COMPROVANTE
+   ==================================================================== */
+window.realizarResgate = async function(idProduto) {
+    if (!currentUser) return;
     
-    await updateDoc(postRef, {
-      comentarios: arrayRemove(commentObject)
-    });
-  } catch(e) {
-    console.error("Erro ao apagar comentário", e);
-    alert("Ocorreu um erro ao apagar. Tente novamente.");
-  }
-};
+    const produto = produtos.find(p => p.id === idProduto);
+    if (!produto) return;
 
-window.handleComment = function(event, postId) {
-  if (event.key === 'Enter') {
-    enviarComentario(postId);
-  }
+    if (saldoAtualUsuario < produto.preco) {
+        alert(`Você tem ${saldoAtualUsuario} moedas. Faltam ${produto.preco - saldoAtualUsuario} moedas para resgatar "${produto.nome}". Continue engajando!`);
+        return;
+    }
+
+    if (!confirm(`Deseja confirmar o resgate de "${produto.nome}" por ${produto.preco} moedas?`)) return;
+
+    const btn = document.getElementById(`btn-${produto.id}`);
+    btn.textContent = "Processando...";
+    btn.disabled = true;
+
+    try {
+        const userEmail = currentUser.email.toLowerCase();
+        const userName = currentUser.displayName || 'Colaborador';
+        const userRef = doc(db, "usuarios", userEmail);
+
+        await updateDoc(userRef, { pontos: increment(-produto.preco) });
+
+        const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
+            colaboradorNome: userName,
+            colaboradorEmail: userEmail,
+            produtoId: produto.id,
+            produtoNome: produto.nome,
+            valorPago: produto.preco,
+            status: "Pendente",
+            dataPedido: serverTimestamp()
+        });
+
+        await addDoc(collection(db, "historico_pontos"), {
+            adminNome: "Sistema (Lojinha)",
+            colaborador: userEmail,
+            tipoOperacao: "Resgate",
+            valor: produto.preco,
+            motivo: `Resgate de Prêmio: ${produto.nome}`,
+            dataRealizada: serverTimestamp()
+        });
+
+        saldoAtualUsuario -= produto.preco;
+        document.getElementById('valSaldo').textContent = saldoAtualUsuario;
+        if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
+
+        const dataAgora = new Date();
+        const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+        
+        abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
+
+        if(document.getElementById('meusPedidosSection').style.display === 'block') {
+            window.carregarHistoricoPedidos();
+        }
+
+    } catch (e) {
+        console.error("Erro no resgate:", e);
+        alert("Ocorreu um erro na conexão. Tente novamente.");
+    } finally {
+        btn.textContent = "Resgatar Prêmio";
+        btn.disabled = false;
+    }
 };
 
 /* ====================================================================
-   AUTENTICAÇÃO PADRÃO E GESTÃO DE PONTOS
+   4. HISTÓRICO DE PEDIDOS DO USUÁRIO
+   ==================================================================== */
+window.carregarHistoricoPedidos = async function() {
+    if(!currentUser) return;
+    
+    const lista = document.getElementById('listaMeusPedidos');
+    lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
+    
+    try {
+        const q = query(
+            collection(db, "pedidos_lojinha"), 
+            where("colaboradorEmail", "==", currentUser.email.toLowerCase())
+        );
+        
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+            lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Você ainda não resgatou nenhum prêmio.</td></tr>';
+            return;
+        }
+
+        const pedidos = [];
+        snap.forEach(docSnap => {
+            pedidos.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        pedidos.sort((a, b) => {
+            const timeA = a.dataPedido ? a.dataPedido.seconds : 0;
+            const timeB = b.dataPedido ? b.dataPedido.seconds : 0;
+            return timeB - timeA;
+        });
+
+        let html = '';
+        pedidos.forEach(pedido => {
+            const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
+            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            const isPendente = pedido.status === "Pendente";
+            const statusClass = isPendente ? "status-pendente" : "status-entregue";
+            const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
+            
+            const idFormatado = '#' + pedido.id.substring(0, 8).toUpperCase();
+
+            html += `
+                <tr>
+                    <td>${dataTimestamp.toLocaleDateString('pt-BR')}</td>
+                    <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
+                    <td>${pedido.produtoNome}</td>
+                    <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
+                    <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+                    <td>
+                        <button class="btn-ver-recibo" onclick="abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
+                            Ver Recibo
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        lista.innerHTML = html;
+        
+    } catch(e) {
+        console.error("Erro ao puxar histórico", e);
+        lista.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar pedidos. Tente atualizar a página.</td></tr>';
+    }
+}
+
+// Função Auxiliar: Preenche o Modal e Exibe
+window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
+    document.getElementById('reciboIcon').textContent = imagem;
+    document.getElementById('reciboItem').textContent = nomeItem;
+    document.getElementById('reciboNome').textContent = nomeColab;
+    document.getElementById('reciboValor').textContent = valor + ' 🪙';
+    document.getElementById('reciboData').textContent = dataStr;
+    document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
+    
+    document.getElementById('reciboModal').style.display = 'flex';
+}
+
+/* ====================================================================
+   5. AUTENTICAÇÃO E CARREGAMENTO DE SALDO
    ==================================================================== */
 onAuthStateChanged(auth, async user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
-    document.getElementById('timeline-content').style.display = 'block';
-    
-    const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
-    if (user.photoURL) {
-      document.getElementById('myAvatar').innerHTML = `<img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-    } else {
-      document.getElementById('myAvatar').textContent = window.getInitials(nome);
-    }
+    document.getElementById('lojinha-content').style.display = 'block';
 
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
@@ -739,58 +681,22 @@ onAuthStateChanged(auth, async user => {
        document.getElementById('navAdminMobile').style.display = 'block';
     }
     
-    carregarFeed(isAdmin);
+    carregarVitrine();
     carregarRanking();
 
-    // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
-        const hoje = new Date().toISOString().slice(0, 10); 
-
+        
         if (userSnap.exists()) {
-            const dados = userSnap.data();
-            let moedasAtuais = dados.pontos || 0;
-            
-            document.getElementById('valSaldo').textContent = moedasAtuais;
+            saldoAtualUsuario = userSnap.data().pontos || 0;
+            document.getElementById('valSaldo').textContent = saldoAtualUsuario;
             if (document.getElementById('valSaldoMobile')) {
-                document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+                document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
             }
-
-            if (dados.ultimoLogin !== hoje) {
-                await updateDoc(userRef, {
-                    pontos: increment(10),
-                    ultimoLogin: hoje,
-                    foto: user.photoURL || null,
-                    nome: user.displayName || 'Usuário Leveros'
-                });
-                moedasAtuais += 10;
-                document.getElementById('valSaldo').textContent = moedasAtuais;
-                if (document.getElementById('valSaldoMobile')) {
-                    document.getElementById('valSaldoMobile').textContent = moedasAtuais;
-                }
-                alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
-            } else {
-                await updateDoc(userRef, {
-                    foto: user.photoURL || null,
-                    nome: user.displayName || 'Usuário Leveros'
-                });
-            }
-        } else {
-            await setDoc(userRef, {
-                nome: user.displayName || 'Usuário Leveros',
-                foto: user.photoURL || null,
-                pontos: 50,
-                ultimoLogin: hoje
-            });
-            document.getElementById('valSaldo').textContent = 50;
-            if (document.getElementById('valSaldoMobile')) {
-                document.getElementById('valSaldoMobile').textContent = 50;
-            }
-            alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
         }
     } catch (err) {
-        console.error("Erro ao sincronizar saldo da carteira: ", err);
+        console.error("Erro ao puxar saldo: ", err);
     }
     
   } else {
@@ -809,3 +715,5 @@ document.getElementById('logoutBtnMobile').onclick = logout;
 
 </body>
 </html>
+
+```
