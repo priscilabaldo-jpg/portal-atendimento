@@ -1,805 +1,3224 @@
+imagem.
+
+
+
+
+
+
+
 <!DOCTYPE html>
+
+
+
 <html lang="pt-BR">
+
+
+
 <head>
+
+
+
 <meta charset="UTF-8">
+
+
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+
 <title>Timeline – CX Resolve</title>
+
+
+
+
+
+
 
 <link rel="stylesheet" href="style.css">
 
+
+
+
+
+
+
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+
+
+
+
+
+
 <style>
+
+
+
   /* Corrige o container da imagem */
+
+
+
   .post-media {
+
+
+
     width: 100%;
+
+
+
     height: auto !important;
+
+
+
     margin-top: 15px;
+
+
+
     border-radius: 8px; 
+
+
+
     overflow: hidden;
+
+
+
     background-color: transparent;
+
+
+
   }
+
+
+
   .post-media img {
+
+
+
     width: 100%;
+
+
+
     height: auto !important; 
+
+
+
     max-height: 700px; 
+
+
+
     object-fit: contain !important; 
+
+
+
     display: block;
+
+
+
   }
+
+
+
+
+
+
 
   /* 🟢 LAYOUT GRID: Feed no meio, Ranking encostado na direita */
+
+
+
   .timeline-layout {
+
+
+
     display: grid;
+
+
+
     /* Cria 3 colunas virtuais: espaço vazio 1fr | Feed 600px | espaço do Ranking 1fr */
+
+
+
     grid-template-columns: 1fr 600px 1fr;
+
+
+
     gap: 20px;
+
+
+
     max-width: 1160px; /* Largura total permitida na página */
+
+
+
     margin: 0 auto;
+
+
+
     align-items: start;
+
+
+
   }
+
+
+
   
+
+
+
   .feed-container {
+
+
+
     grid-column: 2; /* Obriga o feed a ficar preso na coluna central */
+
+
+
     width: 100%;
+
+
+
     min-width: 0;
+
+
+
     margin: 0 !important;
+
+
+
     padding-top: 0 !important;
+
+
+
   }
+
+
+
   
+
+
+
   .ranking-sidebar {
+
+
+
     grid-column: 3; /* Joga a caixinha de ranking para a terceira coluna (direita) */
+
+
+
     width: 260px;
+
+
+
     margin-left: auto; /* Empurra a caixinha para encostar na margem direita */
+
+
+
     background: var(--glass);
+
+
+
     border: 1px solid var(--glass-border);
+
+
+
     border-radius: 12px;
+
+
+
     padding: 16px;
+
+
+
     position: sticky;
+
+
+
     top: 80px; 
+
+
+
   }
+
+
+
   
+
+
+
   /* 🟢 Estilos do Ranking (Mais compactos) */
+
+
+
   .ranking-header {
+
+
+
     text-align: center;
+
+
+
     margin-bottom: 16px;
+
+
+
     border-bottom: 1px solid var(--glass-border);
+
+
+
     padding-bottom: 12px;
+
+
+
   }
+
+
+
   .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; }
+
+
+
   .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
+
+
+
   
+
+
+
   .ranking-list { display: flex; flex-direction: column; gap: 8px; }
+
+
+
   
+
+
+
   .rank-item {
+
+
+
     display: flex; align-items: center; justify-content: space-between;
+
+
+
     background: rgba(0,0,0,0.2); 
+
+
+
     padding: 8px 12px; 
+
+
+
     border-radius: 8px;
+
+
+
     border: 1px solid transparent;
+
+
+
   }
+
+
+
   .rank-info { display: flex; align-items: center; gap: 8px; }
+
+
+
   .rank-pos { font-weight: bold; font-size: 13px; width: 18px; text-align: center; }
+
+
+
   .rank-nome { font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 105px; }
+
+
+
   .rank-moedas { color: #FFD700; font-weight: bold; font-size: 11px; background: rgba(255,215,0,0.1); padding: 4px 6px; border-radius: 4px; }
+
+
+
   
+
+
+
   /* Pódio (Ouro, Prata, Bronze) */
+
+
+
   .rank-item.pos-1 { border-color: #FFD700; background: rgba(255,215,0,0.05); }
+
+
+
   .rank-item.pos-1 .rank-pos { color: #FFD700; }
+
+
+
   .rank-item.pos-2 { border-color: #C0C0C0; background: rgba(192,192,192,0.05); }
+
+
+
   .rank-item.pos-2 .rank-pos { color: #C0C0C0; }
+
+
+
   .rank-item.pos-3 { border-color: #CD7F32; background: rgba(205,127,50,0.05); }
+
+
+
   .rank-item.pos-3 .rank-pos { color: #CD7F32; }
 
+
+
+
+
+
+
   /* Celular e Telas Menores */
+
+
+
   @media (max-width: 980px) {
+
+
+
     .timeline-layout { 
+
+
+
         display: flex; 
+
+
+
         flex-direction: column; 
+
+
+
         align-items: center; 
+
+
+
     }
+
+
+
     .feed-container { max-width: 100%; }
+
+
+
     .ranking-sidebar { 
+
+
+
         width: 100%; 
+
+
+
         max-width: 600px; 
+
+
+
         margin-left: 0;
+
+
+
         position: relative; 
+
+
+
         top: 0; 
+
+
+
         margin-bottom: 40px; 
+
+
+
     }
+
+
+
   }
+
+
+
+
+
+
 
   /* 🟢 Estilos do Balãozinho de Curtidas (Popover) */
+
+
+
   .likes-popover {
+
+
+
       display: none;
+
+
+
       position: absolute;
+
+
+
       bottom: 100%; /* Abre para cima */
+
+
+
       left: 0;
+
+
+
       margin-bottom: 10px;
+
+
+
       width: 250px;
+
+
+
       max-height: 220px;
+
+
+
       background: #002529; /* Fundo sólido para destacar */
+
+
+
       border: 1px solid rgba(255,255,255,0.1);
+
+
+
       border-radius: 12px;
+
+
+
       z-index: 100;
+
+
+
       overflow-y: auto;
+
+
+
       box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+
+
+
       flex-direction: column;
+
+
+
       padding: 12px;
+
+
+
       animation: fadeInUp 0.2s ease;
+
+
+
   }
+
+
+
   
+
+
+
   /* Scroll customizado para o balãozinho */
+
+
+
   .likes-popover::-webkit-scrollbar { width: 4px; }
+
+
+
   .likes-popover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+
+
   
+
+
+
   .liker-item {
+
+
+
       display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+
+
+
   }
+
+
+
   .liker-item:last-child { margin-bottom: 0; }
+
+
+
   
+
+
+
   /* 🟢 Correção da Foto/Letra Inicial */
+
+
+
   .liker-avatar {
+
+
+
       width: 32px; height: 32px; border-radius: 50%; 
+
+
+
       background: #FFD700; color: #002D32; /* Fundo amarelo, letra escura */
+
+
+
       display: flex; align-items: center; justify-content: center; 
+
+
+
       font-weight: bold; font-size: 14px; flex-shrink: 0;
+
+
+
       overflow: hidden; /* Corta a imagem redondinha */
+
+
+
   }
+
+
+
   .liker-info { display: flex; flex-direction: column; overflow: hidden; }
+
+
+
   .liker-name { font-size: 12px; font-weight: bold; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+
   .liker-email { font-size: 10px; opacity: 0.6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #a0c4c4; }
 
+
+
+
+
+
+
   @keyframes fadeInUp {
+
+
+
       from { opacity: 0; transform: translateY(10px); }
+
+
+
       to { opacity: 1; transform: translateY(0); }
+
+
+
   }
+
+
+
 </style>
 
+
+
+
+
+
+
 </head>
+
+
+
 <body>
+
+
+
+
+
+
 
 <div class="bg-layer"></div>
 
+
+
+
+
+
+
 <div id="timeline-content" style="display:none; position: relative; z-index: 5;">
 
+
+
+
+
+
+
   <header>
+
+
+
     <div class="header-inner">
+
+
+
       <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+
+
+
       <nav>
+
+
+
         <ul>
+
+
+
           <li><a href="index.html">Início</a></li>
+
+
+
           <li><a href="timeline.html" class="active">Timeline</a></li>
+
+
+
           <li><a href="materiais.html">Materiais</a></li>
+
+
+
           <li><a href="informativos.html">Informativos</a></li>
+
+
+
           <li id="menuAdminContainer" style="display: none;">
+
+
+
             <a href="admin.html">Painel Admin</a>
+
+
+
           </li>
+
+
+
           <li>
+
+
+
             <div id="saldoCoins" style="background: rgba(255,215,0,0.15); color: #FFD700; padding: 6px 12px; border-radius: 20px; border: 1px solid rgba(255,215,0,0.3); font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 5px; user-select: none;">
+
+
+
               🪙 <span id="valSaldo">0</span>
+
+
+
             </div>
+
+
+
           </li>
+
+
+
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+
+
+
         </ul>
+
+
+
       </nav>
+
+
+
       <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+
+
+
     </div>
+
+
+
   </header>
 
+
+
+
+
+
+
   <div class="mobile-menu" id="mobileMenu">
+
+
+
     <div style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 5px;">
+
+
+
       <span style="color: #FFD700; font-weight: bold; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+
+
+
         🪙 Meu Saldo: <span id="valSaldoMobile">0</span>
+
+
+
       </span>
+
+
+
     </div>
+
+
+
     <a href="index.html">Início</a>
+
+
+
     <a href="timeline.html">Timeline</a>
+
+
+
     <a href="materiais.html">Materiais</a>
+
+
+
     <a href="informativos.html">Informativos</a>
+
+
+
     <a href="lojinha.html">Lojinha 🛒</a>
+
+
+
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
+
+
+
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+
+
+
   </div>
+
+
+
   
+
+
+
   <div class="container" style="padding-top: 20px;">
+
+
+
     
+
+
+
     <div class="timeline-layout">
+
+
+
         
+
+
+
         <div class="feed-container">
+
+
+
           
+
+
+
           <div class="page-header" style="text-align: center; margin-bottom: 20px;">
+
+
+
             <p class="page-label">Comunidade Leveros</p>
+
+
+
             <h1>Nosso <span>Feed</span> 💬</h1>
+
+
+
             <p>Compartilhe conquistas, dicas e o dia a dia do time!</p>
+
+
+
           </div>
+
+
+
+
+
+
 
           <div class="create-post-box">
+
+
+
             <div class="create-post-header">
+
+
+
               <div class="user-avatar" id="myAvatar">L</div>
+
+
+
               <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
+
+
+
             </div>
+
+
+
             <div class="create-post-actions">
+
+
+
               <div class="media-input-wrap">
+
+
+
                 <span>📷</span>
+
+
+
                 <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
+
+
+
               </div>
+
+
+
               <button class="submit-btn" id="btnPublishPost">Publicar</button>
+
+
+
             </div>
+
+
+
           </div>
+
+
+
+
+
+
 
           <div id="feedList">
+
+
+
             <div class="avisos-vazio">Carregando publicações...</div>
+
+
+
           </div>
+
+
+
         </div> 
 
+
+
+
+
+
+
         <div class="ranking-sidebar">
+
+
+
             <div class="ranking-header">
+
+
+
                 <h3>🏆 Top Acumuladores</h3>
+
+
+
                 <p>Quem tem mais moedas na equipe</p>
+
+
+
             </div>
+
+
+
             <div class="ranking-list" id="rankingList">
+
+
+
                 <div class="avisos-vazio" style="font-size: 10px;">Carregando ranking...</div>
+
+
+
             </div>
+
+
+
         </div>
 
+
+
+
+
+
+
     </div> 
+
+
+
   </div> 
 
+
+
+
+
+
+
   <footer>
+
+
+
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+
+
+
   </footer>
+
+
+
+
+
+
 
 </div>
 
+
+
+
+
+
+
 <script>
+
+
+
 document.getElementById('anoAtual').textContent = new Date().getFullYear();
+
+
+
 document.getElementById('hamburger').addEventListener('click', () => {
+
+
+
   document.getElementById('mobileMenu').classList.toggle('open');
+
+
+
 });
+
+
+
+
+
+
 
 function escapeHTML(str) {
+
+
+
   return str ? str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+
+
+
 }
+
+
+
 window.escapeHTML = escapeHTML;
 
+
+
+
+
+
+
 function getInitials(name) {
+
+
+
   return name ? name.charAt(0).toUpperCase() : 'U';
+
+
+
 }
+
+
+
 window.getInitials = getInitials;
 
+
+
+
+
+
+
 // 🟢 Função padronizada de avatar (retorna a img se tiver foto, ou a inicial)
+
+
+
 function renderAvatar(nome, photoUrl) {
+
+
+
   if (photoUrl) {
-    return <img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">;
+
+
+
+    return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+
+
+
   }
+
+
+
   return getInitials(nome);
+
+
+
 }
+
+
+
 window.renderAvatar = renderAvatar;
 
+
+
+
+
+
+
 // Transforma o email em nome
+
+
+
 function formatNameFromEmail(email) {
+
+
+
   if (!email) return '';
+
+
+
   let username = email.split('@')[0];
+
+
+
   let nameParts = username.split('.');
+
+
+
   return nameParts.map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+
+
+
 }
+
+
+
 window.formatNameFromEmail = formatNameFromEmail;
 
+
+
+
+
+
+
 // Fecha os popovers de curtida se o usuário clicar em qualquer lugar da tela
+
+
+
 window.addEventListener('click', function() {
+
+
+
     document.querySelectorAll('.likes-popover').forEach(p => p.style.display = 'none');
+
+
+
 });
+
+
+
 </script>
 
+
+
+
+
+
+
 <script type="module">
+
+
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+
+
+
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+
+
 import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, onSnapshot, orderBy, query, serverTimestamp, getDoc, setDoc, increment, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+
+
+
+
+
+
 const firebaseConfig = {
+
+
+
   apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+
+
+
   authDomain:"portal-atendimento-541ae.firebaseapp.com",
+
+
+
   projectId:"portal-atendimento-541ae"
+
+
+
 };
 
+
+
+
+
+
+
 const app = initializeApp(firebaseConfig);
+
+
+
 const auth = getAuth(app);
+
+
+
 const db = getFirestore(app);
+
+
+
+
+
+
 
 emailjs.init("AUZIT5qioj8fQ_cQ8");
 
+
+
+
+
+
+
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
+
+
+
 let currentUser = null;
 
+
+
+
+
+
+
 // 🟢 FUNÇÃO DO BALÃOZINHO DE CURTIDAS (POPOVER)
+
+
+
 window.toggleLikesPopover = async function(event, postId, likesStr) {
+
+
+
     event.stopPropagation(); // Evita que o clique feche imediatamente o balão
+
+
+
     
-    const popover = document.getElementById(popover-${postId});
+
+
+
+    const popover = document.getElementById(`popover-${postId}`);
+
+
+
     
+
+
+
     // Fecha todos os outros balõezinhos que estiverem abertos
+
+
+
     document.querySelectorAll('.likes-popover').forEach(p => {
-        if (p.id !== popover-${postId}) p.style.display = 'none';
+
+
+
+        if (p.id !== `popover-${postId}`) p.style.display = 'none';
+
+
+
     });
+
+
+
+
+
+
 
     // Se já estiver aberto, ele fecha
+
+
+
     if (popover.style.display === 'flex') {
+
+
+
         popover.style.display = 'none';
+
+
+
         return;
+
+
+
     }
+
+
+
+
+
+
 
     // Mostra carregando enquanto busca as fotos
+
+
+
     popover.style.display = 'flex';
+
+
+
     popover.innerHTML = '<div style="text-align:center; padding:10px; font-size:12px; color:rgba(255,255,255,0.6);">Carregando perfis...</div>';
 
+
+
+
+
+
+
     try {
+
+
+
         const likesArray = JSON.parse(decodeURIComponent(likesStr));
+
+
+
         
+
+
+
         const promises = likesArray.map(async (email) => {
+
+
+
             let fotoUrl = null;
+
+
+
             let nome = window.formatNameFromEmail(email);
 
+
+
+
+
+
+
             try {
+
+
+
                 const userRef = doc(db, "usuarios", email);
+
+
+
                 const userSnap = await getDoc(userRef);
+
+
+
                 if (userSnap.exists()) {
+
+
+
                     const userData = userSnap.data();
+
+
+
                     if (userData.foto) fotoUrl = userData.foto;
+
+
+
                     if (userData.nome) nome = userData.nome;
+
+
+
                 }
+
+
+
             } catch(err) {
+
+
+
                 console.error("Erro ao buscar foto", err);
+
+
+
             }
+
+
+
             
+
+
+
             const avatarContent = window.renderAvatar(nome, fotoUrl);
-            return 
+
+
+
+            return `
+
+
+
                 <div class="liker-item">
+
+
+
                     <div class="liker-avatar">${avatarContent}</div>
+
+
+
                     <div class="liker-info">
+
+
+
                         <span class="liker-name">${window.escapeHTML(nome)}</span>
+
+
+
                         <span class="liker-email">${window.escapeHTML(email)}</span>
+
+
+
                     </div>
+
+
+
                 </div>
-            ;
+
+
+
+            `;
+
+
+
         });
+
+
+
+
+
+
 
         const results = await Promise.all(promises);
+
+
+
         popover.innerHTML = results.join('') || '<div style="text-align:center; font-size:12px; color:rgba(255,255,255,0.6);">Ninguém curtiu ainda.</div>';
 
+
+
+
+
+
+
     } catch(e) { 
+
+
+
         popover.innerHTML = '<div style="text-align:center; font-size:12px; color:red;">Erro ao carregar curtidas.</div>';
+
+
+
     }
+
+
+
 };
 
+
+
+
+
+
+
 /* ====================================================================
+
+
+
    LÓGICA DO RANKING DE MOEDAS
+
+
+
    ==================================================================== */
+
+
+
 function carregarRanking() {
+
+
+
     const list = document.getElementById('rankingList');
+
+
+
     const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'), limit(5));
+
+
+
     
+
+
+
     onSnapshot(q, snap => {
+
+
+
         if (snap.empty) {
+
+
+
             list.innerHTML = '<div class="avisos-vazio" style="font-size: 10px;">Nenhum dado encontrado.</div>';
+
+
+
             return;
+
+
+
         }
 
+
+
+
+
+
+
         let html = '';
+
+
+
         let posicao = 1;
+
+
+
         
+
+
+
         snap.docs.forEach(docSnap => {
+
+
+
             const user = docSnap.data();
+
+
+
             const pontos = user.pontos || 0;
+
+
+
             
+
+
+
             let nomePuro = user.nome || 'Usuário';
+
+
+
             let partesNome = nomePuro.split(' ');
-            let nomeCurto = partesNome.length > 1 ? ${partesNome[0]} ${partesNome[1]} : nomePuro;
+
+
+
+            let nomeCurto = partesNome.length > 1 ? `${partesNome[0]} ${partesNome[1]}` : nomePuro;
+
+
+
             if(nomeCurto.length > 15) nomeCurto = nomeCurto.substring(0, 15) + '...';
+
+
+
             
-            let iconPos = ${posicao}º;
+
+
+
+            let iconPos = `${posicao}º`;
+
+
+
             if (posicao === 1) iconPos = '🥇';
+
+
+
             if (posicao === 2) iconPos = '🥈';
+
+
+
             if (posicao === 3) iconPos = '🥉';
 
-            html += 
+
+
+
+
+
+
+            html += `
+
+
+
                 <div class="rank-item pos-${posicao}">
+
+
+
                     <div class="rank-info">
+
+
+
                         <span class="rank-pos">${iconPos}</span>
+
+
+
                         <span class="rank-nome" title="${window.escapeHTML(nomePuro)}">${window.escapeHTML(nomeCurto)}</span>
+
+
+
                     </div>
+
+
+
                     <span class="rank-moedas">${pontos} 🪙</span>
+
+
+
                 </div>
-            ;
+
+
+
+            `;
+
+
+
             posicao++;
+
+
+
         });
+
+
+
         
+
+
+
         list.innerHTML = html;
+
+
+
     });
+
+
+
 }
+
+
+
+
+
+
 
 /* ====================================================================
+
+
+
    LÓGICA DA TIMELINE
+
+
+
    ==================================================================== */
+
+
+
 function carregarFeed(isAdmin) {
+
+
+
   const feedList = document.getElementById('feedList');
+
+
+
   const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
+
+
+
   
+
+
+
   onSnapshot(q, snap => {
+
+
+
     if (snap.empty) {
+
+
+
       feedList.innerHTML = '<div class="avisos-vazio">Nenhuma publicação ainda. Seja o primeiro!</div>';
+
+
+
       return;
+
+
+
     }
 
+
+
+
+
+
+
     let html = '';
+
+
+
     snap.docs.forEach(docSnap => {
+
+
+
       const post = docSnap.data();
+
+
+
       const postId = docSnap.id;
+
+
+
       
+
+
+
       const dataFormatada = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : 'Agora';
+
+
+
       
+
+
+
       const likes = post.likes || [];
+
+
+
       const isLiked = currentUser && likes.includes(currentUser.email);
+
+
+
       const heartIcon = isLiked ? '❤️' : '🤍';
+
+
+
       const likeClass = isLiked ? 'liked' : '';
 
+
+
+
+
+
+
       // 🟢 LÓGICA DE QUEM CURTIU (COM BALÃOZINHO)
+
+
+
       let likesSection = '';
+
+
+
       if (likes.length > 0) {
+
+
+
           let textStr = '';
+
+
+
           if (isLiked) {
+
+
+
               if (likes.length === 1) {
-                  textStr = Curtido por <strong>você</strong>;
+
+
+
+                  textStr = `Curtido por <strong>você</strong>`;
+
+
+
               } else if (likes.length === 2) {
+
+
+
                   let outroEmail = likes.find(e => e !== currentUser.email);
-                  textStr = Curtido por <strong>você</strong> e <strong>${window.formatNameFromEmail(outroEmail)}</strong>;
+
+
+
+                  textStr = `Curtido por <strong>você</strong> e <strong>${window.formatNameFromEmail(outroEmail)}</strong>`;
+
+
+
               } else {
+
+
+
                   let outroEmail = likes.find(e => e !== currentUser.email);
-                  textStr = Curtido por <strong>você</strong>, <strong>${window.formatNameFromEmail(outroEmail)}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>;
+
+
+
+                  textStr = `Curtido por <strong>você</strong>, <strong>${window.formatNameFromEmail(outroEmail)}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
+
+
+
               }
+
+
+
           } else {
+
+
+
               if (likes.length === 1) {
-                  textStr = Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>;
+
+
+
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>`;
+
+
+
               } else if (likes.length === 2) {
-                  textStr = Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong> e <strong>${window.formatNameFromEmail(likes[1])}</strong>;
+
+
+
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong> e <strong>${window.formatNameFromEmail(likes[1])}</strong>`;
+
+
+
               } else {
-                  textStr = Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>, <strong>${window.formatNameFromEmail(likes[1])}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>;
+
+
+
+                  textStr = `Curtido por <strong>${window.formatNameFromEmail(likes[0])}</strong>, <strong>${window.formatNameFromEmail(likes[1])}</strong> e <strong>outras ${likes.length - 2} pessoas</strong>`;
+
+
+
               }
+
+
+
           }
+
+
+
           
+
+
+
           const encodedLikes = encodeURIComponent(JSON.stringify(likes));
+
+
+
           
-          likesSection = 
+
+
+
+          likesSection = `
+
+
+
             <div style="position: relative; margin: -5px 15px 15px 15px;">
+
+
+
                 <div onclick="toggleLikesPopover(event, '${postId}', '${encodedLikes}')" style="font-size: 11px; opacity: 0.8; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Ver quem curtiu">
+
+
+
                   <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
+
+
+
                 </div>
+
+
+
                 <div id="popover-${postId}" class="likes-popover" onclick="event.stopPropagation()"></div>
+
+
+
             </div>
-          ;
+
+
+
+          `;
+
+
+
       }
+
+
+
       
+
+
+
       const comentarios = post.comentarios || [];
+
+
+
       let commentsHtml = '';
+
+
+
       
+
+
+
       comentarios.forEach(c => {
+
+
+
         const isMyComment = currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase();
+
+
+
         const podeApagar = isMyComment || isAdmin;
+
+
+
         const commentDataString = encodeURIComponent(JSON.stringify(c));
 
-        commentsHtml += 
+
+
+
+
+
+
+        commentsHtml += `
+
+
+
           <div class="comment-item" style="position: relative; align-items: flex-start;">
+
+
+
             <div class="user-avatar" style="overflow: hidden; flex-shrink: 0;">${window.renderAvatar(c.autor, c.foto)}</div>
+
+
+
             <div class="comment-bubble" style="position: relative; padding-right: 30px;">
+
+
+
               <strong>${window.escapeHTML(c.autor)}</strong>
+
+
+
               ${window.escapeHTML(c.texto)}
-              ${podeApagar ? <button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar comentário">✕</button> : ''}
+
+
+
+              ${podeApagar ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar comentário">✕</button>` : ''}
+
+
+
             </div>
+
+
+
           </div>
-        ;
+
+
+
+        `;
+
+
+
       });
 
-      const mediaHtml = post.midiaUrl ? <div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div> : '';
 
-      html += 
+
+
+
+
+
+      const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post" onerror="this.style.display='none'"></div>` : '';
+
+
+
+
+
+
+
+      html += `
+
+
+
         <div class="post-card" style="position: relative;">
-          ${isAdmin ? <button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button> : ''}
+
+
+
+          ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
+
+
+
           
+
+
+
           <div class="post-header">
+
+
+
             <div class="user-avatar" style="overflow: hidden;">${window.renderAvatar(post.autor, post.autorFoto)}</div>
+
+
+
             <div class="post-author-info">
+
+
+
               <h4>${window.escapeHTML(post.autor)}</h4>
+
+
+
               <span>${dataFormatada}</span>
+
+
+
             </div>
+
+
+
           </div>
+
+
+
           
+
+
+
           <div class="post-text">${window.escapeHTML(post.texto)}</div>
+
+
+
           ${mediaHtml}
+
+
+
           
+
+
+
           <div class="post-actions">
+
+
+
             <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
+
+
+
               ${heartIcon} Curtir (${likes.length})
+
+
+
             </button>
+
+
+
             <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
+
+
+
               💬 Comentar (${comentarios.length})
+
+
+
             </button>
+
+
+
           </div>
+
+
+
           
+
+
+
           ${likesSection}
+
+
+
           
+
+
+
           <div class="comments-list">
+
+
+
             ${commentsHtml}
+
+
+
           </div>
+
+
+
           
+
+
+
           <div class="comment-input-wrap">
+
+
+
             <input type="text" id="comment-${postId}" placeholder="Escreva um comentário..." onkeypress="handleComment(event, '${postId}')">
+
+
+
             <button class="btn-send" onclick="enviarComentario('${postId}')">➤</button>
+
+
+
           </div>
+
+
+
         </div>
-      ;
+
+
+
+      `;
+
+
+
     });
+
+
+
     
+
+
+
     feedList.innerHTML = html;
+
+
+
   });
+
+
+
 }
 
+
+
+
+
+
+
 // Publicar novo Post
+
+
+
 document.getElementById('btnPublishPost').addEventListener('click', async () => {
+
+
+
   if (!currentUser) return;
+
+
+
   const textInput = document.getElementById('postText');
+
+
+
   const mediaInput = document.getElementById('postMediaUrl');
+
+
+
   
+
+
+
   const texto = textInput.value.trim();
+
+
+
   let midiaUrl = mediaInput.value.trim();
+
+
+
   
+
+
+
   const regexDrive = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+
+
+
   const matchDrive = midiaUrl.match(regexDrive);
 
+
+
+
+
+
+
   if (matchDrive && matchDrive[1]) {
+
+
+
     const idDoArquivo = matchDrive[1];
-    midiaUrl = https://drive.google.com/thumbnail?id=${idDoArquivo}&sz=w1000;
+
+
+
+    midiaUrl = `https://drive.google.com/thumbnail?id=${idDoArquivo}&sz=w1000`;
+
+
+
   }
+
+
+
+
+
+
 
   if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
 
+
+
+
+
+
+
   const btn = document.getElementById('btnPublishPost');
+
+
+
   btn.textContent = 'Enviando...';
+
+
+
   btn.disabled = true;
 
+
+
+
+
+
+
   try {
+
+
+
     await addDoc(collection(db, 'timeline_posts'), {
+
+
+
       texto: texto,
+
+
+
       midiaUrl: midiaUrl,
+
+
+
       autor: currentUser.displayName || 'Usuário Leveros',
+
+
+
       autorEmail: currentUser.email,
+
+
+
       autorFoto: currentUser.photoURL || null,
+
+
+
       likes: [],
+
+
+
       comentarios: [],
+
+
+
       criadoEm: serverTimestamp()
+
+
+
     });
+
+
+
+
+
+
 
     const emailLogado = currentUser.email.toLowerCase();
+
+
+
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
+
+
+
+
+
+
     if (isAdmin) {
+
+
+
       try {
+
+
+
         const mesAtual = new Date().toISOString().slice(0, 7);
+
+
+
         const emailLimitRef = doc(db, 'system_config', 'email_limit');
+
+
+
         const limitSnap = await getDoc(emailLimitRef);
+
+
+
         
+
+
+
         let disparosMes = 0;
+
+
+
         if (limitSnap.exists()) {
+
+
+
           const data = limitSnap.data();
+
+
+
           if (data.mes === mesAtual) {
+
+
+
             disparosMes = data.contagem || 0;
+
+
+
           }
+
+
+
         }
+
+
+
+
+
+
 
         if (disparosMes < 100) {
+
+
+
           try {
+
+
+
               const resposta = await emailjs.send(
+
+
+
                 "service_rc58xfn",
+
+
+
                 "template_074uqfn",
+
+
+
                 {
+
+
+
                   email: "anapaula.goncalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br",
+
+
+
                   nome_autor: currentUser.displayName || 'Gestão CX Resolve',
+
+
+
                   mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
+
+
+
                 }
+
+
+
               );
+
+
+
               console.log("Email enviado com sucesso!", resposta.status, resposta.text);
+
+
+
               await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
+
+
+
           } catch (emailError) {
+
+
+
               console.error("FALHA CRÍTICA NO EMAILJS. Motivo:", emailError);
+
+
+
           }
+
+
+
         } else {
+
+
+
           console.log("Limite seguro de 100 e-mails atingido no mês.");
+
+
+
         }
+
+
+
       } catch (errDb) {
+
+
+
         console.error("Erro ao gerenciar cota no banco:", errDb);
+
+
+
       }
+
+
+
     }
+
+
+
+
+
+
 
     textInput.value = '';
+
+
+
     mediaInput.value = '';
 
+
+
+
+
+
+
   } catch (e) {
+
+
+
     console.error(e);
+
+
+
     alert("Erro ao publicar. Verifique as permissões.");
+
+
+
   } finally {
+
+
+
     btn.textContent = 'Publicar';
+
+
+
     btn.disabled = false;
+
+
+
   }
+
+
+
 });
+
+
+
+
+
+
 
 // Apagar Post
+
+
+
 window.apagarPost = async function(postId) {
+
+
+
   if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
+
+
+
   
+
+
+
   try {
+
+
+
     await deleteDoc(doc(db, 'timeline_posts', postId));
+
+
+
   } catch(e) {
+
+
+
     console.error("Erro ao apagar post", e);
+
+
+
     alert("Sem permissão para apagar este post.");
+
+
+
   }
+
+
+
 };
+
+
+
+
+
+
 
 // Curtir Post
+
+
+
 window.toggleLike = async function(postId) {
+
+
+
   if (!currentUser) return;
+
+
+
   const postRef = doc(db, 'timeline_posts', postId);
+
+
+
   
+
+
+
   const btn = event.currentTarget;
+
+
+
   const isLiked = btn.classList.contains('liked');
 
+
+
+
+
+
+
   try {
+
+
+
     if (isLiked) {
+
+
+
       await updateDoc(postRef, { likes: arrayRemove(currentUser.email) });
+
+
+
     } else {
+
+
+
       await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
+
+
+
     }
+
+
+
   } catch(e) { console.error("Erro ao curtir", e); }
+
+
+
 };
+
+
+
+
+
+
 
 // Enviar Comentário
+
+
+
 window.enviarComentario = async function(postId) {
+
+
+
   if (!currentUser) return;
-  const input = document.getElementById(comment-${postId});
+
+
+
+  const input = document.getElementById(`comment-${postId}`);
+
+
+
   const texto = input.value.trim();
+
+
+
   if (!texto) return;
 
+
+
+
+
+
+
   input.disabled = true;
+
+
+
   try {
+
+
+
     const postRef = doc(db, 'timeline_posts', postId);
+
+
+
     await updateDoc(postRef, {
+
+
+
       comentarios: arrayUnion({
+
+
+
         autor: currentUser.displayName || 'Usuário',
+
+
+
         email: currentUser.email.toLowerCase(), 
+
+
+
         foto: currentUser.photoURL || null,
+
+
+
         texto: texto,
+
+
+
         data: new Date().toISOString()
+
+
+
       })
+
+
+
     });
+
+
+
     input.value = '';
+
+
+
   } catch(e) {
+
+
+
     console.error("Erro ao comentar", e);
+
+
+
   } finally {
+
+
+
     input.disabled = false;
+
+
+
   }
+
+
+
 };
+
+
+
+
+
+
 
 // Apagar Comentário
+
+
+
 window.apagarComentario = async function(postId, commentDataString) {
+
+
+
   if (!confirm('Deseja apagar este comentário?')) return;
+
+
+
   
+
+
+
   try {
+
+
+
     const commentObject = JSON.parse(decodeURIComponent(commentDataString));
+
+
+
     const postRef = doc(db, 'timeline_posts', postId);
+
+
+
     
+
+
+
     await updateDoc(postRef, {
+
+
+
       comentarios: arrayRemove(commentObject)
+
+
+
     });
+
+
+
   } catch(e) {
+
+
+
     console.error("Erro ao apagar comentário", e);
+
+
+
     alert("Ocorreu um erro ao apagar. Tente novamente.");
+
+
+
   }
+
+
+
 };
+
+
+
+
+
+
 
 window.handleComment = function(event, postId) {
+
+
+
   if (event.key === 'Enter') {
+
+
+
     enviarComentario(postId);
+
+
+
   }
+
+
+
 };
+
+
+
+
+
+
 
 /* ====================================================================
+
+
+
    AUTENTICAÇÃO PADRÃO E GESTÃO DE PONTOS
+
+
+
    ==================================================================== */
+
+
+
 onAuthStateChanged(auth, async user => {
+
+
+
   if (user && user.email.endsWith('@leveros.com.br')) {
+
+
+
     currentUser = user;
+
+
+
     document.getElementById('timeline-content').style.display = 'block';
+
+
+
     
+
+
+
     const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
+
+
+
     if (user.photoURL) {
-      document.getElementById('myAvatar').innerHTML = <img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">;
+
+
+
+      document.getElementById('myAvatar').innerHTML = `<img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+
+
+
     } else {
+
+
+
       document.getElementById('myAvatar').textContent = window.getInitials(nome);
+
+
+
     }
+
+
+
+
+
+
 
     const emailLogado = user.email.toLowerCase();
+
+
+
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
+
+
+
+
+
+
     if (isAdmin) {
+
+
+
        document.getElementById('menuAdminContainer').style.display = 'block';
+
+
+
        document.getElementById('navAdminMobile').style.display = 'block';
+
+
+
     }
+
+
+
     
+
+
+
     carregarFeed(isAdmin);
+
+
+
     carregarRanking();
 
+
+
+
+
+
+
     // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
+
+
+
     try {
+
+
+
         const userRef = doc(db, "usuarios", emailLogado);
+
+
+
         const userSnap = await getDoc(userRef);
+
+
+
         const hoje = new Date().toISOString().slice(0, 10); 
 
+
+
+
+
+
+
         if (userSnap.exists()) {
+
+
+
             const dados = userSnap.data();
+
+
+
             let moedasAtuais = dados.pontos || 0;
+
+
+
             
+
+
+
             document.getElementById('valSaldo').textContent = moedasAtuais;
+
+
+
             if (document.getElementById('valSaldoMobile')) {
+
+
+
                 document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+
+
+
             }
+
+
+
+
+
+
 
             if (dados.ultimoLogin !== hoje) {
+
+
+
                 await updateDoc(userRef, {
+
+
+
                     pontos: increment(10),
+
+
+
                     ultimoLogin: hoje,
+
+
+
                     foto: user.photoURL || null,
+
+
+
                     nome: user.displayName || 'Usuário Leveros'
+
+
+
                 });
+
+
+
                 moedasAtuais += 10;
+
+
+
                 document.getElementById('valSaldo').textContent = moedasAtuais;
+
+
+
                 if (document.getElementById('valSaldoMobile')) {
+
+
+
                     document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+
+
+
                 }
+
+
+
                 alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
+
+
+
             } else {
+
+
+
                 await updateDoc(userRef, {
+
+
+
                     foto: user.photoURL || null,
+
+
+
                     nome: user.displayName || 'Usuário Leveros'
+
+
+
                 });
+
+
+
             }
+
+
+
         } else {
+
+
+
             await setDoc(userRef, {
+
+
+
                 nome: user.displayName || 'Usuário Leveros',
+
+
+
                 foto: user.photoURL || null,
+
+
+
                 pontos: 50,
+
+
+
                 ultimoLogin: hoje
+
+
+
             });
+
+
+
             document.getElementById('valSaldo').textContent = 50;
+
+
+
             if (document.getElementById('valSaldoMobile')) {
+
+
+
                 document.getElementById('valSaldoMobile').textContent = 50;
+
+
+
             }
+
+
+
             alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
+
+
+
         }
+
+
+
     } catch (err) {
+
+
+
         console.error("Erro ao sincronizar saldo da carteira: ", err);
+
+
+
     }
+
+
+
     
+
+
+
   } else {
+
+
+
     window.location.href = 'index.html';
+
+
+
   }
+
+
+
 });
 
+
+
+
+
+
+
 const logout = () => {
+
+
+
   sessionStorage.removeItem('logRegistrado');
+
+
+
   signOut(auth).then(() => window.location.href = 'index.html');
+
+
+
 };
 
+
+
+
+
+
+
 document.getElementById('logoutBtn').onclick = logout;
+
+
+
 document.getElementById('logoutBtnMobile').onclick = logout;
+
+
+
 </script>
 
+
+
+
+
+
+
 </body>
+
+
+
 </html>
+
+
 
