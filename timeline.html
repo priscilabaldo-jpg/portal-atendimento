@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -157,6 +156,18 @@
         top: 0; 
         margin-bottom: 40px; 
     }
+    /* Adapta a caixa de publicar em telas menores */
+    .create-post-actions-wrap {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 15px;
+    }
+    .create-post-actions-wrap .media-input-wrap {
+        margin-right: 0 !important;
+    }
+    .create-post-actions-wrap .submit-area {
+        justify-content: space-between;
+    }
   }
 </style>
 
@@ -176,6 +187,7 @@
           <li><a href="timeline.html" class="active">Timeline</a></li>
           <li><a href="materiais.html">Materiais</a></li>
           <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="lojinha.html">CX Store 🛒</a></li>
           <li id="menuAdminContainer" style="display: none;">
             <a href="admin.html">Painel Admin</a>
           </li>
@@ -223,12 +235,18 @@
               <div class="user-avatar" id="myAvatar">L</div>
               <textarea id="postText" class="create-post-input" rows="2" placeholder="No que você está pensando, time?"></textarea>
             </div>
-            <div class="create-post-actions">
-              <div class="media-input-wrap">
+            <div class="create-post-actions create-post-actions-wrap" style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="media-input-wrap" style="flex: 1; margin-right: 15px;">
                 <span>📷</span>
                 <input type="text" id="postMediaUrl" placeholder="Cole o link de uma imagem/GIF aqui (Opcional)">
               </div>
-              <button class="submit-btn" id="btnPublishPost">Publicar</button>
+              <div class="submit-area" style="display: flex; align-items: center; gap: 15px;">
+                  <label id="containerAvisoEmail" style="display: none; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.7); cursor: pointer; user-select: none;" title="Desmarque para publicar silenciosamente">
+                      <input type="checkbox" id="chkAvisoEmail" checked style="cursor: pointer; width: 14px; height: 14px;">
+                      🔔 Notificar por e-mail
+                  </label>
+                  <button class="submit-btn" id="btnPublishPost">Publicar</button>
+              </div>
             </div>
           </div>
 
@@ -545,7 +563,7 @@ function carregarFeed(isAdmin) {
   });
 }
 
-// Publicar novo Post com aviso por E-mail (Gestão/Equipe)
+// Publicar novo Post com aviso por E-mail (Gestão/Equipe) e Checkbox de Controle
 document.getElementById('btnPublishPost').addEventListener('click', async () => {
   if (!currentUser) return;
   const textInput = document.getElementById('postText');
@@ -583,7 +601,11 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
     const emailLogado = currentUser.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
-    if (isAdmin) {
+    // 🟢 LÓGICA DE CONTROLE DO DISPARO DO E-MAIL (Só admins têm a checkbox)
+    const chkEmail = document.getElementById('chkAvisoEmail');
+    const dispararEmail = chkEmail ? chkEmail.checked : false;
+
+    if (isAdmin && dispararEmail) {
       try {
         const mesAtual = new Date().toISOString().slice(0, 7);
         const emailLimitRef = doc(db, 'system_config', 'email_limit');
@@ -619,6 +641,8 @@ document.getElementById('btnPublishPost').addEventListener('click', async () => 
       } catch (errDb) {
         console.error("Erro ao gerenciar cota no banco:", errDb);
       }
+    } else if (isAdmin && !dispararEmail) {
+        console.log("Post publicado. Disparo de e-mail cancelado manualmente pelo Admin.");
     }
 
     textInput.value = '';
@@ -733,12 +757,16 @@ onAuthStateChanged(auth, async user => {
     if (isAdmin) {
        document.getElementById('menuAdminContainer').style.display = 'block';
        document.getElementById('navAdminMobile').style.display = 'block';
+       
+       // 🟢 Exibe a caixinha de controle de notificação para Admins
+       const checkContainer = document.getElementById('containerAvisoEmail');
+       if(checkContainer) checkContainer.style.display = 'flex';
     }
     
     carregarFeed(isAdmin);
     carregarRanking();
 
-    // 🟢 LÓGICA DE LOGIN: Atualiza foto e dá moeda diária
+    // LÓGICA DE LOGIN: Atualiza foto e dá moeda diária
     try {
         const userRef = doc(db, "usuarios", emailLogado);
         const userSnap = await getDoc(userRef);
@@ -808,5 +836,3 @@ document.getElementById('logoutBtnMobile').onclick = logout;
 
 </body>
 </html>
-
-```
