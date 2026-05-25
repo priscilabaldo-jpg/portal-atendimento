@@ -1,3 +1,15 @@
+Aqui está o código completo com as alterações aplicadas.
+
+Fiz duas modificações importantes na parte do script (deixei comentários com a tag `// ALTERADO` para você encontrar facilmente onde mexi):
+
+1. **Mudei a estrutura do link gerado pelo Google Drive** na hora da publicação (de `/thumbnail` para `/uc?export=view`).
+2. **Removi a ocultação de erro (`onerror`)** na renderização da imagem do post, para que você possa ver se o link quebrou por falta de permissão.
+
+**Lembrete de ouro:** O arquivo da imagem no Google Drive **deve** estar configurado como "Qualquer pessoa com o link" (Leitor), senão a imagem ainda vai aparecer como um ícone quebrado.
+
+Pode copiar e colar tudo:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +18,6 @@
 <title>Timeline – CX Resolve</title>
 
 <link rel="stylesheet" href="style.css">
-
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <style>
@@ -466,4 +477,344 @@ function carregarFeed(isAdmin) {
               }
           }
           
-          const encodedLikes = encodeURIComponent(JSON
+          const encodedLikes = encodeURIComponent(JSON.stringify(likes));
+          
+          likesSection = `
+            <div style="position: relative; margin: -5px 15px 15px 15px;">
+                <div onclick="toggleLikesPopover(event, '${postId}', '${encodedLikes}')" style="font-size: 11px; opacity: 0.8; display: inline-flex; align-items: center; gap: 5px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.8'" title="Ver quem curtiu">
+                  <span style="font-size: 12px; opacity: 0.7;">❤️</span> ${textStr}
+                </div>
+                <div id="popover-${postId}" class="likes-popover" onclick="event.stopPropagation()"></div>
+            </div>
+          `;
+      }
+      
+      const comentarios = post.comentarios || [];
+      let commentsHtml = '';
+      
+      comentarios.forEach(c => {
+        const isMyComment = currentUser && c.email && currentUser.email.toLowerCase() === c.email.toLowerCase();
+        const podeApagar = isMyComment || isAdmin;
+        const commentDataString = encodeURIComponent(JSON.stringify(c));
+
+        commentsHtml += `
+          <div class="comment-item" style="position: relative; align-items: flex-start;">
+            <div class="user-avatar" style="overflow: hidden; flex-shrink: 0;">${window.renderAvatar(c.autor, c.foto)}</div>
+            <div class="comment-bubble" style="position: relative; padding-right: 30px;">
+              <strong>${window.escapeHTML(c.autor)}</strong>
+              ${window.escapeHTML(c.texto)}
+              ${podeApagar ? `<button style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: rgba(255,255,255,0.3); font-size: 10px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.color='#FF6B6B'" onmouseout="this.style.color='rgba(255,255,255,0.3)'" onclick="apagarComentario('${postId}', '${commentDataString}')" title="Apagar comentário">✕</button>` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      // ALTERADO: Removido o onerror para não ocultar falhas de permissão no Drive. 
+      // Se quebrar, pelo menos veremos o ícone de erro para saber o motivo.
+      const mediaHtml = post.midiaUrl ? `<div class="post-media"><img src="${window.escapeHTML(post.midiaUrl)}" alt="Imagem do post"></div>` : '';
+
+      html += `
+        <div class="post-card" style="position: relative;">
+          ${isAdmin ? `<button style="position: absolute; top: 15px; right: 15px; background: none; border: none; color: #FF6B6B; font-size: 16px; cursor: pointer; z-index: 10; font-weight: bold;" onclick="apagarPost('${postId}')" title="Apagar Publicação">✕</button>` : ''}
+          
+          <div class="post-header">
+            <div class="user-avatar" style="overflow: hidden;">${window.renderAvatar(post.autor, post.autorFoto)}</div>
+            <div class="post-author-info">
+              <h4>${window.escapeHTML(post.autor)}</h4>
+              <span>${dataFormatada}</span>
+            </div>
+          </div>
+          
+          <div class="post-text">${window.escapeHTML(post.texto)}</div>
+          ${mediaHtml}
+          
+          <div class="post-actions">
+            <button class="action-btn ${likeClass}" onclick="toggleLike('${postId}')">
+              ${heartIcon} Curtir (${likes.length})
+            </button>
+            <button class="action-btn" onclick="document.getElementById('comment-${postId}').focus()">
+              💬 Comentar (${comentarios.length})
+            </button>
+          </div>
+          
+          ${likesSection}
+          
+          <div class="comments-list">
+            ${commentsHtml}
+          </div>
+          
+          <div class="comment-input-wrap">
+            <input type="text" id="comment-${postId}" placeholder="Escreva um comentário..." onkeypress="handleComment(event, '${postId}')">
+            <button class="btn-send" onclick="enviarComentario('${postId}')">➤</button>
+          </div>
+        </div>
+      `;
+    });
+    
+    feedList.innerHTML = html;
+  });
+}
+
+// Publicar novo Post
+document.getElementById('btnPublishPost').addEventListener('click', async () => {
+  if (!currentUser) return;
+  const textInput = document.getElementById('postText');
+  const mediaInput = document.getElementById('postMediaUrl');
+  
+  const texto = textInput.value.trim();
+  let midiaUrl = mediaInput.value.trim();
+  
+  const regexDrive = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/;
+  const matchDrive = midiaUrl.match(regexDrive);
+
+  // ALTERADO: Formato de link mais estável para visualização HTML.
+  if (matchDrive && matchDrive[1]) {
+    const idDoArquivo = matchDrive[1];
+    midiaUrl = `https://drive.google.com/uc?export=view&id=${idDoArquivo}`;
+  }
+
+  if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
+
+  const btn = document.getElementById('btnPublishPost');
+  btn.textContent = 'Enviando...';
+  btn.disabled = true;
+
+  try {
+    await addDoc(collection(db, 'timeline_posts'), {
+      texto: texto,
+      midiaUrl: midiaUrl,
+      autor: currentUser.displayName || 'Usuário Leveros',
+      autorEmail: currentUser.email,
+      autorFoto: currentUser.photoURL || null,
+      likes: [],
+      comentarios: [],
+      criadoEm: serverTimestamp()
+    });
+
+    const emailLogado = currentUser.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    if (isAdmin) {
+      try {
+        const mesAtual = new Date().toISOString().slice(0, 7);
+        const emailLimitRef = doc(db, 'system_config', 'email_limit');
+        const limitSnap = await getDoc(emailLimitRef);
+        
+        let disparosMes = 0;
+        if (limitSnap.exists()) {
+          const data = limitSnap.data();
+          if (data.mes === mesAtual) {
+            disparosMes = data.contagem || 0;
+          }
+        }
+
+        if (disparosMes < 100) {
+          try {
+              const resposta = await emailjs.send(
+                "service_rc58xfn",
+                "template_074uqfn",
+                {
+                  email: "anapaula.goncalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br",
+                  nome_autor: currentUser.displayName || 'Gestão CX Resolve',
+                  mensagem: texto || 'Nova publicação com imagem. Acesse o portal para conferir!'
+                }
+              );
+              console.log("Email enviado com sucesso!", resposta.status, resposta.text);
+              await setDoc(emailLimitRef, { mes: mesAtual, contagem: disparosMes + 1 });
+          } catch (emailError) {
+              console.error("FALHA CRÍTICA NO EMAILJS. Motivo:", emailError);
+          }
+        } else {
+          console.log("Limite seguro de 100 e-mails atingido no mês.");
+        }
+      } catch (errDb) {
+        console.error("Erro ao gerenciar cota no banco:", errDb);
+      }
+    }
+
+    textInput.value = '';
+    mediaInput.value = '';
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao publicar. Verifique as permissões.");
+  } finally {
+    btn.textContent = 'Publicar';
+    btn.disabled = false;
+  }
+});
+
+// Apagar Post
+window.apagarPost = async function(postId) {
+  if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
+  
+  try {
+    await deleteDoc(doc(db, 'timeline_posts', postId));
+  } catch(e) {
+    console.error("Erro ao apagar post", e);
+    alert("Sem permissão para apagar este post.");
+  }
+};
+
+// Curtir Post
+window.toggleLike = async function(postId) {
+  if (!currentUser) return;
+  const postRef = doc(db, 'timeline_posts', postId);
+  
+  const btn = event.currentTarget;
+  const isLiked = btn.classList.contains('liked');
+
+  try {
+    if (isLiked) {
+      await updateDoc(postRef, { likes: arrayRemove(currentUser.email) });
+    } else {
+      await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
+    }
+  } catch(e) { console.error("Erro ao curtir", e); }
+};
+
+// Enviar Comentário
+window.enviarComentario = async function(postId) {
+  if (!currentUser) return;
+  const input = document.getElementById(`comment-${postId}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.disabled = true;
+  try {
+    const postRef = doc(db, 'timeline_posts', postId);
+    await updateDoc(postRef, {
+      comentarios: arrayUnion({
+        autor: currentUser.displayName || 'Usuário',
+        email: currentUser.email.toLowerCase(), 
+        foto: currentUser.photoURL || null,
+        texto: texto,
+        data: new Date().toISOString()
+      })
+    });
+    input.value = '';
+  } catch(e) {
+    console.error("Erro ao comentar", e);
+  } finally {
+    input.disabled = false;
+  }
+};
+
+// Apagar Comentário
+window.apagarComentario = async function(postId, commentDataString) {
+  if (!confirm('Deseja apagar este comentário?')) return;
+  
+  try {
+    const commentObject = JSON.parse(decodeURIComponent(commentDataString));
+    const postRef = doc(db, 'timeline_posts', postId);
+    
+    await updateDoc(postRef, {
+      comentarios: arrayRemove(commentObject)
+    });
+  } catch(e) {
+    console.error("Erro ao apagar comentário", e);
+    alert("Ocorreu um erro ao apagar. Tente novamente.");
+  }
+};
+
+window.handleComment = function(event, postId) {
+  if (event.key === 'Enter') {
+    enviarComentario(postId);
+  }
+};
+
+/* ====================================================================
+   AUTENTICAÇÃO PADRÃO E GESTÃO DE PONTOS
+   ==================================================================== */
+onAuthStateChanged(auth, async user => {
+  if (user && user.email.endsWith('@leveros.com.br')) {
+    currentUser = user;
+    document.getElementById('timeline-content').style.display = 'block';
+    
+    const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
+    if (user.photoURL) {
+      document.getElementById('myAvatar').innerHTML = `<img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    } else {
+      document.getElementById('myAvatar').textContent = window.getInitials(nome);
+    }
+
+    const emailLogado = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    if (isAdmin) {
+       document.getElementById('menuAdminContainer').style.display = 'block';
+       document.getElementById('navAdminMobile').style.display = 'block';
+    }
+    
+    carregarFeed(isAdmin);
+    carregarRanking();
+
+    // LÓGICA DE RECOMPENSA E LOGIN DIÁRIO
+    try {
+        const userRef = doc(db, "usuarios", emailLogado);
+        const userSnap = await getDoc(userRef);
+        const hoje = new Date().toISOString().slice(0, 10); 
+
+        if (userSnap.exists()) {
+            const dados = userSnap.data();
+            let moedasAtuais = dados.pontos || 0;
+            
+            document.getElementById('valSaldo').textContent = moedasAtuais;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+            }
+
+            if (dados.ultimoLogin !== hoje) {
+                await updateDoc(userRef, {
+                    pontos: increment(10),
+                    ultimoLogin: hoje,
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
+                });
+                moedasAtuais += 10;
+                document.getElementById('valSaldo').textContent = moedasAtuais;
+                if (document.getElementById('valSaldoMobile')) {
+                    document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+                }
+                alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
+            } else {
+                await updateDoc(userRef, {
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
+                });
+            }
+        } else {
+            await setDoc(userRef, {
+                nome: user.displayName || 'Usuário Leveros',
+                foto: user.photoURL || null,
+                pontos: 50,
+                ultimoLogin: hoje
+            });
+            document.getElementById('valSaldo').textContent = 50;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = 50;
+            }
+            alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
+        }
+    } catch (err) {
+        console.error("Erro ao sincronizar saldo da carteira: ", err);
+    }
+    
+  } else {
+    window.location.href = 'index.html';
+  }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
+</script>
+
+</body>
+</html>
+
+```
