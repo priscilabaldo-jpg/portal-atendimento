@@ -1,3 +1,14 @@
+Aqui está o código completo e final do arquivo **`timeline.html`**, com todas as melhorias que construímos juntos:
+
+1. **EmailJS configurado** disparando para toda a lista da equipe.
+2. **Sistema de curtidas estilo Instagram**, agrupando os nomes e mostrando a quantidade.
+3. **Balãozinho (Popover) flutuante** que abre quando clica nas curtidas, buscando as fotos em tempo real no banco de dados.
+4. **Sidebar de Ranking fixo e otimizado**, com rolagem isolada que não quebra a página (o mesmo que colocamos na Lojinha).
+5. **Atualização de Perfil Automática**, onde o sistema salva a foto do Google do colaborador no banco assim que ele faz o login.
+
+Pode copiar e substituir tudo no seu arquivo `timeline.html`:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -659,4 +670,154 @@ window.toggleLike = async function(postId) {
     } else {
       await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
     }
-  } catch(e) { console.error("
+  } catch(e) { console.error("Erro ao curtir", e); }
+};
+
+// Enviar Comentário
+window.enviarComentario = async function(postId) {
+  if (!currentUser) return;
+  const input = document.getElementById(`comment-${postId}`);
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  input.disabled = true;
+  try {
+    const postRef = doc(db, 'timeline_posts', postId);
+    await updateDoc(postRef, {
+      comentarios: arrayUnion({
+        autor: currentUser.displayName || 'Usuário',
+        email: currentUser.email.toLowerCase(), 
+        foto: currentUser.photoURL || null,
+        texto: texto,
+        data: new Date().toISOString()
+      })
+    });
+    input.value = '';
+  } catch(e) {
+    console.error("Erro ao comentar", e);
+  } finally {
+    input.disabled = false;
+  }
+};
+
+// Apagar Comentário
+window.apagarComentario = async function(postId, commentDataString) {
+  if (!confirm('Deseja apagar este comentário?')) return;
+  
+  try {
+    const commentObject = JSON.parse(decodeURIComponent(commentDataString));
+    const postRef = doc(db, 'timeline_posts', postId);
+    
+    await updateDoc(postRef, {
+      comentarios: arrayRemove(commentObject)
+    });
+  } catch(e) {
+    console.error("Erro ao apagar comentário", e);
+    alert("Ocorreu um erro ao apagar. Tente novamente.");
+  }
+};
+
+window.handleComment = function(event, postId) {
+  if (event.key === 'Enter') {
+    enviarComentario(postId);
+  }
+};
+
+/* ====================================================================
+   AUTENTICAÇÃO PADRÃO E ATUALIZAÇÃO DO PERFIL (NOME E FOTO)
+   ==================================================================== */
+onAuthStateChanged(auth, async user => {
+  if (user && user.email.endsWith('@leveros.com.br')) {
+    currentUser = user;
+    document.getElementById('timeline-content').style.display = 'block';
+    
+    const nome = user.displayName ? user.displayName.split(' ')[0] : 'L';
+    if (user.photoURL) {
+      document.getElementById('myAvatar').innerHTML = `<img src="${user.photoURL}" alt="Sua foto" referrerpolicy="no-referrer" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+    } else {
+      document.getElementById('myAvatar').textContent = window.getInitials(nome);
+    }
+
+    const emailLogado = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    if (isAdmin) {
+       document.getElementById('menuAdminContainer').style.display = 'block';
+       document.getElementById('navAdminMobile').style.display = 'block';
+    }
+    
+    carregarFeed(isAdmin);
+    carregarRanking();
+
+    // 🟢 LÓGICA DE LOGIN: Atualiza foto e dá moeda diária
+    try {
+        const userRef = doc(db, "usuarios", emailLogado);
+        const userSnap = await getDoc(userRef);
+        const hoje = new Date().toISOString().slice(0, 10); 
+
+        if (userSnap.exists()) {
+            const dados = userSnap.data();
+            let moedasAtuais = dados.pontos || 0;
+            
+            document.getElementById('valSaldo').textContent = moedasAtuais;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+            }
+
+            if (dados.ultimoLogin !== hoje) {
+                // Primeira vez do dia = +10 moedas e salva foto atualizada
+                await updateDoc(userRef, {
+                    pontos: increment(10),
+                    ultimoLogin: hoje,
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
+                });
+                moedasAtuais += 10;
+                document.getElementById('valSaldo').textContent = moedasAtuais;
+                if (document.getElementById('valSaldoMobile')) {
+                    document.getElementById('valSaldoMobile').textContent = moedasAtuais;
+                }
+                alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
+            } else {
+                // Já ganhou as moedas hoje, só verifica se a foto ou o nome mudaram
+                await updateDoc(userRef, {
+                    foto: user.photoURL || null,
+                    nome: user.displayName || 'Usuário Leveros'
+                });
+            }
+        } else {
+            // Novo cadastro
+            await setDoc(userRef, {
+                nome: user.displayName || 'Usuário Leveros',
+                foto: user.photoURL || null,
+                pontos: 50,
+                ultimoLogin: hoje
+            });
+            document.getElementById('valSaldo').textContent = 50;
+            if (document.getElementById('valSaldoMobile')) {
+                document.getElementById('valSaldoMobile').textContent = 50;
+            }
+            alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
+        }
+    } catch (err) {
+        console.error("Erro ao sincronizar saldo da carteira: ", err);
+    }
+    
+  } else {
+    window.location.href = 'index.html';
+  }
+});
+
+const logout = () => {
+  sessionStorage.removeItem('logRegistrado');
+  signOut(auth).then(() => window.location.href = 'index.html');
+};
+
+document.getElementById('logoutBtn').onclick = logout;
+document.getElementById('logoutBtnMobile').onclick = logout;
+</script>
+
+</body>
+</html>
+
+```
