@@ -4,271 +4,234 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Apoio N1 - Triagem e CRM</title>
-    <style>
-        /* ====================================================================
-           1. VARIÁVEIS GLOBAIS E RESET
-           ==================================================================== */
-        :root {
-            --verde1: #002D32;
-            --verde2: #005A64;
-            --azul:   #4CDDDD;
-            --verde3: #6FFFAF;
-            --amarelo:#FFCE00;
-            --glass:  rgba(255,255,255,0.05);
-            --glass-border: rgba(255,255,255,0.09);
-            --font: Verdana, Geneva, Tahoma, sans-serif;
-            
-            --erro-cor: #FF6B6B;
-            --erro-bg: rgba(255,107,107,0.1);
-            --erro-border: rgba(255,107,107,0.2);
-            
-            --sucesso-cor: var(--verde3);
-            --sucesso-bg: rgba(111,255,175,0.08);
-            --sucesso-border: rgba(111,255,175,0.25);
-        }
-
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: var(--font);
-            background: var(--verde1);
-            color: white;
-            min-height: 100vh;
-            font-size: 13px;
-            display: flex;
-            justify-content: center;
-            padding: 40px 20px;
-            background-image: 
-                radial-gradient(ellipse 70% 50% at 15% 10%, rgba(76,221,221,0.09) 0%, transparent 60%),
-                radial-gradient(ellipse 55% 45% at 85% 85%, rgba(111,255,175,0.06) 0%, transparent 55%),
-                linear-gradient(160deg, #002D32 0%, #004A52 50%, #002D32 100%);
-            background-attachment: fixed;
-        }
-
-        .container { width: 100%; max-width: 650px; position: relative; z-index: 5; }
-
-        h2 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
-        h2 span { color: var(--azul); }
-
-        /* ====================================================================
-           2. COMPONENTES
-           ==================================================================== */
-        .card-panel {
-            background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 8px; padding: 24px; margin-bottom: 24px; backdrop-filter: blur(10px);
-        }
-
-        .form-group { margin-bottom: 18px; }
-
-        label {
-            display: block; margin-bottom: 6px; font-size: 11px; opacity: 0.8;
-            font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.05em;
-        }
-
-        .section-title {
-            font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
-            color: var(--azul); opacity: 0.8; margin-bottom: 15px; display: block;
-        }
-
-        select, input[type="date"] {
-            width: 100%; padding: 10px 14px; border-radius: 5px; border: 1px solid var(--glass-border);
-            background: rgba(255,255,255,0.06); color: white; font-family: var(--font);
-            font-size: 12px; outline: none; transition: border-color 0.2s; color-scheme: dark; 
-        }
-
-        select option { background: #003038; color: white; }
-        select:focus, input[type="date"]:focus { border-color: var(--azul); }
-
-        .hidden { display: none !important; }
-
-        .garantia-section {
-            background: rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px;
-            border: 1px dashed var(--glass-border); margin-bottom: 20px; margin-top: 20px;
-        }
-
-        /* ====================================================================
-           3. RESULTADOS E ALERTAS
-           ==================================================================== */
-        .result-box h3 {
-            font-size: 13px; font-weight: 700; color: var(--azul); margin-bottom: 8px;
-            text-transform: uppercase; letter-spacing: 0.05em;
-        }
-
-        .result-box p { font-size: 12px; line-height: 1.6; opacity: 0.85; margin-bottom: 20px; color: white; white-space: pre-line; }
-
-        .status-box { padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px; line-height: 1.6; }
-        .status-ok { background: var(--sucesso-bg); border: 1px solid var(--sucesso-border); color: var(--sucesso-cor); }
-        .status-nok { background: var(--erro-bg); border: 1px solid var(--erro-border); color: var(--erro-cor); }
-
-        .uappi-box {
-            background: rgba(255,206,0,0.08); border: 1px solid rgba(255,206,0,0.25);
-            padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px;
-            line-height: 1.6; color: var(--amarelo);
-        }
-
-        .protocolo-box {
-            background: rgba(76,221,221,0.08); border: 1px solid rgba(76,221,221,0.25);
-            padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px;
-            line-height: 1.6; color: var(--azul);
-        }
-
-        .info-row {
-            display: flex; justify-content: space-between; border-bottom: 1px dashed var(--glass-border);
-            padding-bottom: 6px; margin-bottom: 6px;
-        }
-
-        .obs-text { font-size: 11px; margin-top: 10px; font-style: italic; opacity: 0.7; }
-
-        .alert-crm {
-            background: rgba(255,206,0,0.1); color: white; padding: 16px;
-            border-radius: 5px; font-size: 12px; border: 1px solid rgba(255,206,0,0.3);
-            line-height: 1.5; margin-top: 10px;
-        }
-
-        .regra-header {
-            color: var(--amarelo); font-weight: 700; text-transform: uppercase;
-            font-size: 11px; letter-spacing: 0.05em; display: block; margin-bottom: 5px;
-        }
-        
-        .crm-footer {
-            margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,206,0,0.3);
-            font-size: 11px; opacity: 0.9; color: var(--amarelo); font-weight: bold;
-        }
-    </style>
+    
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="container">
         <h2>🛠️ Apoio N1 <span>Triagem</span></h2>
         
-        <div class="card-panel">
-            <div class="form-group">
-                <label for="tipoAtendimento">1. Qual o tipo de atendimento?</label>
-                <select id="tipoAtendimento" onchange="carregarSubcategoria()">
-                    <option value="">Selecione o tipo de atendimento...</option>
-                    <option value="Garantia">Garantia</option>
-                </select>
+        <div class="layout-wrapper">
+            <div class="form-column">
+                <div class="card-panel">
+                    <div class="form-group">
+                        <label for="tipoAtendimento">1. Qual o tipo de atendimento?</label>
+                        <select id="tipoAtendimento" onchange="carregarSubcategoria()">
+                            <option value="">Selecione o tipo de atendimento...</option>
+                            <option value="Garantia">Garantia</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group hidden" id="divSubcategoria">
+                        <label id="labelSubcategoria" for="subcategoria">2. Especifique o problema:</label>
+                        <select id="subcategoria" onchange="avaliarFluxo()">
+                        </select>
+                    </div>
+
+                    <div class="garantia-section hidden" id="divCamposGarantia">
+                        <span class="section-title">Dados do Equipamento e Instalação</span>
+                        
+                        <div class="form-group">
+                            <label for="marca">Marca / Linha:</label>
+                            <select id="marca" onchange="avaliarMarca()">
+                                <option value="">Selecione a marca...</option>
+                                <option value="AGRATTO">Agratto</option>
+                                <option value="MIDEA_RAC">Midea-Carrier (RAC)</option>
+                                <option value="MIDEA_CAC">Midea-Carrier (CAC)</option>
+                                <option value="DAIKIN">Daikin</option>
+                                <option value="ELGIN_RAC">Elgin (RAC)</option>
+                                <option value="ELGIN_CAC">Elgin (CAC)</option>
+                                <option value="FUJITSU">Fujitsu</option>
+                                <option value="GREE">Gree</option>
+                                <option value="LG_RAC">LG (RAC)</option>
+                                <option value="LG_CAC">LG (CAC)</option>
+                                <option value="PHILCO">Philco</option>
+                                <option value="TCL">TCL</option>
+                                <option value="TRANE">Trane</option>
+                                <option value="HITACHI_RAC">Hitachi (RAC)</option>
+                                <option value="HITACHI_CAC">Hitachi (CAC)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group hidden" id="divTecnologia">
+                            <label for="tecnologia">Tecnologia do Equipamento:</label>
+                            <select id="tecnologia" onchange="processarResultado()">
+                                <option value="">Selecione a tecnologia...</option>
+                                <option value="ONOFF">Convencional (ON/OFF)</option>
+                                <option value="INVERTER">Inverter</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
+                            <input type="date" id="dataNF" onchange="processarResultado()">
+                        </div>
+
+                        <div class="form-group hidden" id="divDataRecebimento">
+                            <label for="dataRecebimento" style="color: var(--amarelo);">Data de Recebimento do Produto:</label>
+                            <input type="date" id="dataRecebimento" onchange="processarResultado()">
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
+                            <label for="temParceiro" style="color: var(--azul);">O pedido possui Parceiro vinculado?</label>
+                            <select id="temParceiro" onchange="avaliarParceiro()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim</option>
+                                <option value="NAO">Não</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group hidden" id="divParceiroInstalou">
+                            <label for="parceiroInstalou">O próprio parceiro realizou a instalação?</label>
+                            <select id="parceiroInstalou" onchange="processarResultado()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim, o parceiro instalou</option>
+                                <option value="NAO">Não, a instalação foi de terceiros</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group hidden" id="divProdutoInstalado">
+                            <label for="produtoInstalado">O produto já encontra-se instalado?</label>
+                            <select id="produtoInstalado" onchange="processarResultado()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim</option>
+                                <option value="NAO">Não</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
+                            <label for="protocoloFabricante" style="color: var(--azul);">Cliente possui protocolo aberto no fabricante?</label>
+                            <select id="protocoloFabricante" onchange="processarResultado()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim</option>
+                                <option value="NAO">Não</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card-panel result-box hidden" id="resultadoFinal" style="margin-bottom: 0;">
+                        
+                        <div id="statusGarantiaBox" class="status-box hidden"></div>
+                        
+                        <div id="avisoNaoInstalado" class="status-nok hidden" style="padding: 14px 18px; margin-bottom: 20px; border-radius: 8px;">
+                            <strong style="display:block; margin-bottom: 6px;">⚠️ PRODUTO NÃO INSTALADO</strong>
+                            Visitas técnicas por um autorizado do fabricante só podem ser abertas para produtos que já estejam instalados.
+                        </div>
+
+                        <div id="avisoUappi" class="uappi-box hidden">
+                            <strong style="display:block; margin-bottom: 6px;">🚫 ATENÇÃO: PEDIDO COM PARCEIRO VINCULADO!</strong>
+                            Não realizamos abertura de visita técnica para este cenário. O parceiro é o responsável por seguir com o atendimento do cliente e deve solicitar a peça diretamente via <strong>Uappi/LVI</strong>.
+                        </div>
+
+                        <div id="avisoProtocolo" class="protocolo-box hidden">
+                            <strong style="display:block; margin-bottom: 6px;">📝 PROTOCOLO DO FABRICANTE</strong>
+                            O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
+                        </div>
+
+                        <h3>Ação N1 Recomendada</h3>
+                        <p id="textoAcao"></p>
+                        
+                        <h3 style="margin-top:20px;">Direcionamento CRM</h3>
+                        <p id="textoCRM" style="margin-bottom: 15px;"></p>
+                        
+                        <div class="alert-crm">
+                            <span class="regra-header">📌 Regra Operacional do Processo</span>
+                            <span id="textoRegra"></span>
+                            <div class="crm-footer">
+                                ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group hidden" id="divSubcategoria">
-                <label id="labelSubcategoria" for="subcategoria">2. Especifique o problema:</label>
-                <select id="subcategoria" onchange="avaliarFluxo()">
-                </select>
-            </div>
-
-            <div class="garantia-section hidden" id="divCamposGarantia">
-                <span class="section-title">Dados do Equipamento e Instalação</span>
-                
-                <div class="form-group">
-                    <label for="marca">Marca / Linha:</label>
-                    <select id="marca" onchange="avaliarMarca()">
-                        <option value="">Selecione a marca...</option>
-                        <option value="AGRATTO">Agratto</option>
-                        <option value="MIDEA_RAC">Midea-Carrier (RAC)</option>
-                        <option value="MIDEA_CAC">Midea-Carrier (CAC)</option>
-                        <option value="DAIKIN">Daikin</option>
-                        <option value="ELGIN_RAC">Elgin (RAC)</option>
-                        <option value="ELGIN_CAC">Elgin (CAC)</option>
-                        <option value="FUJITSU">Fujitsu</option>
-                        <option value="GREE">Gree</option>
-                        <option value="LG_RAC">LG (RAC)</option>
-                        <option value="LG_CAC">LG (CAC)</option>
-                        <option value="PHILCO">Philco</option>
-                        <option value="TCL">TCL</option>
-                        <option value="TRANE">Trane</option>
-                        <option value="HITACHI_RAC">Hitachi (RAC)</option>
-                        <option value="HITACHI_CAC">Hitachi (CAC)</option>
-                    </select>
-                </div>
-
-                <div class="form-group hidden" id="divTecnologia">
-                    <label for="tecnologia">Tecnologia do Equipamento:</label>
-                    <select id="tecnologia" onchange="processarResultado()">
-                        <option value="">Selecione a tecnologia...</option>
-                        <option value="ONOFF">Convencional (ON/OFF)</option>
-                        <option value="INVERTER">Inverter</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
-                    <input type="date" id="dataNF" onchange="processarResultado()">
-                </div>
-
-                <!-- NOVO CAMPO: Data de Recebimento (Oculto por padrão) -->
-                <div class="form-group hidden" id="divDataRecebimento">
-                    <label for="dataRecebimento" style="color: var(--amarelo);">Data de Recebimento do Produto:</label>
-                    <input type="date" id="dataRecebimento" onchange="processarResultado()">
-                </div>
-
-                <div class="form-group" style="margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
-                    <label for="temParceiro" style="color: var(--azul);">O pedido possui Parceiro vinculado?</label>
-                    <select id="temParceiro" onchange="avaliarParceiro()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim</option>
-                        <option value="NAO">Não</option>
-                    </select>
-                </div>
-
-                <div class="form-group hidden" id="divParceiroInstalou">
-                    <label for="parceiroInstalou">O próprio parceiro realizou a instalação?</label>
-                    <select id="parceiroInstalou" onchange="processarResultado()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim, o parceiro instalou</option>
-                        <option value="NAO">Não, a instalação foi de terceiros</option>
-                    </select>
-                </div>
-
-                <div class="form-group hidden" id="divProdutoInstalado">
-                    <label for="produtoInstalado">O produto já encontra-se instalado?</label>
-                    <select id="produtoInstalado" onchange="processarResultado()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim</option>
-                        <option value="NAO">Não</option>
-                    </select>
-                </div>
-
-                <div class="form-group" style="margin-top: 15px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
-                    <label for="protocoloFabricante" style="color: var(--azul);">Cliente possui protocolo aberto no fabricante?</label>
-                    <select id="protocoloFabricante" onchange="processarResultado()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim</option>
-                        <option value="NAO">Não</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="card-panel result-box hidden" id="resultadoFinal">
-            
-            <div id="statusGarantiaBox" class="status-box hidden"></div>
-            
-            <div id="avisoNaoInstalado" class="status-nok hidden" style="padding: 14px 18px; margin-bottom: 20px; border-radius: 8px;">
-                <strong style="display:block; margin-bottom: 6px;">⚠️ PRODUTO NÃO INSTALADO</strong>
-                Visitas técnicas por um autorizado do fabricante só podem ser abertas para produtos que já estejam instalados.
-            </div>
-
-            <div id="avisoUappi" class="uappi-box hidden">
-                <strong style="display:block; margin-bottom: 6px;">🚫 ATENÇÃO: PEDIDO COM PARCEIRO VINCULADO!</strong>
-                Não realizamos abertura de visita técnica para este cenário. O parceiro é o responsável por seguir com o atendimento do cliente e deve solicitar a peça diretamente via <strong>Uappi/LVI</strong>.
-            </div>
-
-            <div id="avisoProtocolo" class="protocolo-box hidden">
-                <strong style="display:block; margin-bottom: 6px;">📝 PROTOCOLO DO FABRICANTE</strong>
-                O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
-            </div>
-
-            <h3>Ação N1 Recomendada</h3>
-            <p id="textoAcao"></p>
-            
-            <h3 style="margin-top:20px;">Direcionamento CRM</h3>
-            <p id="textoCRM" style="margin-bottom: 15px;"></p>
-            
-            <div class="alert-crm">
-                <span class="regra-header">📌 Regra Operacional do Processo</span>
-                <span id="textoRegra"></span>
-                <div class="crm-footer">
-                    ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+            <div class="table-column hidden" id="colunaTabela">
+                <div class="card-panel" style="padding: 24px 15px;">
+                    <span class="section-title" style="margin-bottom: 20px;">Tabela Resumo - Prazos do Fabricante</span>
+                    <div style="overflow-x: auto;">
+                        <table class="glass-table">
+                            <thead>
+                                <tr>
+                                    <th>Marca</th>
+                                    <th>G. Legal (Terceiros)</th>
+                                    <th>G. Contratual (Autorizado)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Agratto</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Midea/Carrier (RAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses <br><span class="tag-info">Inv: 24m + 10a Comp.</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Midea/Carrier (CAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses <br><span class="tag-info">Inv: 36m</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Daikin</strong></td>
+                                    <td>90 dias</td>
+                                    <td>24 meses <br><span class="tag-info">+ 5a Comp.</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Elgin (RAC)</strong></td>
+                                    <td>90 dias <br><span style="opacity:0.6; font-size:9px;">(A partir 03/23: 12m)</span></td>
+                                    <td>12 ou 36 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Elgin (CAC)</strong></td>
+                                    <td>90 dias <br><span style="opacity:0.6; font-size:9px;">(A partir 03/23: 12m)</span></td>
+                                    <td>12 ou 36 meses</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Fujitsu</strong></td>
+                                    <td>90 dias</td>
+                                    <td>24 meses <br><span class="tag-info">+ 5a Comp.</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Gree</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 ou 60 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LG (RAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 ou 24 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>LG (CAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Philco / TCL</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses <br><span class="tag-info">Inv: 24m + 10a Comp.</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trane</strong></td>
+                                    <td>90 dias</td>
+                                    <td>36 meses</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hitachi (RAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>24 meses <br><span class="tag-info">+ 12a Comp.</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Hitachi (CAC)</strong></td>
+                                    <td>90 dias</td>
+                                    <td>12 meses</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -276,25 +239,6 @@
 
     <script>
         const baseDeConhecimento = {
-            "Entregas": {
-                opcoes: [
-                    { valor: "", texto: "Selecione..." },
-                    { valor: "atraso", texto: "Atraso na Entrega" },
-                    { valor: "avaria", texto: "Produto entregue com avaria" }
-                ],
-                respostas: {
-                    "atraso": { 
-                        acao: "Consulte o rastreio e confirme bloqueios na SEFAZ ou tentativa frustrada.", 
-                        crm: "Redirecionar para Logística / Rastreamento.",
-                        regra: "Abertura de PI (Pedido de Informação) ou escalonamento só deve ocorrer se o prazo de entrega estiver efetivamente vencido. Não abrir acionamentos preventivos na transportadora."
-                    },
-                    "avaria": { 
-                        acao: "Solicite fotos da embalagem e verifique ressalva no canhoto da NF.", 
-                        crm: "Redirecionar para Qualidade / Logística Reversa.",
-                        regra: "Obrigatório o envio de foto da avaria, foto da caixa do produto e, principalmente, a foto do canhoto de entrega com a ressalva assinada pelo recebedor. Não escalar sem essas evidências."
-                    }
-                }
-            },
             "Garantia": {
                 opcoes: [
                     { valor: "", texto: "Selecione..." },
@@ -309,25 +253,6 @@
                         regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo para reclamação de falta de componentes estéticos ou acessórios começa a contar a partir da DATA DE RECEBIMENTO."
                     }
                 }
-            },
-            "TD": {
-                opcoes: [
-                    { valor: "", texto: "Selecione..." },
-                    { valor: "arrependimento", texto: "Arrependimento de Compra (7 dias)" },
-                    { valor: "produto_errado", texto: "Produto divergente do pedido" }
-                ],
-                respostas: {
-                    "arrependimento": { 
-                        acao: "Confirme o prazo de 7 dias e oriente sobre logística reversa.", 
-                        crm: "Redirecionar para Backoffice / Devoluções.",
-                        regra: "Para devolução por arrependimento, o produto não pode ter sido instalado ou utilizado. Solicitar foto do produto dentro da caixa comprovando que não houve uso antes de autorizar a coleta/AR."
-                    },
-                    "produto_errado": { 
-                        acao: "Solicite foto da etiqueta da caixa para comparar com o pedido no ERP.", 
-                        crm: "Redirecionar para Expedição / Trocas.",
-                        regra: "Orientar o cliente a NÃO abrir e NÃO instalar o produto recebido incorretamente. O novo envio só ocorre após a devolução e conferência física do item trocado no Centro de Distribuição."
-                    }
-                }
             }
         };
 
@@ -335,10 +260,17 @@
             const tipo = document.getElementById("tipoAtendimento").value;
             const selectSub = document.getElementById("subcategoria");
             const divSub = document.getElementById("divSubcategoria");
+            const colunaTabela = document.getElementById("colunaTabela"); 
             
             selectSub.innerHTML = "";
             document.getElementById("divCamposGarantia").classList.add("hidden");
             document.getElementById("resultadoFinal").classList.add("hidden");
+
+            if (tipo === "Garantia") {
+                colunaTabela.classList.remove("hidden");
+            } else {
+                colunaTabela.classList.add("hidden");
+            }
 
             if (tipo !== "") {
                 baseDeConhecimento[tipo].opcoes.forEach(opcao => {
@@ -357,19 +289,18 @@
             const tipo = document.getElementById("tipoAtendimento").value;
             const sub = document.getElementById("subcategoria").value;
             const divG = document.getElementById("divCamposGarantia");
-            const divRec = document.getElementById("divDataRecebimento"); // Captura a nova DIV
+            const divRec = document.getElementById("divDataRecebimento"); 
             
             document.getElementById("resultadoFinal").classList.add("hidden");
 
             if (tipo === "Garantia" && sub !== "") {
                 divG.classList.remove("hidden");
                 
-                // NOVA LÓGICA DE EXIBIÇÃO: Mostrar campo de recebimento se for falta de peça
                 if (sub === "falta_peca") {
                     divRec.classList.remove("hidden");
                 } else {
                     divRec.classList.add("hidden");
-                    document.getElementById("dataRecebimento").value = ""; // Limpa para evitar erros
+                    document.getElementById("dataRecebimento").value = ""; 
                 }
                 
             } else if (sub !== "") {
@@ -477,43 +408,32 @@
                 const marca = document.getElementById("marca").value;
                 const tec = document.getElementById("tecnologia").value;
                 const dataNF = document.getElementById("dataNF").value;
-                const dataRec = document.getElementById("dataRecebimento").value; // Variável da nova data
+                const dataRec = document.getElementById("dataRecebimento").value; 
                 const temParceiro = document.getElementById("temParceiro").value;
                 const parceiroInstalou = document.getElementById("parceiroInstalou").value;
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
 
-                // Validações de campos obrigatórios gerais
                 if (!marca || !dataNF || protocoloFab === "" || temParceiro === "") { resBox.classList.add("hidden"); return; }
                 if (["MIDEA_RAC", "MIDEA_CAC", "PHILCO", "TCL"].includes(marca) && !tec) { resBox.classList.add("hidden"); return; }
                 if (temParceiro === "SIM" && parceiroInstalou === "") { resBox.classList.add("hidden"); return; }
                 if (temParceiro === "NAO" && produtoInstalado === "") { resBox.classList.add("hidden"); return; }
                 
-                // Validação ESPECÍFICA para falta de peça (precisa ter preenchido a data de recebimento)
                 if (sub === "falta_peca" && !dataRec) { resBox.classList.add("hidden"); return; }
 
                 const hoje = new Date();
                 hoje.setHours(0,0,0,0);
 
-                // =================================================================
-                // NOVA LÓGICA: PEÇA FALTANTE (7 OU 30 DIAS BASEADO NO RECEBIMENTO)
-                // =================================================================
                 if (sub === "falta_peca") {
                     
-                    // Passo 1: Transforma o valor que o usuário digitou na Data de Recebimento num formato de data válido.
                     const dataInicialRec = new Date(dataRec + "T00:00:00");
-                    
-                    // Passo 2: Determina o prazo. Se for LG, 30 dias. Senão, 7 dias.
                     const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 7;
-                    
-                    // Passo 3: Adiciona os dias à DATA DE RECEBIMENTO
                     const dataVencimentoFalta = new Date(dataInicialRec.getTime());
                     dataVencimentoFalta.setDate(dataVencimentoFalta.getDate() + prazoDiasFalta);
                     
                     const isFaltaValido = dataVencimentoFalta >= hoje;
                     const strVencimento = dataVencimentoFalta.toLocaleDateString('pt-BR');
                     
-                    // Passo 4: Atualiza a caixa visual
                     statBox.className = "status-box " + (isFaltaValido ? "status-ok" : "status-nok");
                     statBox.innerHTML = `
                         <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">
@@ -531,20 +451,15 @@
                     if (!isFaltaValido) {
                         textoAcaoFinal = `O prazo de ${prazoDiasFalta} dias a partir da entrega para reclamação de itens faltantes expirou. Não é possível seguir com a reposição em garantia.`;
                         textoCrmFinal = "Orientar o cliente que o prazo expirou e finalizar o atendimento N1. Caso ele queira, pode adquirir a peça separadamente com um autorizado.";
-                        textoRegraFinal = `O fabricante determina que o aviso de falta de componentes ocorra em até ${prazoDiasFalta} dias da recepção física do equipamento.`;
+                        textoRegraFinal = `O fabricante determina que o aviso de falta de components ocorra em até ${prazoDiasFalta} dias da recepção física do equipamento.`;
                     } else {
                         textoRegraFinal = `Peças faltantes devem ser validadas cruzando a informação do manual. O prazo para a marca selecionada é de até ${prazoDiasFalta} dias corridos contados a partir do recebimento. Prossiga com o protocolo.`;
                     }
 
-                // =================================================================
-                // LÓGICA ORIGINAL: DEFEITO DE FÁBRICA (GARANTIA BASEADA NA NF)
-                // =================================================================
                 } else if (sub === "defeito_fabrica") {
                     
                     const dataInicialNF = new Date(dataNF + "T00:00:00");
                     const tipoInstalacaoCalculo = (temParceiro === "SIM" && parceiroInstalou === "SIM") ? "AUTORIZADO" : "LEGAL";
-                    
-                    // O cálculo padrão envia a Data da Nota Fiscal
                     const regra = calcularRegraGarantia(marca, tec, tipoInstalacaoCalculo, dataNF);
                     
                     const dataVencimento = new Date(dataInicialNF.getTime());
