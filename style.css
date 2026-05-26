@@ -631,3 +631,187 @@ footer { position: relative; z-index: 5; margin-top: 60px; padding: 40px 28px; b
   transform: translateY(-2px);
   box-shadow: 0 5px 20px rgba(255,206,0,0.25);
 }
+
+        /* ====================================================================
+           1. VARIÁVEIS GLOBAIS E RESET (Formulário N1)
+           ==================================================================== */
+        :root {
+            --verde1: #002D32;
+            --verde2: #005A64;
+            --azul:   #4CDDDD;
+            --verde3: #6FFFAF;
+            --amarelo:#FFCE00;
+            --glass:  rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.09);
+            --font: Verdana, Geneva, Tahoma, sans-serif;
+            
+            --erro-cor: #FF6B6B;
+            --erro-bg: rgba(255,107,107,0.1);
+            --erro-border: rgba(255,107,107,0.2);
+            
+            --sucesso-cor: var(--verde3);
+            --sucesso-bg: rgba(111,255,175,0.08);
+            --sucesso-border: rgba(111,255,175,0.25);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font);
+            background: var(--verde1);
+            color: white;
+            min-height: 100vh;
+            font-size: 13px;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            background-image: 
+                radial-gradient(ellipse 70% 50% at 15% 10%, rgba(76,221,221,0.09) 0%, transparent 60%),
+                radial-gradient(ellipse 55% 45% at 85% 85%, rgba(111,255,175,0.06) 0%, transparent 55%),
+                linear-gradient(160deg, #002D32 0%, #004A52 50%, #002D32 100%);
+            background-attachment: fixed;
+        }
+
+        /* Ajuste do container para suportar duas colunas */
+        .container { width: 100%; max-width: 1200px; position: relative; z-index: 5; }
+
+        h2 { font-size: 20px; font-weight: 700; color: white; margin-bottom: 25px; display: flex; align-items: center; gap: 10px; }
+        h2 span { color: var(--azul); }
+
+        /* Estrutura de Layout em Grid/Flex */
+        .layout-wrapper {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+            flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+        }
+
+        .form-column {
+            flex: 1;
+            min-width: 320px;
+            max-width: 650px;
+        }
+
+        .table-column {
+            flex: 1;
+            min-width: 320px;
+        }
+
+        /* ====================================================================
+           2. COMPONENTES
+           ==================================================================== */
+        .card-panel {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 8px; padding: 24px; margin-bottom: 24px; backdrop-filter: blur(10px);
+        }
+
+        .form-group { margin-bottom: 18px; }
+
+        label {
+            display: block; margin-bottom: 6px; font-size: 11px; opacity: 0.8;
+            font-weight: bold; color: white; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .section-title {
+            font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+            color: var(--azul); opacity: 0.8; margin-bottom: 15px; display: block;
+        }
+
+        select, input[type="date"] {
+            width: 100%; padding: 10px 14px; border-radius: 5px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.06); color: white; font-family: var(--font);
+            font-size: 12px; outline: none; transition: border-color 0.2s; color-scheme: dark; 
+        }
+
+        select option { background: #003038; color: white; }
+        select:focus, input[type="date"]:focus { border-color: var(--azul); }
+
+        .hidden { display: none !important; }
+
+        .garantia-section {
+            background: rgba(0, 0, 0, 0.15); padding: 20px; border-radius: 8px;
+            border: 1px dashed var(--glass-border); margin-bottom: 20px; margin-top: 20px;
+        }
+
+        /* ====================================================================
+           3. ESTILIZAÇÃO DA TABELA (NOVO)
+           ==================================================================== */
+        .glass-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .glass-table th, .glass-table td {
+            padding: 12px 10px;
+            text-align: left;
+            border-bottom: 1px dashed var(--glass-border);
+        }
+
+        .glass-table th {
+            color: var(--azul);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-table tr:last-child td { border-bottom: none; }
+        .glass-table tr:hover td { background: rgba(255, 255, 255, 0.03); }
+
+        .tag-info {
+            display: inline-block; padding: 3px 6px; border-radius: 4px;
+            background: rgba(255, 206, 0, 0.1); color: var(--amarelo);
+            font-size: 9px; font-weight: bold; margin-top: 4px; border: 1px solid rgba(255, 206, 0, 0.3);
+        }
+
+        /* ====================================================================
+           4. RESULTADOS E ALERTAS
+           ==================================================================== */
+        .result-box h3 {
+            font-size: 13px; font-weight: 700; color: var(--azul); margin-bottom: 8px;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
+
+        .result-box p { font-size: 12px; line-height: 1.6; opacity: 0.85; margin-bottom: 20px; color: white; white-space: pre-line; }
+
+        .status-box { padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px; line-height: 1.6; }
+        .status-ok { background: var(--sucesso-bg); border: 1px solid var(--sucesso-border); color: var(--sucesso-cor); }
+        .status-nok { background: var(--erro-bg); border: 1px solid var(--erro-border); color: var(--erro-cor); }
+
+        .uappi-box {
+            background: rgba(255,206,0,0.08); border: 1px solid rgba(255,206,0,0.25);
+            padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px;
+            line-height: 1.6; color: var(--amarelo);
+        }
+
+        .protocolo-box {
+            background: rgba(76,221,221,0.08); border: 1px solid rgba(76,221,221,0.25);
+            padding: 14px 18px; margin-bottom: 20px; border-radius: 8px; font-size: 12px;
+            line-height: 1.6; color: var(--azul);
+        }
+
+        .info-row {
+            display: flex; justify-content: space-between; border-bottom: 1px dashed var(--glass-border);
+            padding-bottom: 6px; margin-bottom: 6px;
+        }
+
+        .obs-text { font-size: 11px; margin-top: 10px; font-style: italic; opacity: 0.7; }
+
+        .alert-crm {
+            background: rgba(255,206,0,0.1); color: white; padding: 16px;
+            border-radius: 5px; font-size: 12px; border: 1px solid rgba(255,206,0,0.3);
+            line-height: 1.5; margin-top: 10px;
+        }
+
+        .regra-header {
+            color: var(--amarelo); font-weight: 700; text-transform: uppercase;
+            font-size: 11px; letter-spacing: 0.05em; display: block; margin-bottom: 5px;
+        }
+        
+        .crm-footer {
+            margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(255,206,0,0.3);
+            font-size: 11px; opacity: 0.9; color: var(--amarelo); font-weight: bold;
+        }
+    
