@@ -302,7 +302,7 @@ function carregarTickerDiario() {
         snap.docs.forEach(docSnap => {
             const user = docSnap.data();
             const primeiroNome = user.nome ? user.nome.split(' ')[0] : 'Alguém';
-            itensHtml += `<span class="ticker-item">🪙 <strong>${window.escapeHTML(primeiroNome)}</strong> acabou de resgatar as moedas diárias!</span>`;
+            itensHtml += `<span class="ticker-item">🪙 <strong>${window.escapeHTML(primeiroNome)}</strong>    acabou de resgatar as moedas diárias!</span>`;
         });
 
         // Multiplicando para garantir que o carrossel nunca fique vazio visualmente
