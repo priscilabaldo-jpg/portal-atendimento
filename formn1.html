@@ -10,18 +10,23 @@
 <body>
 
     <header class="top-header">
-        <nav class="main-nav">
-            <div class="logo-area">
-                <span style="font-weight: bold; color: var(--azul); font-size: 16px;">APOIO N1</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="index.html">Início</a></li>
-                <li><a href="formn1.html">Formulário N1</a></li>
-                <li><a href="inboundgarantia.html">Inbound Garantia</a></li>
-                <li><a href="materiais.html">Materiais</a></li>
-                <li><a href="informativos.html">Informativos</a></li>
-            </ul>
-        </nav>
+        <div class="header-inner">
+            <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+            <nav>
+                <ul>
+                    <li><a href="index.html">Início</a></li>
+                    <li><a href="formn1.html" class="active">Triagem N1</a></li>
+                    <li><a href="timeline.html">Timeline</a></li>
+                    <li><a href="materiais.html">Materiais</a></li>
+                    <li><a href="informativos.html">Informativos</a></li>
+                    <li id="menuAdminContainer" style="display: none;">
+                        <a href="admin.html">Painel Admin</a>
+                    </li>
+                    <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+                </ul>
+            </nav>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
 
         <div class="ticker-wrapper">
             <div class="ticker-content">
@@ -30,6 +35,7 @@
                 <span class="ticker-item">⚙️ Verifique a tecnologia do produto! Se é Inverter ou Convencional</span>
                 <span class="ticker-item">🛠️ Verifique se o equipamento está instalado!</span>
                 <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
+                
                 <span class="ticker-item">💡 Lembre-se de avisar o cliente quando mutar o telefone</span>
                 <span class="ticker-item">🤝 Tenha empatia e respeito</span>
                 <span class="ticker-item">⚙️ Verifique a tecnologia do produto! Se é Inverter ou Convencional</span>
