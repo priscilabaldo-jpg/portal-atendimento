@@ -6,6 +6,20 @@
     <title>Apoio N1 - Triagem e CRM</title>
     
     <link rel="stylesheet" href="style.css">
+    
+    <style>
+        .tag-info-extenso {
+            display: inline-block; 
+            padding: 4px 8px; 
+            border-radius: 4px;
+            background: rgba(255, 206, 0, 0.1); 
+            color: var(--amarelo);
+            font-size: 10px; 
+            line-height: 1.4;
+            margin-top: 6px; 
+            border: 1px solid rgba(255, 206, 0, 0.3);
+        }
+    </style>
 </head>
 <body>
 
@@ -154,79 +168,119 @@
                             <thead>
                                 <tr>
                                     <th>Marca</th>
-                                    <th>G. Legal (Terceiros)</th>
-                                    <th>G. Contratual (Autorizado)</th>
+                                    <th>Garantia Legal <br><span style="font-size: 9px; opacity: 0.7;">(Instalação de Terceiros)</span></th>
+                                    <th>Garantia Contratual <br><span style="font-size: 9px; opacity: 0.7;">(Instalador Autorizado)</span></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td><strong>Agratto</strong></td>
-                                    <td>90 dias</td>
+                                    <td>90 dias corridos</td>
                                     <td>12 meses</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Midea/Carrier (RAC)</strong></td>
-                                    <td>90 dias</td>
-                                    <td>12 meses <br><span class="tag-info">Inv: 24m + 10a Comp.</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        Equipamento Convencional: 12 meses <br>
+                                        <div class="tag-info-extenso">Equipamento Inverter: 24 meses de garantia + 10 anos de garantia no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Midea/Carrier (CAC)</strong></td>
-                                    <td>90 dias</td>
-                                    <td>12 meses <br><span class="tag-info">Inv: 36m</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        Equipamento Convencional: 12 meses <br>
+                                        <div class="tag-info-extenso">Equipamento Inverter: 36 meses</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Daikin</strong></td>
-                                    <td>90 dias</td>
-                                    <td>24 meses <br><span class="tag-info">+ 5a Comp.</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        24 meses de garantia total <br>
+                                        <div class="tag-info-extenso">+ 5 anos de garantia exclusiva no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Elgin (RAC)</strong></td>
-                                    <td>90 dias <br><span style="opacity:0.6; font-size:9px;">(A partir 03/23: 12m)</span></td>
-                                    <td>12 ou 36 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                    <td>
+                                        Notas emitidas antes de 01/03/2023: 90 dias<br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/03/2023: 12 meses</div>
+                                    </td>
+                                    <td>
+                                        Notas emitidas antes de 01/01/2023: 12 meses <br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/01/2023: 36 meses + 10 anos no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Elgin (CAC)</strong></td>
-                                    <td>90 dias <br><span style="opacity:0.6; font-size:9px;">(A partir 03/23: 12m)</span></td>
-                                    <td>12 ou 36 meses</td>
+                                    <td>
+                                        Notas emitidas antes de 01/03/2023: 90 dias<br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/03/2023: 12 meses</div>
+                                    </td>
+                                    <td>
+                                        Notas emitidas antes de 01/01/2022: 12 meses <br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/01/2022: 36 meses</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Fujitsu</strong></td>
-                                    <td>90 dias</td>
-                                    <td>24 meses <br><span class="tag-info">+ 5a Comp.</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        24 meses de garantia total <br>
+                                        <div class="tag-info-extenso">+ 5 anos de garantia exclusiva no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Gree</strong></td>
-                                    <td>90 dias</td>
-                                    <td>12 ou 60 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        Notas emitidas antes de 15/08/2022: 12 meses <br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 15/08/2022: 60 meses + 10 anos no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>LG (RAC)</strong></td>
-                                    <td>90 dias</td>
-                                    <td>12 ou 24 meses <br><span class="tag-info">Dep. do ano da NF</span></td>
+                                    <td>
+                                        90 dias corridos <br>
+                                        <div class="tag-info-extenso">+ 10 anos de garantia exclusiva no Compressor</div>
+                                    </td>
+                                    <td>
+                                        Notas emitidas antes de 01/09/2025: 12 meses total <br>
+                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/09/2025: 24 meses total</div>
+                                        <div class="tag-info-extenso" style="margin-top: 2px;">Ambos possuem + 10 anos no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>LG (CAC)</strong></td>
-                                    <td>90 dias</td>
+                                    <td>90 dias corridos</td>
                                     <td>12 meses</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Philco / TCL</strong></td>
-                                    <td>90 dias</td>
-                                    <td>12 meses <br><span class="tag-info">Inv: 24m + 10a Comp.</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        Equipamento Convencional: 12 meses <br>
+                                        <div class="tag-info-extenso">Equipamento Inverter: 24 meses de garantia + 10 anos de garantia no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Trane</strong></td>
-                                    <td>90 dias</td>
+                                    <td>90 dias corridos</td>
                                     <td>36 meses</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Hitachi (RAC)</strong></td>
-                                    <td>90 dias</td>
-                                    <td>24 meses <br><span class="tag-info">+ 12a Comp.</span></td>
+                                    <td>90 dias corridos</td>
+                                    <td>
+                                        24 meses de garantia total <br>
+                                        <div class="tag-info-extenso">+ 12 anos de garantia exclusiva no Compressor</div>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Hitachi (CAC)</strong></td>
-                                    <td>90 dias</td>
+                                    <td>90 dias corridos</td>
                                     <td>12 meses</td>
                                 </tr>
                             </tbody>
