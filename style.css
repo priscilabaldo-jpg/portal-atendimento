@@ -158,6 +158,9 @@ nav a.active { color: white; border-bottom: 2px solid var(--azul); background: r
 .ticker-wrapper:hover .ticker-content {
     animation-play-state: paused;
 }
+.ticker-item strong {
+    margin: 0 6px; /* Isso cria um espaço automático antes e depois do nome da pessoa (ex: Matheus), desgrudando do restante da frase */
+}
 
 /* ====================================================================
    5. HOME (BEM-VINDO, BUSCA, MURAL, SISTEMAS)
