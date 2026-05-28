@@ -68,15 +68,45 @@ body {
 /* ====================================================================
    3. NAVEGAÇÃO E HEADER
    ==================================================================== */
-header.top-header, header { position: sticky; top: 0; z-index: 100; width: 100%; }
-.main-nav, .header-inner { background: rgba(0,40,46,0.92); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); max-width: 100%; margin: auto; padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+header.top-header, header { 
+  position: relative; /* Mudado de sticky para relative para permitir que o carrossel role junto com a página */
+  top: 0; 
+  z-index: 100; 
+  width: 100%; 
+}
+
+.main-nav, .header-inner { 
+  background: rgba(0,40,46,0.92); 
+  backdrop-filter: blur(18px); 
+  border-bottom: 1px solid var(--glass-border); 
+  width: 100%; 
+  margin: auto; 
+  padding: 15px 40px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 15px;
+  position: sticky; /* Agora apenas o menu fica grudado no topo ao fazer scroll */
+  top: 0;
+  z-index: 101; /* Garante que o menu passe por cima do feed e do carrossel */
+}
+
 .logo-area { display: flex; align-items: center; gap: 10px; }
 .header-logo { height: 24px; filter: brightness(0) invert(1); }
 
-header nav { flex: 1; overflow-x: auto; }
-header nav::-webkit-scrollbar { display: none; }
+header nav {
+  flex: 1;
+}
 
-nav ul, .nav-links { list-style: none; display: flex; align-items: center; justify-content: flex-end; gap: 20px; white-space: nowrap; }
+nav ul, .nav-links { 
+  list-style: none; 
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-end; /* Alinha os itens à direita */
+  gap: 15px; 
+  flex-wrap: wrap; /* Permite que os botões desçam uma linha se a tela for menor, evitando que sumam ou fiquem esticados */
+}
+
 nav a, .nav-links a { color: rgba(255,255,255,0.55); text-decoration: none; font-family: var(--font); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.3s; }
 nav a:hover, .nav-links a:hover { color: var(--azul); }
 nav a.active { color: white; border-bottom: 2px solid var(--azul); background: rgba(76,221,221,0.07); padding: 6px 13px; border-radius: 4px 4px 0 0; }
