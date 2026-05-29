@@ -178,7 +178,18 @@
                                 ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
                             </div>
                         </div>
-                    </div>
+
+                        <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                            <h3>📝 Resumo para o CRM</h3>
+                            <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Copie o texto abaixo e cole no seu ticket/atendimento.</p>
+                            
+                            <textarea id="textoResumoCRM" readonly rows="11" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                            
+                            <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                📋 Copiar Resumo
+                            </button>
+                        </div>
+                        </div>
                 </div>
             </div>
 
@@ -582,7 +593,7 @@
                                 textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Se passar disso, o cliente deve instalar primeiro.";
                             } else {
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
-                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.    ";
+                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
                                 textoRegraFinal = "Obrigatório anexar o numero de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos! antes de enviar ao time de Garantia.";
                             }
                         }
@@ -606,7 +617,86 @@
             document.getElementById("textoCRM").textContent = textoCrmFinal;
             document.getElementById("textoRegra").textContent = textoRegraFinal;
             
+            // --- GERAÇÃO DO SCRIPT PARA O CRM ---
+            let scriptCrm = `[TRIAGEM N1 - RESUMO DO ATENDIMENTO]\n`;
+            
+            const selTipo = document.getElementById("tipoAtendimento");
+            const selSub = document.getElementById("subcategoria");
+            scriptCrm += `Tipo: ${selTipo.options[selTipo.selectedIndex]?.text || '-'}\n`;
+            scriptCrm += `Problema: ${selSub.options[selSub.selectedIndex]?.text || '-'}\n`;
+
+            if (tipo === "Garantia") {
+                const selMarca = document.getElementById("marca");
+                scriptCrm += `Marca/Linha: ${selMarca.options[selMarca.selectedIndex]?.text || '-'}\n`;
+                
+                if (!document.getElementById("divTecnologia").classList.contains("hidden")) {
+                    const selTec = document.getElementById("tecnologia");
+                    scriptCrm += `Tecnologia: ${selTec.options[selTec.selectedIndex]?.text || '-'}\n`;
+                }
+                
+                const formatarData = (dataStr) => {
+                    if (!dataStr) return '-';
+                    const partes = dataStr.split('-');
+                    return partes.length === 3 ? `${partes[2]}/${partes[1]}/${partes[0]}` : dataStr;
+                };
+                
+                scriptCrm += `Data NF: ${formatarData(document.getElementById("dataNF").value)}\n`;
+                
+                if (sub === "falta_peca") {
+                    scriptCrm += `Data Recebimento: ${formatarData(document.getElementById("dataRecebimento").value)}\n`;
+                }
+                
+                const valParceiro = document.getElementById("temParceiro").value;
+                const textoParceiro = valParceiro === "SIM" ? "Sim" : (valParceiro === "NAO" ? "Não" : "-");
+                scriptCrm += `Possui Parceiro: ${textoParceiro}\n`;
+                
+                if (valParceiro === "SIM") {
+                    const selParceiro = document.getElementById("parceiroInstalou");
+                    scriptCrm += `Parceiro Instalou: ${selParceiro.options[selParceiro.selectedIndex]?.text || '-'}\n`;
+                } else if (valParceiro === "NAO") {
+                    const selProdutoInstalado = document.getElementById("produtoInstalado");
+                    scriptCrm += `Produto Instalado: ${selProdutoInstalado.options[selProdutoInstalado.selectedIndex]?.text || '-'}\n`;
+                }
+                
+                const valProtocolo = document.getElementById("protocoloFabricante").value;
+                const textoProtocolo = valProtocolo === "SIM" ? "Sim" : (valProtocolo === "NAO" ? "Não" : "-");
+                scriptCrm += `Protocolo Fabricante: ${textoProtocolo}\n`;
+            }
+
+            scriptCrm += `\n[DIRECIONAMENTO CRM]\n${textoCrmFinal}\n`;
+
+            document.getElementById("textoResumoCRM").value = scriptCrm;
+
+            const btnCopiar = document.getElementById("btnCopiar");
+            btnCopiar.textContent = "📋 Copiar Resumo";
+            btnCopiar.style.backgroundColor = "#0056b3";
+            // --- FIM DA GERAÇÃO ---
+
             resBox.classList.remove("hidden");
+        }
+
+        function copiarResumo() {
+            const textarea = document.getElementById("textoResumoCRM");
+            
+            // Seleciona o texto
+            textarea.select();
+            textarea.setSelectionRange(0, 99999); // Para funcionar bem em dispositivos móveis
+            
+            // Copia para a área de transferência usando a API do navegador
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                const btn = document.getElementById("btnCopiar");
+                btn.textContent = "✅ Copiado com sucesso!";
+                btn.style.backgroundColor = "#28a745"; // Muda a cor para verde
+                
+                // Retorna o botão ao estado original após 3 segundos
+                setTimeout(() => {
+                    btn.textContent = "📋 Copiar Resumo";
+                    btn.style.backgroundColor = "#0056b3"; // Azul original
+                }, 3000);
+            }).catch(err => {
+                console.error('Erro ao copiar texto: ', err);
+                alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
+            });
         }
     </script>
 </body>
