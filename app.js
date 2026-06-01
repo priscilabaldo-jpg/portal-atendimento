@@ -16,9 +16,7 @@ const provider = new GoogleAuthProvider();
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
 
-/* ====================================================================
-   CONFIGURAÇÃO DE DATA E UI BÁSICA
-   ==================================================================== */
+// Configuração de Data e Ano
 document.getElementById('anoAtual').textContent = new Date().getFullYear();
 const dias  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
@@ -26,6 +24,7 @@ const agora = new Date();
 document.getElementById('welcomeDate').textContent = 
   `${dias[agora.getDay()]}, ${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
 
+// Dados da Busca
 const dados = [
   {nome:"GLPI",categoria:"Sistema",link:"https://glpi.leveros.com.br"},
   {nome:"Uappi",categoria:"Sistema",link:"https://www.vendas.leveros.com.br/wapstore/acesso"},
@@ -41,16 +40,11 @@ const dados = [
 const buscaEl      = document.getElementById('busca');
 const resultadosEl = document.getElementById('resultados');
 
-/* ====================================================================
-   FUNÇÕES DE SEGURANÇA E BUSCA
-   ==================================================================== */
-// Função de escape fortalecida contra null/undefined (Prevenção de XSS)
+// CORREÇÃO: Função de escape fortalecida contra null/undefined
 function escapeHTML(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-
-window.escapeHTML = escapeHTML;
 
 buscaEl.addEventListener('keyup', function() {
   const texto = this.value.toLowerCase();
@@ -74,9 +68,6 @@ if(document.getElementById('btnAdmin')){
   document.getElementById('btnAdmin').addEventListener('click', () => { document.getElementById('formAviso').classList.toggle('open'); });
 }
 
-/* ====================================================================
-   LÓGICA DOS AVISOS E REGISTRO DE ACESSO NO FIRESTORE
-   ==================================================================== */
 const EMOJIS = { urgente:'🚨', informativo:'📋', treinamento:'📚', geral:'📌' };
 
 function renderAvisos(avisos, isAdmin) {
@@ -133,9 +124,6 @@ async function registrarAcesso(usuario) {
   } catch (error) { console.error("Erro ao registrar log", error); }
 }
 
-/* ====================================================================
-   AUTENTICAÇÃO
-   ==================================================================== */
 onAuthStateChanged(auth, user => {
   if (user && user.email.endsWith('@leveros.com.br')) {
     currentUser = user;
