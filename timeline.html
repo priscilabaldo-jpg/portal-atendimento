@@ -1,14 +1,3 @@
-Matheus, o erro persistiu porque, de fato, a última linha do código que você me mandou ainda está chamando `timeline.js`!
-
-Veja a linha: `<script type="module" src="timeline.js"></script>`
-
-Se nós movemos e unificamos **toda a lógica** para dentro do arquivo **`app.js`**, a sua timeline precisa chamar o `app.js`. O navegador está tentando buscar um arquivo `timeline.js` que provavelmente está vazio, com conflito ou que nem existe mais na sua arquitetura nova.
-
-Vamos resolver isso definitivamente e também remover os resquícios do EmailJS que ainda estavam lá e poderiam causar bloqueios de segurança (CSP).
-
-Por favor, copie o código abaixo, cole no seu `timeline.html` (substituindo tudo o que está lá) e suba novamente. Eu já fiz a alteração para chamar o `app.js`.
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
