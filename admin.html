@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Central de Gestão – CX Resolve</title>
 
+<!-- CSP Rigoroso -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
 <style>
@@ -103,6 +113,16 @@
     </div>
   </header>
 
+  <!-- Menu Mobile restaurado -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="admin.html" id="navAdminMobile" style="display: none;" class="active">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
   <div class="container">
     
     <div class="page-header" style="text-align: center; margin-bottom: 40px;">
@@ -141,42 +161,8 @@
 
 </div>
 
-<script>
-document.getElementById('anoAtual').textContent = new Date().getFullYear();
-</script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-    apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-    authDomain:"portal-atendimento-541ae.firebaseapp.com",
-    projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
-
-onAuthStateChanged(auth, user => {
-    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-        document.getElementById('admin-content').style.display = 'block';
-    } else if (user) {
-        alert("Área restrita. Apenas gestores podem acessar a Central.");
-        window.location.href = 'index.html';
-    } else {
-        window.location.href = 'index.html';
-    }
-});
-
-const logout = () => {
-  sessionStorage.removeItem('logRegistrado');
-  signOut(auth).then(() => window.location.href = 'index.html');
-};
-
-document.getElementById('logoutBtn').onclick = logout;
-</script>
+<!-- Apontamento para o arquivo central -->
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
