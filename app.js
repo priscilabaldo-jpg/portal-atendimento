@@ -278,8 +278,10 @@ document.addEventListener('click', async (event) => {
   }
 
   // --- NOVA LÓGICA: ABRIR DOCUMENTOS MASCARADOS ---
-  if (target.classList.contains('btn-abrir-doc')) {
-    const docId = target.getAttribute('data-doc');
+  const btnAbrirDoc = target.closest('.btn-abrir-doc');
+  if (btnAbrirDoc) {
+    event.preventDefault(); // Impede recarregamentos de página acidentais
+    const docId = btnAbrirDoc.getAttribute('data-doc');
     
     // Dicionário de links (Fica na memória, não no HTML)
     const linksSecretos = {
@@ -297,6 +299,8 @@ document.addEventListener('click', async (event) => {
     if (linksSecretos[docId]) {
       // Abre a janela de forma segura
       window.open(linksSecretos[docId], '_blank', 'noopener,noreferrer');
+    } else {
+      console.error("Erro: Link não mapeado no dicionário para a ID:", docId);
     }
   }
 
