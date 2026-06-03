@@ -5,6 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Informativos – CX Resolve</title>
 
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
 </head>
@@ -12,7 +21,7 @@
 
 <div class="bg-layer"></div>
 
-<div id="informativos-content">
+<div id="informativos-content" style="display: none; position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -38,9 +47,10 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
-    <a href="index.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
+    <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
+  
   <div class="container">
 
     <div class="page-header">
@@ -57,7 +67,7 @@
         <h3>AINDA NÃO DISPONIVEL</h3>
         <div class="meta-valor">EM DESENVOLVIMENTO</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">EM DESENVOLVIMENTO...</div>
       </div>
 
@@ -66,7 +76,7 @@
         <h3>AINDA NÃO DISPONIVEL</h3>
         <div class="meta-valor amarelo">EM DESENVOLVIMENTO..</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">EM DESENVOLVIMENTO..</div>
       </div>
 
@@ -79,7 +89,7 @@
           AINDA NÃO DISPONIVEL <span style="opacity:0.45;font-size:11px;">(15%)</span>
         </div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">DESCRIÇÃO INDISPONIVEL.</div>
       </div>
 
@@ -93,7 +103,7 @@
         <h3>AINDA NÃO DISPONIVEL</h3>
         <div class="meta-valor verde">EM DESENVOLVIMENTO...</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">EM DESENVOLVIMENTO...</div>
       </div>
 
@@ -102,7 +112,7 @@
         <h3>AINDA NÃO DISPONIVEL</h3>
         <div class="meta-valor">EM DESENVOLVIMENTO...</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">EM DESENVOLVIMENTO...</div>
       </div>
 
@@ -111,7 +121,7 @@
         <h3>AINDA NÃO DISPONIVEL</h3>
         <div class="meta-valor verde">EM DESENVOLVIMENTO...</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn" onclick="toggle(this)">Ver detalhes</button>
+        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">EM DESENVOLVIMENTO...</div>
       </div>
 
@@ -141,72 +151,7 @@
 
 </div>
 
-<script>
-// Ano dinâmico no rodapé
-document.getElementById('anoAtual').textContent = new Date().getFullYear();
-
-function toggle(btn) {
-  const details = btn.nextElementSibling;
-  const isOpen = details.classList.toggle('open');
-  btn.textContent = isOpen ? 'Ocultar detalhes' : 'Ver detalhes';
-}
-document.getElementById('hamburger').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.toggle('open');
-});
-document.getElementById('feedbackForm').addEventListener('submit', function() {
-  document.getElementById('successMsg').style.display = 'block';
-});
-</script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:"portal-atendimento-541ae.firebaseapp.com",
-  projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-// 🟢 Lista de admins
-const ADMIN_EMAILS = [
-  'priscila.baldo@leveros.com.br',
-  'matheus.mendes@leveros.com.br'
-];
-
-onAuthStateChanged(auth, user => {
-  if (user && user.email.endsWith('@leveros.com.br')) {
-    document.getElementById('informativos-content').style.display = 'block';
-
-    // Preenche automaticamente o nome e email no formulário de feedback
-    document.getElementById('feedbackNome').value = user.displayName || '';
-    document.getElementById('feedbackEmail').value = user.email || '';
-    
-    // 🟢 Transforma o email em minúsculas para segurança
-    const emailLogado = user.email.toLowerCase();
-    
-    // Mostra o botão do painel admin se for o Matheus ou a Priscila
-    if (ADMIN_EMAILS.includes(emailLogado)) {
-       document.getElementById('menuAdminContainer').style.display = 'block';
-       document.getElementById('navAdminMobile').style.display = 'block';
-    }
-    
-  } else {
-    window.location.href = 'index.html';
-  }
-});
-
-const logout = () => {
-  sessionStorage.removeItem('logRegistrado');
-  signOut(auth).then(() => window.location.href = 'index.html');
-};
-
-document.getElementById('logoutBtn').onclick = logout;
-document.getElementById('logoutBtnMobile').onclick = logout;
-</script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>
