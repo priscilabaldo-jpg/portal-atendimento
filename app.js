@@ -1,23 +1,28 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
   authDomain:  "portal-atendimento-541ae.firebaseapp.com",
-  projectId:   "portal-atendimento-541ae"
+  projectId:   "portal-atendimento-541ae",
+  storageBucket: "portal-atendimento-541ae.appspot.com" // NECESSÁRIO PARA UPLOADS DE NF
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
 
-// Variável de controle para exportação de auditoria
+// Variáveis de Controle de Exportação
 let logsParaExportacao = [];
+let nfParaExportacao = []; 
+let graficoInstancia = null; 
 
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
@@ -52,11 +57,6 @@ function getInitials(name) { return name ? name.charAt(0).toUpperCase() : 'U'; }
 function renderAvatar(nome, photoUrl) {
   if (photoUrl) return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
   return getInitials(nome);
-}
-
-function formatNameFromEmail(email) {
-  if (!email) return '';
-  return email.split('@')[0].split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
 }
 
 // ====================================================================
@@ -322,7 +322,6 @@ function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
   });
 }
 
-// Configuração dos gatilhos de Log
 const btnFiltrarLogs = document.getElementById('btnFiltrarLogs');
 if (btnFiltrarLogs) {
   btnFiltrarLogs.addEventListener('click', () => {
@@ -409,7 +408,6 @@ function carregarPedidos() {
   });
 }
 
-// Função global para dar baixa no pedido associada ao listener interno
 async function darBaixaPedido(pedidoId) {
   if (!confirm("Confirmar que o prêmio já foi entregue ao colaborador?")) return;
   try {
@@ -419,9 +417,7 @@ async function darBaixaPedido(pedidoId) {
     alert("Erro ao tentar atualizar o status do pedido.");
   }
 }
-window.marcarEntregue = darBaixaPedido; // Preserva compatibilidade se necessário
 
-// Ouvinte do formulário de moedas manual
 const btnLancar = document.getElementById('btnLancar');
 if (btnLancar) {
   btnLancar.onclick = async () => {
@@ -487,7 +483,6 @@ if (btnLancar) {
   };
 }
 
-// Ouvinte para exportar relatório da lojinha
 const btnExportar = document.getElementById('btnExportar');
 if (btnExportar) {
   btnExportar.onclick = async () => {
@@ -551,21 +546,316 @@ if (btnExportar) {
 }
 
 // ====================================================================
-// 6. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS E COMPATIBILIDADE
+// 6. MÓDULO ADMINISTRATIVO 3: ORÇAMENTO BACKOFFICE (`centrodecusto.html`)
+// ====================================================================
+const ORCAMENTO_TEMPORADA = {
+  "Despesa Viagem": 65000,
+  "Folha de Pagamento": 2400000,
+  "Impostos, Taxas e Contribuições": 670,
+  "Infraestrutura": 45400,
+  "Outras Despesas": 243200
+};
+
+function formatarMoeda(valor) {
+  return "R$ " + Number(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function calcularIndicadores(orcado, realizado) {
+  const percentual = orcado > 0 ? (realizado / orcado) * 100 : (realizado > 0 ? 100 : 0);
+  const delta = orcado - realizado; 
+  const estourou = percentual > 100;
+  const seta = estourou ? '⬆️' : '⬇️';
+  const corClass = estourou ? 'text-red' : 'text-green';
+  const sinalDelta = estourou ? '-' : ''; 
+  
+  return {
+    percFormatado: `<span class="${corClass}">${seta} ${percentual.toFixed(1).replace('.',',')}%</span>`,
+    deltaFormatado: `<span class="${corClass}">${sinalDelta}${formatarMoeda(Math.abs(delta))}</span>`
+  };
+}
+
+function desenharGrafico(labels, orcado, realizado) {
+  const canvas = document.getElementById('graficoDesvios');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  if (graficoInstancia) graficoInstancia.destroy();
+
+  graficoInstancia = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [
+        { 
+          label: 'Orçamento Limite (Saudável)', 
+          data: orcado, 
+          backgroundColor: 'rgba(0, 45, 50, 0.8)', 
+          borderRadius: 6, 
+          borderSkipped: false
+        },
+        { 
+          label: 'Gasto Realizado', 
+          data: realizado, 
+          backgroundColor: 'rgba(231, 76, 60, 0.8)', 
+          borderRadius: 6,
+          borderSkipped: false
+        }
+      ]
+    },
+    options: { 
+      responsive: true, 
+      maintainAspectRatio: false, 
+      plugins: {
+        legend: { position: 'top', labels: { font: { family: 'Segoe UI', size: 13 } } },
+        tooltip: {
+          backgroundColor: 'rgba(0,0,0,0.8)',
+          titleFont: { size: 14 },
+          bodyFont: { size: 14 },
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: function(context) {
+              let label = context.dataset.label || '';
+              if (label) label += ': ';
+              if (context.parsed.y !== null) {
+                label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
+              }
+              return label;
+            }
+          }
+        }
+      },
+      scales: { 
+        y: { 
+          beginAtZero: true, 
+          grid: { color: '#f0f0f0', drawBorder: false }, 
+          ticks: { callback: function(value) { return 'R$ ' + value; } }
+        },
+        x: { grid: { display: false, drawBorder: false } }
+      } 
+    }
+  });
+}
+
+function carregarDadosOrcamento() {
+  const q = query(collection(db, 'notasFiscais'));
+  
+  onSnapshot(q, (snapshot) => {
+    let dadosAgrupados = {};
+    let totalGastoMes = 0;
+    let totalOrcadoMes = 0;
+    nfParaExportacao = [];
+    
+    for (let categoria in ORCAMENTO_TEMPORADA) {
+      dadosAgrupados[categoria] = {
+        orcadoMensal: ORCAMENTO_TEMPORADA[categoria] / 12,
+        realizado: 0,
+        itens: []
+      };
+      totalOrcadoMes += (ORCAMENTO_TEMPORADA[categoria] / 12);
+    }
+
+    snapshot.forEach((docSnap) => {
+      const dado = docSnap.data();
+      const valor = parseFloat(dado.valor) || 0;
+      
+      if (!dadosAgrupados[dado.categoria]) {
+        dadosAgrupados[dado.categoria] = { orcadoMensal: 0, realizado: 0, itens: [] };
+      }
+      
+      dadosAgrupados[dado.categoria].realizado += valor;
+      dadosAgrupados[dado.categoria].itens.push({ id: docSnap.id, ...dado, valorNum: valor });
+      totalGastoMes += valor;
+
+      // Guarda os dados limpos para o relatório em Excel
+      nfParaExportacao.push({
+        nf: dado.numeroNf || '-',
+        descricao: dado.descricao || '-',
+        emissao: dado.dataEmissao || '-',
+        categoria: dado.categoria || '-',
+        valor: valor,
+        link: dado.linkPdf || 'Sem Anexo'
+      });
+    });
+
+    const cardOrcMes = document.getElementById('cardOrcamentoMes');
+    if (cardOrcMes) cardOrcMes.textContent = formatarMoeda(totalOrcadoMes);
+    
+    const cardReaMes = document.getElementById('cardRealizadoMes');
+    if (cardReaMes) cardReaMes.textContent = formatarMoeda(totalGastoMes);
+
+    const tbody = document.getElementById('tabelaMatriz');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    
+    let labelsGrafico = [];
+    let dataOrcadoGrafico = [];
+    let dataRealizadoGrafico = [];
+
+    for (let categoria in dadosAgrupados) {
+      const catData = dadosAgrupados[categoria];
+      if (catData.orcadoMensal === 0 && catData.realizado === 0) continue; 
+
+      labelsGrafico.push(categoria);
+      dataOrcadoGrafico.push(catData.orcadoMensal);
+      dataRealizadoGrafico.push(catData.realizado);
+
+      const ind = calcularIndicadores(catData.orcadoMensal, catData.realizado);
+      const trNivel1 = document.createElement('tr');
+      trNivel1.className = 'nivel1';
+      trNivel1.innerHTML = `
+        <td>⊟ ${categoria}</td>
+        <td>${formatarMoeda(catData.orcadoMensal)}</td>
+        <td>${formatarMoeda(catData.realizado)}</td>
+        <td>${ind.percFormatado}</td>
+        <td>${ind.deltaFormatado}</td>
+        <td></td>
+      `;
+      tbody.appendChild(trNivel1);
+
+      catData.itens.forEach(item => {
+        const linkPdf = item.linkPdf ? `<a href="${item.linkPdf}" target="_blank" style="text-decoration:none; background:#eef2f3; padding:4px 8px; border-radius:4px; font-size:12px; color:#002D32; font-weight:bold;">📄 Ver</a>` : '';
+        const btnApagar = `<button class="btn-apagar-nf" data-id="${item.id}" style="background:none; border:none; cursor:pointer; font-size:14px; margin-left:10px;" title="Excluir NF">🗑️</button>`;
+        
+        const trNivel2 = document.createElement('tr');
+        trNivel2.className = 'nivel2';
+        trNivel2.innerHTML = `
+          <td>${item.descricao} <span style="color:#aaa; font-size:11px;">(NF: ${item.numeroNf})</span></td>
+          <td style="color:#bbb;">-</td>
+          <td>${formatarMoeda(item.valorNum)}</td>
+          <td style="color:#bbb;">-</td>
+          <td style="color:#bbb;">-</td>
+          <td style="text-align:right;">${linkPdf} ${btnApagar}</td>
+        `;
+        tbody.appendChild(trNivel2);
+      });
+    }
+
+    const indTotal = calcularIndicadores(totalOrcadoMes, totalGastoMes);
+    const tbodyTotal = document.getElementById('tabelaMatrizTotal');
+    if (tbodyTotal) {
+      tbodyTotal.innerHTML = `
+        <tr class="linha-total">
+          <td>Total Geral da Operação</td>
+          <td>${formatarMoeda(totalOrcadoMes)}</td>
+          <td>${formatarMoeda(totalGastoMes)}</td>
+          <td>${indTotal.percFormatado}</td>
+          <td>${indTotal.deltaFormatado}</td>
+          <td></td>
+        </tr>
+      `;
+    }
+
+    desenharGrafico(labelsGrafico, dataOrcadoGrafico, dataRealizadoGrafico);
+  });
+}
+
+// Intercepta a exclusão de NF na Tabela Matriz
+async function apagarNF(id) {
+  if (confirm('⚠️ Tem certeza que deseja excluir permanentemente este lançamento?')) {
+    try { await deleteDoc(doc(db, 'notasFiscais', id)); } 
+    catch (err) { alert('Erro ao excluir. Verifique permissões.'); }
+  }
+}
+
+// Injeção de Despesas
+const formOrcamento = document.getElementById('formOrcamento');
+if (formOrcamento) {
+  formOrcamento.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btnSalvar = document.getElementById('btnSalvar');
+    btnSalvar.textContent = "Salvando... ⏳"; 
+    btnSalvar.disabled = true;
+
+    try {
+      let urlDoPdf = ""; 
+      const inputArquivo = document.getElementById('arquivoNf');
+      const arquivoSelecionado = inputArquivo && inputArquivo.files ? inputArquivo.files[0] : null; 
+      
+      if (arquivoSelecionado) {
+        const local = ref(storage, 'comprovantes/' + Date.now() + '_' + arquivoSelecionado.name);
+        await uploadBytes(local, arquivoSelecionado);
+        urlDoPdf = await getDownloadURL(local);
+      }
+      
+      let valRaw = document.getElementById('valor').value;
+      // Substitui vírgula por ponto para o parse funcionar
+      let valNum = parseFloat(valRaw.replace(',', '.')) || 0;
+      
+      await addDoc(collection(db, 'notasFiscais'), {
+        numeroNf: document.getElementById('numeroNf').value,
+        descricao: document.getElementById('descricao').value,
+        dataEmissao: document.getElementById('dataEmissao').value,
+        categoria: document.getElementById('categoria').value,
+        valor: valNum, 
+        linkPdf: urlDoPdf, 
+        criadoEm: serverTimestamp()
+      });
+      formOrcamento.reset(); 
+    } catch (error) { 
+      console.error(error);
+      alert("Erro ao salvar o lançamento."); 
+    } 
+    finally { 
+      btnSalvar.textContent = "Salvar Lançamento →"; 
+      btnSalvar.disabled = false; 
+    }
+  });
+}
+
+// Exportação de Dados Financeiros
+const btnExportarExcel = document.getElementById('btnExportarExcel');
+if (btnExportarExcel) {
+  btnExportarExcel.addEventListener('click', () => {
+    if (nfParaExportacao.length === 0) return alert("Não há dados financeiros para exportar.");
+    
+    let csvContent = '\uFEFF'; 
+    csvContent += "NF;Descrição;Emissão;Categoria;Valor(R$);Comprovante PDF\n";
+    
+    nfParaExportacao.forEach(nf => {
+      // Troca o ponto decimal do JS de volta para vírgula para o Excel BR reconhecer como número
+      const valorAjustado = nf.valor.toString().replace('.', ',');
+      csvContent += `${nf.nf};${nf.descricao};${nf.emissao};${nf.categoria};${valorAjustado};${nf.link}\n`;
+    });
+    
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const linkInvisivel = document.createElement("a");
+    linkInvisivel.href = url;
+    
+    const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    linkInvisivel.download = `Relatorio_Orcamento_${hoje}.csv`;
+    
+    document.body.appendChild(linkInvisivel);
+    linkInvisivel.click();
+    document.body.removeChild(linkInvisivel);
+  });
+}
+
+
+// ====================================================================
+// 7. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS E COMPATIBILIDADE
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
-  // Interceptação do botão de entrega em tempo real sem conflito de contexto global inline
+  // Interceptação do botão de entrega de prêmios da Lojinha
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
     if (pedidoId) await darBaixaPedido(pedidoId);
   }
+
+  // Interceptação do botão de apagar Nota Fiscal
+  const btnApagarNf = target.closest('.btn-apagar-nf');
+  if (btnApagarNf) {
+    const nfId = btnApagarNf.getAttribute('data-id');
+    if (nfId) await apagarNF(nfId);
+  }
 });
 
 // ====================================================================
-// 7. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
+// 8. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
 // ====================================================================
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
@@ -684,15 +974,20 @@ onAuthStateChanged(auth, async user => {
     registrarAcesso(user);
     carregarAvisos(isAdmin);
     
-    // Inicialização condicional baseada na página administrativa carregada
-    if (document.getElementById('logsContainer') && isAdmin) {
-      carregarLogsAdmin();
-    }
+    // Inicialização Condicional Administrativa
+    if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
+    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidos();
     
-    if (document.getElementById('listaPedidos') && isAdmin) {
-      carregarPedidos();
+    // Inicialização do Painel de Centro de Custo
+    if (document.getElementById('tabelaMatriz') && isAdmin) {
+      let totalTemp = 0;
+      for (let cat in ORCAMENTO_TEMPORADA) { totalTemp += ORCAMENTO_TEMPORADA[cat]; }
+      const elemTemp = document.getElementById('cardOrcamentoTemp');
+      if (elemTemp) elemTemp.textContent = formatarMoeda(totalTemp);
+      
+      carregarDadosOrcamento();
     }
-    
+
     if (document.getElementById('feedList')) {
       carregarFeed(isAdmin);
       carregarRanking();
