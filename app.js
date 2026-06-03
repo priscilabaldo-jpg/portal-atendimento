@@ -17,53 +17,6 @@ const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.c
 let currentUser = null;
 
 // ====================================================================
-// LINKS PROTEGIDOS — definidos aqui, usados na substituição dos botões
-// ====================================================================
-const linksSecretos = {
-  "book-n1":           "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
-  "fluxo-pendente":    "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
-  "boxlink-consulta":  "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link",
-  "uappi-uso":         "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
-  "fup-consulta":      "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
-  "troca-titularidade":"https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
-  "crm-mudancas":      "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
-  "regras-garantia":   "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
-  "sys-inbound":       "inboundgarantia.html"
-};
-
-// ====================================================================
-// SUBSTITUIÇÃO DOS BOTÕES POR LINKS NATIVOS
-// Feito assim que o DOM carrega — o clique será nativo (sem delegação),
-// o que garante que o navegador trate como gesto do usuário e não bloqueie.
-// Os links ficam ocultos no JS e só são injetados no DOM aqui.
-// ====================================================================
-function substituirBotoesDoc() {
-  document.querySelectorAll('.btn-abrir-doc').forEach(btn => {
-    const docId = btn.getAttribute('data-doc');
-    const url = linksSecretos[docId];
-    if (!url) return;
-
-    const link = document.createElement('a');
-    link.href = url;
-    // Links internos (mesma origem) abrem na mesma aba; externos abrem em nova aba
-    if (url.startsWith('http')) {
-      link.target = '_blank';
-      link.rel = 'noopener noreferrer';
-    }
-    link.className = btn.className;
-    link.textContent = btn.textContent;
-    btn.replaceWith(link);
-  });
-}
-
-// Executa assim que o DOM estiver pronto
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', substituirBotoesDoc);
-} else {
-  substituirBotoesDoc();
-}
-
-// ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
 // ====================================================================
 const anoAtualEl = document.getElementById('anoAtual');
@@ -300,13 +253,39 @@ function carregarFeed(isAdmin) {
 }
 
 // ====================================================================
-// 4. DELEGAÇÃO DE EVENTOS GLOBAIS
+// 4. DELEGAÇÃO DE EVENTOS GLOBAIS (O "Link" entre JS e HTML)
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
-  // Prevenção de erro caso o alvo não tenha classList
+  // --- LÓGICA DA PÁGINA DE MATERIAIS: ABRIR DOCUMENTOS MASCARADOS ---
+  // O closest garante que clicar no ícone, no texto ou na borda do botão funcione
+  const btnAbrirDoc = target.closest('.btn-abrir-doc');
+  if (btnAbrirDoc) {
+    event.preventDefault(); 
+    const docId = btnAbrirDoc.getAttribute('data-doc');
+    
+    const linksSecretos = {
+      "book-n1": "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
+      "fluxo-pendente": "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
+      "boxlink-consulta": "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwmee/view?usp=drive_link",
+      "uappi-uso": "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
+      "fup-consulta": "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
+      "troca-titularidade": "https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
+      "crm-mudancas": "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
+      "regras-garantia": "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
+      "sys-inbound": "inboundgarantia.html"
+    };
+
+    if (linksSecretos[docId]) {
+      // Método nativo e síncrono. Não é bloqueado por bloqueadores de pop-up.
+      window.open(linksSecretos[docId], '_blank', 'noopener,noreferrer');
+    }
+    return; // Encerra aqui para evitar conflitos
+  }
+
+  // Se não tem classList (ex: clique no document body vazio), ignora o resto
   if (!target.classList) return;
 
   // --- LÓGICA DA PÁGINA INFORMATIVOS (Toggle Metas) ---
@@ -375,7 +354,7 @@ document.addEventListener('click', async (event) => {
         autorEmail: currentUser.email.toLowerCase(),
         autorFoto: currentUser.photoURL || null,
         likes: [],
-        comentarios: [],
+        comentarios: [], // Mantido por compatibilidade
         criadoEm: serverTimestamp()
       });
       textInput.value = ''; mediaInput.value = '';
