@@ -267,6 +267,16 @@ document.addEventListener('click', async (event) => {
     }
   }
 
+  // --- LÓGICA DA PÁGINA DE MATERIAIS (Filtro de Cards) ---
+  if (target.classList.contains('filtro-btn')) {
+    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
+    target.classList.add('active');
+    const cat = target.getAttribute('data-filtro');
+    document.querySelectorAll('.card').forEach(card => {
+      card.style.display = (cat === 'todos' || card.dataset.cat === cat) ? 'flex' : 'none';
+    });
+  }
+
   // --- INTERAÇÕES DO MURAL DE AVISOS ---
   if (target.id === 'btnAdmin') {
     document.getElementById('formAviso').classList.toggle('open');
@@ -445,8 +455,8 @@ onAuthStateChanged(auth, async user => {
 
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
-    // Adicionado o ID de informativos para que a tela seja desbloqueada com segurança
-    const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content') || document.getElementById('informativos-content');
+    // ATUALIZAÇÃO: Container de materiais agora também é verificado para desbloqueio
+    const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content') || document.getElementById('informativos-content') || document.getElementById('materiais-content');
     
     if (loginError) loginError.classList.remove('visible');
     if (loginArea) loginArea.style.display = 'none';
@@ -503,7 +513,6 @@ onAuthStateChanged(auth, async user => {
         signOut(auth);
       }
     } else {
-      // Se não for a index, chuta de volta para logar
       window.location.href = 'index.html';
     }
   }
