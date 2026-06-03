@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -15,6 +15,9 @@ const provider = new GoogleAuthProvider();
 
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
+
+// Variável de controle para exportação de auditoria
+let logsParaExportacao = [];
 
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
@@ -33,7 +36,8 @@ if (welcomeDateEl) {
 const hamburger = document.getElementById('hamburger');
 if (hamburger) {
   hamburger.addEventListener('click', () => { 
-    document.getElementById('mobileMenu').classList.toggle('open'); 
+    const mobileMenu = document.getElementById('mobileMenu') || document.querySelector('.mobile-menu');
+    if (mobileMenu) mobileMenu.classList.toggle('open'); 
   });
 }
 
@@ -41,6 +45,7 @@ function escapeHTML(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+window.escapeHTML = escapeHTML;
 
 function getInitials(name) { return name ? name.charAt(0).toUpperCase() : 'U'; }
 
@@ -68,7 +73,7 @@ if (buscaEl && resultadosEl) {
     {nome:"Intergrall", categoria:"Sistema", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
     {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materiais.html"},
     {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materiais.html"},
-    {nome:"Como consultar pedido na BoxLink", categoria:"Material", link:"materiais.html"},
+    {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materiais.html"},
     {nome:"Como usar a Uappi", categoria:"Material", link:"materiais.html"},
     {nome:"Consulta na FUP", categoria:"Material", link:"materiais.html"}
   ];
@@ -253,147 +258,314 @@ function carregarFeed(isAdmin) {
 }
 
 // ====================================================================
-// 4. DELEGAÇÃO DE EVENTOS GLOBAIS (Seguro contra XSS e CSP Block)
+// 4. MÓDULO ADMINISTRATIVO 1: AUDITORIA DE LOGS (`admin_logs.html`)
 // ====================================================================
-document.addEventListener('click', async (event) => {
-  const target = event.target;
-  if (!target || !target.classList) return;
+function carregarLogsAdmin(dataInicioStr = null, dataFimStr = null) {
+  const container = document.getElementById('logsContainer');
+  if (!container) return;
+  container.innerHTML = '<div class="avisos-vazio">Buscando histórico...</div>';
+  
+  let restricoes = [collection(db, 'acessos')];
+  if (dataInicioStr && dataFimStr) {
+    const start = new Date(dataInicioStr + 'T00:00:00');
+    const end = new Date(dataFimStr + 'T23:59:59');
+    restricoes.push(where('dataAcesso', '>=', start));
+    restricoes.push(where('dataAcesso', '<=', end));
+  }
+  restricoes.push(orderBy('dataAcesso', 'desc'));
+  
+  onSnapshot(query(...restricoes), snap => {
+    const logs = snap.docs.map(d => d.data());
+    logsParaExportacao = [];
 
-  // --- LÓGICA DA PÁGINA INFORMATIVOS (Toggle Metas) ---
-  if (target.classList.contains('btn-toggle-detalhes')) {
-    const details = target.nextElementSibling;
-    if (details) {
-      const isOpen = details.classList.toggle('open');
-      target.textContent = isOpen ? 'Ocultar detalhes' : 'Ver detalhes';
+    if (!logs.length) {
+      container.innerHTML = '<div class="avisos-vazio">Nenhum acesso registrado neste período.</div>';
+      return;
     }
-  }
 
-  // --- LÓGICA DA PÁGINA DE MATERIAIS (Filtro de Cards) ---
-  if (target.classList.contains('filtro-btn')) {
-    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
-    target.classList.add('active');
-    const cat = target.getAttribute('data-filtro');
-    document.querySelectorAll('.card').forEach(card => {
-      card.style.display = (cat === 'todos' || card.dataset.cat === cat) ? 'flex' : 'none';
-    });
-  }
-
-  // --- INTERAÇÕES DO MURAL DE AVISOS ---
-  if (target.id === 'btnAdmin') {
-    document.getElementById('formAviso').classList.toggle('open');
-  }
-
-  if (target.id === 'btnPublicarAviso') {
-    if (!currentUser) return;
-    const textoInput = document.getElementById('textoAviso');
-    const texto = textoInput.value.trim();
-    const cat = document.getElementById('catAviso').value;
-    if (!texto) return;
-    try {
-      await addDoc(collection(db, 'avisos'), { texto, categoria: cat, autor: currentUser.displayName?.split(' ')[0] || 'Gestor', criadoEm: serverTimestamp() });
-      textoInput.value = ''; document.getElementById('formAviso').classList.remove('open');
-    } catch (err) { alert('Sem permissão para publicar avisos.'); }
-  }
-
-  if (target.classList.contains('btn-deletar-aviso')) {
-    if (!currentUser || !confirm('Apagar este aviso?')) return;
-    try { await deleteDoc(doc(db, 'avisos', target.getAttribute('data-id'))); } 
-    catch (err) { alert('Sem permissão para apagar este aviso.'); }
-  }
-
-  // --- INTERAÇÕES DA TIMELINE ---
-  if (target.id === 'btnPublishPost') {
-    if (!currentUser) return;
-    const textInput = document.getElementById('postText');
-    const mediaInput = document.getElementById('postMediaUrl');
-    const texto = textInput.value.trim();
-    let midiaUrl = mediaInput.value.trim();
+    let html = `<div class="resumo-logs">Total de acessos encontrados: <strong>${logs.length}</strong></div>`;
+    const grupos = {};
     
-    const matchDrive = midiaUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-    if (matchDrive && matchDrive[1]) midiaUrl = `https://drive.google.com/thumbnail?id=${matchDrive[1]}&sz=w1000`;
-    
-    if (!texto && !midiaUrl) return alert("Escreva algo ou insira uma imagem!");
+    logs.forEach(log => {
+      const dataLog = log.dataAcesso ? new Date(log.dataAcesso.seconds * 1000) : new Date();
+      const dataFormatada = dataLog.toLocaleDateString('pt-BR');
+      const horaFormatada = dataLog.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
-    target.textContent = 'Enviando...';
-    target.disabled = true;
-
-    try {
-      await addDoc(collection(db, 'timeline_posts'), {
-        texto: texto,
-        midiaUrl: midiaUrl,
-        autor: currentUser.displayName || 'Usuário Leveros',
-        autorEmail: currentUser.email.toLowerCase(),
-        autorFoto: currentUser.photoURL || null,
-        likes: [],
-        comentarios: [], // Mantido por compatibilidade
-        criadoEm: serverTimestamp()
+      logsParaExportacao.push({
+        nome: log.nome || 'Desconhecido',
+        email: log.email || 'Sem e-mail',
+        data: dataFormatada,
+        hora: horaFormatada
       });
-      textInput.value = ''; mediaInput.value = '';
-    } catch (e) { alert("Erro ao publicar. Verifique as permissões."); }
-    finally { target.textContent = 'Publicar'; target.disabled = false; }
-  }
 
-  if (target.classList.contains('btn-like-post')) {
-    if (!currentUser) return;
-    const postId = target.getAttribute('data-id');
-    const postRef = doc(db, 'timeline_posts', postId);
-    try {
-      if (target.classList.contains('liked')) await updateDoc(postRef, { likes: arrayRemove(currentUser.email) });
-      else await updateDoc(postRef, { likes: arrayUnion(currentUser.email) });
-    } catch(e) {}
-  }
-
-  if (target.classList.contains('btn-deletar-post')) {
-    if (!confirm('Tem certeza que deseja apagar esta publicação de todos os usuários?')) return;
-    try { await deleteDoc(doc(db, 'timeline_posts', target.getAttribute('data-id'))); } 
-    catch(e) { alert("Sem permissão para apagar este post."); }
-  }
-
-  if (target.classList.contains('btn-send-comment')) {
-    enviarComentario(target.getAttribute('data-id'));
-  }
-
-  if (target.classList.contains('btn-deletar-comentario')) {
-    if (!confirm('Deseja apagar este comentário?')) return;
-    try {
-      const postId = target.getAttribute('data-post');
-      const commentObject = JSON.parse(decodeURIComponent(target.getAttribute('data-comment')));
-      await updateDoc(doc(db, 'timeline_posts', postId), { comentarios: arrayRemove(commentObject) });
-    } catch(e) { alert("Erro ao apagar comentário."); }
-  }
-});
-
-document.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter' && event.target.classList.contains('input-comentario')) {
-    enviarComentario(event.target.getAttribute('data-id'));
-  }
-});
-
-async function enviarComentario(postId) {
-  if (!currentUser) return;
-  const input = document.getElementById(`comment-${postId}`);
-  const texto = input.value.trim();
-  if (!texto) return;
-
-  input.disabled = true;
-  try {
-    const postRef = doc(db, 'timeline_posts', postId);
-    await updateDoc(postRef, {
-      comentarios: arrayUnion({
-        autor: currentUser.displayName || 'Usuário',
-        email: currentUser.email.toLowerCase(), 
-        foto: currentUser.photoURL || null,
-        texto: texto,
-        data: new Date().toISOString()
-      })
+      if (!grupos[dataFormatada]) grupos[dataFormatada] = [];
+      grupos[dataFormatada].push({ ...log, horaFormatada });
     });
-    input.value = '';
-  } catch(e) { alert("Erro ao comentar"); } 
-  finally { input.disabled = false; }
+
+    for (const data in grupos) {
+      html += `
+        <div class="log-group">
+          <div class="log-date-header">🗓️ Data: ${data} <span style="opacity:0.5; font-size:9px; margin-left:auto;">(${grupos[data].length} acessos)</span></div>
+          <div class="log-table-wrap">
+            <table class="log-table">
+              <thead><tr><th>Usuário</th><th>E-mail Corporativo</th><th>Horário</th></tr></thead>
+              <tbody>
+      `;
+      grupos[data].forEach(item => {
+        html += `<tr><td><span class="badge-user">${window.escapeHTML(item.nome)}</span></td><td>${window.escapeHTML(item.email)}</td><td><span class="badge-time">⏱️ ${item.horaFormatada}</span></td></tr>`;
+      });
+      html += `</tbody></table></div></div>`;
+    }
+    container.innerHTML = html;
+  }, error => {
+    container.innerHTML = '<div class="avisos-vazio" style="color:#FF6B6B;">Erro ao buscar dados. Tente limpar os filtros.</div>';
+  });
+}
+
+// Configuração dos gatilhos de Log
+const btnFiltrarLogs = document.getElementById('btnFiltrarLogs');
+if (btnFiltrarLogs) {
+  btnFiltrarLogs.addEventListener('click', () => {
+    const inicio = document.getElementById('dataInicioLog').value;
+    const fim = document.getElementById('dataFimLog').value;
+    if (!inicio || !fim) return alert("Por favor, selecione a data de início e a data de fim.");
+    if (inicio > fim) return alert("A data de início não pode ser maior que a data de fim.");
+    carregarLogsAdmin(inicio, fim);
+  });
+}
+
+const btnLimparLogs = document.getElementById('btnLimparLogs');
+if (btnLimparLogs) {
+  btnLimparLogs.addEventListener('click', () => {
+    document.getElementById('dataInicioLog').value = '';
+    document.getElementById('dataFimLog').value = '';
+    carregarLogsAdmin();
+  });
+}
+
+const btnExportarLogs = document.getElementById('btnExportarLogs');
+if (btnExportarLogs) {
+  btnExportarLogs.addEventListener('click', () => {
+    if (logsParaExportacao.length === 0) {
+      alert('Nenhum dado na tela para exportar. Tente carregar ou filtrar os logs primeiro.');
+      return;
+    }
+    let csvContent = '\uFEFF'; 
+    csvContent += "Nome;E-mail;Data de Acesso;Hora de Acesso\n";
+    logsParaExportacao.forEach(log => {
+      csvContent += `${log.nome};${log.email};${log.data};${log.hora}\n`;
+    });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const linkInvisivel = document.createElement("a");
+    linkInvisivel.href = url;
+    const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    linkInvisivel.download = `Relatorio_Acessos_${hoje}.csv`;
+    document.body.appendChild(linkInvisivel);
+    linkInvisivel.click();
+    document.body.removeChild(linkInvisivel);
+  });
 }
 
 // ====================================================================
-// 5. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
+// 5. MÓDULO ADMINISTRATIVO 2: GESTÃO DE RECOMPENSAS (`admin_pontos.html`)
+// ====================================================================
+function carregarPedidos() {
+  const lista = document.getElementById('listaPedidos');
+  if (!lista) return;
+  const q = query(collection(db, "pedidos_lojinha"), orderBy("dataPedido", "desc"));
+  
+  onSnapshot(q, (snap) => {
+    if (snap.empty) {
+      lista.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5;">Nenhum pedido de resgate encontrado.</td></tr>';
+      return;
+    }
+
+    let html = '';
+    snap.docs.forEach(docSnap => {
+      const pedido = docSnap.data();
+      const pedidoId = docSnap.id;
+      const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
+      const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const idFormatado = '#' + pedidoId.substring(0, 8).toUpperCase();
+      const isPendente = pedido.status === "Pendente";
+      const statusClass = isPendente ? "status-pendente" : "status-entregue";
+      
+      html += `
+        <tr>
+          <td>${dataFormatada}</td>
+          <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
+          <td><strong>${pedido.colaboradorNome}</strong><br><span style="font-size:10px; opacity:0.6;">${pedido.colaboradorEmail}</span></td>
+          <td>${pedido.produtoNome}</td>
+          <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
+          <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+          <td>
+            ${isPendente ? `<button class="btn-entregar" data-id="${pedidoId}">Marcar Entregue</button>` : `<span style="opacity:0.5; font-size:10px;">OK ✅</span>`}
+          </td>
+        </tr>
+      `;
+    });
+    lista.innerHTML = html;
+  });
+}
+
+// Função global para dar baixa no pedido associada ao listener interno
+async function darBaixaPedido(pedidoId) {
+  if (!confirm("Confirmar que o prêmio já foi entregue ao colaborador?")) return;
+  try {
+    await updateDoc(doc(db, "pedidos_lojinha", pedidoId), { status: "Entregue" });
+  } catch(e) {
+    console.error("Erro ao atualizar status:", e);
+    alert("Erro ao tentar atualizar o status do pedido.");
+  }
+}
+window.marcarEntregue = darBaixaPedido; // Preserva compatibilidade se necessário
+
+// Ouvinte do formulário de moedas manual
+const btnLancar = document.getElementById('btnLancar');
+if (btnLancar) {
+  btnLancar.onclick = async () => {
+    const email = document.getElementById('userEmail').value.trim().toLowerCase();
+    const valorInput = parseInt(document.getElementById('pontosValor').value);
+    const motivo = document.getElementById('motivo').value.trim();
+    const operacao = document.getElementById('tipoOperacao').value;
+    
+    if (!email || !valorInput || !motivo) return alert("Preencha todos os campos!");
+    if (valorInput <= 0) return alert("O valor das moedas deve ser maior que zero!");
+
+    btnLancar.textContent = 'Processando...';
+    btnLancar.disabled = true;
+
+    try {
+      const userRef = doc(db, "usuarios", email);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const dadosAtuais = userSnap.data();
+        const saldoAtual = dadosAtuais.pontos || 0;
+        let valorFinal = Math.abs(valorInput); 
+        let tipoString = "Adição";
+        
+        if (operacao === 'remover') {
+          if (saldoAtual < valorFinal) {
+            alert(`Operação Cancelada: O colaborador tem apenas ${saldoAtual} moedas. Não é possível deduzir ${valorFinal}.`);
+            btnLancar.innerHTML = '✅ Confirmar Operação';
+            btnLancar.disabled = false;
+            return;
+          }
+          valorFinal = -valorFinal; 
+          tipoString = "Remoção";
+        }
+
+        await updateDoc(userRef, { pontos: increment(valorFinal) });
+        
+        await addDoc(collection(db, "historico_pontos"), {
+          adminNome: currentUser.displayName || 'Gestor Admin',
+          colaborador: email,
+          tipoOperacao: tipoString,
+          valor: Math.abs(valorFinal),
+          motivo: motivo,
+          dataRealizada: serverTimestamp()
+        });
+
+        const textoAcao = operacao === 'adicionar' ? 'enviadas para' : 'removidas de';
+        alert(`Sucesso! ${Math.abs(valorFinal)} moedas foram ${textoAcao} ${email}.`);
+        
+        document.getElementById('userEmail').value = '';
+        document.getElementById('pontosValor').value = '';
+        document.getElementById('motivo').value = '';
+      } else {
+        alert("Usuário não encontrado. Peça para o colaborador acessar o portal pelo menos uma vez para ativar a carteira!");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Ocorreu um erro ao processar os pontos.");
+    } finally {
+      btnLancar.innerHTML = '✅ Confirmar Operação';
+      btnLancar.disabled = false;
+    }
+  };
+}
+
+// Ouvinte para exportar relatório da lojinha
+const btnExportar = document.getElementById('btnExportar');
+if (btnExportar) {
+  btnExportar.onclick = async () => {
+    const dataInicioStr = document.getElementById('relatorioInicio').value;
+    const dataFimStr = document.getElementById('relatorioFim').value;
+
+    if (!dataInicioStr || !dataFimStr) return alert("Por favor, selecione as datas de início e fim.");
+    if (dataInicioStr > dataFimStr) return alert("A data inicial não pode ser maior que a final.");
+
+    btnExportar.textContent = 'Buscando dados...';
+    btnExportar.disabled = true;
+
+    try {
+      const start = new Date(dataInicioStr + 'T00:00:00');
+      const end = new Date(dataFimStr + 'T23:59:59');
+
+      const q = query(
+        collection(db, "historico_pontos"),
+        where('dataRealizada', '>=', start),
+        where('dataRealizada', '<=', end),
+        orderBy('dataRealizada', 'desc')
+      );
+
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        alert("Nenhuma transação encontrada nesse período.");
+        return;
+      }
+
+      let csvContent = '\uFEFF'; 
+      csvContent += "Data da Transação;Horário;Administrador;Colaborador;Operação;Quantidade;Motivo;ID Transacao\n";
+
+      querySnapshot.forEach((docSnap) => {
+        const row = docSnap.data();
+        const idFormatado = '#' + docSnap.id.substring(0, 8).toUpperCase();
+        const dataTimestamp = row.dataRealizada ? new Date(row.dataRealizada.seconds * 1000) : new Date();
+        const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR');
+        const horaFormatada = dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+        csvContent += `${dataFormatada};${horaFormatada};${row.adminNome};${row.colaborador};${row.tipoOperacao};${row.valor};${row.motivo};${idFormatado}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const linkInvisivel = document.createElement("a");
+      linkInvisivel.href = url;
+      const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+      linkInvisivel.download = `Relatorio_Lojinha_${hoje}.csv`;
+      document.body.appendChild(linkInvisivel);
+      linkInvisivel.click();
+      document.body.removeChild(linkInvisivel);
+
+    } catch (e) {
+      console.error("Erro ao gerar relatório:", e);
+      alert("Ocorreu um erro ao exportar o relatório. Tente novamente.");
+    } finally {
+      btnExportar.innerHTML = '📥 Gerar Relatório (Excel/CSV)';
+      btnExportar.disabled = false;
+    }
+  };
+}
+
+// ====================================================================
+// 6. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS E COMPATIBILIDADE
+// ====================================================================
+document.addEventListener('click', async (event) => {
+  const target = event.target;
+  if (!target) return;
+
+  // Interceptação do botão de entrega em tempo real sem conflito de contexto global inline
+  if (target.classList.contains('btn-entregar')) {
+    const pedidoId = target.getAttribute('data-id');
+    if (pedidoId) await darBaixaPedido(pedidoId);
+  }
+});
+
+// ====================================================================
+// 7. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
 // ====================================================================
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
@@ -455,7 +627,6 @@ onAuthStateChanged(auth, async user => {
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
     // ===== MURALHA EXTRA: VERIFICAÇÃO DE SUBPÁGINAS GESTORAS =====
-    // Mapeia todas as possíveis IDs de conteúdo administrativo do seu portal
     const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content'];
     let containerAdminAtivo = null;
 
@@ -464,7 +635,6 @@ onAuthStateChanged(auth, async user => {
       if (el) containerAdminAtivo = el;
     });
 
-    // Se o elemento administrativo existir na página e o usuário NÃO for admin, bloqueia na hora!
     if (containerAdminAtivo && !isAdmin) {
         alert("Acesso negado. Esta é uma área restrita a gestores.");
         window.location.href = 'index.html';
@@ -475,7 +645,6 @@ onAuthStateChanged(auth, async user => {
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
     
-    // Captura dinamicamente qualquer área ativa de conteúdo para desbloqueio
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
                          document.getElementById('informativos-content') || 
@@ -514,6 +683,15 @@ onAuthStateChanged(auth, async user => {
     
     registrarAcesso(user);
     carregarAvisos(isAdmin);
+    
+    // Inicialização condicional baseada na página administrativa carregada
+    if (document.getElementById('logsContainer') && isAdmin) {
+      carregarLogsAdmin();
+    }
+    
+    if (document.getElementById('listaPedidos') && isAdmin) {
+      carregarPedidos();
+    }
     
     if (document.getElementById('feedList')) {
       carregarFeed(isAdmin);
