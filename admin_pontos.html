@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gestão de Pontos – CX Resolve</title>
 
+<!-- CSP Ajustada: blob: liberado para relatórios e 'unsafe-inline' para o onclick do botão entregar -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' blob:;
+  script-src 'self' https://www.gstatic.com https://apis.google.com 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
 <style>
@@ -105,7 +115,8 @@
 
 <div class="bg-layer"></div>
 
-<div id="admin-content" style="display:none; position: relative; z-index: 5;">
+<!-- ID mapeada no app.js para liberar o acesso apenas aos administradores -->
+<div id="admin-pontos-content" style="display:none; position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -138,7 +149,7 @@
   <div class="container">
     
     <div style="margin-bottom: 20px;">
-        <a href="index.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
+        <a href="admin.html" style="color: rgba(255,255,255,0.6); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px;">
             ← Voltar para Central
         </a>
     </div>
@@ -227,248 +238,8 @@
 
 </div>
 
-<script>
-document.getElementById('anoAtual').textContent = new Date().getFullYear();
-document.getElementById('hamburger').addEventListener('click', () => {
-  document.querySelector('.mobile-menu').classList.toggle('open');
-});
-</script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-    apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-    authDomain:"portal-atendimento-541ae.firebaseapp.com",
-    projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
-let usuarioAtual = null;
-
-/* ====================================================================
-   CARREGAR FILA DE PEDIDOS EM TEMPO REAL
-   ==================================================================== */
-function carregarPedidos() {
-    const lista = document.getElementById('listaPedidos');
-    const q = query(collection(db, "pedidos_lojinha"), orderBy("dataPedido", "desc"));
-    
-    onSnapshot(q, (snap) => {
-        if (snap.empty) {
-            lista.innerHTML = '<tr><td colspan="7" style="text-align:center; opacity:0.5;">Nenhum pedido de resgate encontrado.</td></tr>';
-            return;
-        }
-
-        let html = '';
-        snap.docs.forEach(docSnap => {
-            const pedido = docSnap.data();
-            const pedidoId = docSnap.id;
-            
-            const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
-            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            
-            // 🟢 Formata o ID do pedido idêntico ao comprovante (Ex: #A1B2C3D4)
-            const idFormatado = '#' + pedidoId.substring(0, 8).toUpperCase();
-
-            const isPendente = pedido.status === "Pendente";
-            const statusClass = isPendente ? "status-pendente" : "status-entregue";
-            
-            html += `
-                <tr>
-                    <td>${dataFormatada}</td>
-                    <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
-                    <td><strong>${pedido.colaboradorNome}</strong><br><span style="font-size:10px; opacity:0.6;">${pedido.colaboradorEmail}</span></td>
-                    <td>${pedido.produtoNome}</td>
-                    <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
-                    <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
-                    <td>
-                        ${isPendente ? `<button class="btn-entregar" onclick="marcarEntregue('${pedidoId}')">Marcar Entregue</button>` : `<span style="opacity:0.5; font-size:10px;">OK ✅</span>`}
-                    </td>
-                </tr>
-            `;
-        });
-        lista.innerHTML = html;
-    });
-}
-
-// 🟢 FUNÇÃO DE DAR BAIXA NO PEDIDO
-window.marcarEntregue = async function(pedidoId) {
-    if(!confirm("Confirmar que o prêmio já foi entregue ao colaborador?")) return;
-    try {
-        await updateDoc(doc(db, "pedidos_lojinha", pedidoId), {
-            status: "Entregue"
-        });
-    } catch(e) {
-        console.error("Erro ao atualizar status:", e);
-        alert("Erro ao tentar atualizar o status do pedido.");
-    }
-}
-
-/* ====================================================================
-   AUTENTICAÇÃO PADRÃO
-   ==================================================================== */
-onAuthStateChanged(auth, user => {
-    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-        usuarioAtual = user;
-        document.getElementById('admin-content').style.display = 'block';
-        carregarPedidos(); 
-    } else if (user) {
-        alert("Área restrita. Apenas gestores podem acessar esta página.");
-        window.location.href = 'timeline.html';
-    } else {
-        window.location.href = 'index.html';
-    }
-});
-
-const logout = () => {
-  sessionStorage.removeItem('logRegistrado');
-  signOut(auth).then(() => window.location.href = 'index.html');
-};
-
-document.getElementById('logoutBtn').onclick = logout;
-document.getElementById('logoutBtnMobile').onclick = logout;
-
-// ─── FUNÇÃO: LANÇAR OU REMOVER MOEDAS ───
-document.getElementById('btnLancar').onclick = async () => {
-    const email = document.getElementById('userEmail').value.trim().toLowerCase();
-    const valorInput = parseInt(document.getElementById('pontosValor').value);
-    const motivo = document.getElementById('motivo').value.trim();
-    const operacao = document.getElementById('tipoOperacao').value;
-    const btn = document.getElementById('btnLancar');
-    
-    if (!email || !valorInput || !motivo) return alert("Preencha todos os campos!");
-    if (valorInput <= 0) return alert("O valor das moedas deve ser maior que zero!");
-
-    btn.textContent = 'Processando...';
-    btn.disabled = true;
-
-    try {
-        const userRef = doc(db, "usuarios", email);
-        const userSnap = await getDoc(userRef);
-
-        if (userSnap.exists()) {
-            const dadosAtuais = userSnap.data();
-            const saldoAtual = dadosAtuais.pontos || 0;
-            
-            let valorFinal = Math.abs(valorInput); 
-            let tipoString = "Adição";
-            
-            if (operacao === 'remover') {
-                if (saldoAtual < valorFinal) {
-                    alert(`Operação Cancelada: O colaborador tem apenas ${saldoAtual} moedas. Não é possível deduzir ${valorFinal}.`);
-                    btn.innerHTML = '✅ Confirmar Operação';
-                    btn.disabled = false;
-                    return;
-                }
-                valorFinal = -valorFinal; 
-                tipoString = "Remoção";
-            }
-
-            // 1. Atualiza o saldo do colaborador
-            await updateDoc(userRef, { pontos: increment(valorFinal) });
-            
-            // 2. GRAVA O HISTÓRICO PARA O RELATÓRIO
-            await addDoc(collection(db, "historico_pontos"), {
-                adminNome: usuarioAtual.displayName || 'Gestor Admin',
-                colaborador: email,
-                tipoOperacao: tipoString,
-                valor: Math.abs(valorFinal),
-                motivo: motivo,
-                dataRealizada: serverTimestamp()
-            });
-
-            const textoAcao = operacao === 'adicionar' ? 'enviadas para' : 'removidas de';
-            alert(`Sucesso! ${Math.abs(valorFinal)} moedas foram ${textoAcao} ${email}.`);
-            
-            // Limpa o formulário
-            document.getElementById('userEmail').value = '';
-            document.getElementById('pontosValor').value = '';
-            document.getElementById('motivo').value = '';
-        } else {
-            alert("Usuário não encontrado. Peça para o colaborador acessar o portal pelo menos uma vez para ativar a carteira!");
-        }
-    } catch (e) {
-        console.error(e);
-        alert("Ocorreu um erro ao processar os pontos.");
-    } finally {
-        btn.innerHTML = '✅ Confirmar Operação';
-        btn.disabled = false;
-    }
-};
-
-// ─── FUNÇÃO: EXPORTAR RELATÓRIO ───
-document.getElementById('btnExportar').onclick = async () => {
-    const dataInicioStr = document.getElementById('relatorioInicio').value;
-    const dataFimStr = document.getElementById('relatorioFim').value;
-    const btn = document.getElementById('btnExportar');
-
-    if (!dataInicioStr || !dataFimStr) return alert("Por favor, selecione as datas de início e fim.");
-    if (dataInicioStr > dataFimStr) return alert("A data inicial não pode ser maior que a final.");
-
-    btn.textContent = 'Buscando dados...';
-    btn.disabled = true;
-
-    try {
-        const start = new Date(dataInicioStr + 'T00:00:00');
-        const end = new Date(dataFimStr + 'T23:59:59');
-
-        const q = query(
-            collection(db, "historico_pontos"),
-            where('dataRealizada', '>=', start),
-            where('dataRealizada', '<=', end),
-            orderBy('dataRealizada', 'desc')
-        );
-
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            alert("Nenhuma transação encontrada nesse período.");
-            return;
-        }
-
-        // 🟢 Monta o arquivo CSV e inclui a coluna "ID Transacao"
-        let csvContent = '\uFEFF'; // Corrige acentos no Excel
-        csvContent += "Data da Transação;Horário;Administrador;Colaborador;Operação;Quantidade;Motivo;ID Transacao\n";
-
-        querySnapshot.forEach((docSnap) => {
-            const row = docSnap.data();
-            const idFormatado = '#' + docSnap.id.substring(0, 8).toUpperCase(); // Gera o ID curto
-            
-            const dataTimestamp = row.dataRealizada ? new Date(row.dataRealizada.seconds * 1000) : new Date();
-            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR');
-            const horaFormatada = dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-
-            csvContent += `${dataFormatada};${horaFormatada};${row.adminNome};${row.colaborador};${row.tipoOperacao};${row.valor};${row.motivo};${idFormatado}\n`;
-        });
-
-        // Dispara o download do arquivo
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const linkInvisivel = document.createElement("a");
-        linkInvisivel.href = url;
-        
-        const hoje = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
-        linkInvisivel.download = `Relatorio_Lojinha_${hoje}.csv`;
-        
-        document.body.appendChild(linkInvisivel);
-        linkInvisivel.click();
-        document.body.removeChild(linkInvisivel);
-
-    } catch (e) {
-        console.error("Erro ao gerar relatório:", e);
-        alert("Ocorreu um erro ao exportar o relatório. Tente novamente.");
-    } finally {
-        btn.innerHTML = '📥 Gerar Relatório (Excel/CSV)';
-        btn.disabled = false;
-    }
-};
-</script>
+<!-- Ligação única e direta com o arquivo central -->
+<script type="module" src="app.js?v=1.5"></script>
 
 </body>
 </html>
