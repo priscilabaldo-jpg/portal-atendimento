@@ -3,13 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image" href="LogoLeveros.png">
 <title>Orçamento Admin - CX Resolve</title>
 
-<!-- CSS Base do Portal -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' blob:;
+  script-src 'self' https://cdn.jsdelivr.net https://www.gstatic.com https://apis.google.com 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
-<!-- Importação da Biblioteca de Gráficos (Chart.js) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -90,22 +96,11 @@
   select.input-select:focus, input.input-select:focus { border-color: var(--verde2, #007D69); background: #fff;}
 </style>
 </head>
-<body>
+<body style="background-color: #f4f7f6;">
 
-<div class="bg-layer"></div>
+<div class="bg-layer" style="opacity: 0.05;"></div>
 
-<!-- TELA DE LOGIN -->
-<div id="login-area">
-  <div class="login-card">
-    <img src="LogoLeveros.png" class="login-logo" alt="Leveros">
-    <h2>Área Administrativa</h2>
-    <p>Gestão de Orçamento</p>
-    <button class="login-btn" id="loginBtn">Entrar com Google</button>
-  </div>
-</div>
-
-<!-- CONTEÚDO PRINCIPAL -->
-<div id="conteudo" style="display: none;">
+<div id="centro-custo-content" style="display: none; position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -113,20 +108,39 @@
       <nav>
         <ul>
           <li><a href="index.html">Início</a></li>
-          <li><a href="centrodecusto.html" class="active">Orçamento</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="admin.html" class="active">Painel Admin</a></li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
     </div>
   </header>
 
-  <div class="container">
-    <div class="welcome-text" style="margin-top: 30px;">
-      <h1>Gestão de <span>Orçamento</span> 📊</h1>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="admin.html">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container" style="color: #333;">
+    
+    <div style="margin-bottom: 20px;">
+        <a href="admin.html" style="color: var(--verde1); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; font-weight: bold;">
+            ← Voltar para Central
+        </a>
+    </div>
+
+    <div class="welcome-text" style="margin-top: 10px;">
+      <h1 style="color: #002D32;">Gestão de <span>Orçamento</span> 📊</h1>
       <p style="color: #666; margin-top: 5px;">Painel de Inteligência Financeira - Backoffice</p>
     </div>
 
-    <!-- Cards de Resumo -->
     <div class="resumo-cards">
       <div class="resumo-card">
         <h3>Meta da Temporada (12 Meses)</h3>
@@ -142,16 +156,13 @@
       </div>
     </div>
 
-    <!-- Gráfico de Desvios -->
     <div class="card-painel">
       <h3>Análise de Desvios (Orçado vs Realizado)</h3>
-      <!-- Envolvi o canvas numa div para controlar a altura perfeitamente -->
       <div style="position: relative; height: 350px; width: 100%;">
         <canvas id="graficoDesvios"></canvas>
       </div>
     </div>
 
-    <!-- Tabela Matriz -->
     <div class="card-painel">
       <button class="btn-exportar" id="btnExportarExcel">📥 Exportar Dados</button>
       <h3>Despesas | Áreas Backoffice</h3>
@@ -176,18 +187,17 @@
       </div>
     </div>
 
-    <!-- Formulário -->
-    <div class="feedback-section" style="margin-top: 30px; margin-bottom: 50px;">
-      <h3>➕ Registrar Nova Despesa</h3>
+    <div class="feedback-section" style="margin-top: 30px; margin-bottom: 50px; background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04);">
+      <h3 style="color: #002D32; margin-bottom: 20px;">➕ Registrar Nova Despesa</h3>
       <form id="formOrcamento">
         <div class="form-row">
-          <div class="form-field"><label>Número da NF</label><input type="text" id="numeroNf" class="input-select" required></div>
-          <div class="form-field"><label>Descrição do Gasto</label><input type="text" id="descricao" class="input-select" required></div>
-          <div class="form-field"><label>Data da Emissão</label><input type="date" id="dataEmissao" class="input-select" required></div>
+          <div class="form-field"><label style="color:#666; font-weight:bold;">Número da NF</label><input type="text" id="numeroNf" class="input-select" required></div>
+          <div class="form-field"><label style="color:#666; font-weight:bold;">Descrição do Gasto</label><input type="text" id="descricao" class="input-select" required></div>
+          <div class="form-field"><label style="color:#666; font-weight:bold;">Data da Emissão</label><input type="date" id="dataEmissao" class="input-select" required></div>
         </div>
         <div class="form-row">
           <div class="form-field">
-            <label>Centro de Custo (Categoria)</label>
+            <label style="color:#666; font-weight:bold;">Centro de Custo (Categoria)</label>
             <select id="categoria" class="input-select" required>
               <option value="Despesa Viagem">Despesa Viagem</option>
               <option value="Folha de Pagamento">Folha de Pagamento</option>
@@ -196,286 +206,17 @@
               <option value="Outras Despesas">Outras Despesas</option>
             </select>
           </div>
-          <div class="form-field"><label>Valor Total (R$)</label><input type="text" id="valor" class="input-select" placeholder="Ex: 1500,00" required></div>
-          <div class="form-field"><label>Anexar NF (PDF)</label><input type="file" id="arquivoNf" class="input-select" accept="application/pdf"></div>
+          <div class="form-field"><label style="color:#666; font-weight:bold;">Valor Total (R$)</label><input type="text" id="valor" class="input-select" placeholder="Ex: 1500.00" required></div>
+          <div class="form-field"><label style="color:#666; font-weight:bold;">Anexar NF (PDF)</label><input type="file" id="arquivoNf" class="input-select" accept="application/pdf"></div>
         </div>
-        <button type="submit" class="submit-btn" id="btnSalvar">Salvar Lançamento →</button>
+        <button type="submit" class="submit-btn" id="btnSalvar" style="background: var(--verde1);">Salvar Lançamento →</button>
       </form>
     </div>
 
   </div> 
 </div>
 
-<!-- LÓGICA JAVASCRIPT E FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, doc, deleteDoc, onSnapshot, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js"; 
+<script type="module" src="app.js?v=1.6"></script>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-    authDomain: "portal-atendimento-541ae.firebaseapp.com",
-    projectId: "portal-atendimento-541ae",
-    storageBucket: "portal-atendimento-541ae.appspot.com"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
-  const provider = new GoogleAuthProvider();
-  const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
-  let currentUser = null;
-  let graficoInstancia = null; 
-
-  const ORCAMENTO_TEMPORADA = {
-    "Despesa Viagem": 65000,
-    "Folha de Pagamento": 2400000,
-    "Impostos, Taxas e Contribuições": 670,
-    "Infraestrutura": 45400,
-    "Outras Despesas": 243200
-  };
-
-  let totalOrcamentoTemporada = 0;
-  for (let cat in ORCAMENTO_TEMPORADA) { totalOrcamentoTemporada += ORCAMENTO_TEMPORADA[cat]; }
-  document.getElementById('cardOrcamentoTemp').textContent = formatarMoeda(totalOrcamentoTemporada);
-
-  function formatarMoeda(valor) {
-    return "R$ " + valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  }
-
-  function calcularIndicadores(orcado, realizado) {
-    const percentual = orcado > 0 ? (realizado / orcado) * 100 : (realizado > 0 ? 100 : 0);
-    const delta = orcado - realizado; // Positivo é sobra, Negativo é estouro
-    
-    // Melhoria nas cores baseadas no teu print (Verde para sobra, Vermelho para estouro)
-    const estourou = percentual > 100;
-    const seta = estourou ? '⬆️' : '⬇️';
-    const corClass = estourou ? 'text-red' : 'text-green';
-    const sinalDelta = estourou ? '-' : ''; // Coloca um menos se gastou mais do que devia
-    
-    return {
-      percFormatado: `<span class="${corClass}">${seta} ${percentual.toFixed(1).replace('.',',')}%</span>`,
-      deltaFormatado: `<span class="${corClass}">${sinalDelta}${formatarMoeda(Math.abs(delta))}</span>`
-    };
-  }
-
-  function carregarDadosOrcamento() {
-    const q = query(collection(db, 'notasFiscais'));
-    
-    onSnapshot(q, (snapshot) => {
-      let dadosAgrupados = {};
-      let totalGastoMes = 0;
-      let totalOrcadoMes = 0;
-      
-      for (let categoria in ORCAMENTO_TEMPORADA) {
-        dadosAgrupados[categoria] = {
-          orcadoMensal: ORCAMENTO_TEMPORADA[categoria] / 12,
-          realizado: 0,
-          itens: []
-        };
-        totalOrcadoMes += (ORCAMENTO_TEMPORADA[categoria] / 12);
-      }
-
-      snapshot.forEach((docSnap) => {
-        const dado = docSnap.data();
-        const valor = parseFloat(dado.valor) || 0;
-        
-        if (!dadosAgrupados[dado.categoria]) {
-          dadosAgrupados[dado.categoria] = { orcadoMensal: 0, realizado: 0, itens: [] };
-        }
-        
-        dadosAgrupados[dado.categoria].realizado += valor;
-        dadosAgrupados[dado.categoria].itens.push({ id: docSnap.id, ...dado, valorNum: valor });
-        totalGastoMes += valor;
-      });
-
-      document.getElementById('cardOrcamentoMes').textContent = formatarMoeda(totalOrcadoMes);
-      document.getElementById('cardRealizadoMes').textContent = formatarMoeda(totalGastoMes);
-
-      const tbody = document.getElementById('tabelaMatriz');
-      tbody.innerHTML = '';
-      
-      let labelsGrafico = [];
-      let dataOrcadoGrafico = [];
-      let dataRealizadoGrafico = [];
-
-      for (let categoria in dadosAgrupados) {
-        const catData = dadosAgrupados[categoria];
-        if (catData.orcadoMensal === 0 && catData.realizado === 0) continue; 
-
-        labelsGrafico.push(categoria);
-        dataOrcadoGrafico.push(catData.orcadoMensal);
-        dataRealizadoGrafico.push(catData.realizado);
-
-        const ind = calcularIndicadores(catData.orcadoMensal, catData.realizado);
-        const trNivel1 = document.createElement('tr');
-        trNivel1.className = 'nivel1';
-        trNivel1.innerHTML = `
-          <td>⊟ ${categoria}</td>
-          <td>${formatarMoeda(catData.orcadoMensal)}</td>
-          <td>${formatarMoeda(catData.realizado)}</td>
-          <td>${ind.percFormatado}</td>
-          <td>${ind.deltaFormatado}</td>
-          <td></td>
-        `;
-        tbody.appendChild(trNivel1);
-
-        catData.itens.forEach(item => {
-          const linkPdf = item.linkPdf ? `<a href="${item.linkPdf}" target="_blank" style="text-decoration:none; background:#eef2f3; padding:4px 8px; border-radius:4px; font-size:12px; color:#002D32; font-weight:bold;">📄 Ver</a>` : '';
-          const btnApagar = `<button onclick="apagarNF('${item.id}')" style="background:none; border:none; cursor:pointer; font-size:14px; margin-left:10px;" title="Excluir NF">🗑️</button>`;
-          
-          const trNivel2 = document.createElement('tr');
-          trNivel2.className = 'nivel2';
-          trNivel2.innerHTML = `
-            <td>${item.descricao} <span style="color:#aaa; font-size:11px;">(NF: ${item.numeroNf})</span></td>
-            <td style="color:#bbb;">-</td>
-            <td>${formatarMoeda(item.valorNum)}</td>
-            <td style="color:#bbb;">-</td>
-            <td style="color:#bbb;">-</td>
-            <td style="text-align:right;">${linkPdf} ${btnApagar}</td>
-          `;
-          tbody.appendChild(trNivel2);
-        });
-      }
-
-      const indTotal = calcularIndicadores(totalOrcadoMes, totalGastoMes);
-      document.getElementById('tabelaMatrizTotal').innerHTML = `
-        <tr class="linha-total">
-          <td>Total Geral da Operação</td>
-          <td>${formatarMoeda(totalOrcadoMes)}</td>
-          <td>${formatarMoeda(totalGastoMes)}</td>
-          <td>${indTotal.percFormatado}</td>
-          <td>${indTotal.deltaFormatado}</td>
-          <td></td>
-        </tr>
-      `;
-
-      desenharGrafico(labelsGrafico, dataOrcadoGrafico, dataRealizadoGrafico);
-    });
-  }
-
-  // ─── GRÁFICO MODERNIZADO (CHART.JS) ───
-  function desenharGrafico(labels, orcado, realizado) {
-    const ctx = document.getElementById('graficoDesvios').getContext('2d');
-    
-    if (graficoInstancia) graficoInstancia.destroy();
-
-    // Configurações avançadas do Chart.js para ficar com visual premium
-    graficoInstancia = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: labels,
-        datasets: [
-          { 
-            label: 'Orçamento Limite (Saudável)', 
-            data: orcado, 
-            backgroundColor: 'rgba(0, 45, 50, 0.8)', // Verde Escuro Leveros
-            borderRadius: 6, // Topos arredondados
-            borderSkipped: false
-          },
-          { 
-            label: 'Gasto Realizado', 
-            data: realizado, 
-            backgroundColor: 'rgba(231, 76, 60, 0.8)', // Vermelho elegante
-            borderRadius: 6,
-            borderSkipped: false
-          }
-        ]
-      },
-      options: { 
-        responsive: true, 
-        maintainAspectRatio: false, // Permite ajustar a altura pela div
-        plugins: {
-          legend: { position: 'top', labels: { font: { family: 'Segoe UI', size: 13 } } },
-          tooltip: {
-            backgroundColor: 'rgba(0,0,0,0.8)',
-            titleFont: { size: 14 },
-            bodyFont: { size: 14 },
-            padding: 12,
-            cornerRadius: 8,
-            callbacks: {
-              label: function(context) {
-                let label = context.dataset.label || '';
-                if (label) label += ': ';
-                if (context.parsed.y !== null) {
-                  label += new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(context.parsed.y);
-                }
-                return label;
-              }
-            }
-          }
-        },
-        scales: { 
-          y: { 
-            beginAtZero: true, 
-            grid: { color: '#f0f0f0', drawBorder: false }, // Linhas horizontais muito suaves
-            ticks: {
-              callback: function(value) { return 'R$ ' + value; } // Adiciona o R$ no eixo Y
-            }
-          },
-          x: { 
-            grid: { display: false, drawBorder: false } // Remove as linhas verticais
-          }
-        } 
-      }
-    });
-  }
-
-  window.apagarNF = async function(id) {
-    if (confirm('⚠️ Tem certeza que deseja excluir permanentemente este lançamento?')) {
-      try { await deleteDoc(doc(db, 'notasFiscais', id)); } 
-      catch (err) { alert('Erro ao excluir. Verifique permissões.'); }
-    }
-  };
-
-  // Exportação para Excel (Mantida a lógica de pegar dados)
-  document.getElementById('btnExportarExcel').addEventListener('click', () => {
-      // (O código de exportar mantém-se igual, pois roda em background)
-      alert("A exportação será ativada! (Podes manter a tua função CSV original aqui)");
-  });
-
-  // Salvar (Mantido)
-  document.getElementById('formOrcamento').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btnSalvar = document.getElementById('btnSalvar');
-    btnSalvar.textContent = "Salvando... ⏳"; btnSalvar.disabled = true;
-
-    try {
-      let urlDoPdf = ""; 
-      const arquivoSelecionado = document.getElementById('arquivoNf').files[0]; 
-      if (arquivoSelecionado) {
-        const local = ref(storage, 'comprovantes/' + Date.now() + '_' + arquivoSelecionado.name);
-        await uploadBytes(local, arquivoSelecionado);
-        urlDoPdf = await getDownloadURL(local);
-      }
-      let valNum = parseFloat(document.getElementById('valor').value.replace(',', '.')) || 0;
-      await addDoc(collection(db, 'notasFiscais'), {
-        numeroNf: document.getElementById('numeroNf').value,
-        descricao: document.getElementById('descricao').value,
-        dataEmissao: document.getElementById('dataEmissao').value,
-        categoria: document.getElementById('categoria').value,
-        valor: valNum, linkPdf: urlDoPdf, criadoEm: serverTimestamp()
-      });
-      document.getElementById('formOrcamento').reset(); 
-    } catch (error) { alert("Erro ao salvar."); } 
-    finally { btnSalvar.textContent = "Salvar Lançamento →"; btnSalvar.disabled = false; }
-  });
-
-  onAuthStateChanged(auth, user => {
-    if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-      currentUser = user;
-      document.getElementById('login-area').style.display = 'none';
-      document.getElementById('conteudo').style.display = 'block';
-      carregarDadosOrcamento();
-    } else if (user) {
-      alert("Acesso Negado."); window.location.href = "index.html";
-    }
-  });
-
-  document.getElementById('loginBtn').onclick = () => signInWithPopup(auth, provider);
-  document.getElementById('logoutBtn').onclick = () => signOut(auth);
-</script>
 </body>
 </html>
