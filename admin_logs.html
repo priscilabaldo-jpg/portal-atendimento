@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Auditoria de Acessos – CX Resolve</title>
 
+<!-- CSP Ajustada: blob: liberado para baixar os relatórios CSV -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' blob:;
+  script-src 'self' https://www.gstatic.com https://apis.google.com 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
 </head>
@@ -12,7 +22,7 @@
 
 <div class="bg-layer"></div>
 
-<div id="admin-content" style="display:none; position: relative; z-index: 5;">
+<div id="admin-logs-content" style="display:none; position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -220,7 +230,7 @@ document.getElementById('btnExportarLogs').addEventListener('click', () => {
    ==================================================================== */
 onAuthStateChanged(auth, user => {
     if (user && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-        document.getElementById('admin-content').style.display = 'block';
+        document.getElementById('admin-logs-content').style.display = 'block';
         carregarLogsAdmin();
     } else if (user) {
         alert("Área restrita. Apenas gestores podem acessar os relatórios.");
