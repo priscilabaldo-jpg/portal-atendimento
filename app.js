@@ -257,6 +257,41 @@ function carregarFeed(isAdmin) {
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
+  if (!target) return;
+
+  // --- NOVA LÓGICA: ABRIR DOCUMENTOS MASCARADOS (Método Link Fantasma) ---
+  const btnAbrirDoc = target.closest && target.closest('.btn-abrir-doc');
+  if (btnAbrirDoc) {
+    event.preventDefault(); 
+    const docId = btnAbrirDoc.getAttribute('data-doc');
+    
+    const linksSecretos = {
+      "book-n1": "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
+      "fluxo-pendente": "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
+      "boxlink-consulta": "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link",
+      "uappi-uso": "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
+      "fup-consulta": "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
+      "troca-titularidade": "https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
+      "crm-mudancas": "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
+      "regras-garantia": "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
+      "sys-inbound": "inboundgarantia.html"
+    };
+
+    if (linksSecretos[docId]) {
+      // Método infalível para contornar qualquer bloqueio do navegador
+      const linkFantasma = document.createElement('a');
+      linkFantasma.href = linksSecretos[docId];
+      linkFantasma.target = '_blank';
+      linkFantasma.rel = 'noopener noreferrer';
+      document.body.appendChild(linkFantasma);
+      linkFantasma.click();
+      document.body.removeChild(linkFantasma);
+    }
+    return; // Encerra a função aqui para não causar conflitos abaixo
+  }
+
+  // Prevenção de erro caso o alvo não tenha classList (ex: clicks no document body vazio)
+  if (!target.classList) return;
 
   // --- LÓGICA DA PÁGINA INFORMATIVOS (Toggle Metas) ---
   if (target.classList.contains('btn-toggle-detalhes')) {
@@ -275,33 +310,6 @@ document.addEventListener('click', async (event) => {
     document.querySelectorAll('.card').forEach(card => {
       card.style.display = (cat === 'todos' || card.dataset.cat === cat) ? 'flex' : 'none';
     });
-  }
-
-  // --- NOVA LÓGICA: ABRIR DOCUMENTOS MASCARADOS ---
-  const btnAbrirDoc = target.closest('.btn-abrir-doc');
-  if (btnAbrirDoc) {
-    event.preventDefault(); // Impede recarregamentos de página acidentais
-    const docId = btnAbrirDoc.getAttribute('data-doc');
-    
-    // Dicionário de links (Fica na memória, não no HTML)
-    const linksSecretos = {
-      "book-n1": "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
-      "fluxo-pendente": "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
-      "boxlink-consulta": "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link",
-      "uappi-uso": "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
-      "fup-consulta": "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
-      "troca-titularidade": "https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
-      "crm-mudancas": "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
-      "regras-garantia": "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
-      "sys-inbound": "inboundgarantia.html"
-    };
-
-    if (linksSecretos[docId]) {
-      // Abre a janela de forma segura
-      window.open(linksSecretos[docId], '_blank', 'noopener,noreferrer');
-    } else {
-      console.error("Erro: Link não mapeado no dicionário para a ID:", docId);
-    }
   }
 
   // --- INTERAÇÕES DO MURAL DE AVISOS ---
