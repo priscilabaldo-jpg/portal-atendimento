@@ -55,7 +55,7 @@ function formatNameFromEmail(email) {
 }
 
 // ====================================================================
-// 2. LÓGICA DA PÁGINA INICIAL (MURAL, BUSCA E SISTEMAS)
+// 2. LÓGICA DA PÁGINA INICIAL E BUSCA
 // ====================================================================
 const buscaEl = document.getElementById('busca');
 const resultadosEl = document.getElementById('resultados');
@@ -144,7 +144,7 @@ function carregarTickerDiario() {
       const primeiroNome = user.nome ? user.nome.split(' ')[0] : 'Alguém';
       itensHtml += `<span class="ticker-item">🪙 <strong>${escapeHTML(primeiroNome)}</strong> acabou de resgatar as moedas diárias!</span>`;
     });
-    tickerContainer.innerHTML = itensHtml + itensHtml + itensHtml; // Repetido p/ preencher o CSS marquee
+    tickerContainer.innerHTML = itensHtml + itensHtml + itensHtml;
   });
 }
 
@@ -203,8 +203,6 @@ function carregarFeed(isAdmin) {
       const heartIcon = isLiked ? '❤️' : '🤍';
       const likeClass = isLiked ? 'liked' : '';
       
-      // NOVA LÓGICA: Comentários agora são renderizados a partir da nova estrutura se existirem,
-      // Mas para manter compatibilidade temporária com os antigos, mapeamos do array.
       const comentarios = post.comentarios || [];
       let commentsHtml = '';
       comentarios.forEach(c => {
@@ -260,6 +258,15 @@ function carregarFeed(isAdmin) {
 document.addEventListener('click', async (event) => {
   const target = event.target;
 
+  // --- LÓGICA DA PÁGINA INFORMATIVOS (Toggle Metas) ---
+  if (target.classList.contains('btn-toggle-detalhes')) {
+    const details = target.nextElementSibling;
+    if (details) {
+      const isOpen = details.classList.toggle('open');
+      target.textContent = isOpen ? 'Ocultar detalhes' : 'Ver detalhes';
+    }
+  }
+
   // --- INTERAÇÕES DO MURAL DE AVISOS ---
   if (target.id === 'btnAdmin') {
     document.getElementById('formAviso').classList.toggle('open');
@@ -291,7 +298,6 @@ document.addEventListener('click', async (event) => {
     const texto = textInput.value.trim();
     let midiaUrl = mediaInput.value.trim();
     
-    // Tratamento de Link do Drive
     const matchDrive = midiaUrl.match(/https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
     if (matchDrive && matchDrive[1]) midiaUrl = `https://drive.google.com/thumbnail?id=${matchDrive[1]}&sz=w1000`;
     
@@ -346,7 +352,6 @@ document.addEventListener('click', async (event) => {
   }
 });
 
-// Listener Global para o "Enter" nos comentários
 document.addEventListener('keypress', (event) => {
   if (event.key === 'Enter' && event.target.classList.contains('input-comentario')) {
     enviarComentario(event.target.getAttribute('data-id'));
@@ -388,8 +393,6 @@ async function registrarAcesso(usuario) {
 }
 
 async function sincronizarPontosDiarios(user) {
-  // AVISO DE SEGURANÇA: Manter o increment(10) no front-end é provisório para não quebrar o seu projeto.
-  // O ideal, no futuro, é migrar essa verificação de "ultimoLogin" para o Firebase Cloud Functions.
   try {
     const emailLogado = user.email.toLowerCase();
     const userRef = doc(db, "usuarios", emailLogado);
@@ -440,16 +443,15 @@ onAuthStateChanged(auth, async user => {
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
-    // Esconde a tela de Login (se existir)
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
-    const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content');
+    // Adicionado o ID de informativos para que a tela seja desbloqueada com segurança
+    const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content') || document.getElementById('informativos-content');
     
     if (loginError) loginError.classList.remove('visible');
     if (loginArea) loginArea.style.display = 'none';
     if (conteudoArea) conteudoArea.style.display = 'block';
     
-    // Atualiza nomes na interface (se existirem)
     const welcomeUser = document.getElementById('welcomeUser');
     if (welcomeUser) welcomeUser.textContent = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
     
@@ -459,11 +461,9 @@ onAuthStateChanged(auth, async user => {
     const feedbackEmail = document.getElementById('feedbackEmail');
     if (feedbackEmail) feedbackEmail.value = user.email || '';
 
-    // Avatar do usuário na Timeline
     const myAvatar = document.getElementById('myAvatar');
     if (myAvatar) myAvatar.innerHTML = renderAvatar(user.displayName, user.photoURL);
 
-    // Habilita menus de Admin (se existirem)
     const menuAdminContainer = document.getElementById('menuAdminContainer');
     const navAdminMobile = document.getElementById('navAdminMobile');
     const btnAdmin = document.getElementById('btnAdmin');
@@ -478,7 +478,6 @@ onAuthStateChanged(auth, async user => {
       if (navAdminMobile) navAdminMobile.style.display = 'none';
     }
     
-    // Inicia os serviços dependendo da página onde estamos
     registrarAcesso(user);
     carregarAvisos(isAdmin);
     
@@ -489,20 +488,24 @@ onAuthStateChanged(auth, async user => {
       await sincronizarPontosDiarios(user);
     }
     
-  } else if (user) {
-    // E-mail não corporativo
-    signOut(auth); currentUser = null;
-    const loginError = document.getElementById('loginError');
-    if (loginError) loginError.classList.add('visible');
-    if (document.getElementById('login-area')) document.getElementById('login-area').style.display = 'flex';
-    if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
-    if (document.getElementById('timeline-content')) document.getElementById('timeline-content').style.display = 'none';
   } else {
-    // Deslogado
+    // USUÁRIO DESLOGADO OU COM E-MAIL NÃO CORPORATIVO
     currentUser = null;
-    if (document.getElementById('login-area')) document.getElementById('login-area').style.display = 'flex';
-    if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
-    if (document.getElementById('timeline-content')) document.getElementById('timeline-content').style.display = 'none';
+    const loginArea = document.getElementById('login-area');
+    
+    if (loginArea) {
+      loginArea.style.display = 'flex';
+      if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
+      
+      if (user && !user.email.endsWith('@leveros.com.br')) {
+        const loginError = document.getElementById('loginError');
+        if (loginError) loginError.classList.add('visible');
+        signOut(auth);
+      }
+    } else {
+      // Se não for a index, chuta de volta para logar
+      window.location.href = 'index.html';
+    }
   }
 });
 
