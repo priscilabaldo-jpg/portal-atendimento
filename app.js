@@ -277,6 +277,29 @@ document.addEventListener('click', async (event) => {
     });
   }
 
+  // --- NOVA LÓGICA: ABRIR DOCUMENTOS MASCARADOS ---
+  if (target.classList.contains('btn-abrir-doc')) {
+    const docId = target.getAttribute('data-doc');
+    
+    // Dicionário de links (Fica na memória, não no HTML)
+    const linksSecretos = {
+      "book-n1": "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
+      "fluxo-pendente": "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
+      "boxlink-consulta": "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwZQmee/view?usp=drive_link",
+      "uappi-uso": "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
+      "fup-consulta": "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
+      "troca-titularidade": "https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
+      "crm-mudancas": "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
+      "regras-garantia": "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
+      "sys-inbound": "inboundgarantia.html"
+    };
+
+    if (linksSecretos[docId]) {
+      // Abre a janela de forma segura
+      window.open(linksSecretos[docId], '_blank', 'noopener,noreferrer');
+    }
+  }
+
   // --- INTERAÇÕES DO MURAL DE AVISOS ---
   if (target.id === 'btnAdmin') {
     document.getElementById('formAviso').classList.toggle('open');
@@ -455,7 +478,6 @@ onAuthStateChanged(auth, async user => {
 
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
-    // ATUALIZAÇÃO: Container de materiais agora também é verificado para desbloqueio
     const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content') || document.getElementById('informativos-content') || document.getElementById('materiais-content');
     
     if (loginError) loginError.classList.remove('visible');
@@ -499,7 +521,6 @@ onAuthStateChanged(auth, async user => {
     }
     
   } else {
-    // USUÁRIO DESLOGADO OU COM E-MAIL NÃO CORPORATIVO
     currentUser = null;
     const loginArea = document.getElementById('login-area');
     
