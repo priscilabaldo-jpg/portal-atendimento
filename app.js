@@ -253,40 +253,11 @@ function carregarFeed(isAdmin) {
 }
 
 // ====================================================================
-// 4. DELEGAÇÃO DE EVENTOS GLOBAIS (O "Link" entre JS e HTML)
+// 4. DELEGAÇÃO DE EVENTOS GLOBAIS (Seguro contra XSS e CSP Block)
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
-  if (!target) return;
-
-  // --- LÓGICA DA PÁGINA DE MATERIAIS: ABRIR DOCUMENTOS MASCARADOS ---
-  // O closest garante que clicar no ícone, no texto ou na borda do botão funcione
-  const btnAbrirDoc = target.closest('.btn-abrir-doc');
-  if (btnAbrirDoc) {
-    event.preventDefault(); 
-    const docId = btnAbrirDoc.getAttribute('data-doc');
-    
-    const linksSecretos = {
-      "book-n1": "https://drive.google.com/file/d/1xBUkqpieFy7grDgKH9m6N8qgLh5UNQYz/view?usp=sharing",
-      "fluxo-pendente": "https://drive.google.com/file/d/1rlvUskJKGGZYNfI_MWPPMNqbT1VD4YUy/view?usp=drive_link",
-      "boxlink-consulta": "https://drive.google.com/file/d/1h-a69FunNE9vBG9UZVKEGKZcylwmee/view?usp=drive_link",
-      "uappi-uso": "https://drive.google.com/file/d/1UcRR_WhTEbWTtm5m7hMWXgRs6vM1fs0-/view?usp=drive_link",
-      "fup-consulta": "https://docs.google.com/document/d/15XnnFFRno2TAmv6vT4CLmPRYy5aX-ZnDPlC86rWFDgM/edit?usp=drive_link",
-      "troca-titularidade": "https://drive.google.com/file/d/1QW0eTGMoPrhkSWCIdSswbsT0ql0fq_AS/view?usp=drive_link",
-      "crm-mudancas": "https://docs.google.com/presentation/d/1cOpigJOaV62vlH8wdBAEcrNex3Z57Ofq/edit?usp=sharing",
-      "regras-garantia": "https://docs.google.com/spreadsheets/d/1q2ASC8N9v67KgMs06oRmL8KspqlFAvlvlDua18iHDjk/edit?gid=1344884096#gid=1344884096",
-      "sys-inbound": "inboundgarantia.html"
-    };
-
-    if (linksSecretos[docId]) {
-      // Método nativo e síncrono. Não é bloqueado por bloqueadores de pop-up.
-      window.open(linksSecretos[docId], '_blank', 'noopener,noreferrer');
-    }
-    return; // Encerra aqui para evitar conflitos
-  }
-
-  // Se não tem classList (ex: clique no document body vazio), ignora o resto
-  if (!target.classList) return;
+  if (!target || !target.classList) return;
 
   // --- LÓGICA DA PÁGINA INFORMATIVOS (Toggle Metas) ---
   if (target.classList.contains('btn-toggle-detalhes')) {
@@ -483,9 +454,33 @@ onAuthStateChanged(auth, async user => {
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
+    // ===== MURALHA EXTRA: VERIFICAÇÃO DE SUBPÁGINAS GESTORAS =====
+    // Mapeia todas as possíveis IDs de conteúdo administrativo do seu portal
+    const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content'];
+    let containerAdminAtivo = null;
+
+    paginasAdminIDs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) containerAdminAtivo = el;
+    });
+
+    // Se o elemento administrativo existir na página e o usuário NÃO for admin, bloqueia na hora!
+    if (containerAdminAtivo && !isAdmin) {
+        alert("Acesso negado. Esta é uma área restrita a gestores.");
+        window.location.href = 'index.html';
+        return; 
+    }
+    // =============================================================
+
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
-    const conteudoArea = document.getElementById('conteudo') || document.getElementById('timeline-content') || document.getElementById('informativos-content') || document.getElementById('materiais-content');
+    
+    // Captura dinamicamente qualquer área ativa de conteúdo para desbloqueio
+    const conteudoArea = document.getElementById('conteudo') || 
+                         document.getElementById('timeline-content') || 
+                         document.getElementById('informativos-content') || 
+                         document.getElementById('materiais-content') || 
+                         containerAdminAtivo;
     
     if (loginError) loginError.classList.remove('visible');
     if (loginArea) loginArea.style.display = 'none';
