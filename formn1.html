@@ -495,12 +495,21 @@
                             avisoFabricanteDireto.classList.remove("hidden");
                             
                             let nomeMarcaTexto = "";
-                            if(marca === "LG_CAC") nomeMarcaTexto = "LG CAC";
-                            else if(marca === "FUJITSU") nomeMarcaTexto = "Fujitsu";
-                            else if(marca.includes("HITACHI")) nomeMarcaTexto = "Hitachi";
+                            let contatoFabricante = "";
+                            
+                            if (marca === "LG_CAC") {
+                                nomeMarcaTexto = "LG CAC";
+                                contatoFabricante = "4004-5400 ou 0800 707 5454";
+                            } else if (marca === "FUJITSU") {
+                                nomeMarcaTexto = "Fujitsu";
+                                contatoFabricante = "0800-330-0020";
+                            } else if (marca.includes("HITACHI")) {
+                                nomeMarcaTexto = "Hitachi";
+                                contatoFabricante = "(12) 3906-2135 ou WhatsApp (11) 97627-1763";
+                            }
 
-                            textoAcaoFinal = `Para a linha ${nomeMarcaTexto}, não realizamos o acionamento de visita (ATEC). O cliente deve entrar em contato diretamente com o próprio fabricante.`;
-                            textoCrmFinal = "Orientar o cliente a acionar a garantia diretamente com o fabricante. Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).";
+                            textoAcaoFinal = `Para a linha ${nomeMarcaTexto}, não realizamos o acionamento de visita (ATEC). O cliente deve entrar em contato diretamente com o próprio fabricante através do(s) número(s): ${contatoFabricante}.`;
+                            textoCrmFinal = `Orientar o cliente a acionar a garantia diretamente com o fabricante (${contatoFabricante}). Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).`;
                             textoRegraFinal = `Conforme processos internos do fabricante, não acionamos Visita Técnica para ${nomeMarcaTexto}. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.`;
                         }
                         else if (temParceiro === "SIM") {
