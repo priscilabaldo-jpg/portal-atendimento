@@ -155,6 +155,11 @@
                             Não realizamos abertura de visita técnica para este cenário. O parceiro é o responsável por seguir com o atendimento do cliente e deve solicitar a peça diretamente via <strong>Uappi/LVI</strong>.
                         </div>
 
+                        <div id="avisoLGCAC" class="uappi-box hidden" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
+                            <strong style="display:block; margin-bottom: 6px;">🚫 AVISO: LG CAC</strong>
+                            Não acionamos Visita Técnica para a linha LG CAC. O cliente deve acionar diretamente o fabricante.
+                        </div>
+
                         <div id="avisoProtocolo" class="protocolo-box hidden">
                             <strong style="display:block; margin-bottom: 6px;">📝 PROTOCOLO DO FABRICANTE</strong>
                             O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
@@ -381,6 +386,7 @@
             const statBox = document.getElementById("statusGarantiaBox");
             
             const avisoUappi = document.getElementById("avisoUappi");
+            const avisoLGCAC = document.getElementById("avisoLGCAC");
             const avisoProtocolo = document.getElementById("avisoProtocolo");
             const avisoNaoInstalado = document.getElementById("avisoNaoInstalado");
 
@@ -431,6 +437,7 @@
                     statBox.classList.remove("hidden");
                     
                     avisoUappi.classList.add("hidden");
+                    avisoLGCAC.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
@@ -473,6 +480,7 @@
                     statBox.classList.remove("hidden");
 
                     avisoUappi.classList.add("hidden");
+                    avisoLGCAC.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
@@ -481,7 +489,13 @@
                         textoCrmFinal = "Orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
-                        if (temParceiro === "SIM") {
+                        if (marca === "LG_CAC") {
+                            avisoLGCAC.classList.remove("hidden");
+                            textoAcaoFinal = "Para a linha LG CAC, não realizamos o acionamento de visita. O cliente deve acionar diretamente o fabricante. Informe os números de contato da LG (4004-5400 / 0800 707 5454).";
+                            textoCrmFinal = "Orientar o cliente a acionar a garantia diretamente com a LG. Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).";
+                            textoRegraFinal = "Conforme processos internos do fabricante, não acionamos Visita para LG CAC. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.";
+                        }
+                        else if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
                             textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problem no equipamento.";
                             textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica). Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
@@ -511,6 +525,7 @@
             } else {
                 statBox.classList.add("hidden");
                 avisoUappi.classList.add("hidden");
+                avisoLGCAC.classList.add("hidden");
                 avisoProtocolo.classList.add("hidden");
                 avisoNaoInstalado.classList.add("hidden");
             }
