@@ -169,7 +169,9 @@
                         <div class="alert-crm">
                             <span class="regra-header">📌 Regra Operacional do Processo</span>
                             <span id="textoRegra"></span>
-                            
+                            <div class="crm-footer">
+                                ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+                            </div>
                         </div>
 
                         <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
@@ -203,11 +205,11 @@
                                 <tr><td><strong>Midea/Carrier (RAC)</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 24m (+10a Comp)</td></tr>
                                 <tr><td><strong>Midea/Carrier (CAC)</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 36m</td></tr>
                                 <tr><td><strong>Daikin</strong></td><td>90 dias</td><td>24 meses (+5a Comp)</td></tr>
-                                <tr><td><strong>Elgin (RAC)</strong></td><td><01/03/23: 90d <br>>=01/03/23: 12m</td><td><01/01/23: 12m <br>>=01/01/23: 36m (+10a Comp)</td></tr>
-                                <tr><td><strong>Elgin (CAC)</strong></td><td><01/03/23: 90d <br>>=01/03/23: 12m</td><td><01/01/22: 12m <br>>=01/01/22: 36m</td></tr>
+                                <tr><td><strong>Elgin (RAC)</strong></td><td>&lt;01/03/23: 90d <br>&gt;=01/03/23: 12m</td><td>&lt;01/01/23: 12m <br>&gt;=01/01/23: 36m (+10a Comp)</td></tr>
+                                <tr><td><strong>Elgin (CAC)</strong></td><td>&lt;01/03/23: 90d <br>&gt;=01/03/23: 12m</td><td>&lt;01/01/22: 12m <br>&gt;=01/01/22: 36m</td></tr>
                                 <tr><td><strong>Fujitsu</strong></td><td>90 dias</td><td>24 meses (+5a Comp)</td></tr>
-                                <tr><td><strong>Gree</strong></td><td>90 dias</td><td><15/08/22: 12m <br>>=15/08/22: 60m (+10a Comp)</td></tr>
-                                <tr><td><strong>LG (RAC)</strong></td><td>90 dias (+10a Comp)</td><td><01/09/25: 12m <br>>=01/09/25: 24m (ambos +10a Comp)</td></tr>
+                                <tr><td><strong>Gree</strong></td><td>90 dias</td><td>&lt;15/08/22: 12m <br>&gt;=15/08/22: 60m (+10a Comp)</td></tr>
+                                <tr><td><strong>LG (RAC)</strong></td><td>90 dias (+10a Comp)</td><td>&lt;01/09/25: 12m <br>&gt;=01/09/25: 24m (ambos +10a Comp)</td></tr>
                                 <tr><td><strong>LG (CAC)</strong></td><td>90 dias</td><td>12 meses</td></tr>
                                 <tr><td><strong>Philco / TCL</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 24m (+10a Comp)</td></tr>
                                 <tr><td><strong>Trane</strong></td><td>90 dias</td><td>36 meses</td></tr>
@@ -233,7 +235,7 @@
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
                         acao: "Primeiramente, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
-                        crm: "Abrir protocolo para Garantia, Motivo: Assistência Técnica - Reposição de Peças, Submotivo: Item Faltante.",
+                        crm: "Abrir protocolo para Garantia Motivo: Assistência Técnica — Reposição de Peças / Item Faltante.",
                         regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo começa a contar a partir da DATA DE RECEBIMENTO."
                     }
                 }
@@ -411,7 +413,6 @@
                 if (sub === "falta_peca") {
                     
                     const dataInicialRec = new Date(dataRec + "T00:00:00");
-                    // ATUALIZAÇÃO REGRAS DE PRAZO ITENS FALTANTES: 30 dias LG, 15 dias Demais
                     const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 15;
                     const dataVencimentoFalta = new Date(dataInicialRec.getTime());
                     dataVencimentoFalta.setDate(dataVencimentoFalta.getDate() + prazoDiasFalta);
@@ -433,7 +434,6 @@
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
-                    // Regra de Etiquetas
                     let msgEtiqueta = (marca === "FUJITSU") ? "Solicite as fotos das etiquetas da Condensadora e da Evaporadora do equipamento." : "Solicite a foto da etiqueta da unidade referente ao item faltante.";
 
                     if (!isFaltaValido) {
@@ -478,21 +478,21 @@
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
-                        textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de autorizada para realizar o reparo ou acionar o fabricante para que possa ajudar a localizar uma autorizada. Registrar como Motivo: Informações sobre garantia, Submotivo: Duvidas sobre garantia";
+                        textoCrmFinal = "Orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
                         if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
-                            textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problema no equipamento.";
-                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica) Motivo: Informações Sobre Garantia Submotivo: Dúvidas sobre garantia. (Finalizador) .";
-                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme politicas de garantia.";
+                            textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problem no equipamento.";
+                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica). Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
+                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme políticas de garantia.";
                         } 
                         else if (temParceiro === "NAO") {
                             if (produtoInstalado === "NAO") {
                                 avisoNaoInstalado.classList.remove("hidden");
                                 textoAcaoFinal = "Como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante para diagnóstico do defeito relatado.";
                                 textoCrmFinal = "Orientar o cliente sobre a negativa da visita devido o equipamento não estar instalado. (Se for avaria aparente ou devolução, seguir via T&D).";
-                                textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Se passar disso, o deve-se passar pelo fluxo de troca fora dos 7 onde  é necessário uma análise de aprovação de troca.";
+                                textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Após 7 dias → Deve passar por análise de troca.";
                             } else {
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
                                 textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
