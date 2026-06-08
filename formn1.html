@@ -36,11 +36,6 @@
                 <span class="ticker-item">⚙️ Verifique a tecnologia do produto! Se é Inverter ou Convencional</span>
                 <span class="ticker-item">🛠️ Verifique se o equipamento está instalado!</span>
                 <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
-                <span class="ticker-item">💡 Lembre-se de avisar o cliente quando mutar o telefone</span>
-                <span class="ticker-item">🤝 Tenha empatia e respeito</span>
-                <span class="ticker-item">⚙️ Verifique a tecnologia do produto! Se é Inverter ou Convencional</span>
-                <span class="ticker-item">🛠️ Verifique se o equipamento está instalado!</span>
-                <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
             </div>
         </div>
     </header>
@@ -166,21 +161,24 @@
                         </div>
 
                         <h3>Ação N1 Recomendada</h3>
-                        <p id="textoAcao"></p>
+                        <p id="textoAcao" style="white-space: pre-wrap;"></p>
                         
                         <h3 style="margin-top:20px;">Direcionamento CRM</h3>
-                        <p id="textoCRM" style="margin-bottom: 15px;"></p>
+                        <p id="textoCRM" style="margin-bottom: 15px; white-space: pre-wrap;"></p>
                         
                         <div class="alert-crm">
                             <span class="regra-header">📌 Regra Operacional do Processo</span>
                             <span id="textoRegra"></span>
+                            <div class="crm-footer">
+                                ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+                            </div>
                         </div>
 
                         <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                             <h3>📝 Script para o CRM</h3>
                             <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Copie o texto abaixo e cole no seu ticket/atendimento.</p>
                             
-                            <textarea id="textoResumoCRM" readonly rows="11" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                            <textarea id="textoResumoCRM" readonly rows="12" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
                             
                             <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                 📋 Copiar Script
@@ -198,121 +196,25 @@
                             <thead>
                                 <tr>
                                     <th>Marca</th>
-                                    <th>Garantia Legal <br><span style="font-size: 9px; opacity: 0.7;">(Instalação de Terceiros)</span></th>
-                                    <th>Garantia Contratual <br><span style="font-size: 9px; opacity: 0.7;">(Instalador Autorizado)</span></th>
+                                    <th>Garantia Legal <br><span style="font-size: 9px; opacity: 0.7;">(Instalação Terceiros)</span></th>
+                                    <th>Garantia Contratual <br><span style="font-size: 9px; opacity: 0.7;">(Autorizado)</span></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><strong>Agratto</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>12 meses</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Midea/Carrier (RAC)</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        Equipamento Convencional: 12 meses <br>
-                                        <div class="tag-info-extenso">Equipamento Inverter: 24 meses de garantia + 10 anos de garantia no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Midea/Carrier (CAC)</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        Equipamento Convencional: 12 meses <br>
-                                        <div class="tag-info-extenso">Equipamento Inverter: 36 meses</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Daikin</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        24 meses de garantia total <br>
-                                        <div class="tag-info-extenso">+ 5 anos de garantia exclusiva no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Elgin (RAC)</strong></td>
-                                    <td>
-                                        Notas emitidas antes de 01/03/2023: 90 dias<br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/03/2023: 12 meses</div>
-                                    </td>
-                                    <td>
-                                        Notas emitidas antes de 01/01/2023: 12 meses <br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/01/2023: 36 meses + 10 anos no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Elgin (CAC)</strong></td>
-                                    <td>
-                                        Notas emitidas antes de 01/03/2023: 90 dias<br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/03/2023: 12 meses</div>
-                                    </td>
-                                    <td>
-                                        Notas emitidas antes de 01/01/2022: 12 meses <br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/01/2022: 36 meses</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Fujitsu</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        24 meses de garantia total <br>
-                                        <div class="tag-info-extenso">+ 5 anos de garantia exclusiva no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Gree</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        Notas emitidas antes de 15/08/2022: 12 meses <br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 15/08/2022: 60 meses + 10 anos no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>LG (RAC)</strong></td>
-                                    <td>
-                                        90 dias corridos <br>
-                                        <div class="tag-info-extenso">+ 10 anos de garantia exclusiva no Compressor</div>
-                                    </td>
-                                    <td>
-                                        Notas emitidas antes de 01/09/2025: 12 meses total <br>
-                                        <div class="tag-info-extenso">Notas emitidas a partir de 01/09/2025: 24 meses total</div>
-                                        <div class="tag-info-extenso" style="margin-top: 2px;">Ambos possuem + 10 anos no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>LG (CAC)</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>12 meses</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Philco / TCL</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        Equipamento Convencional: 12 meses <br>
-                                        <div class="tag-info-extenso">Equipamento Inverter: 24 meses de garantia + 10 anos de garantia no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Trane</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>36 meses</td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Hitachi (RAC)</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>
-                                        24 meses de garantia total <br>
-                                        <div class="tag-info-extenso">+ 12 anos de garantia exclusiva no Compressor</div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Hitachi (CAC)</strong></td>
-                                    <td>90 dias corridos</td>
-                                    <td>12 meses</td>
-                                </tr>
+                                <tr><td><strong>Agratto</strong></td><td>90 dias</td><td>12 meses</td></tr>
+                                <tr><td><strong>Midea/Carrier (RAC)</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 24m (+10a Comp)</td></tr>
+                                <tr><td><strong>Midea/Carrier (CAC)</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 36m</td></tr>
+                                <tr><td><strong>Daikin</strong></td><td>90 dias</td><td>24 meses (+5a Comp)</td></tr>
+                                <tr><td><strong>Elgin (RAC)</strong></td><td><01/03/23: 90d <br>>=01/03/23: 12m</td><td><01/01/23: 12m <br>>=01/01/23: 36m (+10a Comp)</td></tr>
+                                <tr><td><strong>Elgin (CAC)</strong></td><td><01/03/23: 90d <br>>=01/03/23: 12m</td><td><01/01/22: 12m <br>>=01/01/22: 36m</td></tr>
+                                <tr><td><strong>Fujitsu</strong></td><td>90 dias</td><td>24 meses (+5a Comp)</td></tr>
+                                <tr><td><strong>Gree</strong></td><td>90 dias</td><td><15/08/22: 12m <br>>=15/08/22: 60m (+10a Comp)</td></tr>
+                                <tr><td><strong>LG (RAC)</strong></td><td>90 dias (+10a Comp)</td><td><01/09/25: 12m <br>>=01/09/25: 24m (ambos +10a Comp)</td></tr>
+                                <tr><td><strong>LG (CAC)</strong></td><td>90 dias</td><td>12 meses</td></tr>
+                                <tr><td><strong>Philco / TCL</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 24m (+10a Comp)</td></tr>
+                                <tr><td><strong>Trane</strong></td><td>90 dias</td><td>36 meses</td></tr>
+                                <tr><td><strong>Hitachi (RAC)</strong></td><td>90 dias</td><td>24 meses (+12a Comp)</td></tr>
+                                <tr><td><strong>Hitachi (CAC)</strong></td><td>90 dias</td><td>12 meses</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -332,9 +234,9 @@
                 respostas: {
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
-                        acao: "Primeiramente, verifique o prazo em que o cliente recebeu o produto. Se estiver OK, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
+                        acao: "Primeiramente, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
                         crm: "Abrir protocolo para Garantia, Reposição de Peças / Item Faltante.",
-                        regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo para reclamação de falta de componentes estéticos ou acessórios começa a contar a partir da DATA DE RECEBIMENTO."
+                        regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo começa a contar a partir da DATA DE RECEBIMENTO."
                     }
                 }
             }
@@ -511,7 +413,8 @@
                 if (sub === "falta_peca") {
                     
                     const dataInicialRec = new Date(dataRec + "T00:00:00");
-                    const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 7;
+                    // ATUALIZAÇÃO REGRAS DE PRAZO ITENS FALTANTES: 30 dias LG, 15 dias Demais
+                    const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 15;
                     const dataVencimentoFalta = new Date(dataInicialRec.getTime());
                     dataVencimentoFalta.setDate(dataVencimentoFalta.getDate() + prazoDiasFalta);
                     
@@ -532,12 +435,16 @@
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
+                    // Regra de Etiquetas
+                    let msgEtiqueta = (marca === "FUJITSU") ? "Solicite as fotos das etiquetas da Condensadora e da Evaporadora do equipamento." : "Solicite a foto da etiqueta da unidade referente ao item faltante.";
+
                     if (!isFaltaValido) {
-                        textoAcaoFinal = `O prazo de ${prazoDiasFalta} dias a partir da entrega para reclamação de itens faltantes expirou. Não é possível seguir com a reposição em garantia.`;
-                        textoCrmFinal = "Orientar o cliente que o prazo expirou e finalizar o atendimento N1. Caso ele queira, pode adquirir a peça separadamente com um autorizado.";
-                        textoRegraFinal = `O fabricante determina que o aviso de falta de components ocorra em até ${prazoDiasFalta} dias da recepção física do equipamento.`;
+                        textoAcaoFinal = `O prazo de ${prazoDiasFalta} dias a partir da entrega para reclamação de itens faltantes em garantia expirou.\n\n📌 Ação: ${msgEtiqueta}`;
+                        textoCrmFinal = "Abrir protocolo para ANÁLISE DE COMPRA DE PEÇA.";
+                        textoRegraFinal = `O fabricante determina o aviso de falta em até ${prazoDiasFalta} dias da recepção física. Como o prazo expirou, o cliente perde a garantia do item e o fluxo segue para análise de COMPRA da peça.`;
                     } else {
-                        textoRegraFinal = `Peças faltantes devem ser validadas cruzando a informação do manual. O prazo para a marca selecionada é de até ${prazoDiasFalta} dias corridos contados a partir do recebimento. Prossiga com o protocolo.`;
+                        textoAcaoFinal = baseDeConhecimento[tipo].respostas[sub].acao + `\n\n📌 Ação: ${msgEtiqueta}`;
+                        textoRegraFinal = `O prazo para a marca selecionada é de até ${prazoDiasFalta} dias corridos contados a partir do recebimento. Prossiga com o protocolo de garantia.`;
                     }
 
                 } else if (sub === "defeito_fabrica") {
@@ -667,7 +574,6 @@
             const btnCopiar = document.getElementById("btnCopiar");
             btnCopiar.textContent = "📋 Copiar Resumo";
             btnCopiar.style.backgroundColor = "#0056b3";
-            // --- FIM DA GERAÇÃO ---
 
             resBox.classList.remove("hidden");
         }
@@ -675,20 +581,17 @@
         function copiarResumo() {
             const textarea = document.getElementById("textoResumoCRM");
             
-            // Seleciona o texto
             textarea.select();
-            textarea.setSelectionRange(0, 99999); // Para funcionar bem em dispositivos móveis
+            textarea.setSelectionRange(0, 99999);
             
-            // Copia para a área de transferência usando a API do navegador
             navigator.clipboard.writeText(textarea.value).then(() => {
                 const btn = document.getElementById("btnCopiar");
                 btn.textContent = "✅ Copiado com sucesso!";
-                btn.style.backgroundColor = "#28a745"; // Muda a cor para verde
+                btn.style.backgroundColor = "#28a745"; 
                 
-                // Retorna o botão ao estado original após 3 segundos
                 setTimeout(() => {
                     btn.textContent = "📋 Copiar Resumo";
-                    btn.style.backgroundColor = "#0056b3"; // Azul original
+                    btn.style.backgroundColor = "#0056b3"; 
                 }, 3000);
             }).catch(err => {
                 console.error('Erro ao copiar texto: ', err);
