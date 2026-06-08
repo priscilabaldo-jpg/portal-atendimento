@@ -7,7 +7,7 @@ const firebaseConfig = {
   apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
   authDomain:  "portal-atendimento-541ae.firebaseapp.com",
   projectId:   "portal-atendimento-541ae",
-  storageBucket: "portal-atendimento-541ae.appspot.com" // NECESSÁRIO PARA UPLOADS DE NF
+  storageBucket: "portal-atendimento-541ae.appspot.com"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -19,10 +19,11 @@ const provider = new GoogleAuthProvider();
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 let currentUser = null;
 
-// Variáveis de Controle de Exportação
+// Variáveis Globais de Dados e Controle
 let logsParaExportacao = [];
 let nfParaExportacao = []; 
 let graficoInstancia = null; 
+let saldoAtualUsuario = 0;
 
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
@@ -50,13 +51,18 @@ function escapeHTML(str) {
   if (!str) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
-window.escapeHTML = escapeHTML;
+if(!window.escapeHTML) window.escapeHTML = escapeHTML;
 
 function getInitials(name) { return name ? name.charAt(0).toUpperCase() : 'U'; }
 
 function renderAvatar(nome, photoUrl) {
   if (photoUrl) return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
   return getInitials(nome);
+}
+
+function formatNameFromEmail(email) {
+  if (!email) return '';
+  return email.split('@')[0].split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
 }
 
 // ====================================================================
@@ -369,7 +375,7 @@ if (btnExportarLogs) {
 // ====================================================================
 // 5. MÓDULO ADMINISTRATIVO 2: GESTÃO DE RECOMPENSAS (`admin_pontos.html`)
 // ====================================================================
-function carregarPedidos() {
+function carregarPedidosAdmin() {
   const lista = document.getElementById('listaPedidos');
   if (!lista) return;
   const q = query(collection(db, "pedidos_lojinha"), orderBy("dataPedido", "desc"));
@@ -667,7 +673,6 @@ function carregarDadosOrcamento() {
       dadosAgrupados[dado.categoria].itens.push({ id: docSnap.id, ...dado, valorNum: valor });
       totalGastoMes += valor;
 
-      // Guarda os dados limpos para o relatório em Excel
       nfParaExportacao.push({
         nf: dado.numeroNf || '-',
         descricao: dado.descricao || '-',
@@ -750,7 +755,6 @@ function carregarDadosOrcamento() {
   });
 }
 
-// Intercepta a exclusão de NF na Tabela Matriz
 async function apagarNF(id) {
   if (confirm('⚠️ Tem certeza que deseja excluir permanentemente este lançamento?')) {
     try { await deleteDoc(doc(db, 'notasFiscais', id)); } 
@@ -758,7 +762,6 @@ async function apagarNF(id) {
   }
 }
 
-// Injeção de Despesas
 const formOrcamento = document.getElementById('formOrcamento');
 if (formOrcamento) {
   formOrcamento.addEventListener('submit', async (e) => {
@@ -779,7 +782,6 @@ if (formOrcamento) {
       }
       
       let valRaw = document.getElementById('valor').value;
-      // Substitui vírgula por ponto para o parse funcionar
       let valNum = parseFloat(valRaw.replace(',', '.')) || 0;
       
       await addDoc(collection(db, 'notasFiscais'), {
@@ -803,7 +805,6 @@ if (formOrcamento) {
   });
 }
 
-// Exportação de Dados Financeiros
 const btnExportarExcel = document.getElementById('btnExportarExcel');
 if (btnExportarExcel) {
   btnExportarExcel.addEventListener('click', () => {
@@ -813,7 +814,6 @@ if (btnExportarExcel) {
     csvContent += "NF;Descrição;Emissão;Categoria;Valor(R$);Comprovante PDF\n";
     
     nfParaExportacao.forEach(nf => {
-      // Troca o ponto decimal do JS de volta para vírgula para o Excel BR reconhecer como número
       const valorAjustado = nf.valor.toString().replace('.', ',');
       csvContent += `${nf.nf};${nf.descricao};${nf.emissao};${nf.categoria};${valorAjustado};${nf.link}\n`;
     });
@@ -832,21 +832,196 @@ if (btnExportarExcel) {
   });
 }
 
+// ====================================================================
+// 7. MÓDULO PÚBLICO: A LOJINHA (`lojinha.html`)
+// ====================================================================
+const produtosLoja = [
+  { id: "item_01", nome: "Caixa de Bombom", preco: 150, imagem: "🍫", desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." },
+  { id: "item_02", nome: "Caneca Térmica", preco: 500, imagem: "☕", desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." },
+  { id: "item_03", nome: "Kit Escritório", preco: 800, imagem: "📓", desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." },
+  { id: "item_04", nome: "Moletom CX Resolve", preco: 1200, imagem: "🧥", desc: "Moletom super confortável com a marca do nosso time." },
+  { id: "item_05", nome: "Day-Off (Folga)", preco: 2500, imagem: "🏖️", desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." }
+];
+
+function getEmojiPorProdutoId(idProduto) {
+  const prod = produtosLoja.find(p => p.id === idProduto);
+  return prod ? prod.imagem : "🎁";
+}
+
+function carregarVitrine() {
+  const grid = document.getElementById('lojaGrid');
+  if (!grid) return;
+  let html = '';
+
+  produtosLoja.forEach((produto, index) => {
+      const delay = index * 0.1; 
+      html += `
+          <div class="produto-card" style="animation-delay: ${delay}s">
+              <div class="produto-img">${produto.imagem}</div>
+              <div class="produto-nome">${produto.nome}</div>
+              <div class="produto-desc">${produto.desc}</div>
+              <div class="produto-preco">🪙 ${produto.preco}</div>
+              <button class="btn-comprar" onclick="window.realizarResgate('${produto.id}')" id="btn-${produto.id}">
+                  Resgatar Prêmio
+              </button>
+          </div>
+      `;
+  });
+  grid.innerHTML = html;
+}
+
+window.carregarHistoricoPedidos = async function() {
+  if(!currentUser) return;
+  const lista = document.getElementById('listaMeusPedidos');
+  if (!lista) return;
+  lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
+  
+  try {
+      const q = query(
+          collection(db, "pedidos_lojinha"), 
+          where("colaboradorEmail", "==", currentUser.email.toLowerCase())
+      );
+      
+      const snap = await getDocs(q);
+      
+      if (snap.empty) {
+          lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Você ainda não resgatou nenhum prêmio.</td></tr>';
+          return;
+      }
+
+      const pedidos = [];
+      snap.forEach(docSnap => {
+          pedidos.push({ id: docSnap.id, ...docSnap.data() });
+      });
+
+      pedidos.sort((a, b) => {
+          const timeA = a.dataPedido ? a.dataPedido.seconds : 0;
+          const timeB = b.dataPedido ? b.dataPedido.seconds : 0;
+          return timeB - timeA;
+      });
+
+      let html = '';
+      pedidos.forEach(pedido => {
+          const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
+          const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+          
+          const isPendente = pedido.status === "Pendente";
+          const statusClass = isPendente ? "status-pendente" : "status-entregue";
+          const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
+          const idFormatado = '#' + pedido.id.substring(0, 8).toUpperCase();
+
+          html += `
+              <tr>
+                  <td>${dataTimestamp.toLocaleDateString('pt-BR')}</td>
+                  <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
+                  <td>${pedido.produtoNome}</td>
+                  <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
+                  <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+                  <td>
+                      <button class="btn-ver-recibo" onclick="window.abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
+                          Ver Recibo
+                      </button>
+                  </td>
+              </tr>
+          `;
+      });
+      lista.innerHTML = html;
+  } catch(e) {
+      console.error("Erro ao puxar histórico", e);
+      lista.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar pedidos. Tente atualizar a página.</td></tr>';
+  }
+}
+
+window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
+  const modal = document.getElementById('reciboModal');
+  if(!modal) return;
+  document.getElementById('reciboIcon').textContent = imagem;
+  document.getElementById('reciboItem').textContent = nomeItem;
+  document.getElementById('reciboNome').textContent = nomeColab;
+  document.getElementById('reciboValor').textContent = valor + ' 🪙';
+  document.getElementById('reciboData').textContent = dataStr;
+  document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
+  modal.style.display = 'flex';
+}
+
+window.realizarResgate = async function(idProduto) {
+  if (!currentUser) return;
+  
+  const produto = produtosLoja.find(p => p.id === idProduto);
+  if (!produto) return;
+
+  if (saldoAtualUsuario < produto.preco) {
+      alert(`Você tem ${saldoAtualUsuario} moedas. Faltam ${produto.preco - saldoAtualUsuario} moedas para resgatar "${produto.nome}". Continue engajando!`);
+      return;
+  }
+
+  if (!confirm(`Deseja confirmar o resgate de "${produto.nome}" por ${produto.preco} moedas?`)) return;
+
+  const btn = document.getElementById(`btn-${produto.id}`);
+  btn.textContent = "Processando...";
+  btn.disabled = true;
+
+  try {
+      const userEmail = currentUser.email.toLowerCase();
+      const userName = currentUser.displayName || 'Colaborador';
+      const userRef = doc(db, "usuarios", userEmail);
+
+      await updateDoc(userRef, { pontos: increment(-produto.preco) });
+
+      const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
+          colaboradorNome: userName,
+          colaboradorEmail: userEmail,
+          produtoId: produto.id,
+          produtoNome: produto.nome,
+          valorPago: produto.preco,
+          status: "Pendente",
+          dataPedido: serverTimestamp()
+      });
+
+      await addDoc(collection(db, "historico_pontos"), {
+          adminNome: "Sistema (Lojinha)",
+          colaborador: userEmail,
+          tipoOperacao: "Resgate",
+          valor: produto.preco,
+          motivo: `Resgate de Prêmio: ${produto.nome}`,
+          dataRealizada: serverTimestamp()
+      });
+
+      saldoAtualUsuario -= produto.preco;
+      document.getElementById('valSaldo').textContent = saldoAtualUsuario;
+      if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
+
+      const dataAgora = new Date();
+      const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+      
+      window.abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
+
+      if(document.getElementById('meusPedidosSection') && document.getElementById('meusPedidosSection').style.display === 'block') {
+          window.carregarHistoricoPedidos();
+      }
+
+  } catch (e) {
+      console.error("Erro no resgate:", e);
+      alert("Ocorreu um erro na conexão. Tente novamente.");
+  } finally {
+      btn.textContent = "Resgatar Prêmio";
+      btn.disabled = false;
+  }
+};
+
 
 // ====================================================================
-// 7. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS E COMPATIBILIDADE
+// 8. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
-  // Interceptação do botão de entrega de prêmios da Lojinha
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
     if (pedidoId) await darBaixaPedido(pedidoId);
   }
 
-  // Interceptação do botão de apagar Nota Fiscal
   const btnApagarNf = target.closest('.btn-apagar-nf');
   if (btnApagarNf) {
     const nfId = btnApagarNf.getAttribute('data-id');
@@ -855,7 +1030,7 @@ document.addEventListener('click', async (event) => {
 });
 
 // ====================================================================
-// 8. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
+// 9. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
 // ====================================================================
 async function registrarAcesso(usuario) {
   if (sessionStorage.getItem('logRegistrado')) return; 
@@ -881,6 +1056,7 @@ async function sincronizarPontosDiarios(user) {
         
         if (saldoEl) saldoEl.textContent = moedasAtuais;
         if (saldoMobEl) saldoMobEl.textContent = moedasAtuais;
+        saldoAtualUsuario = moedasAtuais; // Mantém em sync para a loja
 
         if (dados.ultimoLogin !== hoje) {
             await updateDoc(userRef, {
@@ -892,6 +1068,7 @@ async function sincronizarPontosDiarios(user) {
             moedasAtuais += 10;
             if (saldoEl) saldoEl.textContent = moedasAtuais;
             if (saldoMobEl) saldoMobEl.textContent = moedasAtuais;
+            saldoAtualUsuario = moedasAtuais;
             alert("Bom dia! Você acabou de ganhar 10 moedas pela sua presença no portal hoje! 🪙");
         } else {
             await updateDoc(userRef, { foto: user.photoURL || null, nome: user.displayName || 'Usuário Leveros' });
@@ -905,6 +1082,7 @@ async function sincronizarPontosDiarios(user) {
         });
         if (saldoEl) saldoEl.textContent = 50;
         if (saldoMobEl) saldoMobEl.textContent = 50;
+        saldoAtualUsuario = 50;
         alert("Bem-vindo(a) ao CX Resolve! Você acaba de receber 50 moedas para começar! 🪙");
     }
   } catch (err) { console.error("Erro ao sincronizar saldo.", err); }
@@ -935,10 +1113,13 @@ onAuthStateChanged(auth, async user => {
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
     
+    // Agora incluindo a lojinha na varredura de desbloqueio
+    const lojinhaContent = document.getElementById('lojinha-content');
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
                          document.getElementById('informativos-content') || 
                          document.getElementById('materiais-content') || 
+                         lojinhaContent ||
                          containerAdminAtivo;
     
     if (loginError) loginError.classList.remove('visible');
@@ -974,9 +1155,14 @@ onAuthStateChanged(auth, async user => {
     registrarAcesso(user);
     carregarAvisos(isAdmin);
     
+    // Inicialização da Lojinha
+    if (lojinhaContent) {
+      carregarVitrine();
+    }
+
     // Inicialização Condicional Administrativa
     if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
-    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidos();
+    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); // Nome alterado para evitar colisão com a função antiga
     
     // Inicialização do Painel de Centro de Custo
     if (document.getElementById('tabelaMatriz') && isAdmin) {
@@ -988,7 +1174,7 @@ onAuthStateChanged(auth, async user => {
       carregarDadosOrcamento();
     }
 
-    if (document.getElementById('feedList')) {
+    if (document.getElementById('feedList') || lojinhaContent) {
       carregarFeed(isAdmin);
       carregarRanking();
       carregarTickerDiario();
