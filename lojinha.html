@@ -5,28 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lojinha – CX Resolve</title>
 
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self' blob:;
+  script-src 'self' https://www.gstatic.com https://apis.google.com 'unsafe-inline';
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
 <link rel="stylesheet" href="style.css">
 
 <style>
   /* 🟢 LAYOUT DA PÁGINA (Com Barra Lateral) */
   .loja-layout {
       display: grid;
-      grid-template-columns: 1fr 280px; /* Conteúdo esquerdo + Barra direita */
+      grid-template-columns: 1fr 280px; 
       gap: 30px;
       align-items: start;
   }
   .loja-main { min-width: 0; }
 
-  /* 🟢 Estilos do Ranking Lateral (Rolagem Otimizada) */
+  /* 🟢 Estilos do Ranking Lateral */
   .ranking-sidebar {
       background: var(--glass);
       border: 1px solid var(--glass-border);
       border-radius: 12px;
       padding: 16px;
       position: sticky;
-      top: 90px; /* Respiro do topo */
+      top: 90px; 
       height: fit-content;
-      max-height: calc(100vh - 110px); /* Nunca passa do limite inferior da tela */
+      max-height: calc(100vh - 110px); 
       display: flex;
       flex-direction: column;
   }
@@ -35,7 +44,7 @@
       margin-bottom: 16px;
       border-bottom: 1px solid var(--glass-border);
       padding-bottom: 12px;
-      flex-shrink: 0; /* Garante que o cabeçalho não diminua */
+      flex-shrink: 0; 
   }
   .ranking-header h3 { color: #FFD700; font-size: 14px; font-weight: bold; margin: 0; }
   .ranking-header p { font-size: 10px; opacity: 0.6; margin-top: 4px; }
@@ -43,11 +52,10 @@
   .ranking-list { 
       display: flex; flex-direction: column; gap: 8px; 
       overflow-y: auto; padding-right: 5px;
-      flex: 1; /* Preenche o resto do espaço disponível */
-      overscroll-behavior: contain; /* 🟢 MÁGICA: Impede o "tranco" da página rolar junto */
+      flex: 1; 
+      overscroll-behavior: contain; 
   }
   
-  /* Scroll customizado para o Ranking */
   .ranking-list::-webkit-scrollbar { width: 4px; }
   .ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
   
@@ -60,7 +68,7 @@
   .rank-nome { font-size: 11px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; color: white;}
   .rank-moedas { color: #FFD700; font-weight: bold; font-size: 11px; background: rgba(255,215,0,0.1); padding: 4px 6px; border-radius: 4px; }
   
-  /* Pódio (Ouro, Prata, Bronze) */
+  /* Pódio */
   .rank-item.pos-1 { border-color: #FFD700; background: rgba(255,215,0,0.05); }
   .rank-item.pos-1 .rank-pos { color: #FFD700; }
   .rank-item.pos-2 { border-color: #C0C0C0; background: rgba(192,192,192,0.05); }
@@ -373,9 +381,6 @@
 
 <script>
 document.getElementById('anoAtual').textContent = new Date().getFullYear();
-document.getElementById('hamburger').addEventListener('click', () => {
-  document.getElementById('mobileMenu').classList.toggle('open');
-});
 
 function fecharRecibo() {
     document.getElementById('reciboModal').style.display = 'none';
@@ -409,305 +414,7 @@ function escapeHTML(str) {
 window.escapeHTML = escapeHTML;
 </script>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, updateDoc, increment, collection, addDoc, serverTimestamp, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:"portal-atendimento-541ae.firebaseapp.com",
-  projectId:"portal-atendimento-541ae"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
-let currentUser = null;
-let saldoAtualUsuario = 0;
-
-/* ====================================================================
-   1. CATÁLOGO DE PRODUTOS E RANKING
-   ==================================================================== */
-const produtos = [
-    { id: "item_01", nome: "Caixa de Bombom", preco: 150, imagem: "🍫", desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." },
-    { id: "item_02", nome: "Caneca Térmica", preco: 500, imagem: "☕", desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." },
-    { id: "item_03", nome: "Kit Escritório", preco: 800, imagem: "📓", desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." },
-    { id: "item_04", nome: "Moletom CX Resolve", preco: 1200, imagem: "🧥", desc: "Moletom super confortável com a marca do nosso time." },
-    { id: "item_05", nome: "Day-Off (Folga)", preco: 2500, imagem: "🏖️", desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." }
-];
-
-function getEmojiPorProdutoId(idProduto) {
-    const prod = produtos.find(p => p.id === idProduto);
-    return prod ? prod.imagem : "🎁";
-}
-
-// 🟢 CARREGAR RANKING LATERAL 
-function carregarRanking() {
-    const list = document.getElementById('rankingList');
-    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
-    
-    onSnapshot(q, snap => {
-        if (snap.empty) {
-            list.innerHTML = '<div class="avisos-vazio" style="font-size: 10px;">Nenhum dado encontrado.</div>';
-            return;
-        }
-
-        let html = '';
-        let posicao = 1;
-        
-        snap.docs.forEach(docSnap => {
-            const user = docSnap.data();
-            const pontos = user.pontos || 0;
-            
-            let nomePuro = user.nome || 'Usuário';
-            let partesNome = nomePuro.split(' ');
-            let nomeCurto = partesNome.length > 1 ? `${partesNome[0]} ${partesNome[1]}` : nomePuro;
-            if(nomeCurto.length > 18) nomeCurto = nomeCurto.substring(0, 18) + '...';
-            
-            let iconPos = `${posicao}º`;
-            if (posicao === 1) iconPos = '🥇';
-            if (posicao === 2) iconPos = '🥈';
-            if (posicao === 3) iconPos = '🥉';
-
-            html += `
-                <div class="rank-item pos-${posicao}">
-                    <div class="rank-info">
-                        <span class="rank-pos">${iconPos}</span>
-                        <span class="rank-nome" title="${window.escapeHTML(nomePuro)}">${window.escapeHTML(nomeCurto)}</span>
-                    </div>
-                    <span class="rank-moedas">${pontos} 🪙</span>
-                </div>
-            `;
-            posicao++;
-        });
-        
-        list.innerHTML = html;
-    });
-}
-
-/* ====================================================================
-   2. RENDERIZAR PRODUTOS NA TELA
-   ==================================================================== */
-function carregarVitrine() {
-    const grid = document.getElementById('lojaGrid');
-    let html = '';
-
-    produtos.forEach((produto, index) => {
-        const delay = index * 0.1; 
-        
-        html += `
-            <div class="produto-card" style="animation-delay: ${delay}s">
-                <div class="produto-img">${produto.imagem}</div>
-                <div class="produto-nome">${produto.nome}</div>
-                <div class="produto-desc">${produto.desc}</div>
-                <div class="produto-preco">🪙 ${produto.preco}</div>
-                <button class="btn-comprar" onclick="realizarResgate('${produto.id}')" id="btn-${produto.id}">
-                    Resgatar Prêmio
-                </button>
-            </div>
-        `;
-    });
-    grid.innerHTML = html;
-}
-
-/* ====================================================================
-   3. LÓGICA DE COMPRA E GERAÇÃO DE COMPROVANTE
-   ==================================================================== */
-window.realizarResgate = async function(idProduto) {
-    if (!currentUser) return;
-    
-    const produto = produtos.find(p => p.id === idProduto);
-    if (!produto) return;
-
-    if (saldoAtualUsuario < produto.preco) {
-        alert(`Você tem ${saldoAtualUsuario} moedas. Faltam ${produto.preco - saldoAtualUsuario} moedas para resgatar "${produto.nome}". Continue engajando!`);
-        return;
-    }
-
-    if (!confirm(`Deseja confirmar o resgate de "${produto.nome}" por ${produto.preco} moedas?`)) return;
-
-    const btn = document.getElementById(`btn-${produto.id}`);
-    btn.textContent = "Processando...";
-    btn.disabled = true;
-
-    try {
-        const userEmail = currentUser.email.toLowerCase();
-        const userName = currentUser.displayName || 'Colaborador';
-        const userRef = doc(db, "usuarios", userEmail);
-
-        await updateDoc(userRef, { pontos: increment(-produto.preco) });
-
-        const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
-            colaboradorNome: userName,
-            colaboradorEmail: userEmail,
-            produtoId: produto.id,
-            produtoNome: produto.nome,
-            valorPago: produto.preco,
-            status: "Pendente",
-            dataPedido: serverTimestamp()
-        });
-
-        await addDoc(collection(db, "historico_pontos"), {
-            adminNome: "Sistema (Lojinha)",
-            colaborador: userEmail,
-            tipoOperacao: "Resgate",
-            valor: produto.preco,
-            motivo: `Resgate de Prêmio: ${produto.nome}`,
-            dataRealizada: serverTimestamp()
-        });
-
-        saldoAtualUsuario -= produto.preco;
-        document.getElementById('valSaldo').textContent = saldoAtualUsuario;
-        if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
-
-        const dataAgora = new Date();
-        const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-        
-        abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
-
-        if(document.getElementById('meusPedidosSection').style.display === 'block') {
-            window.carregarHistoricoPedidos();
-        }
-
-    } catch (e) {
-        console.error("Erro no resgate:", e);
-        alert("Ocorreu um erro na conexão. Tente novamente.");
-    } finally {
-        btn.textContent = "Resgatar Prêmio";
-        btn.disabled = false;
-    }
-};
-
-/* ====================================================================
-   4. HISTÓRICO DE PEDIDOS DO USUÁRIO
-   ==================================================================== */
-window.carregarHistoricoPedidos = async function() {
-    if(!currentUser) return;
-    
-    const lista = document.getElementById('listaMeusPedidos');
-    lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Buscando seus resgates...</td></tr>';
-    
-    try {
-        const q = query(
-            collection(db, "pedidos_lojinha"), 
-            where("colaboradorEmail", "==", currentUser.email.toLowerCase())
-        );
-        
-        const snap = await getDocs(q);
-        
-        if (snap.empty) {
-            lista.innerHTML = '<tr><td colspan="6" style="text-align:center; opacity:0.5;">Você ainda não resgatou nenhum prêmio.</td></tr>';
-            return;
-        }
-
-        const pedidos = [];
-        snap.forEach(docSnap => {
-            pedidos.push({ id: docSnap.id, ...docSnap.data() });
-        });
-
-        pedidos.sort((a, b) => {
-            const timeA = a.dataPedido ? a.dataPedido.seconds : 0;
-            const timeB = b.dataPedido ? b.dataPedido.seconds : 0;
-            return timeB - timeA;
-        });
-
-        let html = '';
-        pedidos.forEach(pedido => {
-            const dataTimestamp = pedido.dataPedido ? new Date(pedido.dataPedido.seconds * 1000) : new Date();
-            const dataFormatada = dataTimestamp.toLocaleDateString('pt-BR') + ' às ' + dataTimestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            
-            const isPendente = pedido.status === "Pendente";
-            const statusClass = isPendente ? "status-pendente" : "status-entregue";
-            const emojiProduto = getEmojiPorProdutoId(pedido.produtoId);
-            
-            const idFormatado = '#' + pedido.id.substring(0, 8).toUpperCase();
-
-            html += `
-                <tr>
-                    <td>${dataTimestamp.toLocaleDateString('pt-BR')}</td>
-                    <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
-                    <td>${pedido.produtoNome}</td>
-                    <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
-                    <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
-                    <td>
-                        <button class="btn-ver-recibo" onclick="abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
-                            Ver Recibo
-                        </button>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        lista.innerHTML = html;
-        
-    } catch(e) {
-        console.error("Erro ao puxar histórico", e);
-        lista.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Erro ao carregar pedidos. Tente atualizar a página.</td></tr>';
-    }
-}
-
-// Função Auxiliar: Preenche o Modal e Exibe
-window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
-    document.getElementById('reciboIcon').textContent = imagem;
-    document.getElementById('reciboItem').textContent = nomeItem;
-    document.getElementById('reciboNome').textContent = nomeColab;
-    document.getElementById('reciboValor').textContent = valor + ' 🪙';
-    document.getElementById('reciboData').textContent = dataStr;
-    document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
-    
-    document.getElementById('reciboModal').style.display = 'flex';
-}
-
-/* ====================================================================
-   5. AUTENTICAÇÃO E CARREGAMENTO DE SALDO
-   ==================================================================== */
-onAuthStateChanged(auth, async user => {
-  if (user && user.email.endsWith('@leveros.com.br')) {
-    currentUser = user;
-    document.getElementById('lojinha-content').style.display = 'block';
-
-    const emailLogado = user.email.toLowerCase();
-    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
-
-    if (isAdmin) {
-       document.getElementById('menuAdminContainer').style.display = 'block';
-       document.getElementById('navAdminMobile').style.display = 'block';
-    }
-    
-    carregarVitrine();
-    carregarRanking();
-
-    try {
-        const userRef = doc(db, "usuarios", emailLogado);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-            saldoAtualUsuario = userSnap.data().pontos || 0;
-            document.getElementById('valSaldo').textContent = saldoAtualUsuario;
-            if (document.getElementById('valSaldoMobile')) {
-                document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
-            }
-        }
-    } catch (err) {
-        console.error("Erro ao puxar saldo: ", err);
-    }
-    
-  } else {
-    window.location.href = 'index.html';
-  }
-});
-
-const logout = () => {
-  sessionStorage.removeItem('logRegistrado');
-  signOut(auth).then(() => window.location.href = 'index.html');
-};
-
-document.getElementById('logoutBtn').onclick = logout;
-document.getElementById('logoutBtnMobile').onclick = logout;
-</script>
+<script type="module" src="app.js?v=1.7"></script>
 
 </body>
 </html>
