@@ -478,21 +478,21 @@
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
-                        textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de autorizada para realizar o reparo ou acionar o fabricante para que possa ajudar a localizar uma autorizada.";
+                        textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de autorizada para realizar o reparo ou acionar o fabricante para que possa ajudar a localizar uma autorizada. Registrar como Motivo: Informações sobre garantia, Submotivo: Duvidas sobre garantia";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
                         if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
                             textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problema no equipamento.";
-                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica).";
-                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI.";
+                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica) Motivo: Informações Sobre Garantia Submotivo: Dúvidas sobre garantia. (Finalizador) .";
+                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme politicas de garantia.";
                         } 
                         else if (temParceiro === "NAO") {
                             if (produtoInstalado === "NAO") {
                                 avisoNaoInstalado.classList.remove("hidden");
                                 textoAcaoFinal = "Como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante para diagnóstico do defeito relatado.";
-                                textoCrmFinal = "Orientar o cliente sobre a necessidade do equipamento estar instalado para abertura de visita. (Se for avaria aparente ou devolução, transferir para Trocas/Devoluções).";
-                                textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Se passar disso, o cliente deve instalar primeiro.";
+                                textoCrmFinal = "Orientar o cliente sobre a negativa da visita devido o equipamento não estar instalado. (Se for avaria aparente ou devolução, seguir via T&D).";
+                                textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Se passar disso, o deve-se passar pelo fluxo de troca fora dos 7 onde  é necessário uma análise de aprovação de troca.";
                             } else {
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
                                 textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
