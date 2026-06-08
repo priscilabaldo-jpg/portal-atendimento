@@ -155,9 +155,9 @@
                             Não realizamos abertura de visita técnica para este cenário. O parceiro é o responsável por seguir com o atendimento do cliente e deve solicitar a peça diretamente via <strong>Uappi/LVI</strong>.
                         </div>
 
-                        <div id="avisoLGCAC" class="uappi-box hidden" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
-                            <strong style="display:block; margin-bottom: 6px;">🚫 AVISO: LG CAC</strong>
-                            Não acionamos Visita Técnica para a linha LG CAC. O cliente deve acionar diretamente o fabricante.
+                        <div id="avisoFabricanteDireto" class="uappi-box hidden" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
+                            <strong style="display:block; margin-bottom: 6px;">🚫 AVISO: ACIONAMENTO DIRETO</strong>
+                            Não acionamos Visita Técnica (ATEC) para esta marca/linha. O cliente deve entrar em contato diretamente com o fabricante.
                         </div>
 
                         <div id="avisoProtocolo" class="protocolo-box hidden">
@@ -174,7 +174,9 @@
                         <div class="alert-crm">
                             <span class="regra-header">📌 Regra Operacional do Processo</span>
                             <span id="textoRegra"></span>
-                            
+                            <div class="crm-footer">
+                                ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+                            </div>
                         </div>
 
                         <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
@@ -212,9 +214,8 @@
                                 <tr><td><strong>Elgin (CAC)</strong></td><td>&lt;01/03/23: 90d <br>&gt;=01/03/23: 12m</td><td>&lt;01/01/22: 12m <br>&gt;=01/01/22: 36m</td></tr>
                                 <tr><td><strong>Fujitsu</strong></td><td>90 dias</td><td>24 meses (+5a Comp)</td></tr>
                                 <tr><td><strong>Gree</strong></td><td>90 dias</td><td>&lt;15/08/22: 12m <br>&gt;=15/08/22: 60m (+10a Comp)</td></tr>
-                                <!-- CORRIGIDO: LG (RAC) Garantia Legal agora exibe 12 ou 24 meses conforme data da NF -->
-                                <tr><td><strong>LG (RAC)</strong></td><td>&lt;01/09/25: 12m <br>&gt;=01/09/25: 24m (+10a Comp)</td><td>&lt;01/09/25: 12m <br>&gt;=01/09/25: 24m (ambos +10a Comp)</td></tr>
-                                <tr><td><strong>LG (CAC)</strong></td><td>12 meses</td><td>12 meses</td></tr>
+                                <tr><td><strong>LG (RAC)</strong></td><td>90 dias (+10a Comp)</td><td>&lt;01/09/25: 12m <br>&gt;=01/09/25: 24m (ambos +10a Comp)</td></tr>
+                                <tr><td><strong>LG (CAC)</strong></td><td>90 dias</td><td>12 meses</td></tr>
                                 <tr><td><strong>Philco / TCL</strong></td><td>90 dias</td><td>Conv: 12m <br>Inv: 24m (+10a Comp)</td></tr>
                                 <tr><td><strong>Trane</strong></td><td>90 dias</td><td>36 meses</td></tr>
                                 <tr><td><strong>Hitachi (RAC)</strong></td><td>90 dias</td><td>24 meses (+12a Comp)</td></tr>
@@ -340,22 +341,13 @@
             let obs = "";
 
             switch(marca) {
-                case "AGRATTO":
-                    if (isLegal) dias = 90;
-                    else meses = 12;
-                    break;
+                case "AGRATTO": if (isLegal) dias = 90; else meses = 12; break;
                 case "MIDEA_RAC":
                     if (isLegal) dias = 90;
                     else { meses = (tec === "INVERTER") ? 24 : 12; if (tec === "INVERTER") obs = "*Garantia de 10 anos no compressor."; }
                     break;
-                case "MIDEA_CAC":
-                    if (isLegal) dias = 90;
-                    else { meses = (tec === "INVERTER") ? 36 : 12; }
-                    break;
-                case "DAIKIN":
-                    if (isLegal) dias = 90;
-                    else { meses = 24; obs = "*Garantia de 5 anos no compressor."; }
-                    break;
+                case "MIDEA_CAC": if (isLegal) dias = 90; else { meses = (tec === "INVERTER") ? 36 : 12; } break;
+                case "DAIKIN": if (isLegal) dias = 90; else { meses = 24; obs = "*Garantia de 5 anos no compressor."; } break;
                 case "ELGIN_RAC":
                     if (isLegal) { meses = (data >= new Date("2023-03-01T00:00:00")) ? 12 : 0; if(meses === 0) dias = 90; } 
                     else { if (data >= new Date("2023-01-01T00:00:00")) { meses = 36; obs = "*Garantia de 10 anos no compressor."; } else { meses = 12; } }
@@ -364,49 +356,25 @@
                     if (isLegal) { meses = (data >= new Date("2023-03-01T00:00:00")) ? 12 : 0; if(meses === 0) dias = 90; } 
                     else { meses = (data >= new Date("2022-01-01T00:00:00")) ? 36 : 12; }
                     break;
-                case "FUJITSU":
-                    if (isLegal) dias = 90;
-                    else { meses = 24; obs = "*Garantia de 5 anos no compressor."; }
-                    break;
+                case "FUJITSU": if (isLegal) dias = 90; else { meses = 24; obs = "*Garantia de 5 anos no compressor."; } break;
                 case "GREE":
                     if (isLegal) dias = 90;
                     else { if (data >= new Date("2022-08-15T00:00:00")) { meses = 60; obs = "*Garantia de 10 anos no compressor."; } else { meses = 12; } }
                     break;
-
-                // CORRIGIDO: LG (RAC) agora distingue Garantia Legal de Contratual.
-                // Garantia Legal: 12m (NF < 01/09/2025) ou 24m (NF >= 01/09/2025) — sem obs de compressor.
-                // Garantia Contratual: mesmos prazos + obs de 10 anos no compressor.
-                case "LG_RAC": {
+                case "LG_RAC":
                     const aPartir2025 = (data >= new Date("2025-09-01T00:00:00"));
                     meses = aPartir2025 ? 24 : 12;
                     if (!isLegal) obs = "*Garantia de 10 anos no compressor.";
                     break;
-                }
-
-                // CORRIGIDO: LG (CAC) agora distingue Legal de Contratual.
-                // Ambos são 12 meses, mas a separação permite expansão futura e elimina
-                // o caso onde isLegal era ignorado e o texto ficava errado.
-                case "LG_CAC":
-                    meses = 12;
-                    break;
-
+                case "LG_CAC": meses = 12; break;
                 case "PHILCO":
                 case "TCL":
                     if (isLegal) dias = 90;
                     else { meses = (tec === "INVERTER") ? 24 : 12; if (tec === "INVERTER") obs = "*Garantia de 10 anos no compressor."; }
                     break;
-                case "TRANE":
-                    if (isLegal) dias = 90;
-                    else meses = 36;
-                    break;
-                case "HITACHI_RAC":
-                    if (isLegal) dias = 90;
-                    else { meses = 24; obs = "*Garantia de 12 anos no compressor."; }
-                    break;
-                case "HITACHI_CAC":
-                    if (isLegal) dias = 90;
-                    else meses = 12;
-                    break;
+                case "TRANE": if (isLegal) dias = 90; else meses = 36; break;
+                case "HITACHI_RAC": if (isLegal) dias = 90; else { meses = 24; obs = "*Garantia de 12 anos no compressor."; } break;
+                case "HITACHI_CAC": if (isLegal) dias = 90; else meses = 12; break;
             }
             return { meses, dias, obs };
         }
@@ -418,7 +386,7 @@
             const statBox = document.getElementById("statusGarantiaBox");
             
             const avisoUappi = document.getElementById("avisoUappi");
-            const avisoLGCAC = document.getElementById("avisoLGCAC");
+            const avisoFabricanteDireto = document.getElementById("avisoFabricanteDireto");
             const avisoProtocolo = document.getElementById("avisoProtocolo");
             const avisoNaoInstalado = document.getElementById("avisoNaoInstalado");
 
@@ -469,7 +437,7 @@
                     statBox.classList.remove("hidden");
                     
                     avisoUappi.classList.add("hidden");
-                    avisoLGCAC.classList.add("hidden");
+                    avisoFabricanteDireto.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
@@ -487,12 +455,7 @@
                 } else if (sub === "defeito_fabrica") {
                     
                     const dataInicialNF = new Date(dataNF + "T00:00:00");
-
-                    // CORRIGIDO (Divergência 3): Parceiro vinculado + instalação por terceiros (parceiroInstalou === "NAO")
-                    // agora é tratado como Garantia Legal, não como bloqueio Uappi.
-                    // Apenas quando o próprio parceiro instalou (parceiroInstalou === "SIM") aplica-se Garantia Contratual e bloqueio.
                     const tipoInstalacaoCalculo = (temParceiro === "SIM" && parceiroInstalou === "SIM") ? "AUTORIZADO" : "LEGAL";
-
                     const regra = calcularRegraGarantia(marca, tec, tipoInstalacaoCalculo, dataNF);
                     
                     const dataVencimento = new Date(dataInicialNF.getTime());
@@ -517,43 +480,35 @@
                     statBox.classList.remove("hidden");
 
                     avisoUappi.classList.add("hidden");
-                    avisoLGCAC.classList.add("hidden");
+                    avisoFabricanteDireto.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
+
+                    const marcasAcionamentoDireto = ["LG_CAC", "FUJITSU", "HITACHI_RAC", "HITACHI_CAC"];
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
                         textoCrmFinal = "Orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
-                        if (marca === "LG_CAC") {
-                            // Regra especial LG CAC: não acionamos visita técnica independente do parceiro
-                            avisoLGCAC.classList.remove("hidden");
-                            textoAcaoFinal = "Para a linha LG CAC, não realizamos o acionamento de visita. O cliente deve acionar diretamente o fabricante. Informe os números de contato da LG (4004-5400 / 0800 707 5454).";
-                            textoCrmFinal = "Orientar o cliente a acionar a garantia diretamente com a LG. Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).";
-                            textoRegraFinal = "Conforme processos internos do fabricante, não acionamos Visita para LG CAC. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.";
+                        if (marcasAcionamentoDireto.includes(marca)) {
+                            avisoFabricanteDireto.classList.remove("hidden");
+                            
+                            let nomeMarcaTexto = "";
+                            if(marca === "LG_CAC") nomeMarcaTexto = "LG CAC";
+                            else if(marca === "FUJITSU") nomeMarcaTexto = "Fujitsu";
+                            else if(marca.includes("HITACHI")) nomeMarcaTexto = "Hitachi";
+
+                            textoAcaoFinal = `Para a linha ${nomeMarcaTexto}, não realizamos o acionamento de visita (ATEC). O cliente deve entrar em contato diretamente com o próprio fabricante.`;
+                            textoCrmFinal = "Orientar o cliente a acionar a garantia diretamente com o fabricante. Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).";
+                            textoRegraFinal = `Conforme processos internos do fabricante, não acionamos Visita Técnica para ${nomeMarcaTexto}. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.`;
                         }
-                        // CORRIGIDO (Divergência 3): bloqueio Uappi só quando o próprio parceiro instalou
-                        else if (temParceiro === "SIM" && parceiroInstalou === "SIM") {
+                        else if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
-                            textoAcaoFinal = "O pedido possui um parceiro vinculado que realizou a instalação. Ele é o responsável por seguir com o serviço e diagnosticar o problema no equipamento.";
+                            textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problem no equipamento.";
                             textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica). Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
-                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro instalador no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme políticas de garantia.";
-                        }
-                        // CORRIGIDO (Divergência 3): parceiro vinculado mas instalação por terceiros → Garantia Legal, fluxo normal
-                        else if (temParceiro === "SIM" && parceiroInstalou === "NAO") {
-                            if (produtoInstalado === "NAO" || produtoInstalado === "") {
-                                // Produto instalado não é perguntado neste fluxo (campo oculto),
-                                // então assumimos instalado e seguimos o fluxo de garantia legal normal.
-                                textoAcaoFinal = `O pedido possui parceiro vinculado, porém a instalação foi realizada por terceiros — aplica-se Garantia Legal de ${strPrazo}. Solicite número de série e relato detalhado do defeito.`;
-                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
-                                textoRegraFinal = "Instalação por terceiros (não pelo parceiro) enquadra-se em Garantia Legal. Obrigatório anexar número de série e confirmar endereço e telefone do cliente antes de enviar ao time de Garantia.";
-                            } else {
-                                textoAcaoFinal = `O pedido possui parceiro vinculado, porém a instalação foi realizada por terceiros — aplica-se Garantia Legal de ${strPrazo}. Solicite número de série e relato detalhado do defeito.`;
-                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
-                                textoRegraFinal = "Instalação por terceiros (não pelo parceiro) enquadra-se em Garantia Legal. Obrigatório anexar número de série e confirmar endereço e telefone do cliente antes de enviar ao time de Garantia.";
-                            }
-                        }
+                            textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme políticas de garantia.";
+                        } 
                         else if (temParceiro === "NAO") {
                             if (produtoInstalado === "NAO") {
                                 avisoNaoInstalado.classList.remove("hidden");
@@ -578,7 +533,7 @@
             } else {
                 statBox.classList.add("hidden");
                 avisoUappi.classList.add("hidden");
-                avisoLGCAC.classList.add("hidden");
+                avisoFabricanteDireto.classList.add("hidden");
                 avisoProtocolo.classList.add("hidden");
                 avisoNaoInstalado.classList.add("hidden");
             }
