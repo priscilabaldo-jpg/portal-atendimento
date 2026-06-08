@@ -169,9 +169,7 @@
                         <div class="alert-crm">
                             <span class="regra-header">📌 Regra Operacional do Processo</span>
                             <span id="textoRegra"></span>
-                            <div class="crm-footer">
-                                ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
-                            </div>
+                            
                         </div>
 
                         <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
@@ -235,7 +233,7 @@
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
                         acao: "Primeiramente, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
-                        crm: "Abrir protocolo para Garantia, Reposição de Peças / Item Faltante.",
+                        crm: "Abrir protocolo para Garantia, Motivo: Assistência Técnica - Reposição de Peças, Submotivo: Item Faltante.",
                         regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo começa a contar a partir da DATA DE RECEBIMENTO."
                     }
                 }
@@ -480,8 +478,8 @@
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
-                        textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de confiança para realizar o conserto orçado e finalizar o atendimento N1.";
-                        textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o N2. A tratativa finaliza no nível 1 com a orientação comercial ao cliente.";
+                        textoCrmFinal = "Orientar o cliente a buscar uma assistência técnica de autorizada para realizar o reparo ou acionar o fabricante para que possa ajudar a localizar uma autorizada.";
+                        textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
                         if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
