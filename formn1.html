@@ -492,7 +492,7 @@
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
-                        textoCrmFinal = "Orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
+                        textoCrmFinal = "Orientar o cliente a buscar assistência técnica autorizada para reparo orçado do produto ou acionar o fabricante para ajudar a localizar uma autorizada.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
                         if (marcasAcionamentoDireto.includes(marca)) {
@@ -515,25 +515,25 @@
                                 contatoFabricante = "0800 703 5446 ou (11) 3383-5555";
                             }
 
-                            textoAcaoFinal = `Para a linha ${nomeMarcaTexto}, não realizamos o acionamento de visita (ATEC). O cliente deve entrar em contato diretamente com o próprio fabricante através do(s) número(s): ${contatoFabricante}.`;
-                            textoCrmFinal = `Orientar o cliente a acionar a garantia diretamente com o fabricante (${contatoFabricante}). Finalizar o atendimento.\nRegistrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).`;
+                            textoAcaoFinal = `Bloqueio de atendimento N1. Não realizamos o acionamento de visita (ATEC) para a linha ${nomeMarcaTexto}.\n\nO cliente deve entrar em contato diretamente com o próprio fabricante através do(s) número(s) oficiais:\n📞 ${contatoFabricante}`;
+                            textoCrmFinal = "Orientar o cliente a acionar a garantia diretamente com o fabricante. Finalizar o atendimento.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
                             textoRegraFinal = `Conforme processos internos do fabricante, não acionamos Visita Técnica para ${nomeMarcaTexto}. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.`;
                         }
                         else if (temParceiro === "SIM") {
                             avisoUappi.classList.remove("hidden");
-                            textoAcaoFinal = "O pedido possui um parceiro vinculado. Ele é o responsável por seguir com o serviço e diagnosticar o problem no equipamento.";
-                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) para que solicite a peça via Uappi/LVI. Finalizar o atendimento (não abrir visita técnica). Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
+                            textoAcaoFinal = "Bloqueio de atendimento N1. O pedido possui um parceiro vinculado. Ele é o responsável por diagnosticar o problema no equipamento.";
+                            textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) a solicitar peça diretamente via Uappi/LVI. Finalizar sem abrir visita.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
                             textoRegraFinal = "Abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada. O diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI conforme políticas de garantia.";
                         } 
                         else if (temParceiro === "NAO") {
                             if (produtoInstalado === "NAO") {
                                 avisoNaoInstalado.classList.remove("hidden");
-                                textoAcaoFinal = "Como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante para diagnóstico do defeito relatado.";
+                                textoAcaoFinal = "Bloqueio de atendimento. Como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante.";
                                 textoCrmFinal = "Orientar o cliente sobre a negativa da visita devido o equipamento não estar instalado. (Se for avaria aparente ou devolução, seguir via T&D).";
                                 textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Após 7 dias → Deve passar por análise de troca.";
                             } else {
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
-                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia, Submotivo: Leveros Acionar Fabricante.";
+                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia / Submotivo: Leveros Acionar Fabricante.";
                                 textoRegraFinal = "Obrigatório anexar o numero de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos! antes de enviar ao time de Garantia.";
                             }
                         }
