@@ -183,7 +183,7 @@
                             <h3>📝 Script para o CRM</h3>
                             <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Copie o texto abaixo e cole no seu ticket/atendimento.</p>
                             
-                            <textarea id="textoResumoCRM" readonly rows="12" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                            <textarea id="textoResumoCRM" readonly rows="14" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
                             
                             <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                 📋 Copiar Script
@@ -394,6 +394,9 @@
             const avisoProtocolo = document.getElementById("avisoProtocolo");
             const avisoNaoInstalado = document.getElementById("avisoNaoInstalado");
 
+            // --- Variável para armazenar a Conclusão do Sistema no CRM ---
+            let statusTriagem = "";
+
             if (sub === "") return;
 
             let textoAcaoFinal = baseDeConhecimento[tipo].respostas[sub].acao;
@@ -447,6 +450,9 @@
 
                     let msgEtiqueta = (marca === "FUJITSU") ? "Solicite as fotos das etiquetas da Condensadora e da Evaporadora do equipamento." : "Solicite a foto da etiqueta da unidade referente ao item faltante.";
 
+                    // Preenche o status da triagem
+                    statusTriagem = isFaltaValido ? "Dentro do Prazo (Item Faltante)" : "Fora do Prazo (Item Faltante)";
+
                     if (!isFaltaValido) {
                         textoAcaoFinal = `O prazo de ${prazoDiasFalta} dias a partir da entrega para reclamação de itens faltantes em garantia expirou.\n\n📌 Ação: ${msgEtiqueta}`;
                         textoCrmFinal = "Abrir protocolo para ANÁLISE DE COMPRA DE PEÇA.";
@@ -491,11 +497,13 @@
                     const marcasAcionamentoDireto = ["LG_CAC", "FUJITSU", "HITACHI_RAC", "HITACHI_CAC", "ELGIN_RAC", "ELGIN_CAC"];
 
                     if (!isValido) {
+                        statusTriagem = "Fora de Garantia";
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
-                        textoCrmFinal = "Orientar o cliente a buscar assistência técnica autorizada para reparo orçado do produto ou acionar o fabricante para ajudar a localizar uma autorizada.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
+                        textoCrmFinal = "Orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Registrar como Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador)";
                         textoRegraFinal = "Atendimentos de produtos fora de garantia não devem ser escalonados para o BKO. A tratativa finaliza no nível 1 com a orientação ao cliente.";
                     } else {
                         if (marcasAcionamentoDireto.includes(marca)) {
+                            statusTriagem = "Garantia - Acionamento Direto com o Fabricante";
                             avisoFabricanteDireto.classList.remove("hidden");
                             
                             let nomeMarcaTexto = "";
@@ -520,6 +528,7 @@
                             textoRegraFinal = `Conforme processos internos do fabricante, não acionamos Visita Técnica para ${nomeMarcaTexto}. O cliente deve acionar diretamente a marca e o chamado é finalizado no N1.`;
                         }
                         else if (temParceiro === "SIM") {
+                            statusTriagem = "Garantia - Direcionamento para Parceiro (Uappi/LVI)";
                             avisoUappi.classList.remove("hidden");
                             textoAcaoFinal = "Bloqueio de atendimento N1. O pedido possui um parceiro vinculado. Ele é o responsável por diagnosticar o problema no equipamento.";
                             textoCrmFinal = "Orientar parceiro (ou cliente a contatá-lo) a solicitar peça diretamente via Uappi/LVI. Finalizar sem abrir visita.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
@@ -527,11 +536,13 @@
                         } 
                         else if (temParceiro === "NAO") {
                             if (produtoInstalado === "NAO") {
+                                statusTriagem = "Bloqueio de Garantia - Produto Não Instalado";
                                 avisoNaoInstalado.classList.remove("hidden");
                                 textoAcaoFinal = "Bloqueio de atendimento. Como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante.";
                                 textoCrmFinal = "Orientar o cliente sobre a negativa da visita devido o equipamento não estar instalado. (Se for avaria aparente ou devolução, seguir via T&D).";
                                 textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Após 7 dias → Deve passar por análise de troca.";
                             } else {
+                                statusTriagem = "Dentro da Garantia - Seguir com Visita Técnica";
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
                                 textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia / Submotivo: Leveros Acionar Fabricante.";
                                 textoRegraFinal = "Obrigatório anexar o numero de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos! antes de enviar ao time de Garantia.";
@@ -604,7 +615,12 @@
                 scriptCrm += `Protocolo Fabricante: ${textoProtocolo}\n`;
             }
 
-            scriptCrm += `\n[DIRECIONAMENTO CRM]\n${textoCrmFinal}\n`;
+            // NOVA SEÇÃO ADICIONADA: O status e o procedimento ficam salvos explicitamente no CRM
+            scriptCrm += `\n[CONCLUSÃO E PROCEDIMENTO ADOTADO]\n`;
+            if (statusTriagem !== "") {
+                scriptCrm += `Resultado da Triagem: ${statusTriagem}\n`;
+            }
+            scriptCrm += `Ação do Atendimento: ${textoCrmFinal}\n`;
 
             document.getElementById("textoResumoCRM").value = scriptCrm;
 
