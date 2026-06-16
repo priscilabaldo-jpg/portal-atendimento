@@ -488,7 +488,7 @@
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
 
-                    const marcasAcionamentoDireto = ["LG_CAC", "FUJITSU", "HITACHI_RAC", "HITACHI_CAC"];
+                    const marcasAcionamentoDireto = ["LG_CAC", "FUJITSU", "HITACHI_RAC", "HITACHI_CAC", "ELGIN_RAC", "ELGIN_CAC"];
 
                     if (!isValido) {
                         textoAcaoFinal = "O equipamento encontra-se fora do prazo de garantia aplicável. Não podemos seguir com abertura de visita técnica ou envio de peças.";
@@ -510,6 +510,9 @@
                             } else if (marca.includes("HITACHI")) {
                                 nomeMarcaTexto = "Hitachi";
                                 contatoFabricante = "(12) 3906-2135 ou WhatsApp (11) 97627-1763";
+                            } else if (marca.includes("ELGIN")) {
+                                nomeMarcaTexto = "Elgin";
+                                contatoFabricante = "0800 703 5446 ou (11) 3383-5555";
                             }
 
                             textoAcaoFinal = `Para a linha ${nomeMarcaTexto}, não realizamos o acionamento de visita (ATEC). O cliente deve entrar em contato diretamente com o próprio fabricante através do(s) número(s): ${contatoFabricante}.`;
