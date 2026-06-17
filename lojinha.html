@@ -77,7 +77,11 @@
               </div>
 
               <div id="catalogoSection">
-                  <div class="loja-grid" id="lojaGrid"></div>
+                  <div class="loja-grid" id="lojaGrid">
+                      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; opacity: 0.6;">
+                          Buscando prêmios disponíveis no estoque... ⏳
+                      </div>
+                  </div>
               </div>
 
               <div id="meusPedidosSection" style="display: none;">
@@ -165,10 +169,11 @@ function mudarAba(aba) {
         document.getElementById('meusPedidosSection').style.display = 'block';
         document.getElementById('btnAbaCatalogo').classList.remove('active');
         document.getElementById('btnAbaPedidos').classList.add('active');
+        // Gatilho para buscar os pedidos no Firebase ao abrir a aba
         if(window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
     }
 }
 </script>
-<script type="module" src="app.js?v=1.7"></script>
+<script type="module" src="app.js?v=2.0"></script>
 </body>
 </html>
