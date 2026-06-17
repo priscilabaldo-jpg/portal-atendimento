@@ -553,6 +553,49 @@ if (btnExportar) {
 }
 
 // ====================================================================
+// 5.5 CADASTRO DE NOVOS PRODUTOS NA LOJINHA (`admin_loja.html`)
+// ====================================================================
+const formNovoProduto = document.getElementById('formNovoProduto');
+if (formNovoProduto) {
+    formNovoProduto.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const btnSalvar = document.getElementById('btnSalvarProduto');
+        btnSalvar.textContent = "Salvando... ⏳"; 
+        btnSalvar.disabled = true;
+
+        try {
+            // Coleta e formata os dados do formulário
+            const imagemVal = document.getElementById('prodEmoji').value.trim();
+            const nomeVal = document.getElementById('prodNome').value.trim();
+            const descVal = document.getElementById('prodDesc').value.trim();
+            const precoVal = parseInt(document.getElementById('prodPreco').value);
+            const estoqueVal = parseInt(document.getElementById('prodEstoque').value);
+
+            // Grava na coleção 'produtos_loja' do Firestore
+            await addDoc(collection(db, 'produtos_loja'), {
+                imagem: imagemVal,
+                nome: nomeVal,
+                desc: descVal,
+                preco: precoVal,
+                estoque: estoqueVal,
+                criadoEm: serverTimestamp()
+            });
+
+            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado à CX Store e já está visível para a equipe.`);
+            formNovoProduto.reset(); 
+
+        } catch (error) {
+            console.error("Erro ao cadastrar produto:", error);
+            alert("❌ Ocorreu um erro ao salvar o produto. Verifique se você tem permissão de administrador.");
+        } finally {
+            btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
+            btnSalvar.disabled = false;
+        }
+    });
+}
+
+// ====================================================================
 // 6. MÓDULO ADMINISTRATIVO 3: ORÇAMENTO BACKOFFICE (`centrodecusto.html`)
 // ====================================================================
 const ORCAMENTO_TEMPORADA = {
@@ -1151,7 +1194,8 @@ onAuthStateChanged(auth, async user => {
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
     // ===== MURALHA EXTRA: VERIFICAÇÃO DE SUBPÁGINAS GESTORAS =====
-    const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content'];
+    // AQUI ESTÁ A CHAVE ADICIONADA ('admin-loja-content')
+    const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
     let containerAdminAtivo = null;
 
     paginasAdminIDs.forEach(id => {
