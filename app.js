@@ -561,28 +561,46 @@ if (formNovoProduto) {
         e.preventDefault();
         
         const btnSalvar = document.getElementById('btnSalvarProduto');
-        btnSalvar.textContent = "Salvando Produto e Foto... ⏳"; 
+        btnSalvar.textContent = "Iniciando... ⏳"; 
         btnSalvar.disabled = true;
 
         try {
+            // Coleta e formata os dados
             const nomeVal = document.getElementById('prodNome').value.trim();
             const descVal = document.getElementById('prodDesc').value.trim();
-            const precoVal = parseInt(document.getElementById('prodPreco').value);
-            const estoqueVal = parseInt(document.getElementById('prodEstoque').value);
+            const precoVal = parseInt(document.getElementById('prodPreco').value) || 0;
+            const estoqueVal = parseInt(document.getElementById('prodEstoque').value) || 0;
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
             
+            if (precoVal <= 0) {
+                alert("O preço deve ser maior que zero!");
+                btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
+                btnSalvar.disabled = false;
+                return;
+            }
+
             let urlDaFoto = ""; 
             const inputFoto = document.getElementById('prodFoto');
             const fotoSelecionada = inputFoto && inputFoto.files ? inputFoto.files[0] : null; 
             
-            // Se o usuário selecionou uma foto, faz o upload para o Storage
             if (fotoSelecionada) {
+                // Trava de segurança: Limite de 5MB por foto
+                if (fotoSelecionada.size > 5 * 1024 * 1024) { 
+                    alert("A foto é muito pesada! Por favor, escolha uma imagem com menos de 5MB.");
+                    btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
+                    btnSalvar.disabled = false;
+                    return;
+                }
+
+                btnSalvar.textContent = "Enviando Imagem (Pode demorar)... ⏳"; 
                 const localRef = ref(storage, 'produtos_loja/' + Date.now() + '_' + fotoSelecionada.name);
                 await uploadBytes(localRef, fotoSelecionada);
+                
+                btnSalvar.textContent = "Gerando Link da Imagem... ⏳";
                 urlDaFoto = await getDownloadURL(localRef);
             }
             
-            // Define o que será salvo (A URL da foto ou o Emoji como backup)
+            btnSalvar.textContent = "Salvando Produto no Banco... ⏳";
             const imagemFinal = urlDaFoto ? urlDaFoto : emojiVal;
 
             await addDoc(collection(db, 'produtos_loja'), {
@@ -598,8 +616,8 @@ if (formNovoProduto) {
             formNovoProduto.reset(); 
 
         } catch (error) {
-            console.error("Erro ao cadastrar produto:", error);
-            alert("❌ Ocorreu um erro ao salvar o produto.");
+            console.error("Erro detalhado:", error);
+            alert(`❌ Ocorreu um erro interno: ${error.message}`);
         } finally {
             btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
             btnSalvar.disabled = false;
