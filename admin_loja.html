@@ -68,11 +68,17 @@
         <h3>Cadastrar Novo Prêmio</h3>
         <p class="desc">As alterações refletirão na hora para os operadores.</p>
         
-        <form id="formNovoProduto">
+       <form id="formNovoProduto">
             <div class="admin-form-group">
-                <div class="admin-field">
-                    <label>Emoji / Ícone</label>
-                    <input type="text" id="prodEmoji" class="admin-input" placeholder="Ex: 🍫, ☕, 🏖️" required autocomplete="off">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="admin-field">
+                        <label>Foto do Prêmio (Recomendado)</label>
+                        <input type="file" id="prodFoto" class="admin-input" accept="image/*" style="padding: 9px 14px;">
+                    </div>
+                    <div class="admin-field">
+                        <label>Emoji (Se não tiver foto)</label>
+                        <input type="text" id="prodEmoji" class="admin-input" placeholder="Ex: 🍫, ☕" autocomplete="off">
+                    </div>
                 </div>
                 
                 <div class="admin-field">
@@ -101,6 +107,7 @@
                 ➕ Adicionar ao Catálogo
             </button>
         </form>
+      
     </div>
 
   </div> 
