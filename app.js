@@ -553,7 +553,7 @@ if (btnExportar) {
 }
 
 // ====================================================================
-// 5.5 CADASTRO DE NOVOS PRODUTOS NA LOJINHA (`admin_loja.html`)
+// 5.5 CADASTRO DE NOVOS PRODUTOS NA LOJINHA (COM CONVERSÃO AUTOMÁTICA)
 // ====================================================================
 const formNovoProduto = document.getElementById('formNovoProduto');
 if (formNovoProduto) {
@@ -561,27 +561,37 @@ if (formNovoProduto) {
         e.preventDefault();
         
         const btnSalvar = document.getElementById('btnSalvarProduto');
-        btnSalvar.textContent = "Salvando Produto... ⏳"; 
+        btnSalvar.textContent = "Processando e Salvando... ⏳"; 
         btnSalvar.disabled = true;
 
         try {
-            // Coleta os dados
             const nomeVal = document.getElementById('prodNome').value.trim();
             const descVal = document.getElementById('prodDesc').value.trim();
             const precoVal = parseInt(document.getElementById('prodPreco').value) || 0;
             const estoqueVal = parseInt(document.getElementById('prodEstoque').value) || 0;
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
-            const linkDaFoto = document.getElementById('prodFoto').value.trim(); // Pega a URL colada
+            let linkBruto = document.getElementById('prodFoto').value.trim();
             
+            // Lógica de conversão automática do Google Drive
+            let imagemFinal = linkBruto;
+            
+            if (linkBruto.includes("drive.google.com")) {
+                // Extrai o ID do link (pode ser /d/ ou /file/d/)
+                const idMatch = linkBruto.match(/\/d\/([a-zA-Z0-9_-]+)/) || linkBruto.match(/id=([a-zA-Z0-9_-]+)/);
+                if (idMatch && idMatch[1]) {
+                    imagemFinal = `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+                }
+            } else if (!linkBruto) {
+                // Se não colou link nenhum, usa o emoji
+                imagemFinal = emojiVal;
+            }
+
             if (precoVal <= 0) {
                 alert("O preço deve ser maior que zero!");
                 btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
                 btnSalvar.disabled = false;
                 return;
             }
-
-            // Se você colou um link, ele usa o link. Se deixou vazio, usa o Emoji.
-            const imagemFinal = linkDaFoto ? linkDaFoto : emojiVal;
 
             await addDoc(collection(db, 'produtos_loja'), {
                 imagem: imagemFinal,
@@ -592,19 +602,18 @@ if (formNovoProduto) {
                 criadoEm: serverTimestamp()
             });
 
-            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado à CX Store.`);
+            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado com a foto convertida.`);
             formNovoProduto.reset(); 
 
         } catch (error) {
             console.error("Erro detalhado:", error);
-            alert(`❌ Ocorreu um erro interno: ${error.message}`);
+            alert(`❌ Erro: ${error.message}`);
         } finally {
             btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
             btnSalvar.disabled = false;
         }
     });
 }
-
 
 // ====================================================================
 // 6. MÓDULO ADMINISTRATIVO 3: ORÇAMENTO BACKOFFICE (`centrodecusto.html`)
