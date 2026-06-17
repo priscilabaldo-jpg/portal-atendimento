@@ -561,16 +561,17 @@ if (formNovoProduto) {
         e.preventDefault();
         
         const btnSalvar = document.getElementById('btnSalvarProduto');
-        btnSalvar.textContent = "Iniciando... ⏳"; 
+        btnSalvar.textContent = "Salvando Produto... ⏳"; 
         btnSalvar.disabled = true;
 
         try {
-            // Coleta e formata os dados
+            // Coleta os dados
             const nomeVal = document.getElementById('prodNome').value.trim();
             const descVal = document.getElementById('prodDesc').value.trim();
             const precoVal = parseInt(document.getElementById('prodPreco').value) || 0;
             const estoqueVal = parseInt(document.getElementById('prodEstoque').value) || 0;
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
+            const linkDaFoto = document.getElementById('prodFoto').value.trim(); // Pega a URL colada
             
             if (precoVal <= 0) {
                 alert("O preço deve ser maior que zero!");
@@ -579,29 +580,8 @@ if (formNovoProduto) {
                 return;
             }
 
-            let urlDaFoto = ""; 
-            const inputFoto = document.getElementById('prodFoto');
-            const fotoSelecionada = inputFoto && inputFoto.files ? inputFoto.files[0] : null; 
-            
-            if (fotoSelecionada) {
-                // Trava de segurança: Limite de 5MB por foto
-                if (fotoSelecionada.size > 5 * 1024 * 1024) { 
-                    alert("A foto é muito pesada! Por favor, escolha uma imagem com menos de 5MB.");
-                    btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
-                    btnSalvar.disabled = false;
-                    return;
-                }
-
-                btnSalvar.textContent = "Enviando Imagem (Pode demorar)... ⏳"; 
-                const localRef = ref(storage, 'produtos_loja/' + Date.now() + '_' + fotoSelecionada.name);
-                await uploadBytes(localRef, fotoSelecionada);
-                
-                btnSalvar.textContent = "Gerando Link da Imagem... ⏳";
-                urlDaFoto = await getDownloadURL(localRef);
-            }
-            
-            btnSalvar.textContent = "Salvando Produto no Banco... ⏳";
-            const imagemFinal = urlDaFoto ? urlDaFoto : emojiVal;
+            // Se você colou um link, ele usa o link. Se deixou vazio, usa o Emoji.
+            const imagemFinal = linkDaFoto ? linkDaFoto : emojiVal;
 
             await addDoc(collection(db, 'produtos_loja'), {
                 imagem: imagemFinal,
