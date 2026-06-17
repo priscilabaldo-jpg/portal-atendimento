@@ -561,20 +561,32 @@ if (formNovoProduto) {
         e.preventDefault();
         
         const btnSalvar = document.getElementById('btnSalvarProduto');
-        btnSalvar.textContent = "Salvando... ⏳"; 
+        btnSalvar.textContent = "Salvando Produto e Foto... ⏳"; 
         btnSalvar.disabled = true;
 
         try {
-            // Coleta e formata os dados do formulário
-            const imagemVal = document.getElementById('prodEmoji').value.trim();
             const nomeVal = document.getElementById('prodNome').value.trim();
             const descVal = document.getElementById('prodDesc').value.trim();
             const precoVal = parseInt(document.getElementById('prodPreco').value);
             const estoqueVal = parseInt(document.getElementById('prodEstoque').value);
+            const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
+            
+            let urlDaFoto = ""; 
+            const inputFoto = document.getElementById('prodFoto');
+            const fotoSelecionada = inputFoto && inputFoto.files ? inputFoto.files[0] : null; 
+            
+            // Se o usuário selecionou uma foto, faz o upload para o Storage
+            if (fotoSelecionada) {
+                const localRef = ref(storage, 'produtos_loja/' + Date.now() + '_' + fotoSelecionada.name);
+                await uploadBytes(localRef, fotoSelecionada);
+                urlDaFoto = await getDownloadURL(localRef);
+            }
+            
+            // Define o que será salvo (A URL da foto ou o Emoji como backup)
+            const imagemFinal = urlDaFoto ? urlDaFoto : emojiVal;
 
-            // Grava na coleção 'produtos_loja' do Firestore
             await addDoc(collection(db, 'produtos_loja'), {
-                imagem: imagemVal,
+                imagem: imagemFinal,
                 nome: nomeVal,
                 desc: descVal,
                 preco: precoVal,
@@ -582,18 +594,19 @@ if (formNovoProduto) {
                 criadoEm: serverTimestamp()
             });
 
-            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado à CX Store e já está visível para a equipe.`);
+            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado à CX Store.`);
             formNovoProduto.reset(); 
 
         } catch (error) {
             console.error("Erro ao cadastrar produto:", error);
-            alert("❌ Ocorreu um erro ao salvar o produto. Verifique se você tem permissão de administrador.");
+            alert("❌ Ocorreu um erro ao salvar o produto.");
         } finally {
             btnSalvar.textContent = "➕ Adicionar ao Catálogo"; 
             btnSalvar.disabled = false;
         }
     });
 }
+
 
 // ====================================================================
 // 6. MÓDULO ADMINISTRATIVO 3: ORÇAMENTO BACKOFFICE (`centrodecusto.html`)
