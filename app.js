@@ -24,6 +24,7 @@ let logsParaExportacao = [];
 let nfParaExportacao = []; 
 let graficoInstancia = null; 
 let saldoAtualUsuario = 0;
+let produtosLojaCache = []; // Cache dinâmico para a Lojinha
 
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
@@ -835,39 +836,53 @@ if (btnExportarExcel) {
 // ====================================================================
 // 7. MÓDULO PÚBLICO: A LOJINHA (`lojinha.html`)
 // ====================================================================
-const produtosLoja = [
-  { id: "item_01", nome: "Caixa de Bombom", preco: 150, imagem: "🍫", desc: "Uma caixa de bombons Sortidos Garoto para adoçar a sua pausa." },
-  { id: "item_02", nome: "Caneca Térmica", preco: 500, imagem: "☕", desc: "Caneca térmica exclusiva Leveros para manter seu café sempre quente." },
-  { id: "item_03", nome: "Kit Escritório", preco: 800, imagem: "📓", desc: "Caderno Moleskine personalizado + Caneta executiva Leveros." },
-  { id: "item_04", nome: "Moletom CX Resolve", preco: 1200, imagem: "🧥", desc: "Moletom super confortável com a marca do nosso time." },
-  { id: "item_05", nome: "Day-Off (Folga)", preco: 2500, imagem: "🏖️", desc: "1 dia de folga remunerada. (Sujeito à aprovação prévia de escala com o líder)." }
-];
 
 function getEmojiPorProdutoId(idProduto) {
-  const prod = produtosLoja.find(p => p.id === idProduto);
+  const prod = produtosLojaCache.find(p => p.id === idProduto);
   return prod ? prod.imagem : "🎁";
 }
 
 function carregarVitrine() {
   const grid = document.getElementById('lojaGrid');
   if (!grid) return;
-  let html = '';
+  
+  // Consulta em tempo real na nova coleção do Firestore
+  const q = query(collection(db, 'produtos_loja'));
+  
+  onSnapshot(q, (snap) => {
+      produtosLojaCache = [];
+      let html = '';
 
-  produtosLoja.forEach((produto, index) => {
-      const delay = index * 0.1; 
-      html += `
-          <div class="produto-card" style="animation-delay: ${delay}s">
-              <div class="produto-img">${produto.imagem}</div>
-              <div class="produto-nome">${produto.nome}</div>
-              <div class="produto-desc">${produto.desc}</div>
-              <div class="produto-preco">🪙 ${produto.preco}</div>
-              <button class="btn-comprar" onclick="window.realizarResgate('${produto.id}')" id="btn-${produto.id}">
-                  Resgatar Prêmio
-              </button>
-          </div>
-      `;
+      snap.docs.forEach((docSnap, index) => {
+          const produto = { id: docSnap.id, ...docSnap.data() };
+          produtosLojaCache.push(produto);
+
+          const delay = index * 0.1; 
+          const isEsgotado = produto.estoque <= 0;
+          
+          // Aplicar estilos condicionais para itens esgotados
+          const btnText = isEsgotado ? 'Esgotado 🚫' : 'Resgatar Prêmio';
+          const btnStyle = isEsgotado ? 'background: #555; cursor: not-allowed; color: #aaa;' : '';
+          const cardStyle = isEsgotado ? 'opacity: 0.6; filter: grayscale(0.5);' : '';
+          const disableAttr = isEsgotado ? 'disabled' : '';
+
+          html += `
+              <div class="produto-card" style="animation-delay: ${delay}s; ${cardStyle}">
+                  <div class="produto-img">${escapeHTML(produto.imagem)}</div>
+                  <div class="produto-nome">${escapeHTML(produto.nome)}</div>
+                  <div class="produto-desc">${escapeHTML(produto.desc)}</div>
+                  <div class="produto-preco">🪙 ${produto.preco}</div>
+                  <div class="produto-estoque" style="font-size: 11px; margin-bottom: 10px; color: ${isEsgotado ? '#FF6B6B' : '#4CAF50'};">
+                      ${isEsgotado ? 'Sem estoque' : `Disponível: ${produto.estoque}`}
+                  </div>
+                  <button class="btn-comprar" style="${btnStyle}" onclick="window.realizarResgate('${produto.id}')" id="btn-${produto.id}" ${disableAttr}>
+                      ${btnText}
+                  </button>
+              </div>
+          `;
+      });
+      grid.innerHTML = html;
   });
-  grid.innerHTML = html;
 }
 
 window.carregarHistoricoPedidos = async function() {
@@ -914,11 +929,11 @@ window.carregarHistoricoPedidos = async function() {
               <tr>
                   <td>${dataTimestamp.toLocaleDateString('pt-BR')}</td>
                   <td><span style="font-family: monospace; font-size: 11px; opacity: 0.8; background: rgba(255,255,255,0.1); padding: 4px 6px; border-radius: 4px;">${idFormatado}</span></td>
-                  <td>${pedido.produtoNome}</td>
+                  <td>${escapeHTML(pedido.produtoNome)}</td>
                   <td><span style="color:#FFD700; font-weight:bold;">${pedido.valorPago} 🪙</span></td>
-                  <td><span class="status-badge ${statusClass}">${pedido.status}</span></td>
+                  <td><span class="status-badge ${statusClass}">${escapeHTML(pedido.status)}</span></td>
                   <td>
-                      <button class="btn-ver-recibo" onclick="window.abrirRecibo('${emojiProduto}', '${pedido.produtoNome}', '${pedido.colaboradorNome}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
+                      <button class="btn-ver-recibo" onclick="window.abrirRecibo('${emojiProduto}', '${escapeHTML(pedido.produtoNome)}', '${escapeHTML(pedido.colaboradorNome)}', ${pedido.valorPago}, '${dataFormatada}', '${pedido.id}')">
                           Ver Recibo
                       </button>
                   </td>
@@ -947,8 +962,21 @@ window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPed
 window.realizarResgate = async function(idProduto) {
   if (!currentUser) return;
   
-  const produto = produtosLoja.find(p => p.id === idProduto);
+  // REGRA 1: Janela de Resgate (Configuração Global Simples)
+  const lojaAberta = true; 
+  if (!lojaAberta) {
+      alert("🔒 A loja está fechada! Aguarde a janela de resgate definida pela gestão (geralmente na primeira semana do mês).");
+      return;
+  }
+
+  const produto = produtosLojaCache.find(p => p.id === idProduto);
   if (!produto) return;
+
+  // REGRA 2: Verificação de estoque no cache antes de ir ao servidor
+  if (produto.estoque <= 0) {
+      alert(`O item "${produto.nome}" esgotou! Fique de olho na próxima reposição.`);
+      return;
+  }
 
   if (saldoAtualUsuario < produto.preco) {
       alert(`Você tem ${saldoAtualUsuario} moedas. Faltam ${produto.preco - saldoAtualUsuario} moedas para resgatar "${produto.nome}". Continue engajando!`);
@@ -958,14 +986,39 @@ window.realizarResgate = async function(idProduto) {
   if (!confirm(`Deseja confirmar o resgate de "${produto.nome}" por ${produto.preco} moedas?`)) return;
 
   const btn = document.getElementById(`btn-${produto.id}`);
-  btn.textContent = "Processando...";
-  btn.disabled = true;
+  if (btn) {
+      btn.textContent = "Processando...";
+      btn.disabled = true;
+  }
 
   try {
       const userEmail = currentUser.email.toLowerCase();
       const userName = currentUser.displayName || 'Colaborador';
       const userRef = doc(db, "usuarios", userEmail);
+      
+      // Consultar perfil atualizado no banco para checar bloqueios
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+          const userData = userSnap.data();
+          
+          // REGRA 3: Bloqueio Operacional (Monitoria Zerada ou Advertência)
+          if (userData.bloqueadoParaResgate) {
+              const motivo = userData.motivoBloqueio || "Inconsistência na monitoria ou advertência ativa.";
+              alert(`🚫 Operação Bloqueada: Você não está elegível para resgates neste ciclo.\n\nMotivo: ${motivo}`);
+              if (btn) {
+                  btn.textContent = "Resgatar Prêmio";
+                  btn.disabled = false;
+              }
+              return;
+          }
+      }
 
+      const produtoRef = doc(db, "produtos_loja", produto.id);
+
+      // REGRA 4: Deduzir 1 item do estoque de forma segura (conforme regras do backend)
+      await updateDoc(produtoRef, { estoque: increment(-1) });
+
+      // Desconta os pontos do usuário
       await updateDoc(userRef, { pontos: increment(-produto.preco) });
 
       const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
@@ -987,25 +1040,28 @@ window.realizarResgate = async function(idProduto) {
           dataRealizada: serverTimestamp()
       });
 
+      // Atualiza visualmente o saldo do usuário
       saldoAtualUsuario -= produto.preco;
-      document.getElementById('valSaldo').textContent = saldoAtualUsuario;
-      if(document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
+      if (document.getElementById('valSaldo')) document.getElementById('valSaldo').textContent = saldoAtualUsuario;
+      if (document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
 
       const dataAgora = new Date();
       const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
       
       window.abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
 
-      if(document.getElementById('meusPedidosSection') && document.getElementById('meusPedidosSection').style.display === 'block') {
-          window.carregarHistoricoPedidos();
+      if (document.getElementById('meusPedidosSection') && document.getElementById('meusPedidosSection').style.display === 'block') {
+          if (window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
       }
 
   } catch (e) {
       console.error("Erro no resgate:", e);
-      alert("Ocorreu um erro na conexão. Tente novamente.");
+      alert("Ocorreu um erro na conexão ou o item esgotou antes de você finalizar. Tente novamente.");
   } finally {
-      btn.textContent = "Resgatar Prêmio";
-      btn.disabled = false;
+      if (btn) {
+          btn.textContent = "Resgatar Prêmio";
+          btn.disabled = false;
+      }
   }
 };
 
@@ -1162,7 +1218,7 @@ onAuthStateChanged(auth, async user => {
 
     // Inicialização Condicional Administrativa
     if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
-    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); // Nome alterado para evitar colisão com a função antiga
+    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); 
     
     // Inicialização do Painel de Centro de Custo
     if (document.getElementById('tabelaMatriz') && isAdmin) {
