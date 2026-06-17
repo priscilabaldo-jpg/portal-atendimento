@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestão da Lojinha – CX Resolve</title>
+
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://www.gstatic.com https://apis.google.com;
+  style-src 'self' 'unsafe-inline';
+  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-layer"></div>
+
+<div id="admin-loja-content" style="display:none; position: relative; z-index: 5;">
+
+  <header>
+    <div class="header-inner">
+      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="timeline.html">Timeline</a></li>
+          <li><a href="materiais.html">Materiais</a></li>
+          <li><a href="informativos.html">Informativos</a></li>
+          <li><a href="admin.html" class="active">Painel Admin</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+      </nav>
+      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    </div>
+  </header>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="timeline.html">Timeline</a>
+    <a href="materiais.html">Materiais</a>
+    <a href="informativos.html">Informativos</a>
+    <a href="admin.html" id="navAdminMobile" style="display: none;" class="active">Painel Admin</a>
+    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+  </div>
+
+  <div class="container">
+    <div class="page-header" style="text-align: center; margin-bottom: 20px;">
+      <p class="page-label">Módulo Administrativo</p>
+      <h1>Gestão de <span>Estoque</span> 🎁</h1>
+      <p>Adicione novos itens diretamente ao catálogo da CX Store.</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 30px;">
+      <a href="admin.html" style="color: var(--azul); text-decoration: none; font-size: 11px; font-weight: bold; text-transform: uppercase; padding: 8px 16px; border: 1px solid rgba(76,221,221,0.3); border-radius: 20px; background: rgba(0,0,0,0.2); transition: all 0.2s;">
+        ← Voltar ao Menu Admin
+      </a>
+    </div>
+
+    <div class="admin-pontos-container" style="max-width: 500px; margin: 0 auto; margin-bottom: 50px;">
+        <div class="admin-icon-wrapper" style="color: #FF9F43; background: rgba(255, 159, 67, 0.1); border-color: rgba(255, 159, 67, 0.3);">
+            📦
+        </div>
+        <h3>Cadastrar Novo Prêmio</h3>
+        <p class="desc">As alterações refletirão na hora para os operadores.</p>
+        
+        <form id="formNovoProduto">
+            <div class="admin-form-group">
+                <div class="admin-field">
+                    <label>Emoji / Ícone</label>
+                    <input type="text" id="prodEmoji" class="admin-input" placeholder="Ex: 🍫, ☕, 🏖️" required autocomplete="off">
+                </div>
+                
+                <div class="admin-field">
+                    <label>Nome do Produto</label>
+                    <input type="text" id="prodNome" class="admin-input" placeholder="Ex: Caixa de Bombom Garoto" required autocomplete="off">
+                </div>
+                
+                <div class="admin-field">
+                    <label>Descrição Curta</label>
+                    <textarea id="prodDesc" class="admin-input" rows="2" placeholder="Ex: Uma caixa de bombons sortidos para adoçar o dia." required></textarea>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="admin-field">
+                        <label>Preço (🪙)</label>
+                        <input type="number" id="prodPreco" class="admin-input" placeholder="Ex: 150" required min="1">
+                    </div>
+                    <div class="admin-field">
+                        <label>Estoque Inicial</label>
+                        <input type="number" id="prodEstoque" class="admin-input" placeholder="Ex: 10" required min="0">
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-lancar-moedas" id="btnSalvarProduto" style="background: #FF9F43;">
+                ➕ Adicionar ao Catálogo
+            </button>
+        </form>
+    </div>
+
+  </div> 
+
+  <footer>
+    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
+  </footer>
+
+</div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
