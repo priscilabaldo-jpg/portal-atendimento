@@ -902,7 +902,6 @@ function carregarVitrine() {
   const grid = document.getElementById('lojaGrid');
   if (!grid) return;
   
-  // Consulta em tempo real na nova coleção do Firestore
   const q = query(collection(db, 'produtos_loja'));
   
   onSnapshot(q, (snap) => {
@@ -916,15 +915,28 @@ function carregarVitrine() {
           const delay = index * 0.1; 
           const isEsgotado = produto.estoque <= 0;
           
-          // Aplicar estilos condicionais para itens esgotados
           const btnText = isEsgotado ? 'Esgotado 🚫' : 'Resgatar Prêmio';
           const btnStyle = isEsgotado ? 'background: #555; cursor: not-allowed; color: #aaa;' : '';
           const cardStyle = isEsgotado ? 'opacity: 0.6; filter: grayscale(0.5);' : '';
           const disableAttr = isEsgotado ? 'disabled' : '';
 
+          // Lógica inteligente para Foto Real x Emoji
+          let imgRenderizada = '';
+          let imgEstiloContainer = '';
+          if (produto.imagem && produto.imagem.startsWith('http')) {
+              // Se for URL, cria a tag <img/> preenchendo o círculo todo
+              imgRenderizada = `<img src="${escapeHTML(produto.imagem)}" alt="${escapeHTML(produto.nome)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
+              imgEstiloContainer = 'padding: 0; overflow: hidden; border: none; background: transparent;';
+          } else {
+              // Se for Emoji, mantém o visual padrão
+              imgRenderizada = escapeHTML(produto.imagem);
+          }
+
           html += `
               <div class="produto-card" style="animation-delay: ${delay}s; ${cardStyle}">
-                  <div class="produto-img">${escapeHTML(produto.imagem)}</div>
+                  <div class="produto-img" style="${imgEstiloContainer}">
+                      ${imgRenderizada}
+                  </div>
                   <div class="produto-nome">${escapeHTML(produto.nome)}</div>
                   <div class="produto-desc">${escapeHTML(produto.desc)}</div>
                   <div class="produto-preco">🪙 ${produto.preco}</div>
@@ -939,6 +951,26 @@ function carregarVitrine() {
       });
       grid.innerHTML = html;
   });
+}
+
+// Também precisamos atualizar o recibo gerado no fim do resgate para suportar a foto real
+window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
+  const modal = document.getElementById('reciboModal');
+  if(!modal) return;
+  
+  const iconEl = document.getElementById('reciboIcon');
+  if (imagem && imagem.startsWith('http')) {
+      iconEl.innerHTML = `<img src="${imagem}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; display:block;">`;
+  } else {
+      iconEl.innerHTML = imagem;
+  }
+  
+  document.getElementById('reciboItem').textContent = nomeItem;
+  document.getElementById('reciboNome').textContent = nomeColab;
+  document.getElementById('reciboValor').textContent = valor + ' 🪙';
+  document.getElementById('reciboData').textContent = dataStr;
+  document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
+  modal.style.display = 'flex';
 }
 
 window.carregarHistoricoPedidos = async function() {
