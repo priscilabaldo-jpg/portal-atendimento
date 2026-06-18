@@ -731,3 +731,99 @@ footer {
     .loja-tabs { flex-direction: column; width: 100%; border-radius: 12px; padding: 12px; }
     .tab-btn { border-radius: 8px; }
 }
+/* =========================================
+   ESTILOS DO MODAL DE RECIBO / COMPROVANTE
+   ========================================= */
+.recibo-card {
+    background-color: #002D32; /* Cor de fundo da Leveros */
+    border: 1px solid rgba(255, 215, 0, 0.3); /* Borda dourada sutil */
+    border-radius: 12px;
+    padding: 24px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+}
+
+.recibo-header {
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.recibo-header h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #FFD700;
+}
+
+.recibo-header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.recibo-body {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.recibo-destaque {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.recibo-linha {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+}
+
+.recibo-linha span {
+    opacity: 0.7;
+}
+
+.recibo-footer {
+    margin-top: 24px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn-recibo {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+    font-size: 14px;
+}
+
+.btn-print {
+    background: rgba(255, 215, 0, 0.15);
+    color: #FFD700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.btn-print:hover {
+    background: rgba(255, 215, 0, 0.3);
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
