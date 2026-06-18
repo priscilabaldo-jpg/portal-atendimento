@@ -11,7 +11,7 @@
   style-src 'self' 'unsafe-inline';
   connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
   frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
-  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com;
+  img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://drive.google.com https://firebasestorage.googleapis.com;
 ">
 
 <link rel="stylesheet" href="style.css">
@@ -121,7 +121,7 @@
     <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
   </footer>
 
-  <div id="reciboModal" class="modal-overlay" style="display:none;">
+  <div id="reciboModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
       <div class="recibo-card">
           <div class="recibo-header">
               <h2>Comprovante</h2>
