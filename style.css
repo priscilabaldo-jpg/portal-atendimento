@@ -827,3 +827,77 @@ footer {
 .btn-close:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* =========================================
+   ESTILOS DE IMPRESSÃO (RECIBO)
+   ========================================= */
+@media print {
+    /* 1. Oculta todo o site na impressão */
+    body * {
+        visibility: hidden;
+    }
+
+    /* 2. Deixa apenas o modal do recibo e seu conteúdo visíveis */
+    #reciboModal, #reciboModal * {
+        visibility: visible;
+    }
+
+    /* 3. Posiciona o modal no topo da folha */
+    #reciboModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: auto;
+        background: transparent !important;
+        display: block;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* 4. Estiliza o cartão: tira sombras, fundo branco e texto preto */
+    .recibo-card {
+        width: 100%;
+        max-width: 500px; /* Tamanho excelente para papel A4 */
+        margin: 20px auto;
+        padding: 30px;
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        border: 2px dashed #000000 !important; /* Bordinha estilo nota fiscal */
+        border-radius: 8px;
+        box-shadow: none !important;
+        page-break-inside: avoid; /* Garante que não quebre em 2 páginas */
+    }
+
+    /* 5. Força os textos (que eram amarelos/brancos) a ficarem pretos */
+    .recibo-header h2, 
+    .recibo-header p,
+    .recibo-linha span,
+    .recibo-linha strong,
+    .recibo-destaque strong,
+    #reciboValor {
+        color: #000000 !important;
+    }
+
+    .recibo-header {
+        border-bottom: 2px solid #000000 !important;
+    }
+
+    /* 6. Mantém um fundo cinza claro na área da foto do produto */
+    .recibo-destaque {
+        background-color: #f0f0f0 !important;
+        border: 1px solid #ccc !important;
+        -webkit-print-color-adjust: exact; /* Força o navegador a imprimir a cor de fundo */
+        print-color-adjust: exact;
+    }
+
+    /* 7. Oculta os botões (Imprimir/Fechar) para não saírem no papel */
+    .recibo-footer {
+        display: none !important;
+    }
+
+    /* 8. Ajusta as margens da página padrão do navegador */
+    @page {
+        margin: 1.5cm;
+    }
+}
