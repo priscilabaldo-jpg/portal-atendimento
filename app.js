@@ -1042,18 +1042,6 @@ window.carregarHistoricoPedidos = async function() {
   }
 }
 
-window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
-  const modal = document.getElementById('reciboModal');
-  if(!modal) return;
-  document.getElementById('reciboIcon').textContent = imagem;
-  document.getElementById('reciboItem').textContent = nomeItem;
-  document.getElementById('reciboNome').textContent = nomeColab;
-  document.getElementById('reciboValor').textContent = valor + ' 🪙';
-  document.getElementById('reciboData').textContent = dataStr;
-  document.getElementById('reciboId').textContent = '#' + idPedido.substring(0, 8).toUpperCase();
-  modal.style.display = 'flex';
-}
-
 window.realizarResgate = async function(idProduto) {
   if (!currentUser) return;
   
@@ -1143,6 +1131,8 @@ window.realizarResgate = async function(idProduto) {
       const dataAgora = new Date();
       const dataStr = dataAgora.toLocaleDateString('pt-BR') + ' às ' + dataAgora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
       
+      alert(`🎉 Sucesso! Você acabou de resgatar o prêmio "${produto.nome}".`);
+
       window.abrirRecibo(produto.imagem, produto.nome, userName, produto.preco, dataStr, pedidoRef.id);
 
       if (document.getElementById('meusPedidosSection') && document.getElementById('meusPedidosSection').style.display === 'block') {
