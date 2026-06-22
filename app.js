@@ -66,7 +66,7 @@ if (buscaEl && resultadosEl) {
         resultadosEl.innerHTML = '';
         if (texto.length < 2) { resultadosEl.style.display = 'none'; return; }
         
-        const encontrados = dadosBusca = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
+        const encontrados = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
         if (!encontrados.length) {
             resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
         } else {
@@ -115,18 +115,22 @@ function carregarAvisos(isAdmin) {
 // 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
 // ====================================================================
 
-// Disparo de Email via Firestore (Coleção 'mail')
+// Disparo de Email usando API do EmailJS
 async function notificarTimePorEmail(autor, texto) {
     try {
-        await addDoc(collection(db, 'mail'), {
-            to: ['lista-do-time@leveros.com.br'], 
-            message: {
-                subject: `Novidade no CX Resolve: ${autor} publicou no Feed!`,
-                html: `<h3>Nova publicação de ${autor}</h3><p>${texto}</p><br><a href="https://portal-atendimento-541ae.firebaseapp.com/timeline.html">Acesse a Timeline para ver mais</a>`
-            }
-        });
+        // Objeto com as variáveis que vão para o template do seu e-mail
+        // (Você pode ajustar as chaves de acordo com o que configurou no painel do EmailJS)
+        const templateParams = {
+            autor_nome: autor,
+            mensagem: texto
+        };
+        
+        // emailjs.send(serviceID, templateID, templateParams)
+        await emailjs.send('service_rc58xfn', 'SEU_TEMPLATE_ID_AQUI', templateParams);
+        console.log("E-mail disparado com sucesso via EmailJS!");
     } catch(e) {
-        console.error("Erro ao agendar e-mail", e);
+        console.error("Erro ao disparar e-mail via EmailJS:", e);
+        alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.");
     }
 }
 
@@ -263,12 +267,6 @@ window.carregarFeed = function(isAdmin) {
         console.error("Erro ao puxar dados do Feed:", error);
         feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message} <br> Aperte F12 para verificar índices do banco.</div>`;
     });
-};
-
-window.apagarPost = async function(postId) {
-    if(confirm("Tem certeza que deseja apagar esta publicação?")) {
-        await deleteDoc(doc(db, 'timeline_posts', postId));
-    }
 };
 
 // ====================================================================
@@ -546,7 +544,7 @@ if (btnLancar) {
         await addDoc(collection(db, "historico_pontos"), {
           adminNome: currentUser.displayName || 'Gestor Admin',
           colaborador: email,
-          tipoOperacao: typeString,
+          tipoOperacao: tipoString,
           valor: Math.abs(valorFinal),
           motivo: motivo,
           dataRealizada: serverTimestamp()
