@@ -1,3 +1,12 @@
+Boa observação, Matheus! Com o engajamento da equipe toda aí no Intergrall e na Timeline, o pódio esticou até o chão e acabou quebrando o visual do layout.
+
+Nas transições de código anteriores, a regra de altura máxima e a barra de rolagem (que tínhamos no começo) acabaram sumindo do CSS. Já ajustei isso para limitar a altura da caixa e adicionar uma barra de rolagem bem discreta e elegante, combinando com o tema escuro.
+
+Como essa é uma mudança apenas de visual (CSS), **o seu arquivo `app.js` continua exatamente o mesmo e não precisa ser mexido**.
+
+Abaixo está o seu **`timeline.html` completo e atualizado**. É só copiar e substituir:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -115,7 +124,11 @@
 
         .ranking-subtitle { font-size: 9px; color: var(--text-sub); margin-top: -8px; margin-bottom: 15px; display: block; text-align: center;}
 
-        .ranking-list { display: flex; flex-direction: column; gap: 6px; min-height: 100px; }
+        /* AQUI FOI CORRIGIDO O CSS DA LISTA DO RANKING PARA TER ROLAGEM */
+        .ranking-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 5px; overscroll-behavior: contain; }
+        .ranking-list::-webkit-scrollbar { width: 4px; }
+        .ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
         .rank-item { display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 7px 10px; background: rgba(0,0,0,0.1); border: 1px solid transparent; font-size: 10px; }
         .rank-left { display: flex; align-items: center; gap: 8px; }
         .rank-left span.num { font-weight: 800; font-size: 10px; color: #fff; min-width: 14px; text-align: center; }
@@ -238,3 +251,5 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
+
+```
