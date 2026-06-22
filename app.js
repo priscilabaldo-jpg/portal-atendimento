@@ -1309,7 +1309,7 @@ onAuthStateChanged(auth, async user => {
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
                          document.getElementById('informativos-content') || 
-                         document.getElementById('materials-content') || 
+                         document.getElementById('materiais-content') || //
                          lojinhaContent ||
                          containerAdminAtivo;
     
