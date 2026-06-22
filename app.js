@@ -66,7 +66,7 @@ if (buscaEl && resultadosEl) {
         resultadosEl.innerHTML = '';
         if (texto.length < 2) { resultadosEl.style.display = 'none'; return; }
         
-        const encontrados = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
+        const encontrados = dadosBusca = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
         if (!encontrados.length) {
             resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
         } else {
@@ -146,15 +146,13 @@ if (btnPublishPost) {
             return;
         }
 
-        // --- A MÁGICA ACONTECE AQUI: NOVO CONVERSOR LH3 DO GOOGLE DRIVE ---
+        // --- CONVERSOR INTERNO CORRIGIDO (lh3.googleusercontent.com) ---
         if (mediaUrl.includes("drive.google.com")) {
             const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (idMatch && idMatch[1]) {
-                // Rota secreta e super estável do Google para renderizar imagens do Drive em img src
                 mediaUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
             }
         }
-        // --------------------------------------------------------------------
 
         btnPublishPost.textContent = "Publicando...";
         btnPublishPost.disabled = true;
@@ -221,20 +219,18 @@ window.carregarFeed = function(isAdmin) {
                 
                 let safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
-                // --- SISTEMA DE RESGATE PARA CONSERTAR OS POSTS "QUEBRADOS" JÁ SALVOS NO BANCO ---
-                if (safeImgUrl.includes("drive.google.com")) {
-                    const idMatch = safeImgUrl.match(/id=([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                // --- CORREÇÃO RETROATIVA PARA OS POSTS COM LINKS QUEBRADOS DA ÚLTIMA TENTATIVA ---
+                if (safeImgUrl.includes("drive.google.com") || safeImgUrl.includes("picture/3") || safeImgUrl.includes("thumbnail")) {
+                    const idMatch = safeImgUrl.match(/id=([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/picture\/3([a-zA-Z0-9_-]+)/);
                     if (idMatch && idMatch[1]) {
                         safeImgUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
                     }
                 }
-                // ---------------------------------------------------------------------------------
 
                 const imagemHtml = safeImgUrl 
                     ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" loading="lazy"></div>` 
                     : '';
 
-                // AQUI FOI AJUSTADO O BOTAO DE APAGAR: Removido o 'onclick' e adicionado a classe 'btn-apagar-post'
                 html += `
                 <div class="post-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -267,6 +263,12 @@ window.carregarFeed = function(isAdmin) {
         console.error("Erro ao puxar dados do Feed:", error);
         feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message} <br> Aperte F12 para verificar índices do banco.</div>`;
     });
+};
+
+window.apagarPost = async function(postId) {
+    if(confirm("Tem certeza que deseja apagar esta publicação?")) {
+        await deleteDoc(doc(db, 'timeline_posts', postId));
+    }
 };
 
 // ====================================================================
@@ -544,7 +546,7 @@ if (btnLancar) {
         await addDoc(collection(db, "historico_pontos"), {
           adminNome: currentUser.displayName || 'Gestor Admin',
           colaborador: email,
-          tipoOperacao: tipoString,
+          tipoOperacao: typeString,
           valor: Math.abs(valorFinal),
           motivo: motivo,
           dataRealizada: serverTimestamp()
@@ -1216,26 +1218,23 @@ window.realizarResgate = async function(idProduto) {
 
 
 // ====================================================================
-// 8. DELEGAÇÃO DE EVENTOS GLOBAIS (CORRIGIDO PARA APAGAR POSTS E AVISOS)
+// 8. DELEGAÇÃO DE EVENTOS GLOBAIS
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
-  // 1. Entregar Pedido da Lojinha
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
     if (pedidoId) await darBaixaPedido(pedidoId);
   }
 
-  // 2. Apagar NF do Centro de Custo
   const btnApagarNf = target.closest('.btn-apagar-nf');
   if (btnApagarNf) {
     const nfId = btnApagarNf.getAttribute('data-id');
     if (nfId) await apagarNF(nfId);
   }
   
-  // 3. Apagar Post da Timeline
   const btnApagarPost = target.closest('.btn-apagar-post');
   if (btnApagarPost) {
     const postId = btnApagarPost.getAttribute('data-id');
@@ -1249,7 +1248,6 @@ document.addEventListener('click', async (event) => {
     }
   }
 
-  // 4. Apagar Aviso do Mural
   const btnApagarAviso = target.closest('.btn-deletar-aviso');
   if (btnApagarAviso) {
     const avisoId = btnApagarAviso.getAttribute('data-id');
