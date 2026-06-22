@@ -7,12 +7,21 @@
     
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' https://www.gstatic.com https://apis.google.com;
+      script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
       style-src 'self' 'unsafe-inline';
-      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.emailjs.com;
       frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
       img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://drive.google.com;
     ">
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+       (function(){
+          emailjs.init({
+            publicKey: "SUA_PUBLIC_KEY_AQUI", // <-- COLOQUE SUA PUBLIC KEY AQUI
+          });
+       })();
+    </script>
 
     <style>
         /* --- Standard Styling & Theme --- */
