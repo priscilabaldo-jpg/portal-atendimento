@@ -213,21 +213,27 @@ window.carregarFeed = function(isAdmin) {
                 const post = docSnap.data();
                 const postId = docSnap.id;
                 
-                // FALLBACKS DE SEGURANÇA: Se o post for antigo e usar nomes de campos diferentes
+                // Fallbacks para campos antigos
                 const autorNome = post.autorNome || post.autor || post.nome || 'Colega de Equipe';
                 const autorFoto = post.autorFoto || post.foto || null;
                 const textoPost = post.texto || post.mensagem || post.conteudo || '';
-                const imgUrl = post.imagemUrl || post.imagem || post.fotoUrl || null;
+                
+                // Adicionamos vários fallbacks possíveis para pegar a imagem antiga
+                const imgUrl = post.imagemUrl || post.imagem || post.fotoUrl || post.image || post.media || post.anexo || post.url || null;
                 
                 let dataPost = 'Agora';
                 if (post.criadoEm && post.criadoEm.seconds) {
                     dataPost = new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR');
                 } else if (post.data) {
-                    dataPost = post.data; // Caso os posts antigos usassem string de data
+                    dataPost = post.data; 
                 }
                 
-                const imagemHtml = imgUrl 
-                    ? `<div class="post-media"><img src="${window.escapeHTML(imgUrl)}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
+                // AQUI ESTÁ A CORREÇÃO DA IMAGEM: 
+                // Usamos o link direto fazendo apenas um replace nas aspas, sem quebrar os '&' do Firebase Storage
+                const safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
+
+                const imagemHtml = safeImgUrl 
+                    ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
                     : '';
 
                 html += `
@@ -252,7 +258,7 @@ window.carregarFeed = function(isAdmin) {
                     ${imagemHtml}
                 </div>`;
             } catch (err) {
-                console.warn("Um post ignorado devido a formato incompatível:", err);
+                console.warn("Um post foi ignorado devido a formato incompatível:", err);
             }
         });
         
