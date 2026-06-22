@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://wwws.intergrall.com.br/callcenter/cc_login.php/callcenter/cc_login.phpb/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js/callcenter/cc_login.phpb/firebasejs/10.12.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
     apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
@@ -112,7 +112,7 @@ function carregarAvisos(isAdmin) {
 }
 
 // ====================================================================
-// 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR (AQUI ESTÃO AS CORREÇÕES!)
+// 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
 // ====================================================================
 
 // Disparo de Email via Firestore (Coleção 'mail')
@@ -134,7 +134,7 @@ const btnPublishPost = document.getElementById('btnPublishGlobal');
 if (btnPublishPost) {
     btnPublishPost.addEventListener('click', async () => {
         const postTextEl = document.getElementById('postTextGlobal');
-        const mediaUrlInput = document.getElementById('mediaUrlInputGlobal'); // Correct unified ID
+        const mediaUrlInput = document.getElementById('mediaUrlInputGlobal');
         const sendEmailCheckbox = document.getElementById('sendEmailCheckboxGlobal');
 
         const texto = postTextEl.value.trim();
@@ -150,13 +150,12 @@ if (btnPublishPost) {
         btnPublishPost.disabled = true;
 
         try {
-            // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts' e campo 'midiaUrl'
             await addDoc(collection(db, 'timeline_posts'), {
                 autorNome: currentUser.displayName || 'Colaborador',
                 autorEmail: currentUser.email,
                 autorFoto: currentUser.photoURL || null,
                 texto: texto,
-                midiaUrl: mediaUrl, // Unified link field
+                midiaUrl: mediaUrl,
                 curtidas: [],
                 criadoEm: serverTimestamp()
             });
@@ -183,7 +182,6 @@ window.carregarFeed = function(isAdmin) {
     const feedList = document.getElementById('feedListGlobal');
     if (!feedList) return;
 
-    // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts'
     const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
 
     onSnapshot(q, (snap) => {
@@ -203,7 +201,7 @@ window.carregarFeed = function(isAdmin) {
                 const autorFoto = post.autorFoto || post.foto || null;
                 const textoPost = post.texto || post.mensagem || post.conteudo || '';
                 
-                // AQUI ESTÁ A CORREÇÃO: Adicionamos vários fallbacks possíveis para pegar a imagem antiga
+                // Adicionamos vários fallbacks possíveis para pegar a imagem antiga
                 const imgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
                 
                 let dataPost = 'Agora';
@@ -213,7 +211,6 @@ window.carregarFeed = function(isAdmin) {
                     dataPost = post.data; // Caso os posts antigos usassem string de data
                 }
                 
-                // AQUI ESTÁ A CORREÇÃO DA IMAGEM: 
                 // Usamos o link direto fazendo apenas um replace nas aspas, sem quebrar os '&' do Firebase Storage
                 const safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
@@ -257,7 +254,6 @@ window.carregarFeed = function(isAdmin) {
 
 window.apagarPost = async function(postId) {
     if(confirm("Tem certeza que deseja apagar esta publicação?")) {
-        // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts'
         await deleteDoc(doc(db, 'timeline_posts', postId));
     }
 };
@@ -288,11 +284,13 @@ window.carregarRanking = function() {
 
             html += `
             <div class="rank-item ${classPos}">
-                <div class="rank-info">
-                    <span class="rank-pos">${badge}</span>
-                    <span class="rank-nome">${window.escapeHTML(user.nome || 'Usuário')}</span>
+                <div class="rank-left">
+                    <span class="num">${badge}</span>
+                    <span class="rank-username">${window.escapeHTML(user.nome || 'Usuário')}</span>
                 </div>
-                <span class="rank-moedas">${user.pontos || 0} 🪙</span>
+                <div class="rank-right">
+                    <span>${user.pontos || 0} 🪙</span>
+                </div>
             </div>`;
             
             posicao++;
@@ -535,7 +533,7 @@ if (btnLancar) {
         await addDoc(collection(db, "historico_pontos"), {
           adminNome: currentUser.displayName || 'Gestor Admin',
           colaborador: email,
-          tipoOperacao: typeString,
+          tipoOperacao: tipoString,
           valor: Math.abs(valorFinal),
           motivo: motivo,
           dataRealizada: serverTimestamp()
