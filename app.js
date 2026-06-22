@@ -126,7 +126,7 @@ async function notificarTimePorEmail(autor, texto) {
         };
         
         // emailjs.send(serviceID, templateID, templateParams)
-        await emailjs.send('service_rc58xfn', 'SEU_TEMPLATE_ID_AQUI', templateParams);
+        await emailjs.send('service_rc58xfn', 'template_074uqfn', templateParams);
         console.log("E-mail disparado com sucesso via EmailJS!");
     } catch(e) {
         console.error("Erro ao disparar e-mail via EmailJS:", e);
