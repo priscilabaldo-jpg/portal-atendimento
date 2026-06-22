@@ -230,11 +230,11 @@ window.carregarFeed = function(isAdmin) {
                 }
                 // ---------------------------------------------------------------------------------
 
-                // Removi o onerror que estava causando conflito com o CSP. Com o link lh3 a imagem carrega lisa.
                 const imagemHtml = safeImgUrl 
                     ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" loading="lazy"></div>` 
                     : '';
 
+                // AQUI FOI AJUSTADO O BOTAO DE APAGAR: Removido o 'onclick' e adicionado a classe 'btn-apagar-post'
                 html += `
                 <div class="post-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
@@ -247,7 +247,7 @@ window.carregarFeed = function(isAdmin) {
                                 <span style="font-size: 10px; color: #aaa;">${dataPost}</span>
                             </div>
                         </div>
-                        ${isAdmin ? `<button class="btn-apagar" onclick="window.apagarPost('${postId}')" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
+                        ${isAdmin ? `<button class="btn-apagar btn-apagar-post" data-id="${postId}" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
                     </div>
                     
                     <div style="font-size: 14px; line-height: 1.5; margin-top: 8px;">
@@ -267,12 +267,6 @@ window.carregarFeed = function(isAdmin) {
         console.error("Erro ao puxar dados do Feed:", error);
         feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message} <br> Aperte F12 para verificar índices do banco.</div>`;
     });
-};
-
-window.apagarPost = async function(postId) {
-    if(confirm("Tem certeza que deseja apagar esta publicação?")) {
-        await deleteDoc(doc(db, 'timeline_posts', postId));
-    }
 };
 
 // ====================================================================
@@ -1222,21 +1216,50 @@ window.realizarResgate = async function(idProduto) {
 
 
 // ====================================================================
-// 8. DELEGAÇÃO DE EVENTOS GLOBAIS ALTERNATIVOS
+// 8. DELEGAÇÃO DE EVENTOS GLOBAIS (CORRIGIDO PARA APAGAR POSTS E AVISOS)
 // ====================================================================
 document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
+  // 1. Entregar Pedido da Lojinha
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
     if (pedidoId) await darBaixaPedido(pedidoId);
   }
 
+  // 2. Apagar NF do Centro de Custo
   const btnApagarNf = target.closest('.btn-apagar-nf');
   if (btnApagarNf) {
     const nfId = btnApagarNf.getAttribute('data-id');
     if (nfId) await apagarNF(nfId);
+  }
+  
+  // 3. Apagar Post da Timeline
+  const btnApagarPost = target.closest('.btn-apagar-post');
+  if (btnApagarPost) {
+    const postId = btnApagarPost.getAttribute('data-id');
+    if (postId && confirm("Tem certeza que deseja apagar esta publicação?")) {
+        try { 
+            await deleteDoc(doc(db, 'timeline_posts', postId)); 
+        } catch (err) { 
+            console.error("Erro ao apagar post:", err);
+            alert("Erro ao excluir. Verifique suas permissões."); 
+        }
+    }
+  }
+
+  // 4. Apagar Aviso do Mural
+  const btnApagarAviso = target.closest('.btn-deletar-aviso');
+  if (btnApagarAviso) {
+    const avisoId = btnApagarAviso.getAttribute('data-id');
+    if (avisoId && confirm("Apagar este aviso permanentemente?")) {
+        try { 
+            await deleteDoc(doc(db, 'avisos', avisoId)); 
+        } catch (err) { 
+            console.error("Erro ao apagar aviso:", err); 
+        }
+    }
   }
 });
 
