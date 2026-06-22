@@ -146,12 +146,12 @@ if (btnPublishPost) {
             return;
         }
 
-        // --- A MÁGICA ACONTECE AQUI: CONVERSOR AUTOMÁTICO DO GOOGLE DRIVE ---
+        // --- A MÁGICA ACONTECE AQUI: NOVO CONVERSOR LH3 DO GOOGLE DRIVE ---
         if (mediaUrl.includes("drive.google.com")) {
             const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (idMatch && idMatch[1]) {
-                // Transforma o link de visualização num link de miniatura de alta resolução
-                mediaUrl = `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+                // Rota secreta e super estável do Google para renderizar imagens do Drive em img src
+                mediaUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
             }
         }
         // --------------------------------------------------------------------
@@ -219,10 +219,20 @@ window.carregarFeed = function(isAdmin) {
                     dataPost = post.data; 
                 }
                 
-                const safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
+                let safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
+                // --- SISTEMA DE RESGATE PARA CONSERTAR OS POSTS "QUEBRADOS" JÁ SALVOS NO BANCO ---
+                if (safeImgUrl.includes("drive.google.com")) {
+                    const idMatch = safeImgUrl.match(/id=([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                    if (idMatch && idMatch[1]) {
+                        safeImgUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+                    }
+                }
+                // ---------------------------------------------------------------------------------
+
+                // Removi o onerror que estava causando conflito com o CSP. Com o link lh3 a imagem carrega lisa.
                 const imagemHtml = safeImgUrl 
-                    ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
+                    ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" loading="lazy"></div>` 
                     : '';
 
                 html += `
