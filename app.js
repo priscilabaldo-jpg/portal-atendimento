@@ -24,7 +24,7 @@ let logsParaExportacao = [];
 let nfParaExportacao = []; 
 let graficoInstancia = null; 
 let saldoAtualUsuario = 0;
-let produtosLojaCache = []; // Cache dinâmico para a Lojinha
+let produtosLojaCache = [];
 
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
@@ -135,7 +135,127 @@ function carregarAvisos(isAdmin) {
   onSnapshot(q, snap => renderAvisos(snap.docs.map(d => ({ id: d.id, ...d.data() })), isAdmin));
 }
 
-31211
+// ====================================================================
+// MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
+// ====================================================================
+
+// Disparo de Email via Firestore (Coleção 'mail')
+async function notificarTimePorEmail(autor, texto) {
+    try {
+        await addDoc(collection(db, 'mail'), {
+            to: ['lista-do-time@leveros.com.br'], // Substitua pelo e-mail da sua lista de distribuição
+            message: {
+                subject: `Novidade no CX Resolve: ${autor} publicou no Feed!`,
+                html: `<h3>Nova publicação de ${autor}</h3><p>${texto}</p><br><a href="https://portal-atendimento-541ae.firebaseapp.com/timeline.html">Acesse a Timeline para ver mais</a>`
+            }
+        });
+    } catch(e) {
+        console.error("Erro ao agendar e-mail", e);
+    }
+}
+
+const btnPublishPost = document.getElementById('btnPublishPost');
+if (btnPublishPost) {
+    btnPublishPost.addEventListener('click', async () => {
+        const postTextEl = document.getElementById('postText');
+        const postMediaUrlEl = document.getElementById('postMediaUrl');
+        const sendEmailCheckbox = document.getElementById('sendEmailCheckbox');
+
+        const texto = postTextEl.value.trim();
+        const imagemUrl = postMediaUrlEl.value.trim();
+        const dispararEmail = sendEmailCheckbox ? sendEmailCheckbox.checked : false;
+
+        if (!texto && !imagemUrl) {
+            alert("Escreva algo ou insira o link de uma imagem para compartilhar com o time!");
+            return;
+        }
+
+        btnPublishPost.textContent = "Publicando...";
+        btnPublishPost.disabled = true;
+
+        try {
+            await addDoc(collection(db, 'feed_publicacoes'), {
+                autorNome: currentUser.displayName || 'Colaborador',
+                autorEmail: currentUser.email,
+                autorFoto: currentUser.photoURL || null,
+                texto: texto,
+                imagemUrl: imagemUrl, 
+                curtidas: [],
+                criadoEm: serverTimestamp()
+            });
+
+            if (dispararEmail) {
+                await notificarTimePorEmail(currentUser.displayName, texto);
+            }
+
+            postTextEl.value = '';
+            postMediaUrlEl.value = '';
+            
+        } catch (error) {
+            console.error("Erro ao publicar na timeline:", error);
+            alert("Erro ao publicar. Verifique sua conexão.");
+        } finally {
+            btnPublishPost.textContent = "Publicar";
+            btnPublishPost.disabled = false;
+        }
+    });
+}
+
+window.carregarFeed = function(isAdmin) {
+    const feedList = document.getElementById('feedList');
+    if (!feedList) return;
+
+    const q = query(collection(db, 'feed_publicacoes'), orderBy('criadoEm', 'desc'));
+
+    onSnapshot(q, (snap) => {
+        if (snap.empty) {
+            feedList.innerHTML = '<div class="avisos-vazio" style="color: white; text-align: center;">Nenhuma publicação ainda. Seja o primeiro a postar!</div>';
+            return;
+        }
+
+        let html = '';
+        snap.docs.forEach(docSnap => {
+            const post = docSnap.data();
+            const postId = docSnap.id;
+            
+            const dataPost = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR') : 'Agora';
+            
+            const imagemHtml = post.imagemUrl 
+                ? `<div class="post-media"><img src="${window.escapeHTML(post.imagemUrl)}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
+                : '';
+
+            html += `
+            <div class="post-card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                        <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                            ${post.autorFoto ? `<img src="${post.autorFoto}" style="width:100%; height:100%; object-fit:cover;">` : post.autorNome.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 14px;">${window.escapeHTML(post.autorNome)}</strong>
+                            <span style="font-size: 10px; color: #aaa;">${dataPost}</span>
+                        </div>
+                    </div>
+                    ${isAdmin ? `<button class="btn-apagar" onclick="window.apagarPost('${postId}')" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
+                </div>
+                
+                <div style="font-size: 14px; line-height: 1.5; margin-top: 8px;">
+                    ${window.escapeHTML(post.texto).replace(/\n/g, '<br>')}
+                </div>
+                
+                ${imagemHtml}
+            </div>`;
+        });
+        
+        feedList.innerHTML = html;
+    });
+};
+
+window.apagarPost = async function(postId) {
+    if(confirm("Tem certeza que deseja apagar esta publicação?")) {
+        await deleteDoc(doc(db, 'feed_publicacoes', postId));
+    }
+};
 
 // ====================================================================
 // 4. MÓDULO ADMINISTRATIVO 1: AUDITORIA DE LOGS (`admin_logs.html`)
@@ -426,7 +546,7 @@ if (btnExportar) {
 }
 
 // ====================================================================
-// 5.5 CADASTRO DE NOVOS PRODUTOS NA LOJINHA (COM CONVERSÃO AUTOMÁTICA)
+// 5.5 CADASTRO DE NOVOS PRODUTOS NA LOJINHA 
 // ====================================================================
 const formNovoProduto = document.getElementById('formNovoProduto');
 if (formNovoProduto) {
@@ -445,17 +565,14 @@ if (formNovoProduto) {
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
             let linkBruto = document.getElementById('prodFoto').value.trim();
             
-            // Lógica de conversão automática do Google Drive
             let imagemFinal = linkBruto;
             
             if (linkBruto.includes("drive.google.com")) {
-                // Extrai o ID do link (pode ser /d/ ou /file/d/)
                 const idMatch = linkBruto.match(/\/d\/([a-zA-Z0-9_-]+)/) || linkBruto.match(/id=([a-zA-Z0-9_-]+)/);
                 if (idMatch && idMatch[1]) {
                     imagemFinal = `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
                 }
             } else if (!linkBruto) {
-                // Se não colou link nenhum, usa o emoji
                 imagemFinal = emojiVal;
             }
 
@@ -800,15 +917,12 @@ function carregarVitrine() {
           const cardStyle = isEsgotado ? 'opacity: 0.6; filter: grayscale(0.5);' : '';
           const disableAttr = isEsgotado ? 'disabled' : '';
 
-          // Lógica inteligente para Foto Real x Emoji
           let imgRenderizada = '';
           let imgEstiloContainer = '';
           if (produto.imagem && produto.imagem.startsWith('http')) {
-              // Se for URL, cria a tag <img/> preenchendo o círculo todo
               imgRenderizada = `<img src="${escapeHTML(produto.imagem)}" alt="${escapeHTML(produto.nome)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
               imgEstiloContainer = 'padding: 0; overflow: hidden; border: none; background: transparent;';
           } else {
-              // Se for Emoji, mantém o visual padrão
               imgRenderizada = escapeHTML(produto.imagem);
           }
 
@@ -833,7 +947,6 @@ function carregarVitrine() {
   });
 }
 
-// Também precisamos atualizar o recibo gerado no fim do resgate para suportar a foto real
 window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPedido) {
   const modal = document.getElementById('reciboModal');
   if(!modal) return;
@@ -918,7 +1031,6 @@ window.carregarHistoricoPedidos = async function() {
 window.realizarResgate = async function(idProduto) {
   if (!currentUser) return;
   
-  // REGRA 1: Janela de Resgate (Configuração Global Simples)
   const lojaAberta = true; 
   if (!lojaAberta) {
       alert("🔒 A loja está fechada! Aguarde a janela de resgate definida pela gestão (geralmente na primeira semana do mês).");
@@ -928,7 +1040,6 @@ window.realizarResgate = async function(idProduto) {
   const produto = produtosLojaCache.find(p => p.id === idProduto);
   if (!produto) return;
 
-  // REGRA 2: Verificação de estoque no cache antes de ir ao servidor
   if (produto.estoque <= 0) {
       alert(`O item "${produto.nome}" esgotou! Fique de olho na próxima reposição.`);
       return;
@@ -952,12 +1063,10 @@ window.realizarResgate = async function(idProduto) {
       const userName = currentUser.displayName || 'Colaborador';
       const userRef = doc(db, "usuarios", userEmail);
       
-      // Consultar perfil atualizado no banco para checar bloqueios
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
           const userData = userSnap.data();
           
-          // REGRA 3: Bloqueio Operacional (Monitoria Zerada ou Advertência)
           if (userData.bloqueadoParaResgate) {
               const motivo = userData.motivoBloqueio || "Inconsistência na monitoria ou advertência ativa.";
               alert(`🚫 Operação Bloqueada: Você não está elegível para resgates neste ciclo.\n\nMotivo: ${motivo}`);
@@ -971,10 +1080,7 @@ window.realizarResgate = async function(idProduto) {
 
       const produtoRef = doc(db, "produtos_loja", produto.id);
 
-      // REGRA 4: Deduzir 1 item do estoque de forma segura (conforme regras do backend)
       await updateDoc(produtoRef, { estoque: increment(-1) });
-
-      // Desconta os pontos do usuário
       await updateDoc(userRef, { pontos: increment(-produto.preco) });
 
       const pedidoRef = await addDoc(collection(db, "pedidos_lojinha"), {
@@ -996,7 +1102,6 @@ window.realizarResgate = async function(idProduto) {
           dataRealizada: serverTimestamp()
       });
 
-      // Atualiza visualmente o saldo do usuário
       saldoAtualUsuario -= produto.preco;
       if (document.getElementById('valSaldo')) document.getElementById('valSaldo').textContent = saldoAtualUsuario;
       if (document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
@@ -1070,7 +1175,7 @@ async function sincronizarPontosDiarios(user) {
         
         if (saldoEl) saldoEl.textContent = moedasAtuais;
         if (saldoMobEl) saldoMobEl.textContent = moedasAtuais;
-        saldoAtualUsuario = moedasAtuais; // Mantém em sync para a loja
+        saldoAtualUsuario = moedasAtuais;
 
         if (dados.ultimoLogin !== hoje) {
             await updateDoc(userRef, {
@@ -1108,8 +1213,6 @@ onAuthStateChanged(auth, async user => {
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
-    // ===== MURALHA EXTRA: VERIFICAÇÃO DE SUBPÁGINAS GESTORAS =====
-    // AQUI ESTÁ A CHAVE ADICIONADA ('admin-loja-content')
     const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
     let containerAdminAtivo = null;
 
@@ -1123,12 +1226,10 @@ onAuthStateChanged(auth, async user => {
         window.location.href = 'index.html';
         return; 
     }
-    // =============================================================
 
     const loginError = document.getElementById('loginError');
     const loginArea = document.getElementById('login-area');
     
-    // Agora incluindo a lojinha na varredura de desbloqueio
     const lojinhaContent = document.getElementById('lojinha-content');
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
@@ -1170,16 +1271,13 @@ onAuthStateChanged(auth, async user => {
     registrarAcesso(user);
     carregarAvisos(isAdmin);
     
-    // Inicialização da Lojinha
     if (lojinhaContent) {
       carregarVitrine();
     }
 
-    // Inicialização Condicional Administrativa
     if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
     if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); 
     
-    // Inicialização do Painel de Centro de Custo
     if (document.getElementById('tabelaMatriz') && isAdmin) {
       let totalTemp = 0;
       for (let cat in ORCAMENTO_TEMPORADA) { totalTemp += ORCAMENTO_TEMPORADA[cat]; }
@@ -1190,9 +1288,10 @@ onAuthStateChanged(auth, async user => {
     }
 
     if (document.getElementById('feedList') || lojinhaContent) {
-      carregarFeed(isAdmin);
-      carregarRanking();
-      carregarTickerDiario();
+      if(window.carregarFeed) window.carregarFeed(isAdmin);
+      // Aqui as chamadas carregarRanking e carregarTickerDiario estão disponíveis no seu código final, se aplicável
+      if(window.carregarRanking) window.carregarRanking();
+      if(window.carregarTickerDiario) window.carregarTickerDiario();
       await sincronizarPontosDiarios(user);
     }
     
