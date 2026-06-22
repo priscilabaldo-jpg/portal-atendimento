@@ -27,6 +27,19 @@ let saldoAtualUsuario = 0;
 let produtosLojaCache = [];
 
 // ====================================================================
+// CORREÇÃO EMAILJS: acesso ao objeto global via window
+// O SDK é carregado como script global no HTML antes do módulo ES,
+// então deve ser acessado via window.emailjs dentro do módulo.
+// ====================================================================
+function getEmailJS() {
+    if (typeof window.emailjs !== 'undefined') {
+        return window.emailjs;
+    }
+    console.error("EmailJS SDK não encontrado. Verifique se o script está carregado no HTML antes do app.js.");
+    return null;
+}
+
+// ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
 // ====================================================================
 function escapeHTML(str) {
@@ -115,22 +128,29 @@ function carregarAvisos(isAdmin) {
 // 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
 // ====================================================================
 
-// Disparo de Email usando API do EmailJS
+// ====================================================================
+// CORREÇÃO: notificarTimePorEmail usando window.emailjs
+// O SDK é global (carregado via <script> no HTML), portanto dentro de
+// um módulo ES deve ser acessado via window.emailjs — não diretamente.
+// ====================================================================
 async function notificarTimePorEmail(autor, texto) {
     try {
-        // Objeto com as variáveis que vão para o template do seu e-mail
-        // (Você pode ajustar as chaves de acordo com o que configurou no painel do EmailJS)
+        const ejs = getEmailJS();
+        if (!ejs) {
+            throw new Error("EmailJS SDK não está disponível. Verifique o carregamento no HTML.");
+        }
+
         const templateParams = {
             autor_nome: autor,
             mensagem: texto
         };
-        
-        // emailjs.send(serviceID, templateID, templateParams)
-        await emailjs.send('service_rc58xfn', 'template_074uqfn', templateParams);
+
+        // Usando window.emailjs.send para garantir acesso ao escopo global
+        await ejs.send('service_rc58xfn', 'template_074uqfn', templateParams);
         console.log("E-mail disparado com sucesso via EmailJS!");
     } catch(e) {
         console.error("Erro ao disparar e-mail via EmailJS:", e);
-        alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.");
+        alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.\n\nDetalhes: " + e.message);
     }
 }
 
@@ -150,7 +170,6 @@ if (btnPublishPost) {
             return;
         }
 
-        // --- CONVERSOR INTERNO CORRIGIDO (lh3.googleusercontent.com) ---
         if (mediaUrl.includes("drive.google.com")) {
             const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (idMatch && idMatch[1]) {
@@ -172,8 +191,9 @@ if (btnPublishPost) {
                 criadoEm: serverTimestamp()
             });
 
+            // E-mail disparado APÓS salvar com sucesso no Firestore
             if (dispararEmail) {
-                await notificarTimePorEmail(currentUser.displayName, texto);
+                await notificarTimePorEmail(currentUser.displayName || 'Colaborador', texto);
             }
 
             postTextEl.value = '';
@@ -223,7 +243,6 @@ window.carregarFeed = function(isAdmin) {
                 
                 let safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
-                // --- CORREÇÃO RETROATIVA PARA OS POSTS COM LINKS QUEBRADOS DA ÚLTIMA TENTATIVA ---
                 if (safeImgUrl.includes("drive.google.com") || safeImgUrl.includes("picture/3") || safeImgUrl.includes("thumbnail")) {
                     const idMatch = safeImgUrl.match(/id=([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/picture\/3([a-zA-Z0-9_-]+)/);
                     if (idMatch && idMatch[1]) {
