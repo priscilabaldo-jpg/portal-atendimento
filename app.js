@@ -1,13 +1,13 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://wwws.intergrall.com.br/callcenter/cc_login.php/callcenter/cc_login.phpb/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js/callcenter/cc_login.phpb/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-  authDomain:  "portal-atendimento-541ae.firebaseapp.com",
-  projectId:   "portal-atendimento-541ae",
-  storageBucket: "portal-atendimento-541ae.appspot.com"
+    apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+    authDomain:  "portal-atendimento-541ae.firebaseapp.com",
+    projectId:   "portal-atendimento-541ae",
+    storageBucket: "portal-atendimento-541ae.appspot.com"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -29,36 +29,17 @@ let produtosLojaCache = [];
 // ====================================================================
 // 1. UTILITÁRIOS GLOBAIS E UI BÁSICA
 // ====================================================================
-const anoAtualEl = document.getElementById('anoAtual');
-if (anoAtualEl) anoAtualEl.textContent = new Date().getFullYear();
-
-const welcomeDateEl = document.getElementById('welcomeDate');
-if (welcomeDateEl) {
-  const dias  = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-  const agora = new Date();
-  welcomeDateEl.textContent = `${dias[agora.getDay()]}, ${agora.getDate()} de ${meses[agora.getMonth()]} de ${agora.getFullYear()}`;
-}
-
-const hamburger = document.getElementById('hamburger');
-if (hamburger) {
-  hamburger.addEventListener('click', () => { 
-    const mobileMenu = document.getElementById('mobileMenu') || document.querySelector('.mobile-menu');
-    if (mobileMenu) mobileMenu.classList.toggle('open'); 
-  });
-}
-
 function escapeHTML(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 if(!window.escapeHTML) window.escapeHTML = escapeHTML;
 
 function getInitials(name) { return name ? name.charAt(0).toUpperCase() : 'U'; }
 
 function renderAvatar(nome, photoUrl) {
-  if (photoUrl) return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
-  return getInitials(nome);
+    if (photoUrl) return `<img src="${photoUrl}" alt="Avatar" referrerpolicy="no-referrer" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+    return getInitials(nome);
 }
 
 // ====================================================================
@@ -68,72 +49,73 @@ const buscaEl = document.getElementById('busca');
 const resultadosEl = document.getElementById('resultados');
 
 if (buscaEl && resultadosEl) {
-  const dadosBusca = [
-    {nome:"GLPI", categoria:"Sistema", link:"https://glpi.leveros.com.br"},
-    {nome:"Uappi", categoria:"Sistema", link:"https://www.vendas.leveros.com.br/wapstore/acesso"},
-    {nome:"BoxLink", categoria:"Sistema", link:"https://matriz.boxlink.com.br/home"},
-    {nome:"Intergrall", categoria:"Sistema", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
-    {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materiais.html"},
-    {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materiais.html"},
-    {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materiais.html"},
-    {nome:"Como usar a Uappi", categoria:"Material", link:"materiais.html"},
-    {nome:"Consulta na FUP", categoria:"Material", link:"materiais.html"}
-  ];
+    const dadosBusca = [
+        {nome:"GLPI", categoria:"Sistema", link:"https://glpi.leveros.com.br"},
+        {nome:"Uappi", categoria:"Sistema", link:"https://www.vendas.leveros.com.br/wapstore/acesso"},
+        {nome:"BoxLink", categoria:"Sistema", link:"https://matriz.boxlink.com.br/home"},
+        {nome:"Intergrall", categoria:"Sistema", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
+        {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materials.html"},
+        {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materials.html"},
+        {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materials.html"},
+        {nome:"Como usar a Uappi", categoria:"Material", link:"materials.html"},
+        {nome:"Consulta na FUP", categoria:"Material", link:"materials.html"}
+    ];
 
-  buscaEl.addEventListener('keyup', function() {
-    const texto = this.value.toLowerCase();
-    resultadosEl.innerHTML = '';
-    if (texto.length < 2) { resultadosEl.style.display = 'none'; return; }
-    
-    const encontrados = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
-    if (!encontrados.length) {
-      resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
-    } else {
-      encontrados.forEach(item => {
-        resultadosEl.innerHTML += `<div class="resultado"><a href="${escapeHTML(item.link)}"><strong>${escapeHTML(item.nome)}</strong><span class="res-badge">${escapeHTML(item.categoria)}</span></a></div>`;
-      });
-    }
-    resultadosEl.style.display = 'block';
-  });
+    buscaEl.addEventListener('keyup', function() {
+        const texto = this.value.toLowerCase();
+        resultadosEl.innerHTML = '';
+        if (texto.length < 2) { resultadosEl.style.display = 'none'; return; }
+        
+        const encontrados = dadosBusca.filter(d => d.nome.toLowerCase().includes(texto));
+        if (!encontrados.length) {
+            resultadosEl.innerHTML = "<div class='resultado' style='opacity:0.5;font-size:12px;padding:12px 14px;'>Nenhum resultado</div>";
+        } else {
+            encontrados.forEach(item => {
+                resultadosEl.innerHTML += `<div class="resultado"><a href="${escapeHTML(item.link)}"><strong>${escapeHTML(item.nome)}</strong><span class="res-badge">${escapeHTML(item.categoria)}</span></a></div>`;
+            });
+        }
+        resultadosEl.style.display = 'block';
+    });
 
-  document.addEventListener('click', e => { if (!buscaEl.contains(e.target)) resultadosEl.style.display = 'none'; });
+    document.addEventListener('click', e => { if (!buscaEl.contains(e.target)) resultadosEl.style.display = 'none'; });
 }
 
 const EMOJIS = { urgente:'🚨', informativo:'📋', treinamento:'📚', geral:'📌' };
 
 function renderAvisos(avisos, isAdmin) {
-  const lista = document.getElementById('avisosLista');
-  if (!lista) return;
-  if (!avisos.length) { lista.innerHTML = '<div class="avisos-vazio">Nenhum aviso publicado.</div>'; return; }
-  
-  lista.innerHTML = avisos.map(a => {
-    const data = a.criadoEm ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
-    const catSafe = escapeHTML(a.categoria || 'geral');
-    return `
-      <div class="aviso-card ${catSafe}">
-        <div class="aviso-body">
-          <div class="aviso-meta">
-            <span class="aviso-badge ${catSafe}">${EMOJIS[a.categoria] || '📌'} ${catSafe}</span>
-            <span class="aviso-autor">${escapeHTML(a.autor || '')}</span>
-            <span class="aviso-data">${escapeHTML(data)}</span>
-          </div>
-          <div class="aviso-texto">${escapeHTML(a.texto || '')}</div>
-        </div>
-        ${isAdmin ? `<button class="btn-apagar btn-deletar-aviso" data-id="${escapeHTML(a.id || '')}" title="Apagar aviso">✕</button>` : ''}
-      </div>`;
-  }).join('');
+    const lista = document.getElementById('avisosLista');
+    if (!lista) return;
+    if (!avisos.length) { lista.innerHTML = '<div class="avisos-vazio">Nenhum aviso publicado.</div>'; return; }
+    
+    lista.innerHTML = avisos.map(a => {
+        const data = a.criadoEm ? new Date(a.criadoEm.seconds * 1000).toLocaleDateString('pt-BR', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '';
+        const catSafe = escapeHTML(a.categoria || 'geral');
+        return `
+            <div class="aviso-card ${catSafe}">
+                <div class="aviso-body">
+                    <div class="aviso-meta">
+                        <span class="aviso-badge ${catSafe}">${EMOJIS[a.categoria] || '📌'} ${catSafe}</span>
+                        <span class="aviso-autor">${escapeHTML(a.autor || '')}</span>
+                        <span class="aviso-data">${escapeHTML(data)}</span>
+                    </div>
+                    <div class="aviso-texto">${escapeHTML(a.texto || '')}</div>
+                </div>
+                ${isAdmin ? `<button class="btn-apagar btn-deletar-aviso" data-id="${escapeHTML(a.id || '')}" title="Apagar aviso">✕</button>` : ''}
+            </div>`;
+    }).join('');
 }
 
 function carregarAvisos(isAdmin) {
-  if (!document.getElementById('avisosLista')) return;
-  const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
-  onSnapshot(q, snap => renderAvisos(snap.docs.map(d => ({ id: d.id, ...d.data() })), isAdmin));
+    if (!document.getElementById('avisosLista')) return;
+    const q = query(collection(db, 'avisos'), orderBy('criadoEm', 'desc'));
+    onSnapshot(q, snap => renderAvisos(snap.docs.map(d => ({ id: d.id, ...d.data() })), isAdmin));
 }
 
 // ====================================================================
-// 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
+// 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR (AQUI ESTÃO AS CORREÇÕES!)
 // ====================================================================
 
+// Disparo de Email via Firestore (Coleção 'mail')
 async function notificarTimePorEmail(autor, texto) {
     try {
         await addDoc(collection(db, 'mail'), {
@@ -148,19 +130,19 @@ async function notificarTimePorEmail(autor, texto) {
     }
 }
 
-const btnPublishPost = document.getElementById('btnPublishPost');
+const btnPublishPost = document.getElementById('btnPublishGlobal');
 if (btnPublishPost) {
     btnPublishPost.addEventListener('click', async () => {
-        const postTextEl = document.getElementById('postText');
-        const postMediaUrlEl = document.getElementById('postMediaUrl');
-        const sendEmailCheckbox = document.getElementById('sendEmailCheckbox');
+        const postTextEl = document.getElementById('postTextGlobal');
+        const mediaUrlInput = document.getElementById('mediaUrlInputGlobal'); // Correct unified ID
+        const sendEmailCheckbox = document.getElementById('sendEmailCheckboxGlobal');
 
         const texto = postTextEl.value.trim();
-        const imagemUrl = postMediaUrlEl.value.trim();
+        const mediaUrl = mediaUrlInput.value.trim();
         const dispararEmail = sendEmailCheckbox ? sendEmailCheckbox.checked : false;
 
-        if (!texto && !imagemUrl) {
-            alert("Escreva algo ou insira o link de uma imagem para compartilhar com o time!");
+        if (!texto && !mediaUrl) {
+            alert("Escreva algo ou insira o link de um material para compartilhar com o time!");
             return;
         }
 
@@ -168,12 +150,13 @@ if (btnPublishPost) {
         btnPublishPost.disabled = true;
 
         try {
+            // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts' e campo 'midiaUrl'
             await addDoc(collection(db, 'timeline_posts'), {
                 autorNome: currentUser.displayName || 'Colaborador',
                 autorEmail: currentUser.email,
                 autorFoto: currentUser.photoURL || null,
                 texto: texto,
-                imagemUrl: imagemUrl, 
+                midiaUrl: mediaUrl, // Unified link field
                 curtidas: [],
                 criadoEm: serverTimestamp()
             });
@@ -183,22 +166,24 @@ if (btnPublishPost) {
             }
 
             postTextEl.value = '';
-            postMediaUrlEl.value = '';
+            mediaUrlInput.value = '';
             
         } catch (error) {
             console.error("Erro ao publicar na timeline:", error);
             alert("Erro ao publicar. Verifique sua conexão.");
         } finally {
-            btnPublishPost.textContent = "Publicar";
+            btnPublishPost.textContent = "Publish";
             btnPublishPost.disabled = false;
         }
     });
 }
 
+// Renderização Principal do Feed
 window.carregarFeed = function(isAdmin) {
-    const feedList = document.getElementById('feedList');
+    const feedList = document.getElementById('feedListGlobal');
     if (!feedList) return;
 
+    // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts'
     const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
 
     onSnapshot(q, (snap) => {
@@ -213,19 +198,19 @@ window.carregarFeed = function(isAdmin) {
                 const post = docSnap.data();
                 const postId = docSnap.id;
                 
-                // Fallbacks para campos antigos
+                // FALLBACKS DE SEGURANÇA: Se o post for antigo e usar nomes de campos diferentes
                 const autorNome = post.autorNome || post.autor || post.nome || 'Colega de Equipe';
                 const autorFoto = post.autorFoto || post.foto || null;
                 const textoPost = post.texto || post.mensagem || post.conteudo || '';
                 
-                // Adicionamos vários fallbacks possíveis para pegar a imagem antiga
-                const imgUrl = post.imagemUrl || post.imagem || post.fotoUrl || post.image || post.media || post.anexo || post.url || null;
+                // AQUI ESTÁ A CORREÇÃO: Adicionamos vários fallbacks possíveis para pegar a imagem antiga
+                const imgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
                 
                 let dataPost = 'Agora';
                 if (post.criadoEm && post.criadoEm.seconds) {
                     dataPost = new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR');
                 } else if (post.data) {
-                    dataPost = post.data; 
+                    dataPost = post.data; // Caso os posts antigos usassem string de data
                 }
                 
                 // AQUI ESTÁ A CORREÇÃO DA IMAGEM: 
@@ -272,6 +257,7 @@ window.carregarFeed = function(isAdmin) {
 
 window.apagarPost = async function(postId) {
     if(confirm("Tem certeza que deseja apagar esta publicação?")) {
+        // AQUI ESTÁ A CORREÇÃO: Coleção 'timeline_posts'
         await deleteDoc(doc(db, 'timeline_posts', postId));
     }
 };
@@ -280,7 +266,7 @@ window.apagarPost = async function(postId) {
 // 3.5 MOTOR DO RANKING E CARROSSEL (TICKER)
 // ====================================================================
 window.carregarRanking = function() {
-    const rankingList = document.getElementById('rankingList');
+    const rankingList = document.getElementById('rankingListGlobal');
     if (!rankingList) return;
 
     const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
@@ -549,7 +535,7 @@ if (btnLancar) {
         await addDoc(collection(db, "historico_pontos"), {
           adminNome: currentUser.displayName || 'Gestor Admin',
           colaborador: email,
-          tipoOperacao: tipoString,
+          tipoOperacao: typeString,
           valor: Math.abs(valorFinal),
           motivo: motivo,
           dataRealizada: serverTimestamp()
@@ -1194,7 +1180,7 @@ window.realizarResgate = async function(idProduto) {
       });
 
       saldoAtualUsuario -= produto.preco;
-      if (document.getElementById('valSaldo')) document.getElementById('valSaldo').textContent = saldoAtualUsuario;
+      if (document.getElementById('valSaldoGlobal')) document.getElementById('valSaldoGlobal').textContent = saldoAtualUsuario;
       if (document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
 
       const dataAgora = new Date();
@@ -1257,7 +1243,7 @@ async function sincronizarPontosDiarios(user) {
     const userSnap = await getDoc(userRef);
     const hoje = new Date().toISOString().slice(0, 10); 
 
-    const saldoEl = document.getElementById('valSaldo');
+    const saldoEl = document.getElementById('valSaldoGlobal');
     const saldoMobEl = document.getElementById('valSaldoMobile');
 
     if (userSnap.exists()) {
@@ -1325,7 +1311,7 @@ onAuthStateChanged(auth, async user => {
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
                          document.getElementById('informativos-content') || 
-                         document.getElementById('materiais-content') || 
+                         document.getElementById('materials-content') || 
                          lojinhaContent ||
                          containerAdminAtivo;
     
@@ -1342,7 +1328,7 @@ onAuthStateChanged(auth, async user => {
     const feedbackEmail = document.getElementById('feedbackEmail');
     if (feedbackEmail) feedbackEmail.value = user.email || '';
 
-    const myAvatar = document.getElementById('myAvatar');
+    const myAvatar = document.getElementById('myAvatarGlobal');
     if (myAvatar) myAvatar.innerHTML = renderAvatar(user.displayName, user.photoURL);
 
     const menuAdminContainer = document.getElementById('menuAdminContainer');
@@ -1378,7 +1364,7 @@ onAuthStateChanged(auth, async user => {
       carregarDadosOrcamento();
     }
 
-    if (document.getElementById('feedList') || lojinhaContent) {
+    if (document.getElementById('feedListGlobal') || lojinhaContent) {
       if(window.carregarFeed) window.carregarFeed(isAdmin);
       if(window.carregarRanking) window.carregarRanking();
       if(window.carregarTickerDiario) window.carregarTickerDiario();
@@ -1413,7 +1399,7 @@ if (loginBtn) {
 }
 
 const logout = () => { sessionStorage.removeItem('logRegistrado'); signOut(auth); window.location.href = 'index.html'; };
-const logoutBtn = document.getElementById('logoutBtn');
+const logoutBtnGlobal = document.getElementById('logoutBtnGlobal');
 const logoutBtnMobile = document.getElementById('logoutBtnMobile');
-if (logoutBtn) logoutBtn.onclick = logout;
+if (logoutBtnGlobal) logoutBtnGlobal.onclick = logout;
 if (logoutBtnMobile) logoutBtnMobile.onclick = logout;
