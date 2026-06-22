@@ -137,7 +137,7 @@ function carregarAvisos(isAdmin) {
 async function notificarTimePorEmail(autor, texto) {
     try {
         await addDoc(collection(db, 'mail'), {
-            to: ['lista-do-time@leveros.com.br'], // Substitua pela lista real
+            to: ['lista-do-time@leveros.com.br'], 
             message: {
                 subject: `Novidade no CX Resolve: ${autor} publicou no Feed!`,
                 html: `<h3>Nova publicação de ${autor}</h3><p>${texto}</p><br><a href="https://portal-atendimento-541ae.firebaseapp.com/timeline.html">Acesse a Timeline para ver mais</a>`
@@ -168,7 +168,7 @@ if (btnPublishPost) {
         btnPublishPost.disabled = true;
 
         try {
-            await addDoc(collection(db, 'feed_publicacoes'), {
+            await addDoc(collection(db, 'timeline_posts'), {
                 autorNome: currentUser.displayName || 'Colaborador',
                 autorEmail: currentUser.email,
                 autorFoto: currentUser.photoURL || null,
@@ -199,7 +199,7 @@ window.carregarFeed = function(isAdmin) {
     const feedList = document.getElementById('feedList');
     if (!feedList) return;
 
-    const q = query(collection(db, 'feed_publicacoes'), orderBy('criadoEm', 'desc'));
+    const q = query(collection(db, 'timeline_posts'), orderBy('criadoEm', 'desc'));
 
     onSnapshot(q, (snap) => {
         if (snap.empty) {
@@ -247,7 +247,7 @@ window.carregarFeed = function(isAdmin) {
 
 window.apagarPost = async function(postId) {
     if(confirm("Tem certeza que deseja apagar esta publicação?")) {
-        await deleteDoc(doc(db, 'feed_publicacoes', postId));
+        await deleteDoc(doc(db, 'timeline_posts', postId));
     }
 };
 
@@ -290,6 +290,39 @@ window.carregarRanking = function() {
         rankingList.innerHTML = html;
     }, (error) => {
         console.error("Erro ao carregar o ranking:", error);
+    });
+};
+
+// ====================================================================
+// 3.6 MOTOR DO CARROSSEL (TICKER)
+// ====================================================================
+window.carregarTickerDiario = function() {
+    const tickerEl = document.getElementById('tickerContent');
+    if (!tickerEl) return;
+
+    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
+
+    onSnapshot(q, (snap) => {
+        if (snap.empty) {
+            tickerEl.innerHTML = '<span class="ticker-item">🪙 Continue engajando para aparecer aqui!</span>';
+            return;
+        }
+
+        let html = '';
+        let count = 1;
+
+        snap.docs.forEach(docSnap => {
+            if (count > 5) return; 
+            const user = docSnap.data();
+            let badge = count === 1 ? '🥇' : count === 2 ? '🥈' : count === 3 ? '🥉' : '🏅';
+            
+            html += `<span class="ticker-item" style="margin-right: 40px;">${badge} ${window.escapeHTML(user.nome || 'Usuário')} (${user.pontos} 🪙)</span>`;
+            count++;
+        });
+
+        tickerEl.innerHTML = html + html;
+    }, (error) => {
+        console.error("Erro ao carregar o ticker:", error);
     });
 };
 
@@ -1326,7 +1359,6 @@ onAuthStateChanged(auth, async user => {
     if (document.getElementById('feedList') || lojinhaContent) {
       if(window.carregarFeed) window.carregarFeed(isAdmin);
       if(window.carregarRanking) window.carregarRanking();
-      // Se houver ticker configurado depois, ele já tentará chamar:
       if(window.carregarTickerDiario) window.carregarTickerDiario();
       await sincronizarPontosDiarios(user);
     }
