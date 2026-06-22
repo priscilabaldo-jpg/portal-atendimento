@@ -54,11 +54,11 @@ if (buscaEl && resultadosEl) {
         {nome:"Uappi", categoria:"Sistema", link:"https://www.vendas.leveros.com.br/wapstore/acesso"},
         {nome:"BoxLink", categoria:"Sistema", link:"https://matriz.boxlink.com.br/home"},
         {nome:"Intergrall", categoria:"Sistema", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
-        {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materials.html"},
-        {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materials.html"},
-        {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materials.html"},
-        {nome:"Como usar a Uappi", categoria:"Material", link:"materials.html"},
-        {nome:"Consulta na FUP", categoria:"Material", link:"materials.html"}
+        {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materiais.html"},
+        {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materiais.html"},
+        {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materiais.html"},
+        {nome:"Como usar a Uappi", categoria:"Material", link:"materiais.html"},
+        {nome:"Consulta na FUP", categoria:"Material", link:"materiais.html"}
     ];
 
     buscaEl.addEventListener('keyup', function() {
@@ -138,7 +138,7 @@ if (btnPublishPost) {
         const sendEmailCheckbox = document.getElementById('sendEmailCheckboxGlobal');
 
         const texto = postTextEl.value.trim();
-        let mediaUrl = mediaUrlInput.value.trim(); // Mudamos de const para let para poder alterar o link
+        let mediaUrl = mediaUrlInput.value.trim();
         const dispararEmail = sendEmailCheckbox ? sendEmailCheckbox.checked : false;
 
         if (!texto && !mediaUrl) {
@@ -150,8 +150,8 @@ if (btnPublishPost) {
         if (mediaUrl.includes("drive.google.com")) {
             const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
             if (idMatch && idMatch[1]) {
-                // Transforma o link de visualização em um link de renderização direta
-                mediaUrl = `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+                // Transforma o link de visualização num link de miniatura de alta resolução
+                mediaUrl = `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
             }
         }
         // --------------------------------------------------------------------
@@ -165,7 +165,7 @@ if (btnPublishPost) {
                 autorEmail: currentUser.email,
                 autorFoto: currentUser.photoURL || null,
                 texto: texto,
-                midiaUrl: mediaUrl, // Agora o banco vai salvar o link já convertido e pronto pra rodar!
+                midiaUrl: mediaUrl,
                 curtidas: [],
                 criadoEm: serverTimestamp()
             });
@@ -206,22 +206,19 @@ window.carregarFeed = function(isAdmin) {
                 const post = docSnap.data();
                 const postId = docSnap.id;
                 
-                // FALLBACKS DE SEGURANÇA: Se o post for antigo e usar nomes de campos diferentes
                 const autorNome = post.autorNome || post.autor || post.nome || 'Colega de Equipe';
                 const autorFoto = post.autorFoto || post.foto || null;
                 const textoPost = post.texto || post.mensagem || post.conteudo || '';
                 
-                // Adicionamos vários fallbacks possíveis para pegar a imagem antiga
                 const imgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
                 
                 let dataPost = 'Agora';
                 if (post.criadoEm && post.criadoEm.seconds) {
                     dataPost = new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR');
                 } else if (post.data) {
-                    dataPost = post.data; // Caso os posts antigos usassem string de data
+                    dataPost = post.data; 
                 }
                 
-                // Usamos o link direto fazendo apenas um replace nas aspas, sem quebrar os '&' do Firebase Storage
                 const safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
                 const imagemHtml = safeImgUrl 
@@ -1319,7 +1316,7 @@ onAuthStateChanged(auth, async user => {
     const conteudoArea = document.getElementById('conteudo') || 
                          document.getElementById('timeline-content') || 
                          document.getElementById('informativos-content') || 
-                         document.getElementById('materiais-content') || //
+                         document.getElementById('materiais-content') || 
                          lojinhaContent ||
                          containerAdminAtivo;
     
