@@ -138,13 +138,23 @@ if (btnPublishPost) {
         const sendEmailCheckbox = document.getElementById('sendEmailCheckboxGlobal');
 
         const texto = postTextEl.value.trim();
-        const mediaUrl = mediaUrlInput.value.trim();
+        let mediaUrl = mediaUrlInput.value.trim(); // Mudamos de const para let para poder alterar o link
         const dispararEmail = sendEmailCheckbox ? sendEmailCheckbox.checked : false;
 
         if (!texto && !mediaUrl) {
             alert("Escreva algo ou insira o link de um material para compartilhar com o time!");
             return;
         }
+
+        // --- A MÁGICA ACONTECE AQUI: CONVERSOR AUTOMÁTICO DO GOOGLE DRIVE ---
+        if (mediaUrl.includes("drive.google.com")) {
+            const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
+            if (idMatch && idMatch[1]) {
+                // Transforma o link de visualização em um link de renderização direta
+                mediaUrl = `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
+            }
+        }
+        // --------------------------------------------------------------------
 
         btnPublishPost.textContent = "Publicando...";
         btnPublishPost.disabled = true;
@@ -155,7 +165,7 @@ if (btnPublishPost) {
                 autorEmail: currentUser.email,
                 autorFoto: currentUser.photoURL || null,
                 texto: texto,
-                midiaUrl: mediaUrl,
+                midiaUrl: mediaUrl, // Agora o banco vai salvar o link já convertido e pronto pra rodar!
                 curtidas: [],
                 criadoEm: serverTimestamp()
             });
@@ -171,7 +181,7 @@ if (btnPublishPost) {
             console.error("Erro ao publicar na timeline:", error);
             alert("Erro ao publicar. Verifique sua conexão.");
         } finally {
-            btnPublishPost.textContent = "Publish";
+            btnPublishPost.textContent = "Publicar";
             btnPublishPost.disabled = false;
         }
     });
