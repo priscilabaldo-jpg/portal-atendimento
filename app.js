@@ -209,39 +209,58 @@ window.carregarFeed = function(isAdmin) {
 
         let html = '';
         snap.docs.forEach(docSnap => {
-            const post = docSnap.data();
-            const postId = docSnap.id;
-            
-            const dataPost = post.criadoEm ? new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR') : 'Agora';
-            
-            const imagemHtml = post.imagemUrl 
-                ? `<div class="post-media"><img src="${window.escapeHTML(post.imagemUrl)}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
-                : '';
+            try {
+                const post = docSnap.data();
+                const postId = docSnap.id;
+                
+                // FALLBACKS DE SEGURANÇA: Se o post for antigo e usar nomes de campos diferentes
+                const autorNome = post.autorNome || post.autor || post.nome || 'Colega de Equipe';
+                const autorFoto = post.autorFoto || post.foto || null;
+                const textoPost = post.texto || post.mensagem || post.conteudo || '';
+                const imgUrl = post.imagemUrl || post.imagem || post.fotoUrl || null;
+                
+                let dataPost = 'Agora';
+                if (post.criadoEm && post.criadoEm.seconds) {
+                    dataPost = new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR');
+                } else if (post.data) {
+                    dataPost = post.data; // Caso os posts antigos usassem string de data
+                }
+                
+                const imagemHtml = imgUrl 
+                    ? `<div class="post-media"><img src="${window.escapeHTML(imgUrl)}" alt="Imagem da publicação" onerror="this.style.display='none'"></div>` 
+                    : '';
 
-            html += `
-            <div class="post-card">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                        <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                            ${post.autorFoto ? `<img src="${post.autorFoto}" style="width:100%; height:100%; object-fit:cover;">` : post.autorNome.charAt(0).toUpperCase()}
+                html += `
+                <div class="post-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
+                            <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                ${autorFoto ? `<img src="${autorFoto}" style="width:100%; height:100%; object-fit:cover;">` : autorNome.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                                <strong style="display: block; font-size: 14px;">${window.escapeHTML(autorNome)}</strong>
+                                <span style="font-size: 10px; color: #aaa;">${dataPost}</span>
+                            </div>
                         </div>
-                        <div>
-                            <strong style="display: block; font-size: 14px;">${window.escapeHTML(post.autorNome)}</strong>
-                            <span style="font-size: 10px; color: #aaa;">${dataPost}</span>
-                        </div>
+                        ${isAdmin ? `<button class="btn-apagar" onclick="window.apagarPost('${postId}')" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
                     </div>
-                    ${isAdmin ? `<button class="btn-apagar" onclick="window.apagarPost('${postId}')" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
-                </div>
-                
-                <div style="font-size: 14px; line-height: 1.5; margin-top: 8px;">
-                    ${window.escapeHTML(post.texto).replace(/\n/g, '<br>')}
-                </div>
-                
-                ${imagemHtml}
-            </div>`;
+                    
+                    <div style="font-size: 14px; line-height: 1.5; margin-top: 8px;">
+                        ${window.escapeHTML(textoPost).replace(/\n/g, '<br>')}
+                    </div>
+                    
+                    ${imagemHtml}
+                </div>`;
+            } catch (err) {
+                console.warn("Um post ignorado devido a formato incompatível:", err);
+            }
         });
         
         feedList.innerHTML = html;
+        
+    }, (error) => {
+        console.error("Erro ao puxar dados do Feed:", error);
+        feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message} <br> Aperte F12 para verificar índices do banco.</div>`;
     });
 };
 
@@ -252,7 +271,7 @@ window.apagarPost = async function(postId) {
 };
 
 // ====================================================================
-// 3.5 MOTOR DO RANKING
+// 3.5 MOTOR DO RANKING E CARROSSEL (TICKER)
 // ====================================================================
 window.carregarRanking = function() {
     const rankingList = document.getElementById('rankingList');
@@ -293,9 +312,6 @@ window.carregarRanking = function() {
     });
 };
 
-// ====================================================================
-// 3.6 MOTOR DO CARROSSEL (TICKER)
-// ====================================================================
 window.carregarTickerDiario = function() {
     const tickerEl = document.getElementById('tickerContent');
     if (!tickerEl) return;
