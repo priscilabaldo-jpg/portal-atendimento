@@ -146,11 +146,23 @@ async function notificarTimePorEmail(autor, texto) {
         };
 
         // Usando window.emailjs.send para garantir acesso ao escopo global
-        await ejs.send('service_rc58xfn', 'template_074uqfn', templateParams);
-        console.log("E-mail disparado com sucesso via EmailJS!");
+        const resultado = await ejs.send('service_rc58xfn', 'template_074uqfn', templateParams);
+        console.log("E-mail disparado com sucesso via EmailJS!", resultado);
     } catch(e) {
-        console.error("Erro ao disparar e-mail via EmailJS:", e);
-        alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.\n\nDetalhes: " + e.message);
+        // O EmailJS retorna erros no formato { status: 400, text: "mensagem" }
+        // e não como um objeto Error padrão com .message
+        console.error("Erro ao disparar e-mail via EmailJS (objeto completo):", e);
+
+        let detalhe = '';
+        if (e && typeof e === 'object') {
+            if (e.text)    detalhe = `Status ${e.status}: ${e.text}`;
+            else if (e.message) detalhe = e.message;
+            else           detalhe = JSON.stringify(e);
+        } else {
+            detalhe = String(e);
+        }
+
+        alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.\n\nDetalhes: " + detalhe);
     }
 }
 
