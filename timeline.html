@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leveros | CX Timeline Feed</title>
     
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' https://www.gstatic.com https://apis.google.com;
+      style-src 'self' 'unsafe-inline';
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
+      frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
+      img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://drive.google.com;
+    ">
+
     <style>
         /* --- Standard Styling & Theme --- */
         :root {
@@ -115,7 +124,6 @@
 
         .ranking-subtitle { font-size: 9px; color: var(--text-sub); margin-top: -8px; margin-bottom: 15px; display: block; text-align: center;}
 
-        /* AQUI FOI CORRIGIDO O CSS DA LISTA DO RANKING PARA TER ROLAGEM */
         .ranking-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 5px; overscroll-behavior: contain; }
         .ranking-list::-webkit-scrollbar { width: 4px; }
         .ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
@@ -242,5 +250,3 @@
     <script type="module" src="app.js"></script>
 </body>
 </html>
-
-```
