@@ -61,11 +61,6 @@ function renderAvatar(nome, photoUrl) {
   return getInitials(nome);
 }
 
-function formatNameFromEmail(email) {
-  if (!email) return '';
-  return email.split('@')[0].split('.').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
-}
-
 // ====================================================================
 // 2. LÓGICA DA PÁGINA INICIAL E BUSCA
 // ====================================================================
@@ -136,14 +131,13 @@ function carregarAvisos(isAdmin) {
 }
 
 // ====================================================================
-// MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
+// 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
 // ====================================================================
 
-// Disparo de Email via Firestore (Coleção 'mail')
 async function notificarTimePorEmail(autor, texto) {
     try {
         await addDoc(collection(db, 'mail'), {
-            to: ['lista-do-time@leveros.com.br'], // Substitua pelo e-mail da sua lista de distribuição
+            to: ['lista-do-time@leveros.com.br'], // Substitua pela lista real
             message: {
                 subject: `Novidade no CX Resolve: ${autor} publicou no Feed!`,
                 html: `<h3>Nova publicação de ${autor}</h3><p>${texto}</p><br><a href="https://portal-atendimento-541ae.firebaseapp.com/timeline.html">Acesse a Timeline para ver mais</a>`
@@ -255,6 +249,48 @@ window.apagarPost = async function(postId) {
     if(confirm("Tem certeza que deseja apagar esta publicação?")) {
         await deleteDoc(doc(db, 'feed_publicacoes', postId));
     }
+};
+
+// ====================================================================
+// 3.5 MOTOR DO RANKING
+// ====================================================================
+window.carregarRanking = function() {
+    const rankingList = document.getElementById('rankingList');
+    if (!rankingList) return;
+
+    const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
+
+    onSnapshot(q, (snap) => {
+        if (snap.empty) {
+            rankingList.innerHTML = '<div class="avisos-vazio" style="font-size: 10px; color: white; text-align: center;">Nenhum usuário encontrado.</div>';
+            return;
+        }
+
+        let html = '';
+        let posicao = 1;
+
+        snap.docs.forEach(docSnap => {
+            const user = docSnap.data();
+            
+            let classPos = posicao <= 3 ? `pos-${posicao}` : '';
+            let badge = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `${posicao}º`;
+
+            html += `
+            <div class="rank-item ${classPos}">
+                <div class="rank-info">
+                    <span class="rank-pos">${badge}</span>
+                    <span class="rank-nome">${window.escapeHTML(user.nome || 'Usuário')}</span>
+                </div>
+                <span class="rank-moedas">${user.pontos || 0} 🪙</span>
+            </div>`;
+            
+            posicao++;
+        });
+
+        rankingList.innerHTML = html;
+    }, (error) => {
+        console.error("Erro ao carregar o ranking:", error);
+    });
 };
 
 // ====================================================================
@@ -1289,8 +1325,8 @@ onAuthStateChanged(auth, async user => {
 
     if (document.getElementById('feedList') || lojinhaContent) {
       if(window.carregarFeed) window.carregarFeed(isAdmin);
-      // Aqui as chamadas carregarRanking e carregarTickerDiario estão disponíveis no seu código final, se aplicável
       if(window.carregarRanking) window.carregarRanking();
+      // Se houver ticker configurado depois, ele já tentará chamar:
       if(window.carregarTickerDiario) window.carregarTickerDiario();
       await sincronizarPontosDiarios(user);
     }
