@@ -1145,3 +1145,207 @@ footer {
 }
 .comment-send-btn:hover { background: #01b4a1; }
 .comment-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ====================================================================
+   12. TIMELINE - INTERAÇÕES (FACEBOOK / INSTAGRAM STYLE)
+   ==================================================================== */
+
+/* --- Texto de Curtidas (Instagram Style) --- */
+.post-likes-info {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 12px 0 8px;
+    padding: 0 4px;
+}
+.post-likes-info strong {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* --- Barra de Botões (Curtir / Comentar) --- */
+.post-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 8px 0;
+    margin-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.action-btn-post {
+    background: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+    outline: none;
+}
+.action-btn-post:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #fff !important;
+}
+.action-btn-post.liked {
+    color: #FF6B8A !important; /* Cor de curtido */
+}
+.action-btn-post.liked i {
+    transform: scale(1.1);
+}
+
+/* --- Bolhas de Comentários (Facebook Style) --- */
+.comments-section {
+    padding-top: 12px;
+}
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+    max-height: 350px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.comments-list::-webkit-scrollbar { width: 4px; }
+.comments-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+}
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--azul);
+    color: var(--verde1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.comment-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* A Bolha do Comentário */
+.comment-bubble {
+    background: rgba(255, 255, 255, 0.06);
+    padding: 10px 14px;
+    border-radius: 18px; /* Arredondado estilo FB */
+    border-top-left-radius: 4px; /* Detalhe direcional para a foto */
+    display: inline-block;
+    max-width: 100%;
+}
+.comment-bubble .comment-author {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--azul);
+    margin-bottom: 4px;
+}
+.comment-bubble .comment-text {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* Ações abaixo do comentário (Data, Excluir) */
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 8px 0;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.4);
+}
+.comment-actions .btn-del-comment {
+    cursor: pointer;
+    transition: color 0.2s;
+    font-weight: bold;
+}
+.comment-actions .btn-del-comment:hover {
+    color: #FF6B6B;
+}
+
+/* --- Input de Novo Comentário --- */
+.comment-input-wrap {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start; 
+}
+.comment-input-group {
+    flex: 1;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 6px 6px 6px 14px;
+    transition: border-color 0.2s;
+}
+.comment-input-group:focus-within {
+    border-color: var(--azul);
+    background: rgba(255, 255, 255, 0.08);
+}
+.comment-textarea {
+    flex: 1;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #fff;
+    font-size: 12px;
+    font-family: inherit;
+    resize: none;
+    min-height: 20px;
+    max-height: 100px;
+    overflow-y: auto;
+    line-height: 1.4;
+    padding: 4px 0;
+}
+.comment-textarea::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+.comment-send-btn {
+    background: var(--azul) !important;
+    color: var(--verde1) !important;
+    border: none !important;
+    border-radius: 16px !important;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.comment-send-btn:hover {
+    opacity: 0.85;
+}
+.comment-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
