@@ -28,8 +28,6 @@ let produtosLojaCache = [];
 
 // ====================================================================
 // CORREÇÃO EMAILJS: acesso ao objeto global via window
-// O SDK é carregado como script global no HTML antes do módulo ES,
-// então deve ser acessado via window.emailjs dentro do módulo.
 // ====================================================================
 function getEmailJS() {
     if (typeof window.emailjs !== 'undefined') {
@@ -37,6 +35,48 @@ function getEmailJS() {
     }
     console.error("EmailJS SDK não encontrado. Verifique se o script está carregado no HTML antes do app.js.");
     return null;
+}
+
+// ====================================================================
+// CORREÇÃO CENTRAL DE IMAGENS
+// Normaliza qualquer URL de imagem para um formato que o browser
+// consiga carregar. Suporta Google Drive, lh3.googleusercontent e
+// URLs diretas da web.
+// ====================================================================
+function normalizarUrlImagem(url) {
+    if (!url || typeof url !== 'string') return '';
+
+    url = url.trim();
+
+    // Já é um link do lh3 (conversão antiga) → converte para thumbnail confiável
+    // Padrão: https://lh3.googleusercontent.com/d/FILE_ID
+    const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
+    if (lh3Match && lh3Match[1]) {
+        return `https://drive.google.com/thumbnail?id=${lh3Match[1]}&sz=w1000`;
+    }
+
+    // Google Drive – qualquer variante de link compartilhado
+    if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
+        // Extrai o File ID do link
+        const idMatch =
+            url.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
+            url.match(/id=([a-zA-Z0-9_-]+)/) ||
+            url.match(/open\?id=([a-zA-Z0-9_-]+)/);
+
+        if (idMatch && idMatch[1]) {
+            // Usa o endpoint /thumbnail — funciona sem autenticação adicional
+            // quando o arquivo está compartilhado publicamente (Qualquer um com o link)
+            return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
+        }
+    }
+
+    // URL direta da web (http/https) — retorna como está
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+    }
+
+    // Não é uma URL válida
+    return '';
 }
 
 // ====================================================================
@@ -128,11 +168,6 @@ function carregarAvisos(isAdmin) {
 // 3. MOTOR DA TIMELINE: RENDERIZAR FEED E PUBLICAR
 // ====================================================================
 
-// ====================================================================
-// CORREÇÃO: notificarTimePorEmail usando window.emailjs
-// O SDK é global (carregado via <script> no HTML), portanto dentro de
-// um módulo ES deve ser acessado via window.emailjs — não diretamente.
-// ====================================================================
 async function notificarTimePorEmail(autor, texto) {
     try {
         const ejs = getEmailJS();
@@ -146,12 +181,9 @@ async function notificarTimePorEmail(autor, texto) {
             email: 'anapaula.gonçalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br, evellin.dias@leveros.com.br, flavia.alves@leveros.com.br, matheus.herrera@leveros.com.br'
         };
 
-        // Usando window.emailjs.send para garantir acesso ao escopo global
         const resultado = await ejs.send('service_rc58xfn', 'template_074uqfn', templateParams);
         console.log("E-mail disparado com sucesso via EmailJS!", resultado);
     } catch(e) {
-        // O EmailJS retorna erros no formato { status: 400, text: "mensagem" }
-        // e não como um objeto Error padrão com .message
         console.error("Erro ao disparar e-mail via EmailJS (objeto completo):", e);
 
         let detalhe = '';
@@ -175,20 +207,16 @@ if (btnPublishPost) {
         const sendEmailCheckbox = document.getElementById('sendEmailCheckboxGlobal');
 
         const texto = postTextEl.value.trim();
-        let mediaUrl = mediaUrlInput.value.trim();
+        const rawUrl = mediaUrlInput.value.trim();
         const dispararEmail = sendEmailCheckbox ? sendEmailCheckbox.checked : false;
 
-        if (!texto && !mediaUrl) {
+        if (!texto && !rawUrl) {
             alert("Escreva algo ou insira o link de um material para compartilhar com o time!");
             return;
         }
 
-        if (mediaUrl.includes("drive.google.com")) {
-            const idMatch = mediaUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || mediaUrl.match(/id=([a-zA-Z0-9_-]+)/);
-            if (idMatch && idMatch[1]) {
-                mediaUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
-            }
-        }
+        // CORREÇÃO: normaliza a URL antes de salvar no Firestore
+        const mediaUrl = normalizarUrlImagem(rawUrl);
 
         btnPublishPost.textContent = "Publicando...";
         btnPublishPost.disabled = true;
@@ -204,7 +232,6 @@ if (btnPublishPost) {
                 criadoEm: serverTimestamp()
             });
 
-            // E-mail disparado APÓS salvar com sucesso no Firestore
             if (dispararEmail) {
                 await notificarTimePorEmail(currentUser.displayName || 'Colaborador', texto);
             }
@@ -245,7 +272,8 @@ window.carregarFeed = function(isAdmin) {
                 const autorFoto = post.autorFoto || post.foto || null;
                 const textoPost = post.texto || post.mensagem || post.conteudo || '';
                 
-                const imgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
+                // Coleta a URL bruta (salva em qualquer variante de campo)
+                const rawImgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
                 
                 let dataPost = 'Agora';
                 if (post.criadoEm && post.criadoEm.seconds) {
@@ -253,18 +281,21 @@ window.carregarFeed = function(isAdmin) {
                 } else if (post.data) {
                     dataPost = post.data; 
                 }
-                
-                let safeImgUrl = imgUrl ? String(imgUrl).replace(/"/g, '%22') : '';
 
-                if (safeImgUrl.includes("drive.google.com") || safeImgUrl.includes("picture/3") || safeImgUrl.includes("thumbnail")) {
-                    const idMatch = safeImgUrl.match(/id=([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || safeImgUrl.match(/picture\/3([a-zA-Z0-9_-]+)/);
-                    if (idMatch && idMatch[1]) {
-                        safeImgUrl = `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
-                    }
-                }
+                // CORREÇÃO: normaliza no momento da exibição também
+                // (cobre posts antigos que foram salvos com URLs não normalizadas)
+                const imgUrl = normalizarUrlImagem(rawImgUrl);
 
-                const imagemHtml = safeImgUrl 
-                    ? `<div class="post-media"><img src="${safeImgUrl}" alt="Imagem da publicação" loading="lazy"></div>` 
+                const imagemHtml = imgUrl
+                    ? `<div class="post-media">
+                         <img 
+                           src="${imgUrl}" 
+                           alt="Imagem da publicação" 
+                           loading="lazy"
+                           referrerpolicy="no-referrer"
+                           onerror="this.parentElement.style.display='none'"
+                         >
+                       </div>` 
                     : '';
 
                 html += `
@@ -272,7 +303,7 @@ window.carregarFeed = function(isAdmin) {
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
                             <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                ${autorFoto ? `<img src="${autorFoto}" style="width:100%; height:100%; object-fit:cover;">` : autorNome.charAt(0).toUpperCase()}
+                                ${autorFoto ? `<img src="${autorFoto}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;">` : autorNome.charAt(0).toUpperCase()}
                             </div>
                             <div>
                                 <strong style="display: block; font-size: 14px;">${window.escapeHTML(autorNome)}</strong>
@@ -681,18 +712,14 @@ if (formNovoProduto) {
             const precoVal = parseInt(document.getElementById('prodPreco').value) || 0;
             const estoqueVal = parseInt(document.getElementById('prodEstoque').value) || 0;
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
-            let linkBruto = document.getElementById('prodFoto').value.trim();
-            
-            let imagemFinal = linkBruto;
-            
-            if (linkBruto.includes("drive.google.com")) {
-                const idMatch = linkBruto.match(/\/d\/([a-zA-Z0-9_-]+)/) || linkBruto.match(/id=([a-zA-Z0-9_-]+)/);
-                if (idMatch && idMatch[1]) {
-                    imagemFinal = `https://drive.google.com/uc?export=view&id=${idMatch[1]}`;
-                }
-            } else if (!linkBruto) {
-                imagemFinal = emojiVal;
-            }
+            const linkBruto = document.getElementById('prodFoto').value.trim();
+
+            // CORREÇÃO: usa normalizarUrlImagem para produtos também
+            let imagemFinal = linkBruto ? normalizarUrlImagem(linkBruto) : emojiVal;
+            // Se normalizarUrlImagem retornar vazio (não era URL) mas tinha algo digitado,
+            // trata como emoji/texto
+            if (!imagemFinal && linkBruto) imagemFinal = linkBruto;
+            if (!imagemFinal) imagemFinal = emojiVal;
 
             if (precoVal <= 0) {
                 alert("O preço deve ser maior que zero!");
@@ -710,7 +737,7 @@ if (formNovoProduto) {
                 criadoEm: serverTimestamp()
             });
 
-            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado com a foto convertida.`);
+            alert(`✅ Sucesso! O item "${nomeVal}" foi adicionado ao catálogo.`);
             formNovoProduto.reset(); 
 
         } catch (error) {
@@ -1035,13 +1062,21 @@ function carregarVitrine() {
           const cardStyle = isEsgotado ? 'opacity: 0.6; filter: grayscale(0.5);' : '';
           const disableAttr = isEsgotado ? 'disabled' : '';
 
+          // CORREÇÃO: normaliza a URL da imagem do produto
+          const imgNormalizada = normalizarUrlImagem(produto.imagem);
+
           let imgRenderizada = '';
           let imgEstiloContainer = '';
-          if (produto.imagem && produto.imagem.startsWith('http')) {
-              imgRenderizada = `<img src="${escapeHTML(produto.imagem)}" alt="${escapeHTML(produto.nome)}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
+          if (imgNormalizada) {
+              imgRenderizada = `<img 
+                src="${escapeHTML(imgNormalizada)}" 
+                alt="${escapeHTML(produto.nome)}" 
+                referrerpolicy="no-referrer"
+                onerror="this.parentElement.innerHTML='${escapeHTML(produto.imagem || '🎁')}'"
+                style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block;">`;
               imgEstiloContainer = 'padding: 0; overflow: hidden; border: none; background: transparent;';
           } else {
-              imgRenderizada = escapeHTML(produto.imagem);
+              imgRenderizada = escapeHTML(produto.imagem || '🎁');
           }
 
           html += `
@@ -1070,8 +1105,10 @@ window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPed
   if(!modal) return;
   
   const iconEl = document.getElementById('reciboIcon');
-  if (imagem && imagem.startsWith('http')) {
-      iconEl.innerHTML = `<img src="${imagem}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; display:block;">`;
+  // CORREÇÃO: normaliza também a imagem do recibo
+  const imgNorm = normalizarUrlImagem(imagem);
+  if (imgNorm) {
+      iconEl.innerHTML = `<img src="${imgNorm}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:6px; display:block;">`;
   } else {
       iconEl.innerHTML = imagem;
   }
