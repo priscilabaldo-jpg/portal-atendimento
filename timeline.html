@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leveros | CX Timeline Feed</title>
     
-    <!--
-        CORREÇÃO CSP: img-src ampliado para permitir:
-        - Imagens diretas da web (qualquer https)
-        - Google Drive via /thumbnail e /uc?export=view
-        - lh3.googleusercontent.com (fotos de perfil Google e Drive)
-        - data: URIs (inline)
-    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
@@ -21,6 +14,8 @@
       img-src 'self' data: blob: https: http:;
     ">
 
+    <link rel="stylesheet" href="style.css">
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
@@ -29,159 +24,8 @@
           });
        })();
     </script>
-
-    <style>
-        /* --- Standard Styling & Theme --- */
-        :root {
-            --bg-primary: #002d32;
-            --bg-glass: rgba(255, 255, 255, 0.05);
-            --bg-glass-card: rgba(0, 0, 0, 0.2);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #ffffff;
-            --text-sub: #ccc;
-            --accent-main: #00c8b3;
-            --accent-glow: #e0fbf7;
-            --ranking-shadow: rgba(0, 0, 0, 0.3);
-            --shadow-card: 0 4px 15px rgba(0,0,0,0.3);
-            --leveros-logo: #ffffff;
-            --gold: #FFD700;
-            --silver: #C0C0C0;
-            --bronze: #CD7F32;
-        }
-
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-primary); color: var(--text-main); -webkit-font-smoothing: antialiased; }
-
-        .top-header { border-bottom: 1px solid var(--glass-border); position: relative; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; }
-        .header-logo { height: 28px; }
-        nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 15px; align-items: center; }
-        nav a { text-decoration: none; color: #fff; font-size: 10px; font-weight: bold; text-transform: uppercase; padding: 5px 0; border-bottom: 2px solid transparent; }
-        nav a:hover, nav a.active { border-bottom-color: var(--accent-main); }
-        .logout-btn { background: transparent; border: 1px solid var(--glass-border); color: #fff; font-size: 10px; font-weight: bold; padding: 6px 14px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-        .logout-btn:hover { background: rgba(255,255,255,0.05); }
-
-        .balance-pill { background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
-
-        .ticker-wrapper { background: rgba(0,0,0,0.1); border-top: 1px solid var(--glass-border); overflow: hidden; padding: 4px 20px; }
-        .ticker-content { display: flex; white-space: nowrap; animation: ticker-scroll 30s linear infinite; font-size: 10px; color: var(--text-sub); }
-        .ticker-item { margin-right: 50px; }
-
-        @keyframes ticker-scroll { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
-
-        .container { display: flex; justify-content: center; padding: 20px; margin-top: -1px; }
-        .timeline-layout { display: grid; grid-template-columns: 1fr 260px; gap: 20px; max-width: 900px; width: 100%; align-items: start; }
-        
-        /* Central Column - Timeline */
-        .feed-container { max-width: 100%; min-width: 0; }
-        
-        .timeline-header { text-align: center; margin-bottom: 30px; }
-        .timeline-header p.label { font-size: 10px; color: var(--accent-main); font-weight: bold; margin: 0; text-transform: uppercase; }
-        .timeline-header h1 { font-size: 24px; margin: 5px 0; font-weight: 800; }
-        .timeline-header h1 .high { color: var(--accent-main); }
-        .timeline-header p.subtitle { font-size: 10px; color: var(--text-sub); }
-
-        /* --- Publish Box --- */
-        .create-post-box { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; gap: 10px; flex-direction: column; }
-        
-        .create-post-main { display: flex; gap: 10px; }
-        .user-avatar { width: 34px; height: 34px; border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px; text-transform: uppercase; }
-        .create-post-input { flex: 1; border: none; background: #fff; padding: 10px 12px; border-radius: 6px; resize: none; font-size: 10px; font-family: inherit; line-height: 1.4; color: #333; }
-        .create-post-input::placeholder { color: #999; font-style: italic; }
-
-        .create-post-actions { display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: space-between; }
-        
-        .image-url-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
-        .link-icon { font-size: 12px; color: rgba(255,255,255,0.4); margin-right: -2px; }
-        .create-post-input-link { flex: 1; border: none; background: transparent; padding: 6px 0; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff; outline: none; }
-        .create-post-input-link::placeholder { color: rgba(255,255,255,0.3); }
-
-        .right-publish { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-        .create-post-publish-btn { background: var(--accent-main); color: #fff; border: none; padding: 6px 18px; border-radius: 12px; font-weight: bold; font-size: 10px; cursor: pointer; transition: 0.15s; }
-        .create-post-publish-btn:hover { background: #01b4a1; }
-        .create-post-checkbox { display: flex; align-items: center; gap: 4px; font-size: 9px; cursor: pointer; color: var(--text-sub); }
-
-        /* --- Ticker / Carrossel no Header --- */
-        #saldoPillGlobal, #saldoPillMobile { font-family: monospace; }
-        .coin-icon { margin-top: -1px; }
-
-        /* --- Feed Posts List --- */
-        .page-loading-status { text-align: center; color: var(--text-sub); font-size: 10px; padding: 30px; }
-        
-        .post-card { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 15px; box-shadow: var(--shadow-card); position: relative; animation: post-entry 0.3s ease-out; }
-        @keyframes post-entry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-        .post-user { display: flex; gap: 8px; align-items: center; }
-        .post-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-        .post-info { display: flex; flex-direction: column; }
-        .post-username { font-size: 11px; font-weight: bold; color: #fff; }
-        .post-date { font-size: 9px; color: var(--text-sub); }
-
-        .btn-apagar { opacity: 0; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: #FF4F4F; font-size: 12px; transition: 0.2s; }
-        .post-card:hover .btn-apagar { opacity: 1; }
-        
-        .post-content { font-size: 11px; color: var(--text-main); line-height: 1.5; margin-bottom: 10px; white-space: pre-line; word-wrap: break-word; }
-        .post-content a { color: var(--accent-glow); text-decoration: none; border-bottom: 1px solid transparent; }
-        .post-content a:hover { border-bottom-color: var(--accent-glow); }
-        
-        /* Image Media within the Post — proporção livre, sem corte */
-        .post-media { width: 100%; display: block; margin-top: 12px; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); }
-        .post-media img { width: 100%; height: auto; display: block; object-fit: contain; }
-
-        /* Garante que texto longo (URLs, etc.) não vaze do card */
-        .post-card { word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
-
-        .no-data { text-align: center; color: var(--text-sub); font-size: 10px; padding: 40px; }
-
-        /* --- Right Sidebar - Ranking --- */
-        .ranking-sidebar { position: sticky; top: 20px; }
-        .ranking-card { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 25px var(--ranking-shadow); }
-        
-        .ranking-title { display: flex; align-items: center; gap: 6px; color: #fff; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; justify-content: center; }
-        .ranking-title h2 { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #fff; margin: 0; }
-        .ranking-title .coin { font-size: 12px; margin-top: -1px; color: #FFD700;}
-
-        .ranking-subtitle { font-size: 9px; color: var(--text-sub); margin-top: -8px; margin-bottom: 15px; display: block; text-align: center;}
-
-        .ranking-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 5px; overscroll-behavior: contain; }
-        .ranking-list::-webkit-scrollbar { width: 4px; }
-        .ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
-        
-        .rank-item { display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 7px 10px; background: rgba(0,0,0,0.1); border: 1px solid transparent; font-size: 10px; }
-        .rank-left { display: flex; align-items: center; gap: 8px; }
-        .rank-left span.num { font-weight: 800; font-size: 10px; color: #fff; min-width: 14px; text-align: center; }
-        
-        .rank-username { font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
-        .rank-username.full { max-width: none; }
-        
-        .rank-right { display: flex; align-items: center; gap: 4px; font-weight: 800; }
-        .rank-right span { color: #FFD700; min-width: 45px; text-align: right;}
-        
-        /* Special styles for Podium */
-        .rank-podium { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
-        .rank-podium .rank-username { font-size: 11px; }
-        
-        .rank-item.pos-1 { border-color: var(--gold); background: rgba(255, 215, 0, 0.04); }
-        .rank-item.pos-1 .num, .rank-item.pos-1 .rank-right span { color: var(--gold); }
-        .rank-item.pos-1::before { content: '🥇'; font-size: 12px; margin-left: -5px;}
-        .rank-item.pos-1 span.num { display: none; }
-        
-        .rank-item.pos-2 { border-color: var(--silver); background: rgba(192, 192, 192, 0.04); }
-        .rank-item.pos-2 .num, .rank-item.pos-2 .rank-right span { color: var(--silver); }
-        .rank-item.pos-2::before { content: '🥈'; font-size: 12px; margin-left: -5px;}
-        .rank-item.pos-2 span.num { display: none; }
-        
-        .rank-item.pos-3 { border-color: var(--bronze); background: rgba(205, 127, 50, 0.04); }
-        .rank-item.pos-3 .num, .rank-item.pos-3 .rank-right span { color: var(--bronze); }
-        .rank-item.pos-3::before { content: '🥉'; font-size: 12px; margin-left: -5px;}
-        .rank-item.pos-3 span.num { display: none; }
-        
-        .rank-item:not(.rank-podium) { opacity: 0.8; }
-        .rank-item:not(.rank-podium) span.num { font-size: 9px; color: var(--text-sub); font-weight: 600; }
-        
-    </style>
 </head>
-<body>
+<body class="bg-layer">
     <header class="top-header">
         <div class="header-inner">
             <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
@@ -194,7 +38,7 @@
                     <li><a href="informativos.html">INFORMATIVOS</a></li>
                     <li><a href="admin.html">PAINEL ADMIN</a></li>
                     <li>
-                        <div class="balance-pill" id="saldoPillGlobal">
+                        <div class="balance-pill" id="saldoPillGlobal" style="background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 4px;">
                             <span class="coin-icon">🪙</span><span id="valSaldoGlobal">Carregando...</span>
                         </div>
                     </li>
@@ -203,62 +47,59 @@
             </nav>
         </div>
         
-        <div class="ticker-wrapper">
-            <div class="ticker-content" id="tickerContent">
+        <div class="ticker-wrapper" style="margin-top: 56px;">
+             <div class="ticker-content" id="tickerContent">
                 <span class="ticker-item">🏆 Feed Ticker: Aguardando dados...</span>
             </div>
         </div>
     </header>
 
-    <div class="container">
-        <div class="timeline-layout">
+    <div class="container" style="padding-top: 20px;">
+        <div class="timeline-layout" style="display: grid; grid-template-columns: 1fr 260px; gap: 20px; max-width: 900px; margin: 0 auto; align-items: start;">
             
-            <main class="feed-container">
-                
-                <header class="timeline-header">
-                    <p class="label">COMUNIDADE CX LEVEROS</p>
-                    <h1>Nosso <span class="high">Feed</span> 💬</h1>
-                    <p class="subtitle">Compartilhe conquistas, dicas e o dia a dia do time!</p>
+            <main class="feed-container" style="max-width: 100%; min-width: 0;">
+                <header class="timeline-header" style="text-align: center; margin-bottom: 30px;">
+                    <p class="label" style="font-size: 10px; color: var(--azul); font-weight: bold; margin: 0; text-transform: uppercase;">COMUNIDADE CX LEVEROS</p>
+                    <h1 style="font-size: 24px; margin: 5px 0; font-weight: 800;">Nosso <span style="color: var(--azul);">Feed</span> 💬</h1>
+                    <p class="subtitle" style="font-size: 10px; color: rgba(255,255,255,0.5);">Compartilhe conquistas, dicas e o dia a dia do time!</p>
                 </header>
                 
                 <div class="create-post-box">
-                    <div class="create-post-main">
-                        <div class="user-avatar" id="myAvatarGlobal" style="background: #ccc; color: #fff;">U</div>
+                    <div class="create-post-main" style="display: flex; gap: 10px;">
+                        <div class="user-avatar" id="myAvatarGlobal" style="background: var(--azul); color: var(--verde1);">U</div>
                         <textarea class="create-post-input" id="postTextGlobal" rows="3" placeholder="No que você está pensando, time?"></textarea>
                     </div>
                     <div class="create-post-actions">
-                        
-                        <div class="image-url-wrap">
+                        <div class="media-input-wrap">
                             <span class="link-icon">🔗</span>
-                            <input type="text" class="create-post-input-link" id="mediaUrlInputGlobal" placeholder="Link do recurso ou imagem (Opcional)">
+                            <input type="text" class="create-post-input-link" id="mediaUrlInputGlobal" style="background: transparent; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: white; padding: 6px 0; font-size: 10px; outline: none; flex: 1;" placeholder="Link do recurso ou imagem (Opcional)">
                         </div>
                         
-                        <div class="right-publish">
-                            <label class="create-post-checkbox">
+                        <div class="right-publish" style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                            <label class="create-post-checkbox" style="display: flex; align-items: center; gap: 4px; font-size: 9px; cursor: pointer; color: rgba(255,255,255,0.5);">
                                 <input type="checkbox" id="sendEmailCheckboxGlobal" checked>
                                 Disparar E-mail
                             </label>
-                            <button class="create-post-publish-btn" id="btnPublishGlobal">Publicar</button>
+                            <button class="create-post-publish-btn" id="btnPublishGlobal" style="background: var(--azul); color: var(--verde1); border: none; padding: 6px 18px; border-radius: 12px; font-weight: bold; font-size: 10px; cursor: pointer; transition: 0.15s;">Publicar</button>
                         </div>
                     </div>
                 </div>
                 
                 <div id="feedListGlobal">
-                    <div class="page-loading-status">Carregando publicações...</div>
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 10px; padding: 30px;">Carregando publicações...</div>
                 </div>
-                
             </main>
             
-            <aside class="ranking-sidebar">
-                <div class="ranking-card">
-                    <header class="ranking-title">
-                        <h2>🏆 RANKING CX</h2>
-                        <span class="coin">🪙</span>
+            <aside class="ranking-sidebar" style="position: sticky; top: 20px;">
+                <div class="ranking-card" style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 25px rgba(0,0,0,0.3);">
+                    <header class="ranking-title" style="display: flex; align-items: center; gap: 6px; color: #fff; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; justify-content: center;">
+                        <h2 style="font-size: 12px; font-weight: bold; text-transform: uppercase; color: #fff; margin: 0;">🏆 RANKING CX</h2>
+                        <span class="coin" style="font-size: 12px; margin-top: -1px; color: #FFD700;">🪙</span>
                     </header>
-                    <span class="ranking-subtitle">Saldo atual de toda a equipe</span>
+                    <span class="ranking-subtitle" style="font-size: 9px; color: rgba(255,255,255,0.5); margin-top: -8px; margin-bottom: 15px; display: block; text-align: center;">Saldo atual de toda a equipe</span>
                     
-                    <div class="ranking-list" id="rankingListGlobal">
-                        <div class="no-data">Carregando ranking...</div>
+                    <div class="ranking-list" id="rankingListGlobal" style="display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 5px;">
+                        <div style="text-align: center; color: rgba(255,255,255,0.5); font-size: 10px; padding: 40px;">Carregando ranking...</div>
                     </div>
                 </div>
             </aside>
