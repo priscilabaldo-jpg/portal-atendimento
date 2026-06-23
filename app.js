@@ -250,6 +250,13 @@ if (btnPublishPost) {
 }
 
 // Renderização Principal do Feed
+// ====================================================================
+// SUBSTITUA COMPLETAMENTE a função window.carregarFeed no seu app.js
+// por este bloco inteiro (do "window.carregarFeed" até o fechamento da função).
+// Adicione também os listeners de like e comentário logo abaixo.
+// ====================================================================
+
+// Renderização Principal do Feed — com Likes e Comentários
 window.carregarFeed = function(isAdmin) {
     const feedList = document.getElementById('feedListGlobal');
     if (!feedList) return;
@@ -267,70 +274,294 @@ window.carregarFeed = function(isAdmin) {
             try {
                 const post = docSnap.data();
                 const postId = docSnap.id;
-                
-                const autorNome = post.autorNome || post.autor || post.nome || 'Colega de Equipe';
-                const autorFoto = post.autorFoto || post.foto || null;
-                const textoPost = post.texto || post.mensagem || post.conteudo || '';
-                
-                // Coleta a URL bruta (salva em qualquer variante de campo)
-                const rawImgUrl = post.midiaUrl || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
-                
+
+                const autorNome  = post.autorNome  || post.autor  || post.nome  || 'Colega de Equipe';
+                const autorFoto  = post.autorFoto  || post.foto   || null;
+                const textoPost  = post.texto      || post.mensagem || post.conteudo || '';
+                const rawImgUrl  = post.midiaUrl   || post.imagemUrl || post.image || post.media || post.anexo || post.url || null;
+
                 let dataPost = 'Agora';
                 if (post.criadoEm && post.criadoEm.seconds) {
                     dataPost = new Date(post.criadoEm.seconds * 1000).toLocaleString('pt-BR');
                 } else if (post.data) {
-                    dataPost = post.data; 
+                    dataPost = post.data;
                 }
 
-                // CORREÇÃO: normaliza no momento da exibição também
-                // (cobre posts antigos que foram salvos com URLs não normalizadas)
-                const imgUrl = normalizarUrlImagem(rawImgUrl);
-
+                const imgUrl     = normalizarUrlImagem(rawImgUrl);
                 const imagemHtml = imgUrl
                     ? `<div class="post-media">
-                         <img 
-                           src="${imgUrl}" 
-                           alt="Imagem da publicação" 
-                           loading="lazy"
-                           referrerpolicy="no-referrer"
-                           onerror="this.parentElement.style.display='none'"
-                         >
-                       </div>` 
+                         <img src="${imgUrl}" alt="Imagem da publicação" loading="lazy"
+                              referrerpolicy="no-referrer"
+                              onerror="this.parentElement.style.display='none'">
+                       </div>`
                     : '';
 
-                html += `
-                <div class="post-card">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                            <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
-                                ${autorFoto ? `<img src="${autorFoto}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;">` : autorNome.charAt(0).toUpperCase()}
+                // — Likes —
+                const curtidas      = Array.isArray(post.curtidas) ? post.curtidas : [];
+                const totalCurtidas = curtidas.length;
+                const euCurti       = currentUser && curtidas.includes(currentUser.email);
+                const likeClass     = euCurti ? 'like-btn liked' : 'like-btn';
+                const likeTitle     = euCurti ? 'Você curtiu' : 'Curtir';
+
+                // Tooltip com quem curtiu (mostra até 5 nomes, depois "+N")
+                const tooltipText = totalCurtidas === 0
+                    ? 'Seja o primeiro a curtir!'
+                    : curtidas.slice(0, 5).map(e => e.split('@')[0]).join(', ')
+                      + (curtidas.length > 5 ? ` e mais ${curtidas.length - 5}` : '');
+
+                // — Comentários —
+                const comentarios      = Array.isArray(post.comentarios) ? post.comentarios : [];
+                const totalComentarios = comentarios.length;
+                const comentariosHtml  = comentarios.map(c => {
+                    const cNome = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
+                    const cData = c.criadoEm && c.criadoEm.seconds
+                        ? new Date(c.criadoEm.seconds * 1000).toLocaleString('pt-BR')
+                        : (c.data || '');
+                    const cTexto = c.texto || c.conteudo || '';
+                    const cFoto  = c.autorFoto || c.foto || null;
+                    const isAdminComment = isAdmin && currentUser && (c.autorEmail === currentUser.email || isAdmin);
+                    return `
+                        <div class="comment-item" data-comment-id="${window.escapeHTML(c.id || '')}">
+                            <div class="comment-avatar">
+                                ${cFoto
+                                    ? `<img src="${cFoto}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                                    : `<span>${cNome.charAt(0).toUpperCase()}</span>`}
                             </div>
-                            <div>
-                                <strong style="display: block; font-size: 14px;">${window.escapeHTML(autorNome)}</strong>
-                                <span style="font-size: 10px; color: #aaa;">${dataPost}</span>
+                            <div class="comment-body">
+                                <div class="comment-meta">
+                                    <strong class="comment-author">${window.escapeHTML(cNome)}</strong>
+                                    <span class="comment-date">${window.escapeHTML(cData)}</span>
+                                    ${isAdminComment
+                                        ? `<button class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir comentário">✕</button>`
+                                        : ''}
+                                </div>
+                                <p class="comment-text">${window.escapeHTML(cTexto).replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                html += `
+                <div class="post-card" data-post-id="${postId}">
+
+                    <!-- Cabeçalho do post -->
+                    <div class="post-header">
+                        <div class="post-user">
+                            <div class="post-avatar" style="background: #00c8b3; color: white; flex-shrink:0;">
+                                ${autorFoto
+                                    ? `<img src="${autorFoto}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;">`
+                                    : `<span style="font-weight:bold;">${autorNome.charAt(0).toUpperCase()}</span>`}
+                            </div>
+                            <div class="post-info">
+                                <span class="post-username">${window.escapeHTML(autorNome)}</span>
+                                <span class="post-date">${dataPost}</span>
                             </div>
                         </div>
-                        ${isAdmin ? `<button class="btn-apagar btn-apagar-post" data-id="${postId}" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
+                        ${isAdmin
+                            ? `<button class="btn-apagar btn-apagar-post" data-id="${postId}" title="Deletar Publicação">🗑️</button>`
+                            : ''}
                     </div>
-                    
-                    <div style="font-size: 14px; line-height: 1.5; margin-top: 8px; word-break: break-word; overflow-wrap: break-word; overflow: hidden;">
+
+                    <!-- Texto -->
+                    <div class="post-content">
                         ${window.escapeHTML(textoPost).replace(/\n/g, '<br>')}
                     </div>
-                    
+
+                    <!-- Imagem (se houver) -->
                     ${imagemHtml}
+
+                    <!-- Barra de interações -->
+                    <div class="post-actions">
+
+                        <!-- Botão de Like -->
+                        <div class="like-wrap">
+                            <button class="${likeClass}" data-post-id="${postId}" title="${likeTitle}">
+                                ${euCurti ? '❤️' : '🤍'} Curtir
+                            </button>
+                            <span class="like-count" title="${window.escapeHTML(tooltipText)}">
+                                ${totalCurtidas > 0 ? `<span class="like-num">${totalCurtidas}</span> ${totalCurtidas === 1 ? 'curtida' : 'curtidas'}` : ''}
+                            </span>
+                        </div>
+
+                        <!-- Botão de Comentar -->
+                        <button class="comment-toggle-btn" data-post-id="${postId}">
+                            💬 ${totalComentarios > 0 ? `${totalComentarios} comentário${totalComentarios > 1 ? 's' : ''}` : 'Comentar'}
+                        </button>
+
+                    </div>
+
+                    <!-- Seção de comentários (colapsável) -->
+                    <div class="comments-section" id="comments-${postId}" style="display:none;">
+
+                        <!-- Lista de comentários existentes -->
+                        <div class="comments-list" id="comments-list-${postId}">
+                            ${comentariosHtml || '<div class="no-comments">Nenhum comentário ainda. Seja o primeiro!</div>'}
+                        </div>
+
+                        <!-- Input de novo comentário -->
+                        <div class="comment-input-wrap">
+                            <div class="comment-input-avatar" style="background:#00c8b3; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; font-weight:bold;">
+                                ${currentUser && currentUser.photoURL
+                                    ? `<img src="${currentUser.photoURL}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                                    : (currentUser ? currentUser.displayName?.charAt(0).toUpperCase() || 'U' : 'U')}
+                            </div>
+                            <div class="comment-input-group">
+                                <textarea 
+                                    class="comment-textarea" 
+                                    id="comment-input-${postId}" 
+                                    placeholder="Escreva um comentário..." 
+                                    rows="1"
+                                    data-post-id="${postId}"
+                                ></textarea>
+                                <button class="comment-send-btn" data-post-id="${postId}">Enviar</button>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>`;
+
             } catch (err) {
                 console.warn("Um post foi ignorado devido a formato incompatível:", err);
             }
         });
-        
+
         feedList.innerHTML = html;
-        
+
     }, (error) => {
         console.error("Erro ao puxar dados do Feed:", error);
-        feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message} <br> Aperte F12 para verificar índices do banco.</div>`;
+        feedList.innerHTML = `<div class="avisos-vazio" style="color:#FF6B6B; text-align:center;">Erro ao carregar publicações: ${error.message}</div>`;
     });
 };
+
+
+// ====================================================================
+// LISTENERS DE LIKE E COMENTÁRIO
+// Adicione este bloco logo após a definição de window.carregarFeed
+// (antes da seção de Ranking)
+// ====================================================================
+
+// Delegação para likes, toggle de comentários e envio de comentário
+document.addEventListener('click', async (e) => {
+
+    // — Toggle da seção de comentários —
+    const toggleBtn = e.target.closest('.comment-toggle-btn');
+    if (toggleBtn) {
+        const postId   = toggleBtn.getAttribute('data-post-id');
+        const section  = document.getElementById(`comments-${postId}`);
+        if (!section) return;
+        const isOpen   = section.style.display !== 'none';
+        section.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+            // Foca no textarea ao abrir
+            const ta = document.getElementById(`comment-input-${postId}`);
+            if (ta) setTimeout(() => ta.focus(), 50);
+        }
+        return;
+    }
+
+    // — Curtir / Descurtir —
+    const likeBtn = e.target.closest('.like-btn');
+    if (likeBtn) {
+        if (!currentUser) return alert("Você precisa estar logado para curtir.");
+        const postId  = likeBtn.getAttribute('data-post-id');
+        const postRef = doc(db, 'timeline_posts', postId);
+
+        likeBtn.disabled = true;
+        try {
+            const snap = await getDoc(postRef);
+            if (!snap.exists()) return;
+            const curtidas  = snap.data().curtidas || [];
+            const jaGostou  = curtidas.includes(currentUser.email);
+            await updateDoc(postRef, {
+                curtidas: jaGostou ? arrayRemove(currentUser.email) : arrayUnion(currentUser.email)
+            });
+        } catch (err) {
+            console.error("Erro ao processar like:", err);
+        } finally {
+            likeBtn.disabled = false;
+        }
+        return;
+    }
+
+    // — Enviar comentário (botão) —
+    const sendBtn = e.target.closest('.comment-send-btn');
+    if (sendBtn) {
+        const postId = sendBtn.getAttribute('data-post-id');
+        await enviarComentario(postId);
+        return;
+    }
+
+    // — Excluir comentário —
+    const delCommentBtn = e.target.closest('.btn-del-comment');
+    if (delCommentBtn) {
+        const postId     = delCommentBtn.getAttribute('data-post-id');
+        const commentId  = delCommentBtn.getAttribute('data-comment-id');
+        if (!postId || !commentId) return;
+        if (!confirm("Excluir este comentário?")) return;
+        try {
+            const postRef = doc(db, 'timeline_posts', postId);
+            const snap    = await getDoc(postRef);
+            if (!snap.exists()) return;
+            const comentarios = (snap.data().comentarios || []).filter(c => c.id !== commentId);
+            await updateDoc(postRef, { comentarios });
+        } catch (err) {
+            console.error("Erro ao excluir comentário:", err);
+        }
+        return;
+    }
+
+});
+
+// Enviar com Ctrl+Enter no textarea
+document.addEventListener('keydown', async (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        const ta = e.target.closest('.comment-textarea');
+        if (ta) {
+            const postId = ta.getAttribute('data-post-id');
+            await enviarComentario(postId);
+        }
+    }
+});
+
+async function enviarComentario(postId) {
+    if (!currentUser) return alert("Você precisa estar logado para comentar.");
+    const ta = document.getElementById(`comment-input-${postId}`);
+    if (!ta) return;
+
+    const texto = ta.value.trim();
+    if (!texto) return;
+
+    const sendBtn = document.querySelector(`.comment-send-btn[data-post-id="${postId}"]`);
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '...'; }
+
+    try {
+        const postRef  = doc(db, 'timeline_posts', postId);
+        const novoComentario = {
+            id:         Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            autorNome:  currentUser.displayName || 'Colaborador',
+            autorEmail: currentUser.email,
+            autorFoto:  currentUser.photoURL || null,
+            texto:      texto,
+            criadoEm:   { seconds: Math.floor(Date.now() / 1000) }  // client-side timestamp para exibição imediata
+        };
+
+        const snap = await getDoc(postRef);
+        const comentariosAtuais = snap.exists() ? (snap.data().comentarios || []) : [];
+
+        await updateDoc(postRef, {
+            comentarios: [...comentariosAtuais, novoComentario]
+        });
+
+        ta.value = '';
+        ta.style.height = 'auto';
+
+    } catch (err) {
+        console.error("Erro ao comentar:", err);
+        alert("Erro ao enviar comentário. Tente novamente.");
+    } finally {
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Enviar'; }
+    }
+}
 
 // ====================================================================
 // 3.5 MOTOR DO RANKING E CARROSSEL (TICKER)
