@@ -298,36 +298,49 @@ window.carregarFeed = function(isAdmin) {
                        </div>`
                     : '';
 
-                // — Likes —
-                const curtidas      = Array.isArray(post.curtidas) ? post.curtidas : (Array.isArray(post.likes) ? post.likes : []);
+               // — Likes (Estilo Instagram) —
+                const curtidas = Array.isArray(post.curtidas) ? post.curtidas : (Array.isArray(post.likes) ? post.likes : []);
                 const totalCurtidas = curtidas.length;
-                const euCurti       = currentUser && curtidas.includes(currentUser.email);
-                const likeClass     = euCurti ? 'like-btn liked' : 'like-btn';
-                const likeTitle     = euCurti ? 'Você curtiu' : 'Curtir';
+                const euCurti = currentUser && curtidas.includes(currentUser.email);
+                const likeClass = euCurti ? 'like-btn liked' : 'like-btn';
+                const likeTitle = euCurti ? 'Você curtiu' : 'Curtir';
 
-                // Tooltip com quem curtiu (mostra até 5 nomes, depois "+N")
-                const tooltipText = totalCurtidas === 0
-                    ? 'Seja o primeiro a curtir!'
-                    : curtidas.slice(0, 5).map(e => e.split('@')[0]).join(', ')
-                      + (curtidas.length > 5 ? ` e mais ${curtidas.length - 5}` : '');
+                let likesTextHtml = '';
+                if (totalCurtidas > 0) {
+                    // Pega o primeiro e-mail da lista para exibir no texto
+                    const firstEmail = curtidas[0]; 
+                    const firstName = firstEmail.split('@')[0].replace('.', ' ');
+                    const displayFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-                // — Comentários —
-                const comentarios      = Array.isArray(post.comentarios) ? post.comentarios : [];
+                    // Codifica a array de curtidas para passar no HTML com segurança
+                    const curtidasEncoded = encodeURIComponent(JSON.stringify(curtidas));
+
+                    if (totalCurtidas === 1) {
+                        likesTextHtml = `Curtido por <strong class="likes-modal-trigger" data-likes="${curtidasEncoded}">${window.escapeHTML(displayFirst)}</strong>`;
+                    } else {
+                        likesTextHtml = `Curtido por <strong class="likes-modal-trigger" data-likes="${curtidasEncoded}">${window.escapeHTML(displayFirst)}</strong> e <strong class="likes-modal-trigger" data-likes="${curtidasEncoded}">outras ${totalCurtidas - 1} pessoas</strong>`;
+                    }
+                }
+
+                // — Comentários (Estilo Instagram) —
+                const comentarios = Array.isArray(post.comentarios) ? post.comentarios : [];
                 const totalComentarios = comentarios.length;
-                 const comentariosHtml  = comentarios.map(c => {
+                
+                // Mapeia todos os comentários, mas esconde os mais antigos se houver mais de 2
+                const comentariosHtml = comentarios.map((c, index) => {
                     const cNome  = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
-                    const cData  = c.criadoEm && c.criadoEm.seconds
-                        ? new Date(c.criadoEm.seconds * 1000).toLocaleString('pt-BR')
-                        : (c.data || '');
+                    const cData  = c.criadoEm && c.criadoEm.seconds ? new Date(c.criadoEm.seconds * 1000).toLocaleString('pt-BR') : (c.data || '');
                     const cTexto = c.texto || c.conteudo || '';
                     const cFoto  = c.autorFoto || c.foto || null;
                     const isAdminComment = isAdmin;
+                    
+                    // Lógica para esconder: Se tiver mais de 2, esconde todos exceto os últimos 2.
+                    const isHidden = totalComentarios > 2 && index < totalComentarios - 2;
+                    
                     return `
-                        <div class="comment-item" data-comment-id="${window.escapeHTML(c.id || '')}">
+                        <div class="comment-item ${isHidden ? 'd-none hidden-comment' : ''}" data-comment-id="${window.escapeHTML(c.id || '')}">
                             <div class="comment-avatar" style="background:#00c8b3; color:#002D32;">
-                                ${cFoto
-                                    ? `<img src="${cFoto}" referrerpolicy="no-referrer">`
-                                    : `<span>${cNome.charAt(0).toUpperCase()}</span>`}
+                                ${cFoto ? `<img src="${cFoto}" referrerpolicy="no-referrer">` : `<span>${cNome.charAt(0).toUpperCase()}</span>`}
                             </div>
                             <div class="comment-content-wrapper">
                                 <div class="comment-bubble">
@@ -336,14 +349,17 @@ window.carregarFeed = function(isAdmin) {
                                 </div>
                                 <div class="comment-actions">
                                     <span>${window.escapeHTML(cData)}</span>
-                                    ${isAdminComment
-                                        ? `<span class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir">Excluir</span>`
-                                        : ''}
+                                    ${isAdminComment ? `<span class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir">Excluir</span>` : ''}
                                 </div>
                             </div>
                         </div>`;
                 }).join('');
 
+                const btnVerTodosHtml = totalComentarios > 2 
+                    ? `<div class="view-all-comments" data-post-id="${postId}">Ver todos os ${totalComentarios} comentários</div>` 
+                    : '';
+
+                
                 html += `
                 <div class="post-card" data-post-id="${postId}">
 
@@ -374,9 +390,9 @@ window.carregarFeed = function(isAdmin) {
                     ${imagemHtml}
 
                     <!-- Info de curtidas estilo Instagram -->
-                    ${totalCurtidas > 0 ? `
+                   ${likesTextHtml ? `
                     <div class="post-likes-info">
-                        <strong title="${window.escapeHTML(tooltipText)}">${totalCurtidas} ${totalCurtidas === 1 ? 'curtida' : 'curtidas'}</strong>
+                        ${likesTextHtml}
                     </div>` : ''}
 
                     <!-- Barra de ações estilo Facebook/Instagram -->
@@ -390,10 +406,8 @@ window.carregarFeed = function(isAdmin) {
                     </div>
 
                     <!-- Seção de comentários (colapsável) -->
-                    <div class="comments-section" id="comments-${postId}" style="display:none;">
-
-                        <!-- Lista de comentários com bolhas estilo Facebook -->
-                        <div class="comments-list" id="comments-list-${postId}">
+                    <div class="comments-list" id="comments-list-${postId}">
+                            ${btnVerTodosHtml}
                             ${comentariosHtml || '<div style="font-size:11px; color:rgba(255,255,255,0.4); padding: 8px 0;">Nenhum comentário ainda. Seja o primeiro!</div>'}
                         </div>
 
@@ -443,18 +457,29 @@ window.carregarFeed = function(isAdmin) {
 // Delegação para likes, toggle de comentários e envio de comentário
 document.addEventListener('click', async (e) => {
 
-    // — Toggle da seção de comentários —
-    const toggleBtn = e.target.closest('.comment-toggle-btn');
-    if (toggleBtn) {
-        const postId   = toggleBtn.getAttribute('data-post-id');
-        const section  = document.getElementById(`comments-${postId}`);
-        if (!section) return;
-        const isOpen   = section.style.display !== 'none';
-        section.style.display = isOpen ? 'none' : 'block';
-        if (!isOpen) {
-            // Foca no textarea ao abrir
-            const ta = document.getElementById(`comment-input-${postId}`);
-            if (ta) setTimeout(() => ta.focus(), 50);
+    // — Toggle 'Ver todos os comentários' (Instagram Style) —
+    const viewAllBtn = e.target.closest('.view-all-comments');
+    if (viewAllBtn) {
+        const postId = viewAllBtn.getAttribute('data-post-id');
+        const list = document.getElementById(`comments-list-${postId}`);
+        if (list) {
+            // Remove a classe que esconde os comentários
+            list.querySelectorAll('.hidden-comment').forEach(el => el.classList.remove('d-none'));
+        }
+        // Esconde o botão após expandir
+        viewAllBtn.style.display = 'none'; 
+        return;
+    }
+
+    // — Abrir Modal de Curtidas —
+    const likesTrigger = e.target.closest('.likes-modal-trigger');
+    if (likesTrigger) {
+        const curtidasEncoded = likesTrigger.getAttribute('data-likes');
+        try {
+            const curtidasArray = JSON.parse(decodeURIComponent(curtidasEncoded));
+            window.abrirModalLikes(curtidasArray);
+        } catch(err) {
+            console.error("Erro ao abrir modal de curtidas:", err);
         }
         return;
     }
@@ -1732,6 +1757,33 @@ if (loginBtn) {
     signInWithPopup(auth, provider).catch(() => document.getElementById('loginError').classList.add('visible'));
   };
 }
+
+
+window.abrirModalLikes = function(curtidasEmails) {
+    const modal = document.getElementById('likesModal');
+    const lista = document.getElementById('likesModalList');
+    if (!modal || !lista) return;
+
+    lista.innerHTML = curtidasEmails.map(email => {
+        // Formata o e-mail para exibir o nome (ex: "matheus.mendes" -> "Matheus Mendes")
+        const nomeFormatado = email.split('@')[0].replace('.', ' ');
+        const displayNome = nomeFormatado.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        
+        return `
+            <div class="like-modal-item">
+                <div class="like-modal-avatar">${displayNome.charAt(0).toUpperCase()}</div>
+                <span class="like-modal-name">${window.escapeHTML(displayNome)}</span>
+            </div>
+        `;
+    }).join('');
+
+    modal.style.display = 'flex';
+};
+
+window.fecharModalLikes = function() {
+    const modal = document.getElementById('likesModal');
+    if (modal) modal.style.display = 'none';
+};
 
 const logout = () => { sessionStorage.removeItem('logRegistrado'); signOut(auth); window.location.href = 'index.html'; };
 const logoutBtnGlobal = document.getElementById('logoutBtnGlobal');
