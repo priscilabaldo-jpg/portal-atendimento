@@ -178,7 +178,7 @@ async function notificarTimePorEmail(autor, texto) {
         const templateParams = {
             autor_nome: autor,
             mensagem: texto,
-            email: 'anapaula.gonçalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br, evellin.dias@leveros.com.br, flavia.alves@leveros.com.br, matheus.herrera@leveros.com.br, muriel.santos@leveros.com.br'
+            email: 'anapaula.gonçalves@leveros.com.br, bruna.condulucci@leveros.com.br, helen.silva@leveros.com.br, jackeline.cunha@leveros.com.br, jaqueline.silva@leveros.com.br, maria.lima@leveros.com.br, maria.silva@leveros.com.br, simone.leite@leveros.com.br, thais.pinheiro@leveros.com.br, maria.padua@leveros.com.br, camili.furlan@leveros.com.br, dara.melo@leveros.com.br, gabrielle.chadi@leveros.com.br, gabriela.costa@leveros.com.br, isadora.lopes@leveros.com.br, isadora.saraiva@leveros.com.br, maria.moraes@leveros.com.br, eduarda.goes@leveros.com.br, julia.santos@leveros.com.br, mislaine.fachiano@leveros.com.br, pedro.sabino@leveros.com.br, rafael.almeida@leveros.com.br, giovana.moreno@leveros.com.br, layane.medina@leveros.com.br, ariany.santos@leveros.com.br, lorena.anjos@leveros.com.br, matheus.mendes@leveros.com.br, priscila.baldo@leveros.com.br, thaiza.vieira@leveros.com.br, danilo.bernardes@leveros.com.br, leticia.fernandes@leveros.com.br, muriel.santos@leveros.com.br, patricia.oliveira@leveros.com.br, alessandra.mincov@leveros.com.br, evellin.dias@leveros.com.br, flavia.alves@leveros.com.br, matheus.herrera@leveros.com.br'
         };
 
         const resultado = await ejs.send('service_rc58xfn', 'template_074uqfn', templateParams);
@@ -302,7 +302,7 @@ window.carregarFeed = function(isAdmin) {
                 <div class="post-card">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 10px;">
-                            <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                            <div style="width: 35px; height: 35px; border-radius: 50%; background: #00c8b3; color: white; overflow: hidden; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
                                 ${autorFoto ? `<img src="${autorFoto}" referrerpolicy="no-referrer" style="width:100%; height:100%; object-fit:cover;">` : autorNome.charAt(0).toUpperCase()}
                             </div>
                             <div>
@@ -313,7 +313,7 @@ window.carregarFeed = function(isAdmin) {
                         ${isAdmin ? `<button class="btn-apagar btn-apagar-post" data-id="${postId}" style="background:transparent; border:none; color:#FF6B6B; cursor:pointer;" title="Deletar Publicação">🗑️</button>` : ''}
                     </div>
                     
-                    <div style="font-size: 14px; line-height: 1.5; margin-top: 8px;">
+                    <div style="font-size: 14px; line-height: 1.5; margin-top: 8px; word-break: break-word; overflow-wrap: break-word; overflow: hidden;">
                         ${window.escapeHTML(textoPost).replace(/\n/g, '<br>')}
                     </div>
                     
