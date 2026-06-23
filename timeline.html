@@ -124,9 +124,12 @@
         .post-content a { color: var(--accent-glow); text-decoration: none; border-bottom: 1px solid transparent; }
         .post-content a:hover { border-bottom-color: var(--accent-glow); }
         
-        /* Image Media within the Post */
-        .post-media { width: calc(100% + 10px); height: auto; display: flex; margin-left: -5px; margin-top: 10px; overflow: hidden; border-radius: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.05); }
-        .post-media img { width: 100%; height: auto; object-fit: cover; max-height: 600px; display: block; filter: brightness(0.9) contrast(1.1); }
+        /* Image Media within the Post — proporção livre, sem corte */
+        .post-media { width: 100%; display: block; margin-top: 12px; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); }
+        .post-media img { width: 100%; height: auto; display: block; object-fit: contain; }
+
+        /* Garante que texto longo (URLs, etc.) não vaze do card */
+        .post-card { word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
 
         .no-data { text-align: center; color: var(--text-sub); font-size: 10px; padding: 40px; }
 
