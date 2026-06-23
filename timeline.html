@@ -471,7 +471,16 @@
             
         </div>
     </div>
-    
-    <script type="module" src="app.js"></script>
+        <script type="module" src="app.js"></script>
+                    <div id="likesModal" class="modal-overlay" onclick="if(event.target === this) fecharModalLikes()">
+                    <div class="likes-modal-content">
+                        <div class="likes-modal-header">
+                            <span>Curtidas</span>
+                            <button class="likes-modal-close" onclick="fecharModalLikes()">✕</button>
+                        </div>
+                        <div class="likes-modal-body" id="likesModalList">
+                            </div>
+                    </div>
+                </div>
 </body>
 </html>
