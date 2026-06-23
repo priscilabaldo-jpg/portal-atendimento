@@ -299,7 +299,7 @@ window.carregarFeed = function(isAdmin) {
                     : '';
 
                 // — Likes —
-                const curtidas      = Array.isArray(post.curtidas) ? post.curtidas : [];
+                const curtidas      = Array.isArray(post.curtidas) ? post.curtidas : (Array.isArray(post.likes) ? post.likes : []);
                 const totalCurtidas = curtidas.length;
                 const euCurti       = currentUser && curtidas.includes(currentUser.email);
                 const likeClass     = euCurti ? 'like-btn liked' : 'like-btn';
@@ -472,8 +472,9 @@ document.addEventListener('click', async (e) => {
             if (!snap.exists()) return;
             const curtidas  = snap.data().curtidas || [];
             const jaGostou  = curtidas.includes(currentUser.email);
+            const campoLike = snap.data().curtidas !== undefined ? 'curtidas' : 'likes';
             await updateDoc(postRef, {
-                curtidas: jaGostou ? arrayRemove(currentUser.email) : arrayUnion(currentUser.email)
+                [campoLike]: jaGostou ? arrayRemove(currentUser.email) : arrayUnion(currentUser.email)
             });
         } catch (err) {
             console.error("Erro ao processar like:", err);
