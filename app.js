@@ -326,15 +326,32 @@ window.carregarFeed = function(isAdmin) {
                 const comentarios = Array.isArray(post.comentarios) ? post.comentarios : [];
                 const totalComentarios = comentarios.length;
                 
-                // Mapeia todos os comentários, mas esconde os mais antigos se houver mais de 2
                 const comentariosHtml = comentarios.map((c, index) => {
                     const cNome  = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
-                    const cData  = c.criadoEm && c.criadoEm.seconds ? new Date(c.criadoEm.seconds * 1000).toLocaleString('pt-BR') : (c.data || '');
+                    
+                    // ==========================================
+                    // CORREÇÃO DA DATA: Lida com Timestamp e Strings ISO
+                    // ==========================================
+                    let cDataFormatada = '';
+                    const dataOrigem = c.criadoEm || c.data;
+                    if (dataOrigem) {
+                        if (dataOrigem.seconds) {
+                            cDataFormatada = new Date(dataOrigem.seconds * 1000).toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                        } else {
+                            const d = new Date(dataOrigem);
+                            if (!isNaN(d.getTime())) {
+                                cDataFormatada = d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+                            } else {
+                                cDataFormatada = dataOrigem; // Mantém como está se for muito antigo
+                            }
+                        }
+                    }
+
                     const cTexto = c.texto || c.conteudo || '';
                     const cFoto  = c.autorFoto || c.foto || null;
                     const isAdminComment = isAdmin;
                     
-                    // Lógica para esconder: Se tiver mais de 2, esconde todos exceto os últimos 2.
+                    // Esconde os antigos se houver mais de 2
                     const isHidden = totalComentarios > 2 && index < totalComentarios - 2;
                     
                     return `
@@ -348,7 +365,7 @@ window.carregarFeed = function(isAdmin) {
                                     <p class="comment-text">${window.escapeHTML(cTexto).replace(/\n/g, '<br>')}</p>
                                 </div>
                                 <div class="comment-actions">
-                                    <span>${window.escapeHTML(cData)}</span>
+                                    <span>${window.escapeHTML(cDataFormatada)}</span>
                                     ${isAdminComment ? `<span class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir">Excluir</span>` : ''}
                                 </div>
                             </div>
