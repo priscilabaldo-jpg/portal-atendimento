@@ -314,30 +314,32 @@ window.carregarFeed = function(isAdmin) {
                 // — Comentários —
                 const comentarios      = Array.isArray(post.comentarios) ? post.comentarios : [];
                 const totalComentarios = comentarios.length;
-                const comentariosHtml  = comentarios.map(c => {
-                    const cNome = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
-                    const cData = c.criadoEm && c.criadoEm.seconds
+                 const comentariosHtml  = comentarios.map(c => {
+                    const cNome  = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
+                    const cData  = c.criadoEm && c.criadoEm.seconds
                         ? new Date(c.criadoEm.seconds * 1000).toLocaleString('pt-BR')
                         : (c.data || '');
                     const cTexto = c.texto || c.conteudo || '';
                     const cFoto  = c.autorFoto || c.foto || null;
-                    const isAdminComment = isAdmin && currentUser && (c.autorEmail === currentUser.email || isAdmin);
+                    const isAdminComment = isAdmin;
                     return `
                         <div class="comment-item" data-comment-id="${window.escapeHTML(c.id || '')}">
-                            <div class="comment-avatar">
+                            <div class="comment-avatar" style="background:#00c8b3; color:#002D32;">
                                 ${cFoto
-                                    ? `<img src="${cFoto}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+                                    ? `<img src="${cFoto}" referrerpolicy="no-referrer">`
                                     : `<span>${cNome.charAt(0).toUpperCase()}</span>`}
                             </div>
-                            <div class="comment-body">
-                                <div class="comment-meta">
+                            <div class="comment-content-wrapper">
+                                <div class="comment-bubble">
                                     <strong class="comment-author">${window.escapeHTML(cNome)}</strong>
-                                    <span class="comment-date">${window.escapeHTML(cData)}</span>
+                                    <p class="comment-text">${window.escapeHTML(cTexto).replace(/\n/g, '<br>')}</p>
+                                </div>
+                                <div class="comment-actions">
+                                    <span>${window.escapeHTML(cData)}</span>
                                     ${isAdminComment
-                                        ? `<button class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir comentário">✕</button>`
+                                        ? `<span class="btn-del-comment" data-post-id="${postId}" data-comment-id="${window.escapeHTML(c.id || '')}" title="Excluir">Excluir</span>`
                                         : ''}
                                 </div>
-                                <p class="comment-text">${window.escapeHTML(cTexto).replace(/\n/g, '<br>')}</p>
                             </div>
                         </div>`;
                 }).join('');
@@ -371,37 +373,33 @@ window.carregarFeed = function(isAdmin) {
                     <!-- Imagem (se houver) -->
                     ${imagemHtml}
 
-                    <!-- Barra de interações -->
-                    <div class="post-actions">
+                    <!-- Info de curtidas estilo Instagram -->
+                    ${totalCurtidas > 0 ? `
+                    <div class="post-likes-info">
+                        <strong title="${window.escapeHTML(tooltipText)}">${totalCurtidas} ${totalCurtidas === 1 ? 'curtida' : 'curtidas'}</strong>
+                    </div>` : ''}
 
-                        <!-- Botão de Like -->
-                        <div class="like-wrap">
-                            <button class="${likeClass}" data-post-id="${postId}" title="${likeTitle}">
-                                ${euCurti ? '❤️' : '🤍'} Curtir
-                            </button>
-                            <span class="like-count" title="${window.escapeHTML(tooltipText)}">
-                                ${totalCurtidas > 0 ? `<span class="like-num">${totalCurtidas}</span> ${totalCurtidas === 1 ? 'curtida' : 'curtidas'}` : ''}
-                            </span>
-                        </div>
-
-                        <!-- Botão de Comentar -->
-                        <button class="comment-toggle-btn" data-post-id="${postId}">
+                    <!-- Barra de ações estilo Facebook/Instagram -->
+                    <div class="post-actions-bar">
+                        <button class="action-btn-post ${euCurti ? 'liked' : ''} like-btn" data-post-id="${postId}" title="${likeTitle}">
+                            ${euCurti ? '❤️' : '🤍'} Curtir
+                        </button>
+                        <button class="action-btn-post comment-toggle-btn" data-post-id="${postId}">
                             💬 ${totalComentarios > 0 ? `${totalComentarios} comentário${totalComentarios > 1 ? 's' : ''}` : 'Comentar'}
                         </button>
-
                     </div>
 
                     <!-- Seção de comentários (colapsável) -->
                     <div class="comments-section" id="comments-${postId}" style="display:none;">
 
-                        <!-- Lista de comentários existentes -->
+                        <!-- Lista de comentários com bolhas estilo Facebook -->
                         <div class="comments-list" id="comments-list-${postId}">
-                            ${comentariosHtml || '<div class="no-comments">Nenhum comentário ainda. Seja o primeiro!</div>'}
+                            ${comentariosHtml || '<div style="font-size:11px; color:rgba(255,255,255,0.4); padding: 8px 0;">Nenhum comentário ainda. Seja o primeiro!</div>'}
                         </div>
 
                         <!-- Input de novo comentário -->
                         <div class="comment-input-wrap">
-                            <div class="comment-input-avatar" style="background:#00c8b3; color:white; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0; font-weight:bold;">
+                            <div class="comment-avatar" style="background:#00c8b3; color:#002D32; flex-shrink:0;">
                                 ${currentUser && currentUser.photoURL
                                     ? `<img src="${currentUser.photoURL}" referrerpolicy="no-referrer" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
                                     : (currentUser ? currentUser.displayName?.charAt(0).toUpperCase() || 'U' : 'U')}
