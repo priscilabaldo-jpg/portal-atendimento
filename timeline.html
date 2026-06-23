@@ -5,20 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leveros | CX Timeline Feed</title>
     
+    <!--
+        CORREÇÃO CSP: img-src ampliado para permitir:
+        - Imagens diretas da web (qualquer https)
+        - Google Drive via /thumbnail e /uc?export=view
+        - lh3.googleusercontent.com (fotos de perfil Google e Drive)
+        - data: URIs (inline)
+    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
       style-src 'self' 'unsafe-inline';
       connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://api.emailjs.com;
       frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
-      img-src 'self' data: https://*.googleusercontent.com https://lh3.googleusercontent.com https://drive.google.com;
+      img-src 'self' data: blob: https: http:;
     ">
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
           emailjs.init({
-            publicKey: "AUZIT5qioj8fQ_cQ8", // <-- COLOQUE SUA PUBLIC KEY AQUI
+            publicKey: "AUZIT5qioj8fQ_cQ8",
           });
        })();
     </script>
