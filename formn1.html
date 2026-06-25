@@ -189,9 +189,16 @@
                                 📋 Copiar Script
                             </button>
 
-                            <button id="btnEnviarPlanilha" onclick="enviarParaSheets()" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;">
-                                📤 Enviar para Planilha do Fabricante
-                            </button>
+                            <div id="areaEnvioSheets" style="display: none; margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
+    
+                                <label for="numeroProtocoloCRM" style="color: var(--azul); font-weight: bold;">Nº do Protocolo do Atendimento (CRM):</label>
+                                <input type="text" id="numeroProtocoloCRM" placeholder="Ex: 20261234567" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                            
+                                <button id="btnEnviarPlanilha" onclick="enviarParaSheets()" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px;">
+                                    📤 Enviar para Planilha do Fabricante
+                                </button>
+                            
+                            </div>
                         </div>
                         </div>
                 </div>
@@ -237,6 +244,19 @@
     </div>
 
     <script>
+
+
+                    // Verifica se o usuário é o desenvolvedor Remover quando terminar! 
+            window.onload = function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                
+                // Se a URL tiver "?dev=matheus", ele exibe o formulário de envio
+                if (urlParams.get('dev') === 'matheus') {
+                    document.getElementById("areaEnvioSheets").style.display = "block";
+                }
+            };
+        
+        
         const baseDeConhecimento = {
             "Garantia": {
                 opcoes: [
