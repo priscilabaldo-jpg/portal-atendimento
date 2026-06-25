@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image" href="LogoLeveros.png">
-    <title>Triagem N1 - Garantia</title>
+    <title>Apoio N1 - Triagem e CRM</title>
     
     <link rel="stylesheet" href="style.css">
 </head>
@@ -41,7 +41,7 @@
     </header>
 
     <div class="container">
-        <h2>Triagem N1 <span>Garantia</span></h2> <h5>Ùltima Atualização: 25/06/26 </h5>
+        <h2>🛠️ Apoio N1 <span>Triagem</span></h2>
         
         <div class="layout-wrapper">
             <div class="form-column">
@@ -189,6 +189,7 @@
                                 📋 Copiar Script
                             </button>
 
+                            <!-- ÁREA EM DESENVOLVIMENTO: Oculta por padrão para não impactar a operação -->
                             <div id="areaEnvioSheets" style="display: none; margin-top: 15px; border-top: 1px solid var(--glass-border); padding-top: 15px;">
                                 <label for="numeroProtocoloCRM" style="color: var(--azul); font-weight: bold;">Nº do Protocolo do Atendimento (CRM):</label>
                                 <input type="text" id="numeroProtocoloCRM" placeholder="Ex: 20261234567" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
@@ -199,7 +200,7 @@
                             </div>
 
                         </div>
-                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -668,8 +669,8 @@
         }
 
         function enviarParaSheets() {
-            // URL do Apps Script
-            const urlAppScript = "https://script.google.com/macros/s/AKfycbykBnDvonv_EjFeoOu5SuBwpEJRWm209g2E4JYCIW2-V0VAGOLX0bKaL-5ZVeqBiLz-/exec"; 
+            // ⚠️ IMPORTANTE: COLOQUE AQUI A NOVA URL GERADA NO GOOGLE APPS SCRIPT
+            const urlAppScript = "COLOQUE_SUA_NOVA_URL_AQUI"; 
             
             // Validação: Exigir o protocolo antes de enviar
             const inputProtocolo = document.getElementById("numeroProtocoloCRM").value.trim();
@@ -725,6 +726,7 @@
                     btnEnviar.textContent = "📤 Enviar para Planilha do Fabricante";
                     btnEnviar.style.backgroundColor = "#28a745";
                     btnEnviar.disabled = false;
+                    document.getElementById("numeroProtocoloCRM").value = ""; // Limpa o campo após o envio
                 }, 3000);
             })
             .catch(error => {
