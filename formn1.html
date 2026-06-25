@@ -188,6 +188,10 @@
                             <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                 📋 Copiar Script
                             </button>
+
+                            <button id="btnEnviarPlanilha" onclick="enviarParaSheets()" style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;">
+                                📤 Enviar para Planilha do Fabricante
+                            </button>
                         </div>
                         </div>
                 </div>
@@ -651,6 +655,60 @@
                 alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
             });
         }
+
+
+                    function enviarParaSheets() {
+                // ⚠️ COLOQUE AQUI A URL GERADA NO APPS SCRIPT
+                const urlAppScript = "https://script.google.com/macros/s/AKfycbykBnDvonv_EjFeoOu5SuBwpEJRWm209g2E4JYCIW2-V0VAGOLX0bKaL-5ZVeqBiLz-/exec"; 
+                
+                const btnEnviar = document.getElementById("btnEnviarPlanilha");
+                btnEnviar.textContent = "⏳ Enviando...";
+                btnEnviar.disabled = true;
+            
+                // Coletando os textos selecionados nos selects
+                const selTipo = document.getElementById("tipoAtendimento");
+                const selSub = document.getElementById("subcategoria");
+                const selMarca = document.getElementById("marca");
+            
+                // Montando o pacote de dados (Payload)
+                const payload = {
+                    tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
+                    subcategoria: selSub.options[selSub.selectedIndex]?.text || '-',
+                    marca: selMarca.options[selMarca.selectedIndex]?.text || '-',
+                    dataNF: document.getElementById("dataNF").value || '-',
+                    statusTriagem: document.getElementById("statusGarantiaBox").innerText.split('\n')[0] || 'Sem Status', 
+                    textoCRM: document.getElementById("textoResumoCRM").value
+                };
+            
+                // Enviando via requisição HTTP POST para o Google Sheets
+                fetch(urlAppScript, {
+                    method: "POST",
+                    mode: "no-cors", // Necessário para evitar bloqueios de segurança (CORS) do navegador
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(() => {
+                    btnEnviar.textContent = "✅ Enviado com Sucesso!";
+                    btnEnviar.style.backgroundColor = "#17a2b8";
+                    
+                    // Retorna o botão ao estado normal após 3 segundos
+                    setTimeout(() => {
+                        btnEnviar.textContent = "📤 Enviar para Planilha do Fabricante";
+                        btnEnviar.style.backgroundColor = "#28a745";
+                        btnEnviar.disabled = false;
+                    }, 3000);
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar para planilha:', error);
+                    alert("Ocorreu um erro ao enviar os dados. Verifique a conexão.");
+                    btnEnviar.textContent = "📤 Tentar Novamente";
+                    btnEnviar.disabled = false;
+                });
+            }
+
+        
     </script>
 </body>
 </html>
