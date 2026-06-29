@@ -674,74 +674,85 @@
             });
         }
 
-        function enviarParaSheets() {
-            // ⚠️ IMPORTANTE: COLOQUE AQUI A NOVA URL GERADA NO GOOGLE APPS SCRIPT
-            const urlAppScript = "https://script.google.com/macros/s/AKfycbwWG-ct1Vx8KGAGC_YS-vzQjkaPGZXcBG5JmcQHrNvW95COvrE4cJ_z7ydJtmkZ0RTQ/exec"; 
-            
-            // Validação: Exigir o protocolo antes de enviar
-            const inputProtocolo = document.getElementById("numeroProtocoloCRM").value.trim();
-            if (!inputProtocolo) {
-                alert("⚠️ Por favor, preencha o Nº do Protocolo do Atendimento (CRM) antes de enviar para a fábrica.");
-                document.getElementById("numeroProtocoloCRM").focus();
-                return; 
-            }
+       function enviarParaSheets() {
+    // ⚠️ IMPORTANTE: COLOQUE AQUI A NOVA URL GERADA NO GOOGLE APPS SCRIPT
+    const urlAppScript = "https://script.google.com/macros/s/AKfycbyXIbY7l2KWg4pkJpIqu1VQjgGBIq_MVPPUisTTUvoSr0JhVBoGRIcdfa9SptPGonxr/exec"; 
+    
+    // Validação: Exigir o protocolo e o link da NF antes de enviar
+    const inputProtocolo = document.getElementById("numeroProtocoloCRM").value.trim();
+    const inputLinkNF = document.getElementById("linkNF").value.trim();
 
-            const btnEnviar = document.getElementById("btnEnviarPlanilha");
-            btnEnviar.textContent = "⏳ Enviando...";
-            btnEnviar.disabled = true;
+    if (!inputProtocolo) {
+        alert("⚠️ Por favor, preencha o Nº do Protocolo do Atendimento (CRM) antes de enviar para a fábrica.");
+        document.getElementById("numeroProtocoloCRM").focus();
+        return; 
+    }
+    
+    if (!inputLinkNF) {
+        alert("⚠️ Por favor, insira o Link da Nota Fiscal antes de enviar para a fábrica.");
+        document.getElementById("linkNF").focus();
+        return; 
+    }
 
-            const selTipo = document.getElementById("tipoAtendimento");
-            const selSub = document.getElementById("subcategoria");
-            const selMarca = document.getElementById("marca");
+    const btnEnviar = document.getElementById("btnEnviarPlanilha");
+    btnEnviar.textContent = "⏳ Enviando...";
+    btnEnviar.disabled = true;
 
-            // Formatar a Data da NF para o Sheets
-            const rawDataNF = document.getElementById("dataNF").value;
-            let dataNFFormatada = "-";
-            if (rawDataNF) {
-                const partes = rawDataNF.split("-");
-                if (partes.length === 3) {
-                    dataNFFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
-                }
-            }
+    const selTipo = document.getElementById("tipoAtendimento");
+    const selSub = document.getElementById("subcategoria");
+    const selMarca = document.getElementById("marca");
 
-            // Pacote de dados
-            const payload = {
-                protocoloCRM: inputProtocolo, 
-                tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
-                subcategoria: selSub.options[selSub.selectedIndex]?.text || '-',
-                marca: selMarca.options[selMarca.selectedIndex]?.text || '-',
-                dataNF: dataNFFormatada, 
-                statusTriagem: document.getElementById("statusGarantiaBox").innerText.split('\n')[0] || 'Sem Status', 
-                textoCRM: document.getElementById("textoResumoCRM").value
-            };
-
-            // Envio
-            fetch(urlAppScript, {
-                method: "POST",
-                mode: "no-cors", 
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(() => {
-                btnEnviar.textContent = "✅ Enviado com Sucesso!";
-                btnEnviar.style.backgroundColor = "#17a2b8";
-                
-                setTimeout(() => {
-                    btnEnviar.textContent = "📤 Enviar para Planilha do Fabricante";
-                    btnEnviar.style.backgroundColor = "#28a745";
-                    btnEnviar.disabled = false;
-                    document.getElementById("numeroProtocoloCRM").value = ""; // Limpa o campo após o envio
-                }, 3000);
-            })
-            .catch(error => {
-                console.error('Erro ao enviar:', error);
-                alert("Ocorreu um erro ao enviar. Verifique a conexão.");
-                btnEnviar.textContent = "📤 Tentar Novamente";
-                btnEnviar.disabled = false;
-            });
+    // Formatar a Data da NF para o Sheets
+    const rawDataNF = document.getElementById("dataNF").value;
+    let dataNFFormatada = "-";
+    if (rawDataNF) {
+        const partes = rawDataNF.split("-");
+        if (partes.length === 3) {
+            dataNFFormatada = `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
+    }
+
+    // Pacote de dados atualizado com o linkNF
+    const payload = {
+        protocoloCRM: inputProtocolo, 
+        linkNF: inputLinkNF, // <- Novo dado sendo enviado
+        tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
+        subcategoria: selSub.options[selSub.selectedIndex]?.text || '-',
+        marca: selMarca.options[selMarca.selectedIndex]?.text || '-',
+        dataNF: dataNFFormatada, 
+        statusTriagem: document.getElementById("statusGarantiaBox").innerText.split('\n')[0] || 'Sem Status', 
+        textoCRM: document.getElementById("textoResumoCRM").value
+    };
+
+    // Envio
+    fetch(urlAppScript, {
+        method: "POST",
+        mode: "no-cors", 
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(() => {
+        btnEnviar.textContent = "✅ Enviado com Sucesso!";
+        btnEnviar.style.backgroundColor = "#17a2b8";
+        
+        setTimeout(() => {
+            btnEnviar.textContent = "📤 Enviar para Planilha do Fabricante";
+            btnEnviar.style.backgroundColor = "#28a745";
+            btnEnviar.disabled = false;
+            // Limpa os campos após o envio
+            document.getElementById("numeroProtocoloCRM").value = ""; 
+            document.getElementById("linkNF").value = ""; 
+        }, 3000);
+    })
+    .catch(error => {
+        console.error('Erro ao enviar:', error);
+        alert("Ocorreu um erro ao enviar. Verifique a conexão.");
+        btnEnviar.textContent = "📤 Tentar Novamente";
+        btnEnviar.disabled = false;
+    });
+}
     </script>
 </body>
 </html>
