@@ -172,5 +172,29 @@
 
 <script type="module" src="app.js"></script>
 
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Seleciona todos os botões de "Ver detalhes"
+    const toggleButtons = document.querySelectorAll('.btn-toggle-detalhes');
+    
+    // Adiciona o evento de clique para cada um deles
+    toggleButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // Encontra a div de detalhes que está logo abaixo do botão no HTML
+        const detailsDiv = this.nextElementSibling;
+        
+        // Verifica se está visível e faz a troca
+        if (detailsDiv.style.display === 'block') {
+          detailsDiv.style.display = 'none';
+          this.textContent = 'Ver detalhes';
+        } else {
+          detailsDiv.style.display = 'block';
+          this.textContent = 'Ocultar detalhes';
+        }
+      });
+    });
+  });
+</script>
+
 </body>
 </html>
