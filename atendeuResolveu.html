@@ -7,7 +7,7 @@
 
 <meta http-equiv="Content-Security-Policy" content="
   default-src 'self';
-  script-src 'self' https://www.gstatic.com https://apis.google.com;
+  script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com;
   style-src 'self' 'unsafe-inline';
   connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
   frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
@@ -67,8 +67,8 @@
         <h3>Assiduidade</h3>
         <div class="meta-valor verde">Mínima de 100%</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regra de Dedução:</strong> Menor que isso, perde 100%.<br>
           <strong>Sistema de Apuração:</strong> RH - Sênior
         </div>
@@ -79,8 +79,8 @@
         <h3>Nota de Qualidade</h3>
         <div class="meta-valor verde">Superior a 85%</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regras de Dedução:</strong><br>
           - Menor que 84,9 até 75: dedução de 50%<br>
           - Abaixo de 74,99: dedução de 100%<br>
@@ -99,8 +99,8 @@
         <div class="meta-valor" style="font-size:16px;">CSAT Whatsapp + URA</div>
         <div class="meta-valor verde" style="font-size:18px;">Superior a 75%</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regras de Dedução:</strong><br>
           - 65% a 74,99%: dedução de 50%<br>
           - Menor a 64,99%: dedução de 100%<br>
@@ -113,8 +113,8 @@
         <h3>Performance Operacional</h3>
         <div class="meta-valor verde">Maior que 90%</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regra de Dedução:</strong> Menor que isso, dedução de 50%.<br>
           <strong>Sistema de Apuração:</strong> Sistema Intergrall
         </div>
@@ -125,8 +125,8 @@
         <h3>Manutenção do Selo RA1000</h3>
         <div class="meta-valor verde">Manter Selo</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regra de Dedução:</strong> Perda do selo, dedução de 100%.<br>
           <strong>Sistema de Apuração:</strong> RA
         </div>
@@ -137,8 +137,8 @@
         <h3>Média de avaliação (RA)</h3>
         <div class="meta-valor verde">Superior a 8,0</div>
         <div class="meta-sep"></div>
-        <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
-        <div class="meta-details">
+        <button class="toggle-btn btn-toggle-detalhes" onclick="toggleDetalhes(this)">Ver detalhes</button>
+        <div class="meta-details" style="display: none; margin-top: 10px;">
           <strong>Regra de Dedução:</strong> Menor que isso, dedução de 40%.<br>
           <strong>Sistema de Apuração:</strong> RA
         </div>
@@ -172,28 +172,21 @@
 
 <script type="module" src="app.js"></script>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Seleciona todos os botões de "Ver detalhes"
-    const toggleButtons = document.querySelectorAll('.btn-toggle-detalhes');
+<!-- Script corrigido com a nova função -->
+<script>
+  function toggleDetalhes(btn) {
+    // Pega a div que está imediatamente abaixo do botão clicado
+    const detailsDiv = btn.nextElementSibling;
     
-    // Adiciona o evento de clique para cada um deles
-    toggleButtons.forEach(button => {
-      button.addEventListener('click', function() {
-        // Encontra a div de detalhes que está logo abaixo do botão no HTML
-        const detailsDiv = this.nextElementSibling;
-        
-        // Verifica se está visível e faz a troca
-        if (detailsDiv.style.display === 'block') {
-          detailsDiv.style.display = 'none';
-          this.textContent = 'Ver detalhes';
-        } else {
-          detailsDiv.style.display = 'block';
-          this.textContent = 'Ocultar detalhes';
-        }
-      });
-    });
-  });
+    // Verifica o estilo atual e faz a troca
+    if (detailsDiv.style.display === 'none' || detailsDiv.style.display === '') {
+      detailsDiv.style.display = 'block';
+      btn.textContent = 'Ocultar detalhes';
+    } else {
+      detailsDiv.style.display = 'none';
+      btn.textContent = 'Ver detalhes';
+    }
+  }
 </script>
 
 </body>
