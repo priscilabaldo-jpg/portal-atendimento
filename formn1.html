@@ -95,7 +95,12 @@
                             </select>
                         </div>
                         
-                        <div class="form-group">
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="numeroSerie">Número de Série da Unidade:</label>
+                            <input type="text" id="numeroSerie" placeholder="Ex: 1234567890ABC" onchange="processarResultado()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
                             <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
                             <input type="date" id="dataNF" onchange="processarResultado()">
                         </div>
@@ -607,6 +612,9 @@
                     const selTec = document.getElementById("tecnologia");
                     scriptCrm += `Tecnologia: ${selTec.options[selTec.selectedIndex]?.text || '-'}\n`;
                 }
+
+                const valNumeroSerie = document.getElementById("numeroSerie").value.trim();
+                scriptCrm += `Número de Série: ${valNumeroSerie ? valNumeroSerie : 'Não informado'}\n`;
                 
                 const formatarData = (dataStr) => {
                     if (!dataStr) return '-';
@@ -711,10 +719,11 @@
         }
     }
 
-    // Pacote de dados atualizado com o linkNF
+    // Pacote de dados atualizado com o linkNF e numeroSerie
     const payload = {
         protocoloCRM: inputProtocolo, 
-        linkNF: inputLinkNF, // <- Novo dado sendo enviado
+        linkNF: inputLinkNF, 
+        numeroSerie: document.getElementById("numeroSerie").value.trim(),
         tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
         subcategoria: selSub.options[selSub.selectedIndex]?.text || '-',
         marca: selMarca.options[selMarca.selectedIndex]?.text || '-',
