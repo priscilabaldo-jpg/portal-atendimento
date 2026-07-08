@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leveros | CX Timeline Feed</title>
     
-    <!--
-        CORREÇÃO CSP: img-src ampliado para permitir:
-        - Imagens diretas da web (qualquer https)
-        - Google Drive via /thumbnail e /uc?export=view
-        - lh3.googleusercontent.com (fotos de perfil Google e Drive)
-        - data: URIs (inline)
-    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://cdn.jsdelivr.net;
@@ -29,12 +21,9 @@
             publicKey: "AUZIT5qioj8fQ_cQ8",
           });
        })();
-    
+    </script>
 </head>
 <body>
-
-
-    </script>
 
     <style>
         /* --- Standard Styling & Theme --- */
@@ -130,11 +119,10 @@
         .post-content a { color: var(--accent-glow); text-decoration: none; border-bottom: 1px solid transparent; }
         .post-content a:hover { border-bottom-color: var(--accent-glow); }
         
-        /* Image Media within the Post — proporção livre, sem corte */
+        /* Image Media within the Post */
         .post-media { width: 100%; display: block; margin-top: 12px; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); }
         .post-media img { width: 100%; height: auto; display: block; object-fit: contain; }
 
-        /* Garante que texto longo (URLs, etc.) não vaze do card */
         .post-card { word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
 
         .no-data { text-align: center; color: var(--text-sub); font-size: 10px; padding: 40px; }
@@ -185,212 +173,202 @@
         .rank-item:not(.rank-podium) { opacity: 0.8; }
         .rank-item:not(.rank-podium) span.num { font-size: 9px; color: var(--text-sub); font-weight: 600; }
 
-        
-/* ====================================================================
-   12. TIMELINE - INTERAÇÕES (FACEBOOK / INSTAGRAM STYLE)
-   ==================================================================== */
+        /* --- TIMELINE - INTERAÇÕES --- */
+        .post-likes-info {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 12px 0 8px;
+            padding: 0 4px;
+        }
+        .post-likes-info strong {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 700;
+            cursor: pointer;
+        }
 
-/* --- Texto de Curtidas (Instagram Style) --- */
-.post-likes-info {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 12px 0 8px;
-    padding: 0 4px;
-}
-.post-likes-info strong {
-    color: rgba(255, 255, 255, 0.9);
-    font-weight: 700;
-    cursor: pointer;
-}
+        .post-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 8px 0;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .action-btn-post {
+            background: transparent !important;
+            border: none !important;
+            color: rgba(255, 255, 255, 0.6) !important;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            outline: none;
+        }
+        .action-btn-post:hover {
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #fff !important;
+        }
+        .action-btn-post.liked {
+            color: #FF6B8A !important;
+        }
+        .action-btn-post.liked i {
+            transform: scale(1.1);
+        }
 
-/* --- Barra de Botões (Curtir / Comentar) --- */
-.post-actions-bar {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    padding: 8px 0;
-    margin-top: 10px;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-}
-.action-btn-post {
-    background: transparent !important;
-    border: none !important;
-    color: rgba(255, 255, 255, 0.6) !important;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    font-family: inherit;
-    outline: none;
-}
-.action-btn-post:hover {
-    background: rgba(255, 255, 255, 0.05) !important;
-    color: #fff !important;
-}
-.action-btn-post.liked {
-    color: #FF6B8A !important; /* Cor de curtido */
-}
-.action-btn-post.liked i {
-    transform: scale(1.1);
-}
+        .comments-section {
+            padding-top: 12px;
+        }
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .comments-list::-webkit-scrollbar { width: 4px; }
+        .comments-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
 
-/* --- Bolhas de Comentários (Facebook Style) --- */
-.comments-section {
-    padding-top: 12px;
-}
-.comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 16px;
-    max-height: 350px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-.comments-list::-webkit-scrollbar { width: 4px; }
-.comments-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--azul);
+            color: var(--verde1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .comment-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-.comment-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-.comment-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: var(--azul);
-    color: var(--verde1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    font-weight: bold;
-    flex-shrink: 0;
-    overflow: hidden;
-}
-.comment-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
+        .comment-content-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
 
-.comment-content-wrapper {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
+        .comment-bubble {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 10px 14px;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            display: inline-block;
+            max-width: 100%;
+        }
+        .comment-bubble .comment-author {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--azul);
+            margin-bottom: 4px;
+        }
+        .comment-bubble .comment-text {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0;
+            line-height: 1.4;
+            word-break: break-word;
+        }
 
-/* A Bolha do Comentário */
-.comment-bubble {
-    background: rgba(255, 255, 255, 0.06);
-    padding: 10px 14px;
-    border-radius: 18px; /* Arredondado estilo FB */
-    border-top-left-radius: 4px; /* Detalhe direcional para a foto */
-    display: inline-block;
-    max-width: 100%;
-}
-.comment-bubble .comment-author {
-    display: block;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--azul);
-    margin-bottom: 4px;
-}
-.comment-bubble .comment-text {
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.85);
-    margin: 0;
-    line-height: 1.4;
-    word-break: break-word;
-}
+        .comment-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 8px 0;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .comment-actions .btn-del-comment {
+            cursor: pointer;
+            transition: color 0.2s;
+            font-weight: bold;
+        }
+        .comment-actions .btn-del-comment:hover {
+            color: #FF6B6B;
+        }
 
-/* Ações abaixo do comentário (Data, Excluir) */
-.comment-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 8px 0;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.4);
-}
-.comment-actions .btn-del-comment {
-    cursor: pointer;
-    transition: color 0.2s;
-    font-weight: bold;
-}
-.comment-actions .btn-del-comment:hover {
-    color: #FF6B6B;
-}
-
-/* --- Input de Novo Comentário --- */
-.comment-input-wrap {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start; 
-}
-.comment-input-group {
-    flex: 1;
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 6px 6px 6px 14px;
-    transition: border-color 0.2s;
-}
-.comment-input-group:focus-within {
-    border-color: var(--azul);
-    background: rgba(255, 255, 255, 0.08);
-}
-.comment-textarea {
-    flex: 1;
-    background: transparent !important;
-    border: none !important;
-    outline: none !important;
-    color: #fff;
-    font-size: 12px;
-    font-family: inherit;
-    resize: none;
-    min-height: 20px;
-    max-height: 100px;
-    overflow-y: auto;
-    line-height: 1.4;
-    padding: 4px 0;
-}
-.comment-textarea::placeholder {
-    color: rgba(255, 255, 255, 0.3);
-}
-.comment-send-btn {
-    background: var(--azul) !important;
-    color: var(--verde1) !important;
-    border: none !important;
-    border-radius: 16px !important;
-    padding: 6px 14px;
-    font-size: 11px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-.comment-send-btn:hover {
-    opacity: 0.85;
-}
-.comment-send-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-        
+        .comment-input-wrap {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start; 
+        }
+        .comment-input-group {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 6px 6px 6px 14px;
+            transition: border-color 0.2s;
+        }
+        .comment-input-group:focus-within {
+            border-color: var(--azul);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .comment-textarea {
+            flex: 1;
+            background: transparent !important;
+            border: none !important;
+            outline: none !important;
+            color: #fff;
+            font-size: 12px;
+            font-family: inherit;
+            resize: none;
+            min-height: 20px;
+            max-height: 100px;
+            overflow-y: auto;
+            line-height: 1.4;
+            padding: 4px 0;
+        }
+        .comment-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .comment-send-btn {
+            background: var(--azul) !important;
+            color: var(--verde1) !important;
+            border: none !important;
+            border-radius: 16px !important;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .comment-send-btn:hover {
+            opacity: 0.85;
+        }
+        .comment-send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
+
     <header class="top-header">
         <div class="header-inner">
             <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
@@ -424,7 +402,6 @@
         <div class="timeline-layout">
             
             <main class="feed-container">
-                
                 <header class="timeline-header">
                     <p class="label">COMUNIDADE CX LEVEROS</p>
                     <h1>Nosso <span class="high">Feed</span> 💬</h1>
@@ -437,12 +414,10 @@
                         <textarea class="create-post-input" id="postTextGlobal" rows="3" placeholder="No que você está pensando, time?"></textarea>
                     </div>
                     <div class="create-post-actions">
-                        
                         <div class="image-url-wrap">
                             <span class="link-icon">🔗</span>
                             <input type="text" class="create-post-input-link" id="mediaUrlInputGlobal" placeholder="Link do recurso ou imagem (Opcional)">
                         </div>
-                        
                         <div class="right-publish">
                             <label class="create-post-checkbox">
                                 <input type="checkbox" id="sendEmailCheckboxGlobal" checked>
@@ -456,7 +431,6 @@
                 <div id="feedListGlobal">
                     <div class="page-loading-status">Carregando publicações...</div>
                 </div>
-                
             </main>
             
             <aside class="ranking-sidebar">
@@ -475,14 +449,14 @@
             
         </div>
     </div>
-        <div id="likesModal" class="modal-overlay" onclick="if(event.target === this) fecharModalLikes()">
+
+    <div id="likesModal" class="modal-overlay" onclick="if(event.target === this) fecharModalLikes()">
         <div class="likes-modal-content">
             <div class="likes-modal-header">
                 <span>Curtidas</span>
                 <button class="likes-modal-close" onclick="fecharModalLikes()">✕</button>
             </div>
-            <div class="likes-modal-body" id="likesModalList">
-                </div>
+            <div class="likes-modal-body" id="likesModalList"></div>
         </div>
     </div>
 
