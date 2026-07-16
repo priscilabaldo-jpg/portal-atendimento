@@ -81,7 +81,7 @@
                 <p>Troque suas CX Coins por prêmios reais!</p>
               </div>
 
-              <!-- ALERTA DE JANELA DE RESGATE COM CONTADOR (CORRIGIDO) -->
+              <!-- ALERTA DE JANELA DE RESGATE COM CONTADOR -->
               <div id="alertaJanelaFechada" style="display: none; background: rgba(255,165,0,0.1); border: 1px solid orange; color: orange; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
                   <div id="alertaTitulo" style="font-size: 16px; margin-bottom: 5px;">
                       ⚠️ <strong>A loja está fechada no momento!</strong>
@@ -222,6 +222,7 @@ function filtrarCatalogoFrontend(categoriaId, botaoElement) {
     botoes.forEach(b => b.classList.remove('active'));
     botaoElement.classList.add('active');
 
+    // IMPORTANTE: Seus cards no app.js precisam ser gerados com o atributo data-categoria="1" (ou 2, ou 3)
     const cards = document.querySelectorAll('.premio-card'); 
     
     cards.forEach(card => {
