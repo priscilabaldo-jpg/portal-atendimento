@@ -15,12 +15,25 @@
 ">
 
 <link rel="stylesheet" href="style.css">
+<style>
+  /* Estilos adicionais para os filtros e cards genéricos (ajuste conforme seu style.css) */
+  .filtros-categoria { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap; }
+  .btn-filtro { padding: 8px 16px; border: 1px solid rgba(255,255,255,0.2); background: transparent; color: #fff; border-radius: 20px; cursor: pointer; transition: 0.3s; }
+  .btn-filtro.active, .btn-filtro:hover { background: #FFD700; color: #000; font-weight: bold; }
+  .premio-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; text-align: center; transition: 0.3s; }
+  .premio-card:hover { transform: translateY(-5px); background: rgba(255,255,255,0.1); }
+  .premio-icone { font-size: 40px; margin-bottom: 10px; }
+  .premio-titulo { font-size: 16px; font-weight: bold; margin-bottom: 5px; color: #fff; }
+  .premio-desc { font-size: 12px; color: #aaa; margin-bottom: 15px; min-height: 34px; }
+  .premio-preco { font-size: 14px; color: #FFD700; font-weight: bold; margin-bottom: 15px; }
+  .btn-resgatar { background: #FFD700; color: #000; border: none; padding: 8px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; }
+</style>
 </head>
 <body>
 
 <div class="bg-layer"></div>
 
-<div id="lojinha-content" style="display:none; position: relative; z-index: 5;">
+<div id="lojinha-content" style="position: relative; z-index: 5;">
 
   <header>
     <div class="header-inner">
@@ -72,16 +85,31 @@
                 <p>Troque suas CX Coins por prêmios reais!</p>
               </div>
 
+              <!-- ALERTAS OPERACIONAIS -->
+              <div id="alertaJanelaFechada" style="display: none; background: rgba(255,165,0,0.1); border: 1px solid orange; color: orange; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 14px;">
+                  ⚠️ <strong>Atenção:</strong> A janela de resgate está fechada no momento. Você pode visualizar o catálogo, mas as trocas de pontos estão pausadas.
+              </div>
+
+              <div id="alertaBloqueioOperador" style="display: none; background: rgba(255,0,0,0.1); border: 1px solid red; color: #ff4d4d; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 14px;">
+                  ❌ <strong>Resgate Bloqueado:</strong> Seu perfil possui uma restrição ativa para este ciclo. Procure a gestão para mais detalhes.
+              </div>
+
               <div class="loja-tabs">
                   <button id="btnAbaCatalogo" class="tab-btn active" onclick="mudarAba('catalogo')">🎁 Catálogo de Prêmios</button>
                   <button id="btnAbaPedidos" class="tab-btn" onclick="mudarAba('pedidos')">📜 Meus Resgates</button>
               </div>
 
               <div id="catalogoSection">
-                  <div class="loja-grid" id="lojaGrid">
-                      <div style="grid-column: 1 / -1; text-align: center; padding: 40px; opacity: 0.6;">
-                          Buscando prêmios disponíveis no estoque... ⏳
-                      </div>
+                  <!-- FILTROS DE CATEGORIA -->
+                  <div class="filtros-categoria">
+                      <button class="btn-filtro active" onclick="filtrarCatalogo('todos', this)">Todos</button>
+                      <button class="btn-filtro" onclick="filtrarCatalogo(1, this)">Acessíveis</button>
+                      <button class="btn-filtro" onclick="filtrarCatalogo(2, this)">Intermediários</button>
+                      <button class="btn-filtro" onclick="filtrarCatalogo(3, this)">Premium</button>
+                  </div>
+
+                  <div class="loja-grid" id="lojaGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+                      <!-- O catálogo será renderizado via JavaScript -->
                   </div>
               </div>
 
@@ -109,7 +137,7 @@
           <div class="ranking-sidebar">
               <div class="ranking-header">
                   <h3>🏆 Ranking CX</h3>
-                  <p>Saldo atual de toda equipe</p>
+                  <p>Saldo atual da equipe</p>
               </div>
               <div class="ranking-list" id="rankingList">
                   <div class="avisos-vazio" style="font-size: 10px;">Carregando ranking...</div>
@@ -139,7 +167,7 @@
               </div>
               <div class="recibo-linha">
                   <span>Valor Pago:</span>
-                  <strong style="color: var(--amarelo);" id="reciboValor">0 🪙</strong>
+                  <strong style="color: #FFD700;" id="reciboValor">0 🪙</strong>
               </div>
               <div class="recibo-linha">
                   <span>Data do Resgate:</span>
@@ -159,6 +187,7 @@
 </div>
 
 <script>
+// Lógica de Abas
 function mudarAba(aba) {
     if(aba === 'catalogo') {
         document.getElementById('catalogoSection').style.display = 'block';
@@ -170,11 +199,65 @@ function mudarAba(aba) {
         document.getElementById('meusPedidosSection').style.display = 'block';
         document.getElementById('btnAbaCatalogo').classList.remove('active');
         document.getElementById('btnAbaPedidos').classList.add('active');
-        // Gatilho para buscar os pedidos no Firebase ao abrir a aba
         if(window.carregarHistoricoPedidos) window.carregarHistoricoPedidos();
     }
 }
+
+// ==========================================
+// SIMULAÇÃO DO CATÁLOGO DE PRÊMIOS GENÉRICOS
+// ==========================================
+const premios = [
+    { id: 1, nome: "Prêmio 1", desc: "Item de entrada, resgate fácil", preco: 50, categoria: 1, icone: "🍬" },
+    { id: 2, nome: "Prêmio 2", desc: "Item básico para o dia a dia", preco: 150, categoria: 1, icone: "☕" },
+    { id: 3, nome: "Prêmio 3", desc: "Recompensa de dificuldade média", preco: 300, categoria: 2, icone: "🍔" },
+    { id: 4, nome: "Prêmio 4", desc: "Item desejado, exige consistência", preco: 500, categoria: 2, icone: "🎧" },
+    { id: 5, nome: "Prêmio 5", desc: "Prêmio máximo de alto desempenho", preco: 800, categoria: 3, icone: "🚀" }
+];
+
+function renderizarCatalogo(categoriaFiltro = 'todos') {
+    const grid = document.getElementById('lojaGrid');
+    grid.innerHTML = ''; 
+
+    const prêmiosFiltrados = categoriaFiltro === 'todos' 
+        ? premios 
+        : premios.filter(p => p.categoria === categoriaFiltro);
+
+    if (prêmiosFiltrados.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; opacity: 0.6;">Nenhum prêmio encontrado nesta categoria.</div>';
+        return;
+    }
+
+    prêmiosFiltrados.forEach(premio => {
+        const card = document.createElement('div');
+        card.className = 'premio-card';
+        card.innerHTML = `
+            <div class="premio-icone">${premio.icone}</div>
+            <div class="premio-titulo">${premio.nome}</div>
+            <div class="premio-desc">${premio.desc}</div>
+            <div class="premio-preco">🪙 ${premio.preco} CX Coins</div>
+            <button class="btn-resgatar" onclick="alert('Iniciando resgate do ${premio.nome}...')">Resgatar</button>
+        `;
+        grid.appendChild(card);
+    });
+}
+
+function filtrarCatalogo(categoria, botaoElement) {
+    // Atualiza botão ativo
+    const botoes = document.querySelectorAll('.btn-filtro');
+    botoes.forEach(b => b.classList.remove('active'));
+    botaoElement.classList.add('active');
+    
+    // Renderiza novamente o grid
+    renderizarCatalogo(categoria);
+}
+
+// Inicializa o catálogo ao carregar a página
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById('anoAtual').textContent = new Date().getFullYear();
+    renderizarCatalogo('todos');
+});
 </script>
+
 <script type="module" src="app.js?v=2.0"></script>
 </body>
 </html>
