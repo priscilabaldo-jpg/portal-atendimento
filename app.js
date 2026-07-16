@@ -1,5 +1,3 @@
-
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, onSnapshot, orderBy, query, serverTimestamp, arrayUnion, arrayRemove, increment, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -29,7 +27,7 @@ let saldoAtualUsuario = 0;
 let produtosLojaCache = [];
 
 // ====================================================================
-// CORREÇÃO EMAILJS: acesso ao objeto global via window
+// CORREÇÃO EMAILJS
 // ====================================================================
 function getEmailJS() {
     if (typeof window.emailjs !== 'undefined') {
@@ -41,43 +39,32 @@ function getEmailJS() {
 
 // ====================================================================
 // CORREÇÃO CENTRAL DE IMAGENS
-// Normaliza qualquer URL de imagem para um formato que o browser
-// consiga carregar. Suporta Google Drive, lh3.googleusercontent e
-// URLs diretas da web.
 // ====================================================================
 function normalizarUrlImagem(url) {
     if (!url || typeof url !== 'string') return '';
 
     url = url.trim();
 
-    // Já é um link do lh3 (conversão antiga) → converte para thumbnail confiável
-    // Padrão: https://lh3.googleusercontent.com/d/FILE_ID
     const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
     if (lh3Match && lh3Match[1]) {
         return `https://drive.google.com/thumbnail?id=${lh3Match[1]}&sz=w1000`;
     }
 
-    // Google Drive – qualquer variante de link compartilhado
     if (url.includes('drive.google.com') || url.includes('docs.google.com')) {
-        // Extrai o File ID do link
         const idMatch =
             url.match(/\/d\/([a-zA-Z0-9_-]+)/) ||
             url.match(/id=([a-zA-Z0-9_-]+)/) ||
             url.match(/open\?id=([a-zA-Z0-9_-]+)/);
 
         if (idMatch && idMatch[1]) {
-            // Usa o endpoint /thumbnail — funciona sem autenticação adicional
-            // quando o arquivo está compartilhado publicamente (Qualquer um com o link)
             return `https://drive.google.com/thumbnail?id=${idMatch[1]}&sz=w1000`;
         }
     }
 
-    // URL direta da web (http/https) — retorna como está
     if (url.startsWith('http://') || url.startsWith('https://')) {
         return url;
     }
 
-    // Não é uma URL válida
     return '';
 }
 
@@ -192,7 +179,7 @@ async function notificarTimePorEmail(autor, texto) {
         if (e && typeof e === 'object') {
             if (e.text)    detalhe = `Status ${e.status}: ${e.text}`;
             else if (e.message) detalhe = e.message;
-            else           detalhe = JSON.stringify(e);
+            else            detalhe = JSON.stringify(e);
         } else {
             detalhe = String(e);
         }
@@ -217,7 +204,6 @@ if (btnPublishPost) {
             return;
         }
 
-        // CORREÇÃO: normaliza a URL antes de salvar no Firestore
         const mediaUrl = normalizarUrlImagem(rawUrl);
 
         btnPublishPost.textContent = "Publicando...";
@@ -250,13 +236,6 @@ if (btnPublishPost) {
         }
     });
 }
-
-// Renderização Principal do Feed
-// ====================================================================
-// SUBSTITUA COMPLETAMENTE a função window.carregarFeed no seu app.js
-// por este bloco inteiro (do "window.carregarFeed" até o fechamento da função).
-// Adicione também os listeners de like e comentário logo abaixo.
-// ====================================================================
 
 // Renderização Principal do Feed — com Likes e Comentários
 window.carregarFeed = function(isAdmin) {
@@ -307,12 +286,10 @@ window.carregarFeed = function(isAdmin) {
 
                 let likesTextHtml = '';
                 if (totalCurtidas > 0) {
-                    // Pega o primeiro e-mail da lista para exibir no texto
                     const firstEmail = curtidas[0]; 
                     const firstName = firstEmail.split('@')[0].replace('.', ' ');
                     const displayFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-                    // Codifica a array de curtidas para passar no HTML com segurança
                     const curtidasEncoded = encodeURIComponent(JSON.stringify(curtidas));
 
                     if (totalCurtidas === 1) {
@@ -329,9 +306,6 @@ window.carregarFeed = function(isAdmin) {
                 const comentariosHtml = comentarios.map((c, index) => {
                     const cNome  = c.autorNome || c.autor || c.email?.split('@')[0] || 'Usuário';
                     
-                    // ==========================================
-                    // CORREÇÃO DA DATA: Lida com Timestamp e Strings ISO
-                    // ==========================================
                     let cDataFormatada = '';
                     const dataOrigem = c.criadoEm || c.data;
                     if (dataOrigem) {
@@ -342,7 +316,7 @@ window.carregarFeed = function(isAdmin) {
                             if (!isNaN(d.getTime())) {
                                 cDataFormatada = d.toLocaleString('pt-BR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
                             } else {
-                                cDataFormatada = dataOrigem; // Mantém como está se for muito antigo
+                                cDataFormatada = dataOrigem; 
                             }
                         }
                     }
@@ -351,7 +325,6 @@ window.carregarFeed = function(isAdmin) {
                     const cFoto  = c.autorFoto || c.foto || null;
                     const isAdminComment = isAdmin;
                     
-                    // Esconde os antigos se houver mais de 2
                     const isHidden = totalComentarios > 2 && index < totalComentarios - 2;
                     
                     return `
@@ -467,28 +440,21 @@ window.carregarFeed = function(isAdmin) {
 
 // ====================================================================
 // LISTENERS DE LIKE E COMENTÁRIO
-// Adicione este bloco logo após a definição de window.carregarFeed
-// (antes da seção de Ranking)
 // ====================================================================
 
-// Delegação para likes, toggle de comentários e envio de comentário
 document.addEventListener('click', async (e) => {
 
-    // — Toggle 'Ver todos os comentários' (Instagram Style) —
     const viewAllBtn = e.target.closest('.view-all-comments');
     if (viewAllBtn) {
         const postId = viewAllBtn.getAttribute('data-post-id');
         const list = document.getElementById(`comments-list-${postId}`);
         if (list) {
-            // Remove a classe que esconde os comentários
             list.querySelectorAll('.hidden-comment').forEach(el => el.classList.remove('d-none'));
         }
-        // Esconde o botão após expandir
         viewAllBtn.style.display = 'none'; 
         return;
     }
 
-    // — Abrir Modal de Curtidas —
     const likesTrigger = e.target.closest('.likes-modal-trigger');
     if (likesTrigger) {
         const curtidasEncoded = likesTrigger.getAttribute('data-likes');
@@ -501,7 +467,6 @@ document.addEventListener('click', async (e) => {
         return;
     }
 
-    // — Curtir / Descurtir —
     const likeBtn = e.target.closest('.like-btn');
     if (likeBtn) {
         if (!currentUser) return alert("Você precisa estar logado para curtir.");
@@ -526,7 +491,6 @@ document.addEventListener('click', async (e) => {
         return;
     }
 
-    // — Enviar comentário (botão) —
     const sendBtn = e.target.closest('.comment-send-btn');
     if (sendBtn) {
         const postId = sendBtn.getAttribute('data-post-id');
@@ -534,7 +498,6 @@ document.addEventListener('click', async (e) => {
         return;
     }
 
-    // — Excluir comentário —
     const delCommentBtn = e.target.closest('.btn-del-comment');
     if (delCommentBtn) {
         const postId     = delCommentBtn.getAttribute('data-post-id');
@@ -555,7 +518,6 @@ document.addEventListener('click', async (e) => {
 
 });
 
-// Enviar com Ctrl+Enter no textarea
 document.addEventListener('keydown', async (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         const ta = e.target.closest('.comment-textarea');
@@ -585,7 +547,7 @@ async function enviarComentario(postId) {
             autorEmail: currentUser.email,
             autorFoto:  currentUser.photoURL || null,
             texto:      texto,
-            criadoEm:   { seconds: Math.floor(Date.now() / 1000) }  // client-side timestamp para exibição imediata
+            criadoEm:   { seconds: Math.floor(Date.now() / 1000) } 
         };
 
         const snap = await getDoc(postRef);
@@ -610,7 +572,8 @@ async function enviarComentario(postId) {
 // 3.5 MOTOR DO RANKING E CARROSSEL (TICKER)
 // ====================================================================
 window.carregarRanking = function() {
-    const rankingList = document.getElementById('rankingListGlobal');
+    // ATUALIZAÇÃO: Agora ele procura pelos dois IDs (da timeline ou da lojinha)
+    const rankingList = document.getElementById('rankingListGlobal') || document.getElementById('rankingList');
     if (!rankingList) return;
 
     const q = query(collection(db, 'usuarios'), orderBy('pontos', 'desc'));
@@ -627,18 +590,16 @@ window.carregarRanking = function() {
         snap.docs.forEach(docSnap => {
             const user = docSnap.data();
             
-            let classPos = posicao <= 3 ? `pos-${posicao}` : '';
-            let badge = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `${posicao}º`;
+            let badge = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `<strong style="color: #aaa;">${posicao}º</strong>`;
 
+            // ATUALIZAÇÃO: HTML atualizado para combinar perfeitamente com a lojinha
             html += `
-            <div class="rank-item ${classPos}">
-                <div class="rank-left">
-                    <span class="num">${badge}</span>
-                    <span class="rank-username">${window.escapeHTML(user.nome || 'Usuário')}</span>
+            <div class="ranking-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span style="width: 20px; text-align: center;">${badge}</span>
+                    <span style="color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px;">${window.escapeHTML(user.nome || 'Usuário')}</span>
                 </div>
-                <div class="rank-right">
-                    <span>${user.pontos || 0} 🪙</span>
-                </div>
+                <strong style="color: #FFD700;">🪙 ${user.pontos || 0}</strong>
             </div>`;
             
             posicao++;
@@ -988,10 +949,7 @@ if (formNovoProduto) {
             const emojiVal = document.getElementById('prodEmoji').value.trim() || '🎁';
             const linkBruto = document.getElementById('prodFoto').value.trim();
 
-            // CORREÇÃO: usa normalizarUrlImagem para produtos também
             let imagemFinal = linkBruto ? normalizarUrlImagem(linkBruto) : emojiVal;
-            // Se normalizarUrlImagem retornar vazio (não era URL) mas tinha algo digitado,
-            // trata como emoji/texto
             if (!imagemFinal && linkBruto) imagemFinal = linkBruto;
             if (!imagemFinal) imagemFinal = emojiVal;
 
@@ -1336,7 +1294,6 @@ function carregarVitrine() {
           const cardStyle = isEsgotado ? 'opacity: 0.6; filter: grayscale(0.5);' : '';
           const disableAttr = isEsgotado ? 'disabled' : '';
 
-          // CORREÇÃO: normaliza a URL da imagem do produto
           const imgNormalizada = normalizarUrlImagem(produto.imagem);
 
           let imgRenderizada = '';
@@ -1379,7 +1336,6 @@ window.abrirRecibo = function(imagem, nomeItem, nomeColab, valor, dataStr, idPed
   if(!modal) return;
   
   const iconEl = document.getElementById('reciboIcon');
-  // CORREÇÃO: normaliza também a imagem do recibo
   const imgNorm = normalizarUrlImagem(imagem);
   if (imgNorm) {
       iconEl.innerHTML = `<img src="${imgNorm}" referrerpolicy="no-referrer" style="width:40px; height:40px; object-fit:cover; border-radius:6px; display:block;">`;
@@ -1532,7 +1488,10 @@ window.realizarResgate = async function(idProduto) {
       });
 
       saldoAtualUsuario -= produto.preco;
-      if (document.getElementById('valSaldoGlobal')) document.getElementById('valSaldoGlobal').textContent = saldoAtualUsuario;
+      
+      // ATUALIZAÇÃO DE ID's DE MOEDA: Atualiza o saldo tanto na lojinha quanto em abas gerais
+      const saldoEl = document.getElementById('valSaldoGlobal') || document.getElementById('valSaldo');
+      if (saldoEl) saldoEl.textContent = saldoAtualUsuario;
       if (document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
 
       const dataAgora = new Date();
@@ -1620,7 +1579,8 @@ async function sincronizarPontosDiarios(user) {
     const userSnap = await getDoc(userRef);
     const hoje = new Date().toISOString().slice(0, 10); 
 
-    const saldoEl = document.getElementById('valSaldoGlobal');
+    // ATUALIZAÇÃO DE ID's DE MOEDA: Busca o ID tanto da aba Global quanto da aba Lojinha
+    const saldoEl = document.getElementById('valSaldoGlobal') || document.getElementById('valSaldo');
     const saldoMobEl = document.getElementById('valSaldoMobile');
 
     if (userSnap.exists()) {
@@ -1782,7 +1742,6 @@ window.abrirModalLikes = function(curtidasEmails) {
     if (!modal || !lista) return;
 
     lista.innerHTML = curtidasEmails.map(email => {
-        // Formata o e-mail para exibir o nome (ex: "matheus.mendes" -> "Matheus Mendes")
         const nomeFormatado = email.split('@')[0].replace('.', ' ');
         const displayNome = nomeFormatado.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
         
