@@ -72,22 +72,6 @@
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
 
-  <!-- ALERTA DE JANELA DE RESGATE COM CONTADOR -->
-  <div id="alertaJanelaFechada" style="display: none; background: rgba(255,165,0,0.1); border: 1px solid orange; color: orange; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
-      <div style="font-size: 16px; margin-bottom: 5px;">
-          ⚠️ <strong>A loja está fechada no momento!</strong>
-      </div>
-      <div style="font-size: 13px; opacity: 0.9; margin-bottom: 12px;">
-          As trocas de pontos ficam disponíveis apenas no primeiro dia útil de cada mês.
-      </div>
-      <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; display: inline-block;">
-          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #fff;">A próxima janela abre em:</span><br>
-          <div id="contadorResgate" style="font-size: 24px; font-weight: bold; color: #FFD700; font-family: monospace; letter-spacing: 2px;">
-              --:--:--:--
-          </div>
-      </div>
-  </div>
-
   <div class="container">
       <div class="loja-layout">
           <div class="loja-main">
@@ -97,8 +81,20 @@
                 <p>Troque suas CX Coins por prêmios reais!</p>
               </div>
 
-              <div id="alertaJanelaFechada" style="display: none; background: rgba(255,165,0,0.1); border: 1px solid orange; color: orange; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 14px;">
-                  ⚠️ <strong>Atenção:</strong> A janela de resgate está fechada no momento. Você pode visualizar o catálogo, mas as trocas de pontos estão pausadas.
+              <!-- ALERTA DE JANELA DE RESGATE COM CONTADOR (CORRIGIDO) -->
+              <div id="alertaJanelaFechada" style="display: none; background: rgba(255,165,0,0.1); border: 1px solid orange; color: orange; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px;">
+                  <div id="alertaTitulo" style="font-size: 16px; margin-bottom: 5px;">
+                      ⚠️ <strong>A loja está fechada no momento!</strong>
+                  </div>
+                  <div id="alertaSubtitulo" style="font-size: 13px; opacity: 0.9; margin-bottom: 12px;">
+                      As trocas de pontos ficam disponíveis apenas no primeiro dia útil de cada mês.
+                  </div>
+                  <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px; display: inline-block;">
+                      <span id="alertaLabelContador" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #fff;">A próxima janela abre em:</span><br>
+                      <div id="contadorResgate" style="font-size: 24px; font-weight: bold; color: #FFD700; font-family: monospace; letter-spacing: 2px;">
+                          --:--:--:--
+                      </div>
+                  </div>
               </div>
 
               <div id="alertaBloqueioOperador" style="display: none; background: rgba(255,0,0,0.1); border: 1px solid red; color: #ff4d4d; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-size: 14px;">
@@ -226,7 +222,6 @@ function filtrarCatalogoFrontend(categoriaId, botaoElement) {
     botoes.forEach(b => b.classList.remove('active'));
     botaoElement.classList.add('active');
 
-    // IMPORTANTE: Seus cards no app.js precisam ser gerados com o atributo data-categoria="1" (ou 2, ou 3)
     const cards = document.querySelectorAll('.premio-card'); 
     
     cards.forEach(card => {
