@@ -25,6 +25,8 @@ let nfParaExportacao = [];
 let graficoInstancia = null; 
 let saldoAtualUsuario = 0;
 let produtosLojaCache = [];
+let isAdminGlobal = false; // Controle global de acesso Admin
+let intervaloContador = null; // Variável para controlar o relógio da Lojinha
 
 // ====================================================================
 // CORREÇÃO EMAILJS
@@ -42,7 +44,6 @@ function getEmailJS() {
 // ====================================================================
 function normalizarUrlImagem(url) {
     if (!url || typeof url !== 'string') return '';
-
     url = url.trim();
 
     const lh3Match = url.match(/lh3\.googleusercontent\.com\/d\/([a-zA-Z0-9_-]+)/);
@@ -183,7 +184,6 @@ async function notificarTimePorEmail(autor, texto) {
         } else {
             detalhe = String(e);
         }
-
         alert("O post foi salvo, mas houve uma falha ao disparar o e-mail para a equipe.\n\nDetalhes: " + detalhe);
     }
 }
@@ -237,7 +237,6 @@ if (btnPublishPost) {
     });
 }
 
-// Renderização Principal do Feed — com Likes e Comentários
 window.carregarFeed = function(isAdmin) {
     const feedList = document.getElementById('feedListGlobal');
     if (!feedList) return;
@@ -277,7 +276,6 @@ window.carregarFeed = function(isAdmin) {
                        </div>`
                     : '';
 
-               // — Likes (Estilo Instagram) —
                 const curtidas = Array.isArray(post.curtidas) ? post.curtidas : (Array.isArray(post.likes) ? post.likes : []);
                 const totalCurtidas = curtidas.length;
                 const euCurti = currentUser && curtidas.includes(currentUser.email);
@@ -289,7 +287,6 @@ window.carregarFeed = function(isAdmin) {
                     const firstEmail = curtidas[0]; 
                     const firstName = firstEmail.split('@')[0].replace('.', ' ');
                     const displayFirst = firstName.charAt(0).toUpperCase() + firstName.slice(1);
-
                     const curtidasEncoded = encodeURIComponent(JSON.stringify(curtidas));
 
                     if (totalCurtidas === 1) {
@@ -299,7 +296,6 @@ window.carregarFeed = function(isAdmin) {
                     }
                 }
 
-                // — Comentários (Estilo Instagram) —
                 const comentarios = Array.isArray(post.comentarios) ? post.comentarios : [];
                 const totalComentarios = comentarios.length;
                 
@@ -348,12 +344,9 @@ window.carregarFeed = function(isAdmin) {
                 const btnVerTodosHtml = totalComentarios > 2 
                     ? `<div class="view-all-comments" data-post-id="${postId}">Ver todos os ${totalComentarios} comentários</div>` 
                     : '';
-
                 
                 html += `
                 <div class="post-card" data-post-id="${postId}">
-
-                    <!-- Cabeçalho do post -->
                     <div class="post-header">
                         <div class="post-user">
                             <div class="post-avatar" style="background: #00c8b3; color: white; flex-shrink:0;">
@@ -371,21 +364,17 @@ window.carregarFeed = function(isAdmin) {
                             : ''}
                     </div>
 
-                    <!-- Texto -->
                     <div class="post-content">
                         ${window.escapeHTML(textoPost).replace(/\n/g, '<br>')}
                     </div>
 
-                    <!-- Imagem (se houver) -->
                     ${imagemHtml}
 
-                    <!-- Info de curtidas estilo Instagram -->
                    ${likesTextHtml ? `
                     <div class="post-likes-info">
                         ${likesTextHtml}
                     </div>` : ''}
 
-                    <!-- Barra de ações estilo Facebook/Instagram -->
                     <div class="post-actions-bar">
                         <button class="action-btn-post ${euCurti ? 'liked' : ''} like-btn" data-post-id="${postId}" title="${likeTitle}">
                             ${euCurti ? '❤️' : '🤍'} Curtir
@@ -395,13 +384,11 @@ window.carregarFeed = function(isAdmin) {
                         </button>
                     </div>
 
-                    <!-- Seção de comentários (colapsável) -->
                     <div class="comments-list" id="comments-list-${postId}">
                             ${btnVerTodosHtml}
                             ${comentariosHtml || '<div style="font-size:11px; color:rgba(255,255,255,0.4); padding: 8px 0;">Nenhum comentário ainda. Seja o primeiro!</div>'}
                         </div>
 
-                        <!-- Input de novo comentário -->
                         <div class="comment-input-wrap">
                             <div class="comment-avatar" style="background:#00c8b3; color:#002D32; flex-shrink:0;">
                                 ${currentUser && currentUser.photoURL
@@ -419,9 +406,7 @@ window.carregarFeed = function(isAdmin) {
                                 <button class="comment-send-btn" data-post-id="${postId}">Enviar</button>
                             </div>
                         </div>
-
                     </div>
-
                 </div>`;
 
             } catch (err) {
@@ -437,13 +422,7 @@ window.carregarFeed = function(isAdmin) {
     });
 };
 
-
-// ====================================================================
-// LISTENERS DE LIKE E COMENTÁRIO
-// ====================================================================
-
 document.addEventListener('click', async (e) => {
-
     const viewAllBtn = e.target.closest('.view-all-comments');
     if (viewAllBtn) {
         const postId = viewAllBtn.getAttribute('data-post-id');
@@ -515,7 +494,6 @@ document.addEventListener('click', async (e) => {
         }
         return;
     }
-
 });
 
 document.addEventListener('keydown', async (e) => {
@@ -572,7 +550,6 @@ async function enviarComentario(postId) {
 // 3.5 MOTOR DO RANKING E CARROSSEL (TICKER)
 // ====================================================================
 window.carregarRanking = function() {
-    // ATUALIZAÇÃO: Agora ele procura pelos dois IDs (da timeline ou da lojinha)
     const rankingList = document.getElementById('rankingListGlobal') || document.getElementById('rankingList');
     if (!rankingList) return;
 
@@ -589,10 +566,8 @@ window.carregarRanking = function() {
 
         snap.docs.forEach(docSnap => {
             const user = docSnap.data();
-            
             let badge = posicao === 1 ? '🥇' : posicao === 2 ? '🥈' : posicao === 3 ? '🥉' : `<strong style="color: #aaa;">${posicao}º</strong>`;
 
-            // ATUALIZAÇÃO: HTML atualizado para combinar perfeitamente com a lojinha
             html += `
             <div class="ranking-item" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 5px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 13px;">
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -601,7 +576,6 @@ window.carregarRanking = function() {
                 </div>
                 <strong style="color: #FFD700;">🪙 ${user.pontos || 0}</strong>
             </div>`;
-            
             posicao++;
         });
 
@@ -639,6 +613,96 @@ window.carregarTickerDiario = function() {
     }, (error) => {
         console.error("Erro ao carregar o ticker:", error);
     });
+};
+
+// ====================================================================
+// MOTOR DO CONTADOR DA LOJINHA E PRIMEIRO DIA ÚTIL
+// ====================================================================
+function isPrimeiroDiaUtilDoMes(data) {
+    const ano = data.getFullYear();
+    const mes = data.getMonth();
+    let dia = 1;
+    let dataTeste = new Date(ano, mes, dia);
+    // Se dia 1 for Sábado (6), o dia útil é dia 3 (Segunda)
+    if (dataTeste.getDay() === 6) dia = 3;
+    // Se dia 1 for Domingo (0), o dia útil é dia 2 (Segunda)
+    else if (dataTeste.getDay() === 0) dia = 2;
+
+    return data.getDate() === dia;
+}
+
+function getProximoPrimeiroDiaUtil(dataAtual) {
+    // Pula para o mês que vem
+    let proximoMes = new Date(dataAtual.getFullYear(), dataAtual.getMonth() + 1, 1);
+    let dia = 1;
+    
+    if (proximoMes.getDay() === 6) dia = 3; 
+    else if (proximoMes.getDay() === 0) dia = 2; 
+    
+    return new Date(proximoMes.getFullYear(), proximoMes.getMonth(), dia, 0, 0, 0);
+}
+
+window.verificarJanelaResgate = function(isAdmin) {
+    if (isAdmin) return true; // Admins ignoram as datas
+    return isPrimeiroDiaUtilDoMes(new Date());
+};
+
+window.iniciarContadorLojinha = function(isAdmin) {
+    const alertaBox = document.getElementById('alertaJanelaFechada');
+    const contadorEl = document.getElementById('contadorResgate');
+    
+    if (!alertaBox || !contadorEl) return;
+    if (intervaloContador) clearInterval(intervaloContador);
+
+    // Visual VIP para Admins
+    if (isAdmin) {
+        alertaBox.style.background = 'rgba(0, 200, 179, 0.1)';
+        alertaBox.style.border = '1px solid #00c8b3';
+        
+        const titulo = document.getElementById('alertaTitulo');
+        const subtitulo = document.getElementById('alertaSubtitulo');
+        const labelContador = document.getElementById('alertaLabelContador');
+        
+        if(titulo) {
+            titulo.innerHTML = '🔓 <strong>Você é Admin!</strong> O resgate está livre para você.';
+            titulo.style.color = '#fff';
+        }
+        if(subtitulo) {
+            subtitulo.innerHTML = 'Para a equipe, a loja abrirá no próximo dia útil do mês.';
+            subtitulo.style.color = '#aaa';
+        }
+        if(labelContador) {
+            labelContador.innerHTML = 'Abertura oficial para equipe em:';
+        }
+        contadorEl.style.color = '#00c8b3';
+    }
+
+    const atualizarContador = () => {
+        const agora = new Date();
+        
+        // Se for o dia certo, e não for admin, esconde a caixa (tudo liberado!)
+        if (!isAdmin && isPrimeiroDiaUtilDoMes(agora)) {
+            alertaBox.style.display = 'none';
+            if (intervaloContador) clearInterval(intervaloContador);
+            return;
+        }
+
+        // Caso contrário (não é o dia, ou é admin vendo o relógio), garante que aparece
+        alertaBox.style.display = 'block';
+        
+        const dataAlvo = getProximoPrimeiroDiaUtil(agora);
+        const diff = dataAlvo - agora;
+
+        const dias = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const horas = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutos = Math.floor((diff / 1000 / 60) % 60);
+        const segundos = Math.floor((diff / 1000) % 60);
+
+        contadorEl.innerHTML = `${dias}d ${horas.toString().padStart(2, '0')}h ${minutos.toString().padStart(2, '0')}m ${segundos.toString().padStart(2, '0')}s`;
+    };
+
+    atualizarContador();
+    intervaloContador = setInterval(atualizarContador, 1000);
 };
 
 // ====================================================================
@@ -1416,9 +1480,11 @@ window.carregarHistoricoPedidos = async function() {
 window.realizarResgate = async function(idProduto) {
   if (!currentUser) return;
   
-  const lojaAberta = true; 
+  // ATUALIZAÇÃO: Trava dinâmica com a variável de Admin global
+  const lojaAberta = window.verificarJanelaResgate(isAdminGlobal); 
+  
   if (!lojaAberta) {
-      alert("🔒 A loja está fechada! Aguarde a janela de resgate definida pela gestão (geralmente na primeira semana do mês).");
+      alert("🔒 A loja está fechada! O resgate é liberado apenas no primeiro dia útil do mês (ou a qualquer momento para administradores).");
       return;
   }
 
@@ -1489,7 +1555,6 @@ window.realizarResgate = async function(idProduto) {
 
       saldoAtualUsuario -= produto.preco;
       
-      // ATUALIZAÇÃO DE ID's DE MOEDA: Atualiza o saldo tanto na lojinha quanto em abas gerais
       const saldoEl = document.getElementById('valSaldoGlobal') || document.getElementById('valSaldo');
       if (saldoEl) saldoEl.textContent = saldoAtualUsuario;
       if (document.getElementById('valSaldoMobile')) document.getElementById('valSaldoMobile').textContent = saldoAtualUsuario;
@@ -1579,7 +1644,6 @@ async function sincronizarPontosDiarios(user) {
     const userSnap = await getDoc(userRef);
     const hoje = new Date().toISOString().slice(0, 10); 
 
-    // ATUALIZAÇÃO DE ID's DE MOEDA: Busca o ID tanto da aba Global quanto da aba Lojinha
     const saldoEl = document.getElementById('valSaldoGlobal') || document.getElementById('valSaldo');
     const saldoMobEl = document.getElementById('valSaldoMobile');
 
@@ -1626,6 +1690,9 @@ onAuthStateChanged(auth, async user => {
     currentUser = user;
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    // ATUALIZAÇÃO DA VARIÁVEL DE ADMIN
+    isAdminGlobal = isAdmin;
 
     const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
     let containerAdminAtivo = null;
@@ -1687,6 +1754,8 @@ onAuthStateChanged(auth, async user => {
     
     if (lojinhaContent) {
       carregarVitrine();
+      // ATUALIZAÇÃO DA FUNÇÃO DO CONTADOR
+      window.iniciarContadorLojinha(isAdminGlobal);
     }
 
     if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
@@ -1734,7 +1803,6 @@ if (loginBtn) {
     signInWithPopup(auth, provider).catch(() => document.getElementById('loginError').classList.add('visible'));
   };
 }
-
 
 window.abrirModalLikes = function(curtidasEmails) {
     const modal = document.getElementById('likesModal');
