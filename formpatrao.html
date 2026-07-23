@@ -7,7 +7,6 @@
     <title>Solicitação de Peças | Patrões Leveros</title>
     <link rel="stylesheet" href="style.css">
 
-    <!-- STYLE DO PRAZO DE GARANTIA E MODAIS -->
     <style>
         .bloqueado { opacity: 0.5; pointer-events: none; filter: grayscale(100%); }
         .alerta-bloqueio { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
@@ -115,7 +114,6 @@
         <h5>Última Atualização 17/07/2026 — links para os portais e senhas incluidos.</h5>
 
         <div class="layout-wrapper">
-            <!-- COLUNA DA ESQUERDA: APENAS O FORMULÁRIO -->
             <div class="form-column">
                 <div class="card-panel">
 
@@ -150,7 +148,6 @@
                             </select>
                         </div>
 
-                        <!-- CAMPOS DINÂMICOS PARA AUTOMAÇÃO DO CÁLCULO -->
                         <div class="form-group hidden" id="divLinhaEqp">
                             <label for="linhaEqp" style="color: var(--amarelo);">Qual a linha do equipamento?</label>
                             <select id="linhaEqp" onchange="processarResultado(); renderChecklists(document.getElementById('fabricante').value);">
@@ -312,7 +309,6 @@
                 </div>
             </div>
 
-            <!-- COLUNA DA DIREITA: INFORMAÇÕES E PORTAL -->
             <div class="table-column hidden" id="colunaTabela">
 
             
@@ -320,7 +316,6 @@
                     <div class="titulo">
                         ⏱️ Prazo Instalado por Autorizado/Patrão
                     </div>
-                    <!-- O PORTAL AGORA VAI SER INJETADO AQUI DENTRO (conteudoPrazoGarantia) -->
                     <div class="conteudo" id="conteudoPrazoGarantia"></div>
                 </div>
 
@@ -357,21 +352,18 @@
         </div>
     </div>
 
-    <!-- MODAL OBRIGATÓRIO DE EVIDÊNCIAS -->
     <div id="modalObrigatorio" class="modal-overlay hidden">
         <div class="modal-box">
             <h3>⚠️ Documentação Obrigatória</h3>
             <p>Você marcou que o patrão <strong>NÃO</strong> possui o relatório ou testes. A triagem não pode seguir sem essas evidências. Solicite o preenchimento imediatamente, caso o patrão não tenha o arquivo, você poderá baixar e enviá-lo.</p>
             
             <div id="modalLinksContainer" class="modal-links">
-                <!-- Links injetados via JS -->
-            </div>
+                </div>
             
             <button class="modal-btn" onclick="fecharModalAlert()">OK, vou solicitar ao patrão</button>
         </div>
     </div>
 
-    <!-- MODAL DE FLUXO ESPECIAL (BLOQUEIO TOTAL) -->
     <div id="modalFluxoBloqueio" class="modal-overlay hidden">
         <div class="modal-box">
             <h3 id="modalFluxoBloqueioTitulo">🚫 Fluxo Especial</h3>
@@ -440,7 +432,10 @@
                 regras: { atendePecaPlastica: false, atendeAvariaTransporte: false, exigeRelatorioTecnico: false },
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
-                observacoesExtra: ["Obrigatório enviar as DUAS etiquetas do conjunto (Evaporadora e Condensadora)."],
+                observacoesExtra: [
+                    "Obrigatório enviar as DUAS etiquetas do conjunto (Evaporadora e Condensadora).",
+                    "Diferente da regra geral, na Fujitsu você pode solicitar peças para Evaporadora e Condensadora na mesma OS."
+                ],
                 suporte: "0800 330 0020 | suporte@br.generalww.com"
             },
             GREE: {
@@ -458,7 +453,6 @@
                 checklistDocs: [
                     { titulo: "Relatório Peças em Geral", arquivo: "checklistGree/Relat%C3%B3rio%20Pe%C3%A7as%20em%20Geral.pdf" }
                 ],
-                observacoesExtra: ["Para peças com avaria de transporte, enviar as imagens conforme pede o boletim específico."],
                 suporte: "0800 055 6188"
             },
             HITACHI: {
@@ -492,7 +486,7 @@
                 etiquetasSeparadas: true,
                 exigeComprovanteEndereco: true,
                 checklistDocs: [
-                    { titulo: "Laudo Técnico LG RAC", arquivo: "checklistsLG/Laudo_LG.pdf" }
+                    { titulo: "Laudo Técnico LG RAC", arquivo: "INSIRA_O_LINK_DO_NOVO_LAUDO_AQUI.pdf" }
                 ],
                 suporte: "0800-707-5454 | 11 4004-5400 (WhatsApp)"
             },
@@ -526,8 +520,8 @@
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
                 checklistDocs: [
-                    { titulo: "BT 264 Rev.01 — Checklist RAC", arquivo: "checklists/BT264_Checklist_RAC_Midea.pdf", linha: "RAC" },
-                    { titulo: "BT 279 Rev.00 — Checklist LCOM (CAC)", arquivo: "checklists/BT279_Checklist_LCOM_Midea.pdf", linha: "CAC" }
+                    { titulo: "BT 264 Rev.01 — Checklist RAC", arquivo: "checklists/BT264_Checklist_RAC_Midea.pdf" },
+                    { titulo: "BT 279 Rev.00 — Checklist LCOM (CAC)", arquivo: "checklists/BT279_Checklist_LCOM_Midea.pdf" }
                 ],
                 suporte: "0800 648 1005 | 3003-1005 (WhatsApp) | ST: 0800 886 9666 / 4003-9666"
             },
@@ -632,7 +626,15 @@
                         ${dados.emailFaltaPeca}
                     </div>
                 </div>`;
-                } else if (dados.linkPortal) {
+            } else if (fab === "PHILCO" && tipo === "peca_plastica") {
+                html = `
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; animation: fadeIn 0.5s ease;">
+                    <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Portal para Solicitação de Peça Plástica:</p>
+                    <a href="LINK_DO_MOVIDESK_AQUI" target="_blank" class="btn-ir-portal" style="font-size:13px;padding:8px 20px; background: #0056b3; color: white;">
+                        Acessar Movidesk ➜
+                    </a>
+                </div>`;
+            } else if (dados.linkPortal) {
 
                             const linkPlanilhaSenhas = "https://docs.google.com/spreadsheets/d/1WvvDCpEazG1HkDZdd4L_OAZEk_WMBtVebiNQEon7b-s/edit?gid=16225076#gid=16225076";
 
