@@ -27,6 +27,19 @@
         .badge-nao { color: #b71c1c; font-weight: bold; }
         .badge-mod { color: #e65100; font-weight: bold; }
 
+        /* NOTA ESPECÍFICA DE FABRICANTE NA TABELA DE REGRAS GERAIS */
+        .nota-regra-fabricante {
+            margin-top: 14px;
+            padding: 12px 14px;
+            background: rgba(76, 221, 221, 0.10);
+            border-left: 3px solid var(--azul, #4CDDDD);
+            border-radius: 6px;
+            font-size: 12.5px;
+            color: rgba(255,255,255,0.9);
+            line-height: 1.5;
+        }
+        .nota-regra-fabricante strong { color: var(--azul, #4CDDDD); }
+
         /* ESTILOS DO BOTÃO DE PORTAL INJETADO NA DIREITA */
         .btn-ir-portal {
             display: inline-block;
@@ -111,7 +124,7 @@
     <div class="container">
         <h2>Solicitação de Peças | Célula Patrões</h2>
         <br>
-        <h5>Última Atualização 17/07/2026 — links para os portais e senhas incluidos.</h5>
+        <h5>Última Atualização 23/07/2026 — links para os portais e senhas incluidos.</h5>
 
         <div class="layout-wrapper">
             <div class="form-column">
@@ -336,6 +349,7 @@
                             </tbody>
                         </table>
                     </div>
+                    <div id="notaRegraGeralFabricante" class="nota-regra-fabricante hidden"></div>
                 </div>
 
                 <div class="card-panel hidden" id="tabelaFabricanteEspecifica" style="padding: 24px 15px; margin-bottom: 20px;">
@@ -432,6 +446,7 @@
                 regras: { atendePecaPlastica: false, atendeAvariaTransporte: false, exigeRelatorioTecnico: false },
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
+                notaRegraGeral: "Diferente da regra geral de abrir uma solicitação por unidade separadamente, na <strong>Fujitsu</strong> é permitido solicitar peças para Evaporadora E Condensadora na mesma OS.",
                 observacoesExtra: [
                     "Obrigatório enviar as DUAS etiquetas do conjunto (Evaporadora e Condensadora).",
                     "Diferente da regra geral, na Fujitsu você pode solicitar peças para Evaporadora e Condensadora na mesma OS."
@@ -450,9 +465,7 @@
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
                 exigeComprovanteInstalacao: true,
-                checklistDocs: [
-                    { titulo: "Relatório Peças em Geral", arquivo: "checklistGree/Relat%C3%B3rio%20Pe%C3%A7as%20em%20Geral.pdf" }
-                ],
+                observacoesExtra: ["O boletim de peça plástica avariada foi invalidado — a Gree NÃO atende mais peça plástica avariada em garantia para Patrões."],
                 suporte: "0800 055 6188"
             },
             HITACHI: {
@@ -485,9 +498,7 @@
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
                 exigeComprovanteEndereco: true,
-                checklistDocs: [
-                    { titulo: "Laudo Técnico LG RAC", arquivo: "INSIRA_O_LINK_DO_NOVO_LAUDO_AQUI.pdf" }
-                ],
+                observacoesExtra: ["Link do laudo técnico está com erro/indisponível — até a atualização do arquivo oficial, exigir laudo técnico padrão em PDF preenchido pelo patrão."],
                 suporte: "0800-707-5454 | 11 4004-5400 (WhatsApp)"
             },
             LG_LCAC: {
@@ -519,14 +530,10 @@
                 regras: { atendePecaPlastica: "moderado", atendeAvariaTransporte: "moderado", exigeRelatorioTecnico: true },
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
-                checklistDocs: [
-                    { titulo: "BT 264 Rev.01 — Checklist RAC", arquivo: "checklists/BT264_Checklist_RAC_Midea.pdf" },
-                    { titulo: "BT 279 Rev.00 — Checklist LCOM (CAC)", arquivo: "checklists/BT279_Checklist_LCOM_Midea.pdf" }
-                ],
                 suporte: "0800 648 1005 | 3003-1005 (WhatsApp) | ST: 0800 886 9666 / 4003-9666"
             },
             PHILCO: {
-                nome: "Philco",
+                nome: "Philco / Britânia",
                 linkPortal: "https://posvenda.telecontrol.com.br/assist/externos/login_posvenda_new.php",
                 linha: "Hi Wall, Cassete, Teto",
                 garantiaProduto: "<strong>Geral:</strong> ON/OFF 1 ano | Inverter 2 anos e 10 anos no Compressor (ver modelo)",
@@ -536,7 +543,11 @@
                 regras: { atendePecaPlastica: true, atendeAvariaTransporte: "moderado", exigeRelatorioTecnico: false },
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
-                observacoesExtra: ["Se o cliente final for Pessoa Jurídica, solicitar CPF e nome completo de uma pessoa física para abertura da solicitação."],
+                linkMovidesk: "LINK_DO_MOVIDESK_AQUI",
+                observacoesExtra: [
+                    "Se o cliente final for Pessoa Jurídica, solicitar CPF e nome completo de uma pessoa física para abertura da solicitação.",
+                    "Peça plástica avariada: solicitação feita via Movidesk, não pelo portal padrão de garantias."
+                ],
                 suporte: "(11) 4858-1233 (SP capital/RM) | (47) 3431-0499 / 4004-4891 (demais regiões) | WhatsApp (41) 98406-4446"
             },
             TCL: {
@@ -630,7 +641,7 @@
                 html = `
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); text-align: center; animation: fadeIn 0.5s ease;">
                     <p style="font-size: 12px; color: rgba(255,255,255,0.8); margin-bottom: 8px;">Portal para Solicitação de Peça Plástica:</p>
-                    <a href="LINK_DO_MOVIDESK_AQUI" target="_blank" class="btn-ir-portal" style="font-size:13px;padding:8px 20px; background: #0056b3; color: white;">
+                    <a href="${dados.linkMovidesk}" target="_blank" class="btn-ir-portal" style="font-size:13px;padding:8px 20px; background: #0056b3; color: white;">
                         Acessar Movidesk ➜
                     </a>
                 </div>`;
@@ -757,6 +768,18 @@
             });
         }
 
+        function renderNotaRegraGeral(fab) {
+            const bloco = document.getElementById("notaRegraGeralFabricante");
+            const dados = CONFIG_FABRICANTES[fab];
+            if (dados && dados.notaRegraGeral) {
+                bloco.innerHTML = `<strong>⚠️ Exceção — ${dados.nome}:</strong> ${dados.notaRegraGeral}`;
+                bloco.classList.remove("hidden");
+            } else {
+                bloco.classList.add("hidden");
+                bloco.innerHTML = "";
+            }
+        }
+
         function carregarFabricante() {
             const fab = document.getElementById("fabricante").value;
             const colunaTabela = document.getElementById("colunaTabela");
@@ -769,6 +792,9 @@
             document.getElementById("tipoSolicitacao").value = "";
             avisoFluxo.className = "alerta-fluxo-especial hidden";
             avisoNaoAtende.className = "alerta-nao-atende hidden";
+
+            // Atualiza a nota da tabela de Regras Gerais de Abertura assim que o fabricante é selecionado
+            renderNotaRegraGeral(fab);
 
             if (fab === "" || !CONFIG_FABRICANTES[fab]) {
                 colunaTabela.classList.add("hidden");
@@ -905,7 +931,7 @@
             document.getElementById("resultadoFinal").classList.add("hidden");
             avisoNaoAtende.className = "alerta-nao-atende hidden";
 
-            // Se alterou o motivo, valida o botão de portal novamente (caso do e-mail da LG)
+            // Se alterou o motivo, valida o botão de portal novamente (caso do e-mail da LG / Movidesk Philco)
             atualizarBotaoPortal();
 
             if (tipo === "") {
