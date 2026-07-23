@@ -499,6 +499,11 @@
                 etiquetasSeparadas: true,
                 exigeComprovanteEndereco: true,
                 observacoesExtra: ["Link do laudo técnico está com erro/indisponível — até a atualização do arquivo oficial, exigir laudo técnico padrão em PDF preenchido pelo patrão."],
+                // TODO: preencher com os documentos reais de checklist da LG RAC (título + caminho do arquivo).
+                // Enquanto não forem cadastrados, o painel lateral "Checklists e Materiais" continua oculto.
+                checklistDocs: [
+                    { titulo: "PREENCHER: título do documento LG RAC", arquivo: "checklistsLG/SUBSTITUIR.pdf" }
+                ],
                 suporte: "0800-707-5454 | 11 4004-5400 (WhatsApp)"
             },
             LG_LCAC: {
@@ -530,6 +535,11 @@
                 regras: { atendePecaPlastica: "moderado", atendeAvariaTransporte: "moderado", exigeRelatorioTecnico: true },
                 componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
                 etiquetasSeparadas: true,
+                // TODO: preencher com os documentos reais de checklist da Midea (título + caminho do arquivo).
+                // Enquanto não forem cadastrados, o painel lateral "Checklists e Materiais" continua oculto.
+                checklistDocs: [
+                    { titulo: "PREENCHER: título do documento Midea", arquivo: "checklistsMidea/SUBSTITUIR.pdf" }
+                ],
                 suporte: "0800 648 1005 | 3003-1005 (WhatsApp) | ST: 0800 886 9666 / 4003-9666"
             },
             PHILCO: {
