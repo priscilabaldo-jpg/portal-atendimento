@@ -1,5 +1,5 @@
 export default async function handler(req, res) {
-  // Apenas aceita requisições POST
+  // Bloqueia qualquer requisição que não seja POST
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: "Método não permitido" });
   }
@@ -10,31 +10,52 @@ export default async function handler(req, res) {
     return res.status(400).json({ erro: "Nenhuma mensagem enviada." });
   }
 
+  // Pega a última mensagem para enviar como input
   const ultimaMensagem = mensagens[mensagens.length - 1].content;
 
+  // ==========================================
+  // CREDENCIAIS DA API DA TESS
+  // ==========================================
+  const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
+  const AGENT_ID = "0c17aa22-da26-4709-b62b-5349b56dc01d"; // Mantivemos o ID limpo, sem o -dev
+
   try {
-    // Simula o tempo de "pensamento" e digitação da I.A. (1.5 segundos)
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
 
-    // Lógica simples para simular uma conversa
-    let respostaSimulada = "";
-    const textoMinusculo = ultimaMensagem.toLowerCase();
+    const resposta = await fetch(urlApiTess, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MEU_TOKEN}`
+      },
+      body: JSON.stringify({
+        input: ultimaMensagem,
+        messages: mensagens 
+      })
+    });
 
-    if (textoMinusculo.includes("oi") || textoMinusculo.includes("olá")) {
-        respostaSimulada = "Olá! Eu sou o seu clone da Tess. Como posso te ajudar hoje?";
-    } else if (textoMinusculo.includes("tudo bem")) {
-        respostaSimulada = "Tudo ótimo por aqui! Minha interface está funcionando perfeitamente.";
-    } else {
-        respostaSimulada = `Você digitou: "${ultimaMensagem}".\n\nComo estamos no modo Clone (sem o agente real conectado), eu ainda não tenho inteligência para responder a isso, mas o seu sistema de envio e recebimento está nota 10!`;
+    // ==========================================
+    // SISTEMA DE DEBUG (Tratamento de Erros)
+    // ==========================================
+    if (!resposta.ok) {
+      const erroDetalhado = await resposta.text();
+      return res.status(200).json({ 
+        resposta: `🔍 DEBUG DA API TESS:\nStatus: ${resposta.status}\nDetalhes: ${erroDetalhado}\n\nNota: Se o erro 404 persistir, aquele ID público realmente não serve para o Backend. Precisaremos listar os agentes via código para achar o ID verdadeiro.` 
+      });
     }
 
-    // Devolve a resposta simulada para o seu HTML
+    // Processamento do sucesso da requisição
+    const dados = await resposta.json(); 
+    const textoDaTess = dados.output || dados.response || JSON.stringify(dados);
+
     res.status(200).json({ 
-      resposta: respostaSimulada 
+      resposta: textoDaTess 
     });
     
   } catch (erro) {
-    console.error("Erro interno:", erro);
-    res.status(500).json({ erro: "Erro interno no servidor simulado." });
+    // Captura de falhas no servidor da Vercel
+    res.status(200).json({ 
+        resposta: `🚨 ERRO NO SERVIDOR NODE:\n${erro.message}` 
+    });
   }
 }
