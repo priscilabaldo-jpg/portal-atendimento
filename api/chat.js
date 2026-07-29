@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   // CONFIGURAÇÕES DA API DA TESS
   // ==========================================
   const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
-  const AGENT_ID = "0c17aa22-da26-4709-b62b-5349b56dc01d-dev"; 
+  const AGENT_ID = "0c17aa22-da26-4709-b62b-5349b56dc01d"; 
 
   try {
     // URL de execução do agente
