@@ -7,9 +7,7 @@ export default async function handler(req, res) {
   const ultimaMensagem = mensagens[mensagens.length - 1].content;
 
   const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
-  
-  // Vamos testar o ID numérico 1 (ou você pode trocar para outro número como 2, 3, etc.)
-  const AGENT_ID = "1"; 
+  const AGENT_ID = "45"; // Usando o agente numérico da API
 
   try {
     const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
@@ -29,7 +27,7 @@ export default async function handler(req, res) {
     if (!resposta.ok) {
       const erroDetalhado = await resposta.text();
       return res.status(200).json({ 
-        resposta: `🔍 TESTE COM ID ${AGENT_ID}:\nStatus: ${resposta.status}\nDetalhes: ${erroDetalhado}` 
+        resposta: `🔍 ERRO NA API (ID ${AGENT_ID}):\nStatus: ${resposta.status}\nDetalhes: ${erroDetalhado}` 
       });
     }
 
@@ -39,6 +37,6 @@ export default async function handler(req, res) {
     res.status(200).json({ resposta: textoDaTess });
     
   } catch (erro) {
-    res.status(200).json({ resposta: `🚨 ERRO: ${erro.message}` });
+    res.status(200).json({ resposta: `🚨 ERRO NO SERVIDOR NODE:\n${erro.message}` });
   }
 }
