@@ -19,8 +19,8 @@ export default async function handler(req, res) {
   // CONFIGURAÇÕES DA API DA TESS
   // ==========================================
   const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
-  const AGENT_ID = "COLE_O_ID_DO_SEU_AGENTE_AQUI"; 
-  const WORKSPACE_ID = "COLE_O_ID_DO_SEU_WORKSPACE_AQUI"; 
+  const AGENT_ID = "0c17aa22-da26-4709-b62b-5349b56dc01d"; 
+  const WORKSPACE_ID = ""; 
 
   // ==========================================
   // TRAVA DE SEGURANÇA CONTRA ERRO 500
