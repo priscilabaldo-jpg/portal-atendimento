@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat com Tess</title>
+  <style>
+    /* Reset básico e tipografia */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background-color: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Contêiner principal do chat */
+    .chat-container {
+      width: 100%;
+      max-width: 500px;
+      height: 80vh;
+      background-color: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Cabeçalho */
+    .chat-header {
+      background-color: #1a73e8;
+      color: white;
+      padding: 15px 20px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    /* Área onde as mensagens aparecem */
+    .chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      background-color: #f9f9f9;
+    }
+
+    /* Estilos base dos balões de mensagem */
+    .message {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 15px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+
+    /* Mensagem do usuário (alinhada à direita) */
+    .message.user {
+      background-color: #1a73e8;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 2px;
+    }
+
+    /* Mensagem da Tess (alinhada à esquerda) */
+    .message.assistant {
+      background-color: #e4e6eb;
+      color: #050505;
+      align-self: flex-start;
+      border-bottom-left-radius: 2px;
+    }
+
+    /* Área de input (rodapé) */
+    .chat-input-area {
+      display: flex;
+      padding: 15px;
+      background-color: #ffffff;
+      border-top: 1px solid #ddd;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 20px;
+      outline: none;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .chat-input-area input:focus {
+      border-color: #1a73e8;
+    }
+
+    .chat-input-area button {
+      background-color: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 0 20px;
+      margin-left: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .chat-input-area button:hover {
+      background-color: #1557b0;
+    }
+
+    .chat-input-area button:disabled {
+      background-color: #9aa0a6;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="chat-header">
+      Tess A.I.
+    </div>
+    
+    <div class="chat-messages" id="chatMessages">
+      <!-- As mensagens aparecerão aqui -->
+    </div>
+    
+    <div class="chat-input-area">
+      <input type="text" id="userInput" placeholder="Digite sua mensagem..." autocomplete="off">
+      <button id="sendBtn">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. Memória do Frontend
+    let mensagens = [
+      { role: "system", content: "Você é a Tess, uma assistente virtual prestativa, clara e objetiva." }
+    ];
+
+    // 2. Seleção de elementos do DOM
+    const chatMessages = document.getElementById('chatMessages');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+
+    // 3. Função para adicionar mensagens na tela
+    function adicionarMensagemNaTela(texto, remetente) {
+      const divMensagem = document.createElement('div');
+      divMensagem.classList.add('message', remetente);
+      divMensagem.textContent = texto;
+      chatMessages.appendChild(divMensagem);
+      
+      // Rola automaticamente para a última mensagem
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // 4. Lógica principal de envio
+    async function enviarMensagem() {
+      const texto = userInput.value.trim();
+      if (!texto) return;
+
+      // Desabilita o input enquanto a Tess pensa
+      userInput.value = '';
+      userInput.disabled = true;
+      sendBtn.disabled = true;
+
+      // Adiciona na tela e na memória
+      adicionarMensagemNaTela(texto, 'user');
+      mensagens.push({ role: "user", content: texto });
+
+      try {
+        // Envia para a sua API na Vercel
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagens: mensagens })
+        });
+
+        if (!response.ok) throw new Error("Falha na comunicação com a API");
+
+        const dados = await response.json();
+
+        // Adiciona a resposta da Tess na tela e na memória
+        adicionarMensagemNaTela(dados.resposta, 'assistant');
+        mensagens.push({ role: "assistant", content: dados.resposta });
+
+      } catch (erro) {
+        console.error(erro);
+        adicionarMensagemNaTela("Ocorreu um erro ao tentar conectar. Tente novamente.", 'assistant');
+        // Remove a última mensagem da memória para não corromper o contexto em caso de erro
+        mensagens.pop(); 
+      } finally {
+        // Reabilita o input
+        userInput.disabled = false;
+        sendBtn.disabled = false;
+        userInput.focus();
+      }
+    }
+
+    // 5. Event Listeners (Botão e tecla Enter)
+    sendBtn.addEventListener('click', enviarMensagem);
+    
+    userInput.addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        enviarMensagem();
+      }
+    });
+  </script>
+</body>
+</html>
