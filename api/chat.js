@@ -1,46 +1,61 @@
 export default async function handler(req, res) {
-  // Apenas aceita requisições POST
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: "Método não permitido" });
   }
 
+  // O seu frontend envia o histórico completo de mensagens
   const { mensagens } = req.body;
+  
+  // Pegamos a última mensagem digitada pelo usuário para enviar ao Agente
+  const ultimaMensagem = mensagens[mensagens.length - 1].content;
 
   // ==========================================
-  // COLOQUE O SEU TOKEN DA TESS AQUI DENTRO
+  // CONFIGURAÇÕES DA API DA TESS
   // ==========================================
-  const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75"; 
+  const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
+  const AGENT_ID = "COLE_O_ID_DO_SEU_AGENTE_AQUI"; 
+  const WORKSPACE_ID = "COLE_O_ID_DO_SEU_WORKSPACE_AQUI"; 
 
   try {
-    // ATENÇÃO: Substitua a URL abaixo pelo endpoint oficial que consta na doc da Tess
-    const urlApiTess = "https://api.tess.com/v1/chat/completions"; 
+    // Montando a URL oficial para executar o agente
+    const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
 
     const resposta = await fetch(urlApiTess, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        // Aqui o código usa a variável que você preencheu acima
-        'Authorization': `Bearer ${MEU_TOKEN}` 
+        'Content-Type': 'application/json', //
+        'Authorization': `Bearer ${MEU_TOKEN}`, //
+        'x-workspace-id': WORKSPACE_ID //
       },
       body: JSON.stringify({
-        messages: mensagens
-        // model: "nome-do-modelo" // Descomente e preencha se a documentação da Tess exigir
+        // Como a documentação não especificou a estrutura exata do corpo de '/execute', 
+        // estou enviando o input padrão. Talvez você precise ajustar os nomes destas 
+        // chaves (como 'input' ou 'message') conforme a página específica /execute-agent.
+        input: ultimaMensagem,
+        messages: mensagens 
       })
     });
 
     if (!resposta.ok) {
       const erroDetalhado = await resposta.text();
-      throw new Error(`Erro na API: ${resposta.status} - ${erroDetalhado}`);
+      throw new Error(`Erro na API da Tess: ${resposta.status} - ${erroDetalhado}`);
     }
 
-    const dados = await resposta.json();
+    // A resposta será devolvida em formato JSON
+    const dados = await resposta.json(); 
+
+    // ATENÇÃO AQUI: Como não temos a estrutura exata do JSON de resposta, 
+    // precisamos testar qual chave a Tess usa para devolver o texto.
+    // Pode ser dados.output, dados.response, dados.message, etc.
+    const textoDaTess = dados.output || dados.response || JSON.stringify(dados);
 
     res.status(200).json({ 
-      resposta: dados.choices[0].message.content 
+      resposta: textoDaTess 
     });
     
   } catch (erro) {
-    console.error("Erro no backend:", erro.message);
-    res.status(500).json({ erro: "Erro ao contatar a I.A." });
+    console.error("Falha no backend:", erro.message);
+    // Devolvemos o erro exato para o frontend mostrar no console e facilitar o conserto
+    res.status(500).json({ erro: erro.message });
   }
 }
