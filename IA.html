@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chat com Tess</title>
+  <title>Chat com Tess (Clone)</title>
   <style>
-    /* Reset básico e tipografia */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -21,7 +20,6 @@
       height: 100vh;
     }
 
-    /* Contêiner principal do chat */
     .chat-container {
       width: 100%;
       max-width: 500px;
@@ -34,7 +32,6 @@
       overflow: hidden;
     }
 
-    /* Cabeçalho */
     .chat-header {
       background-color: #1a73e8;
       color: white;
@@ -44,7 +41,6 @@
       font-size: 1.2rem;
     }
 
-    /* Área onde as mensagens aparecem */
     .chat-messages {
       flex: 1;
       padding: 20px;
@@ -55,7 +51,6 @@
       background-color: #f9f9f9;
     }
 
-    /* Estilos base dos balões de mensagem */
     .message {
       max-width: 80%;
       padding: 10px 15px;
@@ -64,7 +59,6 @@
       word-wrap: break-word;
     }
 
-    /* Mensagem do usuário (alinhada à direita) */
     .message.user {
       background-color: #1a73e8;
       color: white;
@@ -72,7 +66,6 @@
       border-bottom-right-radius: 2px;
     }
 
-    /* Mensagem da Tess (alinhada à esquerda) */
     .message.assistant {
       background-color: #e4e6eb;
       color: #050505;
@@ -80,7 +73,6 @@
       border-bottom-left-radius: 2px;
     }
 
-    /* Área de input (rodapé) */
     .chat-input-area {
       display: flex;
       padding: 15px;
@@ -128,7 +120,7 @@
 
   <div class="chat-container">
     <div class="chat-header">
-      Tess A.I.
+      Tess A.I. Clone
     </div>
     
     <div class="chat-messages" id="chatMessages">
@@ -142,43 +134,35 @@
   </div>
 
   <script>
-    // 1. Memória do Frontend
     let mensagens = [
       { role: "system", content: "Você é a Tess, uma assistente virtual prestativa, clara e objetiva." }
     ];
 
-    // 2. Seleção de elementos do DOM
     const chatMessages = document.getElementById('chatMessages');
     const userInput = document.getElementById('userInput');
     const sendBtn = document.getElementById('sendBtn');
 
-    // 3. Função para adicionar mensagens na tela
     function adicionarMensagemNaTela(texto, remetente) {
       const divMensagem = document.createElement('div');
       divMensagem.classList.add('message', remetente);
       divMensagem.textContent = texto;
       chatMessages.appendChild(divMensagem);
       
-      // Rola automaticamente para a última mensagem
       chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    // 4. Lógica principal de envio
     async function enviarMensagem() {
       const texto = userInput.value.trim();
       if (!texto) return;
 
-      // Desabilita o input enquanto a Tess pensa
       userInput.value = '';
       userInput.disabled = true;
       sendBtn.disabled = true;
 
-      // Adiciona na tela e na memória
       adicionarMensagemNaTela(texto, 'user');
       mensagens.push({ role: "user", content: texto });
 
       try {
-        // Envia para a sua API na Vercel
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -189,24 +173,24 @@
 
         const dados = await response.json();
 
-        // Adiciona a resposta da Tess na tela e na memória
+        if (dados.erro) {
+            throw new Error(dados.erro);
+        }
+
         adicionarMensagemNaTela(dados.resposta, 'assistant');
         mensagens.push({ role: "assistant", content: dados.resposta });
 
       } catch (erro) {
         console.error(erro);
-        adicionarMensagemNaTela("Ocorreu um erro ao tentar conectar. Tente novamente.", 'assistant');
-        // Remove a última mensagem da memória para não corromper o contexto em caso de erro
+        adicionarMensagemNaTela("Ocorreu um erro ao tentar conectar. Verifique o console.", 'assistant');
         mensagens.pop(); 
       } finally {
-        // Reabilita o input
         userInput.disabled = false;
         sendBtn.disabled = false;
         userInput.focus();
       }
     }
 
-    // 5. Event Listeners (Botão e tecla Enter)
     sendBtn.addEventListener('click', enviarMensagem);
     
     userInput.addEventListener('keypress', function (e) {
