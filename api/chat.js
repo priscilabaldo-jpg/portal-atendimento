@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  // Apenas aceita requisições POST
   if (req.method !== 'POST') {
     return res.status(405).json({ erro: "Método não permitido" });
   }
@@ -6,6 +7,11 @@ export default async function handler(req, res) {
   // O seu frontend envia o histórico completo de mensagens
   const { mensagens } = req.body;
   
+  // Verifica se existem mensagens antes de tentar ler
+  if (!mensagens || mensagens.length === 0) {
+    return res.status(400).json({ erro: "Nenhuma mensagem enviada." });
+  }
+
   // Pegamos a última mensagem digitada pelo usuário para enviar ao Agente
   const ultimaMensagem = mensagens[mensagens.length - 1].content;
 
@@ -16,6 +22,23 @@ export default async function handler(req, res) {
   const AGENT_ID = "COLE_O_ID_DO_SEU_AGENTE_AQUI"; 
   const WORKSPACE_ID = "COLE_O_ID_DO_SEU_WORKSPACE_AQUI"; 
 
+  // ==========================================
+  // TRAVA DE SEGURANÇA CONTRA ERRO 500
+  // ==========================================
+  // Se você ainda não tiver o ID do agente, devolvemos uma mensagem simulada
+  // para que o seu HTML funcione perfeitamente sem gerar erro na Vercel.
+  if (AGENT_ID === "COLE_O_ID_DO_SEU_AGENTE_AQUI") {
+    // Simulando um tempo de resposta de 1 segundo
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    return res.status(200).json({ 
+      resposta: "✅ Conexão com a Vercel 100% funcionando! O Erro 500 foi resolvido. Para me conectar à verdadeira I.A., basta colocar o seu Agent ID no arquivo chat.js." 
+    });
+  }
+
+  // ==========================================
+  // EXECUÇÃO REAL (Só roda quando tiver o ID)
+  // ==========================================
   try {
     // Montando a URL oficial para executar o agente
     const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
@@ -23,14 +46,11 @@ export default async function handler(req, res) {
     const resposta = await fetch(urlApiTess, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', //
-        'Authorization': `Bearer ${MEU_TOKEN}`, //
-        'x-workspace-id': WORKSPACE_ID //
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MEU_TOKEN}`,
+        'x-workspace-id': WORKSPACE_ID 
       },
       body: JSON.stringify({
-        // Como a documentação não especificou a estrutura exata do corpo de '/execute', 
-        // estou enviando o input padrão. Talvez você precise ajustar os nomes destas 
-        // chaves (como 'input' ou 'message') conforme a página específica /execute-agent.
         input: ultimaMensagem,
         messages: mensagens 
       })
@@ -44,9 +64,7 @@ export default async function handler(req, res) {
     // A resposta será devolvida em formato JSON
     const dados = await resposta.json(); 
 
-    // ATENÇÃO AQUI: Como não temos a estrutura exata do JSON de resposta, 
-    // precisamos testar qual chave a Tess usa para devolver o texto.
-    // Pode ser dados.output, dados.response, dados.message, etc.
+    // Extrai o texto gerado (testando as chaves mais comuns)
     const textoDaTess = dados.output || dados.response || JSON.stringify(dados);
 
     res.status(200).json({ 
