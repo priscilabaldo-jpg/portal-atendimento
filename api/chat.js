@@ -6,61 +6,35 @@ export default async function handler(req, res) {
 
   const { mensagens } = req.body;
   
-  // Verifica se o frontend enviou as mensagens corretamente
   if (!mensagens || mensagens.length === 0) {
     return res.status(400).json({ erro: "Nenhuma mensagem enviada." });
   }
 
-  // Pega a última mensagem digitada pelo usuário
   const ultimaMensagem = mensagens[mensagens.length - 1].content;
 
-  // ==========================================
-  // CONFIGURAÇÕES DA API DA TESS
-  // ==========================================
-  const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
-  const AGENT_ID = "0c17aa22-da26-4709-b62b-5349b56dc01d"; 
-
   try {
-    // URL de execução do agente
-    const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
+    // Simula o tempo de "pensamento" e digitação da I.A. (1.5 segundos)
+    await new Promise(resolve => setTimeout(resolve, 1500));
 
-    const resposta = await fetch(urlApiTess, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MEU_TOKEN}`
-      },
-      body: JSON.stringify({
-        input: ultimaMensagem,
-        messages: mensagens 
-      })
-    });
+    // Lógica simples para simular uma conversa
+    let respostaSimulada = "";
+    const textoMinusculo = ultimaMensagem.toLowerCase();
 
-    // ==========================================
-    // MODO DEBUG ATIVADO
-    // Em vez de gerar Erro 500, manda o erro da API para o chat
-    // ==========================================
-    if (!resposta.ok) {
-      const erroDetalhado = await resposta.text();
-      return res.status(200).json({ 
-        resposta: `🔍 DEBUG DA API TESS:\nA Tess recusou a requisição.\nStatus: ${resposta.status}\nDetalhes: ${erroDetalhado}\n\nCopie esse erro para podermos ajustar a estrutura!` 
-      });
+    if (textoMinusculo.includes("oi") || textoMinusculo.includes("olá")) {
+        respostaSimulada = "Olá! Eu sou o seu clone da Tess. Como posso te ajudar hoje?";
+    } else if (textoMinusculo.includes("tudo bem")) {
+        respostaSimulada = "Tudo ótimo por aqui! Minha interface está funcionando perfeitamente.";
+    } else {
+        respostaSimulada = `Você digitou: "${ultimaMensagem}".\n\nComo estamos no modo Clone (sem o agente real conectado), eu ainda não tenho inteligência para responder a isso, mas o seu sistema de envio e recebimento está nota 10!`;
     }
 
-    // Se a requisição der certo, extrai a resposta
-    const dados = await resposta.json(); 
-    
-    // Tenta encontrar a resposta nas chaves mais prováveis da Tess
-    const textoDaTess = dados.output || dados.response || JSON.stringify(dados);
-
+    // Devolve a resposta simulada para o seu HTML
     res.status(200).json({ 
-      resposta: textoDaTess 
+      resposta: respostaSimulada 
     });
     
   } catch (erro) {
-    // Se o código Node.js quebrar antes mesmo de enviar a requisição, também avisa no chat
-    res.status(200).json({ 
-        resposta: `🚨 ERRO NO SERVIDOR NODE:\n${erro.message}` 
-    });
+    console.error("Erro interno:", erro);
+    res.status(500).json({ erro: "Erro interno no servidor simulado." });
   }
 }
