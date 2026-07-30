@@ -172,6 +172,11 @@
                             O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
                         </div>
 
+                        <div id="avisoPhilcoCPF" class="uappi-box hidden" style="background-color: #e7f1ff; color: #084298; border: 1px solid #b6d4fe;">
+                            <strong style="display:block; margin-bottom: 6px;">ℹ️ OBSERVAÇÃO PHILCO: ABERTURA VIA CPF</strong>
+                            Na plataforma Movidesk do fabricante, a abertura de ATEC só é possível utilizando CPF. Caso o pedido seja CNPJ, solicite ao cliente um CPF responsável para seguir com a abertura.
+                        </div>
+
                         <h3>Ação N1 Recomendada</h3>
                         <p id="textoAcao" style="white-space: pre-wrap;"></p>
                         
@@ -424,6 +429,7 @@
             const avisoFabricanteDireto = document.getElementById("avisoFabricanteDireto");
             const avisoProtocolo = document.getElementById("avisoProtocolo");
             const avisoNaoInstalado = document.getElementById("avisoNaoInstalado");
+            const avisoPhilcoCPF = document.getElementById("avisoPhilcoCPF");
 
             let statusTriagem = "";
 
@@ -477,6 +483,7 @@
                     avisoFabricanteDireto.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
+                    avisoPhilcoCPF.classList.add("hidden");
 
                     let msgEtiqueta = (marca === "FUJITSU") ? "Solicite as fotos das etiquetas da Condensadora e da Evaporadora do equipamento." : "Solicite a foto da etiqueta da unidade referente ao item faltante.";
 
@@ -522,6 +529,7 @@
                     avisoFabricanteDireto.classList.add("hidden");
                     avisoProtocolo.classList.add("hidden");
                     avisoNaoInstalado.classList.add("hidden");
+                    avisoPhilcoCPF.classList.add("hidden");
 
                     const marcasAcionamentoDireto = ["LG_CAC", "FUJITSU", "HITACHI_RAC", "HITACHI_CAC", "ELGIN_RAC", "ELGIN_CAC"];
 
@@ -572,6 +580,9 @@
                                 textoRegraFinal = "A fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria. Após 7 dias → Deve passar por análise de troca.";
                             } else {
                                 statusTriagem = "Dentro da Garantia - Seguir com Visita Técnica";
+                                if (marca === "PHILCO") {
+                                    avisoPhilcoCPF.classList.remove("hidden");
+                                }
                                 textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
                                 textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia / Submotivo: Leveros Acionar Fabricante.";
                                 textoRegraFinal = "Obrigatório anexar o numero de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos! antes de enviar ao time de Garantia.";
@@ -592,6 +603,7 @@
                 avisoFabricanteDireto.classList.add("hidden");
                 avisoProtocolo.classList.add("hidden");
                 avisoNaoInstalado.classList.add("hidden");
+                avisoPhilcoCPF.classList.add("hidden");
             }
 
             document.getElementById("textoAcao").textContent = textoAcaoFinal;
