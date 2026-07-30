@@ -485,6 +485,10 @@
                     avisoNaoInstalado.classList.add("hidden");
                     avisoPhilcoCPF.classList.add("hidden");
 
+                    if (marca === "PHILCO" && isFaltaValido) {
+                        avisoPhilcoCPF.classList.remove("hidden");
+                    }
+
                     let msgEtiqueta = (marca === "FUJITSU") ? "Solicite as fotos das etiquetas da Condensadora e da Evaporadora do equipamento." : "Solicite a foto da etiqueta da unidade referente ao item faltante.";
 
                     statusTriagem = isFaltaValido ? "Dentro do Prazo (Item Faltante)" : "Fora do Prazo (Item Faltante)";
