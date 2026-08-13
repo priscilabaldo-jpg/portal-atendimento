@@ -1834,3 +1834,58 @@ const logoutBtnGlobal = document.getElementById('logoutBtnGlobal');
 const logoutBtnMobile = document.getElementById('logoutBtnMobile');
 if (logoutBtnGlobal) logoutBtnGlobal.onclick = logout;
 if (logoutBtnMobile) logoutBtnMobile.onclick = logout;
+<script>
+  const inputPergunta = document.getElementById("perguntaAssistente");
+  const botaoPerguntar = document.getElementById("btnPerguntarAssistente");
+  const statusAssistente = document.getElementById("statusAssistente");
+  const respostaAssistente = document.getElementById("respostaAssistente");
+  const textoResposta = document.getElementById("textoRespostaAssistente");
+
+  async function perguntarAoAssistente() {
+    const pergunta = inputPergunta.value.trim();
+
+    if (pergunta.length < 3) {
+      statusAssistente.textContent = "Digite uma pergunta mais específica.";
+      return;
+    }
+
+    botaoPerguntar.disabled = true;
+    statusAssistente.textContent = "Buscando nos materiais disponíveis...";
+    respostaAssistente.style.display = "none";
+
+    try {
+      const resposta = await fetch("/api/perguntar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mensagens: [{ role: "user", content: pergunta }]
+        })
+      });
+
+      const dados = await resposta.json();
+
+      if (!resposta.ok) {
+        throw new Error(dados.erro || "Erro ao consultar o assistente.");
+      }
+
+      textoResposta.textContent = dados.resposta;
+      respostaAssistente.style.display = "block";
+      statusAssistente.textContent = "";
+
+    } catch (erro) {
+      console.error(erro);
+      statusAssistente.textContent =
+        "Não foi possível consultar o assistente agora. Tente novamente.";
+    } finally {
+      botaoPerguntar.disabled = false;
+    }
+  }
+
+  botaoPerguntar.addEventListener("click", perguntarAoAssistente);
+
+  inputPergunta.addEventListener("keydown", (evento) => {
+    if (evento.key === "Enter") {
+      perguntarAoAssistente();
+    }
+  });
+</script>
