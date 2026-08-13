@@ -1,1 +1,63 @@
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ erro: "Metodo nao permitido." });
+  }
 
+  const { mensagens } = req.body;
+
+  if (!mensagens || !Array.isArray(mensagens) || mensagens.length === 0) {
+    return res.status(400).json({ erro: "Nenhuma mensagem recebida." });
+  }
+
+  const ultimaMensagem = mensagens[mensagens.length - 1].content;
+
+  const MEU_TOKEN = process.env.TESS_TOKEN;
+  const AGENT_ID = process.env.TESS_AGENT_ID || "45";
+
+  if (!MEU_TOKEN) {
+    return res.status(500).json({ erro: "Token da TESS nao configurado no servidor." });
+  }
+
+  try {
+    const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`;
+
+    const resposta = await fetch(urlApiTess, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${MEU_TOKEN}`,
+      },
+      body: JSON.stringify({
+        input: ultimaMensagem,
+        messages: mensagens,
+        wait_execution: true,
+      }),
+    });
+
+    if (!resposta.ok) {
+      const detalhesErro = await resposta.text();
+      console.error("Erro na API da TESS:", resposta.status, detalhesErro);
+      return res.status(resposta.status).json({
+        erro: "Erro ao consultar o assistente.",
+        detalhes: detalhesErro,
+      });
+    }
+
+    const dados = await resposta.json();
+
+    const textoDaTess =
+      dados.output ||
+      dados.response ||
+      dados.result ||
+      dados?.output?.content ||
+      JSON.stringify(dados);
+
+    return res.status(200).json({ resposta: textoDaTess });
+
+  } catch (erro) {
+    console.error("Erro inesperado ao chamar a TESS:", erro);
+    return res.status(500).json({
+      erro: "Nao foi possivel consultar o assistente agora. Tente novamente.",
+    });
+  }
+}
