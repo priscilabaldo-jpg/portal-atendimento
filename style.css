@@ -636,3 +636,118 @@ footer { position: relative; z-index: 5; margin-top: 20px; padding: 40px 28px; b
     border-color:#4CDDDD;
     transform:translateY(-1px);
 }
+.assistente-box {
+  margin: 48px 0 12px;
+  padding: 28px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(18, 31, 62, .96), rgba(29, 52, 101, .88));
+  box-shadow: 0 16px 36px rgba(0,0,0,.16);
+}
+
+.assistente-topo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.assistente-topo h2 {
+  margin: 4px 0 10px;
+  color: #fff;
+  font-size: 25px;
+}
+
+.assistente-topo p {
+  margin: 0;
+  color: rgba(255,255,255,.78);
+  line-height: 1.55;
+}
+
+.assistente-icon {
+  display: grid;
+  place-items: center;
+  min-width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.12);
+  font-size: 27px;
+}
+
+.assistente-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.assistente-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  color: #14213d;
+  background: #fff;
+  border: 0;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+}
+
+.assistente-form button {
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #ff8c1a;
+  font-weight: 700;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.assistente-form button:hover:not(:disabled) {
+  background: #e97708;
+  transform: translateY(-1px);
+}
+
+.assistente-form button:disabled {
+  cursor: wait;
+  opacity: .65;
+}
+
+.assistente-status {
+  min-height: 20px;
+  margin-top: 12px;
+  color: rgba(255,255,255,.78);
+  font-size: 14px;
+}
+
+.assistente-resposta {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 12px;
+  background: #fff;
+  color: #19233a;
+}
+
+.assistente-resposta h3 {
+  margin: 0 0 12px;
+  color: #162a57;
+}
+
+#textoRespostaAssistente {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+@media (max-width: 620px) {
+  .assistente-box {
+    padding: 20px;
+  }
+
+  .assistente-form {
+    flex-direction: column;
+  }
+
+  .assistente-form button {
+    min-height: 46px;
+  }
+}
