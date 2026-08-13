@@ -249,3 +249,32 @@
 
 </body>
 </html>
+<section class="assistente-box" id="assistenteIA">
+  <div class="assistente-topo">
+    <div>
+      <p class="page-label">Assistente inteligente</p>
+      <h2>Encontre a resposta nos materiais</h2>
+      <p>Pergunte sobre processos, sistemas e procedimentos. A resposta será baseada nos documentos disponíveis.</p>
+    </div>
+    <div class="assistente-icon">🤖</div>
+  </div>
+
+  <div class="assistente-form">
+    <input
+      type="text"
+      id="perguntaAssistente"
+      placeholder="Ex.: Como abrir um protocolo no Intergrall?"
+      maxlength="800"
+    >
+    <button type="button" id="btnPerguntarAssistente">
+      Perguntar
+    </button>
+  </div>
+
+  <div id="statusAssistente" class="assistente-status" aria-live="polite"></div>
+
+  <div id="respostaAssistente" class="assistente-resposta" style="display: none;">
+    <h3>Resposta encontrada</h3>
+    <div id="textoRespostaAssistente"></div>
+  </div>
+</section>
