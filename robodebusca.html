@@ -4,20 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Robô de Busca na Intranet | CX Resolve</title>
+
+  <style>
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+      background: #ffffff;
+    }
+
+    #tess-widget {
+      width: 100%;
+      min-height: 100vh;
+    }
+  </style>
 </head>
 
 <body>
-  <script>
-    window.location.replace(
-      "https://tess.im/published-chats/ba63086a-2c79-433f-8ab0-a8905d59d4fd"
-    );
-  </script>
+  <div id="tess-widget"></div>
 
-  <p>
-    Abrindo o Robô de Busca...
-    <a href="https://tess.im/published-chats/ba63086a-2c79-433f-8ab0-a8905d59d4fd">
-      Clique aqui se não abrir automaticamente.
-    </a>
-  </p>
+  <script
+    src="https://embed.tess.im/assets/js/embed/chat-widget-v1.0.0-min.js"
+    data-agent-url="https://embed.tess.im/pt-BR/agents/b335c02d-76bc-4e9f-8341-5b367df6e50b-tess/public"
+    data-embed-type="standard">
+  </script>
 </body>
 </html>
