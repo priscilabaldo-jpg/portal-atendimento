@@ -36,7 +36,6 @@
            <li><a href="informativos.html">INFORMATIVOS</a></li>
            <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
            <li><a href="admin.html">PAINEL ADMIN</a></li>
-           <li><a href="robodebusca.html">ROBÔ DE BUSCA</a></li>
           <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
         </ul>
       </nav>
@@ -49,7 +48,6 @@
     <a href="timeline.html">Timeline</a>
     <a href="materiais.html">Materiais</a>
     <a href="informativos.html">Informativos</a>
-    <li><a href="robodebusca.html">ROBÔ DE BUSCA</a></li>
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
@@ -202,7 +200,7 @@
         <p>Material de apoio a novos colaboradores</p>
         
         <div style="display: flex; gap: 10px;">
-          <a class="card-link" href="https://docs.google.com/presentation/d/1XboIyx_KbnCvhyHDNwas8mRMAwgf0bjUNRQHcYgBwTs/edit?usp=sharing">Abrir material ↗</a>
+          <a class="card-link" href="https://docs.google.com/presentation/d/1WQ4XsNdeBmp4enuSzBu124wmqeSzUSxoC1ETR4a1IMk/edit?usp=sharing">Abrir material ↗</a>
         </div>
       </div>
 
@@ -248,36 +246,6 @@
 </div>
 
 <script type="module" src="app.js"></script>
-<script src="perguntar.js"></script>
 
 </body>
 </html>
-<section class="assistente-box" id="assistenteIA">
-  <div class="assistente-topo">
-    <div>
-      <p class="page-label">Assistente inteligente</p>
-      <h2>Encontre a resposta nos materiais</h2>
-      <p>Pergunte sobre processos, sistemas e procedimentos. A resposta será baseada nos documentos disponíveis.</p>
-    </div>
-    <div class="assistente-icon">🤖</div>
-  </div>
-
-  <div class="assistente-form">
-    <input
-      type="text"
-      id="perguntaAssistente"
-      placeholder="Ex.: Como abrir um protocolo no Intergrall?"
-      maxlength="800"
-    >
-    <button type="button" id="btnPerguntarAssistente">
-      Perguntar
-    </button>
-  </div>
-
-  <div id="statusAssistente" class="assistente-status" aria-live="polite"></div>
-
-  <div id="respostaAssistente" class="assistente-resposta" style="display: none;">
-    <h3>Resposta encontrada</h3>
-    <div id="textoRespostaAssistente"></div>
-  </div>
-</section>
