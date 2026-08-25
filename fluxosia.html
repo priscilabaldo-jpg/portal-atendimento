@@ -3,31 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Renomeador XPDL para XML</title>
+    <title>Conversor Bizagi (XPDL <-> XML)</title>
     <style>
-        body { font-family: Arial, sans-serif; padding: 30px; background-color: #f4f4f9; }
-        .card { background: white; padding: 20px; border-radius: 8px; max-width: 450px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        input[type="file"] { margin-bottom: 15px; }
-        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        button:hover { background: #0056b3; }
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 40px 20px; 
+            background-color: #f4f4f9; 
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 850px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+        .card { 
+            flex: 1;
+            min-width: 300px;
+            background: white; 
+            padding: 25px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
+            box-sizing: border-box;
+        }
+        h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        input[type="file"] { 
+            margin: 15px 0 20px 0; 
+            width: 100%;
+        }
+        button { 
+            width: 100%;
+            color: white; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 0.95rem;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        /* Estilos específicos dos botões */
+        .btn-xml { background: #007bff; }
+        .btn-xml:hover { background: #0056b3; }
+        
+        .btn-xpdl { background: #28a745; }
+        .btn-xpdl:hover { background: #1e7e34; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Converter .xpdl para .xml</h2>
-    <input type="file" id="fileInput" accept=".xpdl" multiple>
-    <br>
-    <button onclick="processarArquivos()">Converter e Baixar</button>
+<div class="container">
+    <!-- Caixa 1: XPDL -> XML -->
+    <div class="card">
+        <h2>1. De .XPDL para .XML</h2>
+        <input type="file" id="inputXpdl" accept=".xpdl" multiple>
+        <button class="btn-xml" onclick="converter('inputXpdl', 'xpdl', 'xml')">Converter para XML</button>
+    </div>
+
+    <!-- Caixa 2: XML -> XPDL -->
+    <div class="card">
+        <h2>2. De .XML para .XPDL</h2>
+        <input type="file" id="inputXml" accept=".xml" multiple>
+        <button class="btn-xpdl" onclick="converter('inputXml', 'xml', 'xpdl')">Converter para XPDL</button>
+    </div>
 </div>
 
 <script>
-function processarArquivos() {
-    const fileInput = document.getElementById('fileInput');
+function converter(inputId, extEntrada, extSaida) {
+    const fileInput = document.getElementById(inputId);
     const files = fileInput.files;
 
     if (files.length === 0) {
-        alert('Selecione pelo menos um arquivo .xpdl');
+        alert(`Por favor, selecione pelo menos um arquivo .${extEntrada}`);
         return;
     }
 
@@ -36,23 +89,23 @@ function processarArquivos() {
 
         reader.onload = function(e) {
             const conteudo = e.target.result;
-            // Troca a extensão .xpdl por .xml (ignora maiúsculas/minúsculas)
-            const novoNome = file.name.replace(/\.xpdl$/i, '') + '.xml';
+            
+            // Substitui a extensão original pela nova extensão
+            const regex = new RegExp(`\\.${extEntrada}$`, 'i');
+            const novoNome = file.name.replace(regex, '') + '.' + extSaida;
 
-            // Cria um objeto Blob do tipo XML
+            // Cria o Blob e faz o download
             const blob = new Blob([conteudo], { type: 'application/xml' });
             const link = document.createElement('a');
             
-            link.href = URL.revokeObjectURL ? URL.createObjectURL(blob) : '';
+            link.href = URL.createObjectURL(blob);
             link.download = novoNome;
             
-            // Simula o clique para iniciar o download
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         };
 
-        // Lê o arquivo como texto simples
         reader.readAsText(file);
     });
 }
