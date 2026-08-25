@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conversor Bizagi (XPDL <-> XML)</title>
+    <title>Conversor Bizagi (XPDL <-> XML) + IA</title>
     <style>
         body { 
             font-family: Arial, sans-serif; 
             padding: 40px 20px; 
             background-color: #f4f4f9; 
         }
+        .main-wrapper {
+            max-width: 850px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
         .container {
             display: flex;
             gap: 20px;
-            max-width: 850px;
-            margin: 0 auto;
+            width: 100%;
             flex-wrap: wrap;
         }
         .card { 
@@ -54,23 +60,47 @@
         
         .btn-xpdl { background: #28a745; }
         .btn-xpdl:hover { background: #1e7e34; }
+
+        /* Estilização para a seção do Agente de IA */
+        .ai-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-sizing: border-box;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Caixa 1: XPDL -> XML -->
-    <div class="card">
-        <h2>1. De .XPDL para .XML</h2>
-        <input type="file" id="inputXpdl" accept=".xpdl" multiple>
-        <button class="btn-xml" onclick="converter('inputXpdl', 'xpdl', 'xml')">Converter para XML</button>
+<div class="main-wrapper">
+    <!-- Bloco dos Conversores -->
+    <div class="container">
+        <!-- Caixa 1: XPDL -> XML -->
+        <div class="card">
+            <h2>1. De .XPDL para .XML</h2>
+            <input type="file" id="inputXpdl" accept=".xpdl" multiple>
+            <button class="btn-xml" onclick="converter('inputXpdl', 'xpdl', 'xml')">Converter para XML</button>
+        </div>
+
+        <!-- Caixa 2: XML -> XPDL -->
+        <div class="card">
+            <h2>2. De .XML para .XPDL</h2>
+            <input type="file" id="inputXml" accept=".xml" multiple>
+            <button class="btn-xpdl" onclick="converter('inputXml', 'xml', 'xpdl')">Converter para XPDL</button>
+        </div>
     </div>
 
-    <!-- Caixa 2: XML -> XPDL -->
-    <div class="card">
-        <h2>2. De .XML para .XPDL</h2>
-        <input type="file" id="inputXml" accept=".xml" multiple>
-        <button class="btn-xpdl" onclick="converter('inputXml', 'xml', 'xpdl')">Converter para XPDL</button>
+    <!-- Bloco do Agente de IA -->
+    <div class="ai-card">
+        <h2>Assistente BPMN IA</h2>
+        <div id='tess-widget'></div>
+        <script
+            src='https://embed.tess.im/assets/js/embed/chat-widget-v1.0.0-min.js'
+            data-agent-url='https://embed.tess.im/pt-BR/agents/agente-fluxogramaprocessos-bpmn-IdrYG3/public'
+            data-embed-type='standard'>
+        </script>
     </div>
 </div>
 
