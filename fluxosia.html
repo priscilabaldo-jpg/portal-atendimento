@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renomeador XPDL para XML</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background-color: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; max-width: 450px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input[type="file"] { margin-bottom: 15px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Converter .xpdl para .xml</h2>
+    <input type="file" id="fileInput" accept=".xpdl" multiple>
+    <br>
+    <button onclick="processarArquivos()">Converter e Baixar</button>
+</div>
+
+<script>
+function processarArquivos() {
+    const fileInput = document.getElementById('fileInput');
+    const files = fileInput.files;
+
+    if (files.length === 0) {
+        alert('Selecione pelo menos um arquivo .xpdl');
+        return;
+    }
+
+    Array.from(files).forEach(file => {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const conteudo = e.target.result;
+            // Troca a extensão .xpdl por .xml (ignora maiúsculas/minúsculas)
+            const novoNome = file.name.replace(/\.xpdl$/i, '') + '.xml';
+
+            // Cria um objeto Blob do tipo XML
+            const blob = new Blob([conteudo], { type: 'application/xml' });
+            const link = document.createElement('a');
+            
+            link.href = URL.revokeObjectURL ? URL.createObjectURL(blob) : '';
+            link.download = novoNome;
+            
+            // Simula o clique para iniciar o download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Lê o arquivo como texto simples
+        reader.readAsText(file);
+    });
+}
+</script>
+
+</body>
+</html>
