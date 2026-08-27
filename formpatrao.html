@@ -88,6 +88,16 @@
             border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 15px; width: 100%;
         }
         .modal-btn:hover { background: #b71c1c; }
+
+        /* Estilos adicionais para os inputs de endereço */
+        .form-input-endereco {
+            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--glass-border);
+            background: rgba(255,255,255,0.05); color: #fff; font-size: 14px; margin-top: 5px;
+        }
+        .form-input-endereco[readonly] {
+            background: rgba(0,0,0,0.2); color: rgba(255,255,255,0.6); cursor: not-allowed;
+        }
+        .form-input-endereco:focus { outline: none; border-color: var(--azul); }
     </style>
 </head>
 <body>
@@ -178,7 +188,6 @@
                                 <option value="INVERTER">Inverter</option>
                             </select>
                         </div>
-
 
                         <div class="form-group" style="margin-top: 15px;">
                             <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
@@ -284,6 +293,35 @@
                                 </select>
                             </div>
                         </div>
+
+                        <!-- NOVO BLOCO DE ENDEREÇO COM VIA CEP -->
+                        <div class="form-group" style="margin-top: 25px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
+                            <label style="color: var(--azul);">Endereço para Atendimento / Envio:</label>
+                            
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                                <div style="flex: 1 1 30%; min-width: 120px;">
+                                    <label for="cepForm" style="font-size: 12px; opacity: 0.8;">CEP:</label>
+                                    <input type="text" id="cepForm" class="form-input-endereco" maxlength="9" placeholder="00000-000" onkeyup="aplicarMascaraCep(this)" onblur="buscarCep(this.value)">
+                                </div>
+                                <div style="flex: 1 1 65%; min-width: 180px;">
+                                    <label for="cidadeForm" style="font-size: 12px; opacity: 0.8;">Cidade / UF:</label>
+                                    <input type="text" id="cidadeForm" class="form-input-endereco" readonly>
+                                </div>
+                                <div style="flex: 1 1 100%;">
+                                    <label for="logradouroForm" style="font-size: 12px; opacity: 0.8;">Logradouro (Rua/Avenida):</label>
+                                    <input type="text" id="logradouroForm" class="form-input-endereco" readonly>
+                                </div>
+                                <div style="flex: 1 1 30%; min-width: 100px;">
+                                    <label for="numeroForm" style="font-size: 12px; opacity: 0.8;">Número:</label>
+                                    <input type="text" id="numeroForm" class="form-input-endereco" onkeyup="processarResultado()">
+                                </div>
+                                <div style="flex: 1 1 65%; min-width: 150px;">
+                                    <label for="bairroForm" style="font-size: 12px; opacity: 0.8;">Bairro:</label>
+                                    <input type="text" id="bairroForm" class="form-input-endereco" readonly>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="card-panel result-box hidden" id="resultadoFinal" style="margin-bottom: 0;">
@@ -311,7 +349,7 @@
 
                             <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                                 <h3>📝 Script para o CRM</h3>
-                                <textarea id="textoResumoCRM" readonly rows="16" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                                <textarea id="textoResumoCRM" readonly rows="18" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
 
                                 <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
                                     📋 Copiar Script Liberado
@@ -324,7 +362,6 @@
 
             <div class="table-column hidden" id="colunaTabela">
 
-            
                 <div class="card-panel destaque-garantia hidden" id="painelPrazoGarantiaDestaque">
                     <div class="titulo">
                         ⏱️ Prazo Instalado por Autorizado/Patrão
