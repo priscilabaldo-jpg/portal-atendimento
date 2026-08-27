@@ -109,8 +109,6 @@ const CONFIG_FABRICANTES = {
         etiquetasSeparadas: true,
         exigeComprovanteEndereco: true,
         observacoesExtra: ["Link do laudo técnico está com erro/indisponível — até a atualização do arquivo oficial, exigir laudo técnico padrão em PDF preenchido pelo patrão."],
-        // TODO: preencher com os documentos reais de checklist da LG RAC (título + caminho do arquivo).
-        // Enquanto não forem cadastrados, o painel lateral "Checklists e Materiais" continua oculto.
         checklistDocs: [
             { titulo: "ANÁLISE DE COMPRESSOR PARA GARANTIA", arquivo: "checklistsLG/ANÁLISE DE COMPRESSOR PARA GARANTIA L-CAC E RAC.pptx"},
             { titulo: "ANÁLISE DE MOTOR PARA GARANTIA", arquivo: "checklistsLG/ANÁLISE DE MOTOR PARA GARANTIA L-CAC E RAC.pptx"},
@@ -149,8 +147,6 @@ const CONFIG_FABRICANTES = {
         regras: { atendePecaPlastica: "moderado", atendeAvariaTransporte: "moderado", exigeRelatorioTecnico: true },
         componentesAplicaveis: ["PRODUTO", "COMPRESSOR", "CONTROLE"],
         etiquetasSeparadas: true,
-        // TODO: preencher com os documentos reais de checklist da Midea (título + caminho do arquivo).
-        // Enquanto não forem cadastrados, o painel lateral "Checklists e Materiais" continua oculto.
         checklistDocs: [
             { titulo: "CheckList para RAC", arquivo: "checklistsMidea/BT 264 - Check-List para ordens de serviço - RAC Rev01.pdf" },
             { titulo: "CheckList para CAC", arquivo: "checklistsMidea/BT 279 - Check-List para ordens de serviço - LCOM Rev00.pdf" }
@@ -209,6 +205,50 @@ const LABEL_COMPONENTE = {
     CONTROLE: "Controle Remoto"
 };
 
+/* ===== FUNÇÕES DO VIA CEP ===== */
+async function buscarCep(cepRecebido) {
+    const cep = cepRecebido.replace(/\D/g, '');
+    if (cep.length !== 8) return;
+
+    try {
+        const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const dados = await response.json();
+
+        if (dados.erro) {
+            alert("CEP não encontrado. Verifique o número digitado.");
+            limparCamposEndereco();
+            processarResultado(); // Atualiza caso o usuário tenha limpado o campo
+            return;
+        }
+
+        document.getElementById("logradouroForm").value = dados.logradouro;
+        document.getElementById("bairroForm").value = dados.bairro;
+        document.getElementById("cidadeForm").value = dados.localidade + " / " + dados.uf;
+        
+        document.getElementById("numeroForm").focus();
+        processarResultado(); // Atualiza o resumo CRM automaticamente
+
+    } catch (erro) {
+        console.error("Erro ao buscar CEP:", erro);
+        alert("Ocorreu um erro ao buscar o CEP na base de dados.");
+    }
+}
+
+function limparCamposEndereco() {
+    if(document.getElementById("logradouroForm")) document.getElementById("logradouroForm").value = "";
+    if(document.getElementById("bairroForm")) document.getElementById("bairroForm").value = "";
+    if(document.getElementById("cidadeForm")) document.getElementById("cidadeForm").value = "";
+}
+
+function aplicarMascaraCep(input) {
+    let valor = input.value.replace(/\D/g, ''); 
+    if (valor.length > 5) {
+        valor = valor.replace(/^(\d{5})(\d)/, '$1-$2');
+    }
+    input.value = valor;
+}
+/* =============================== */
+
 function badgeSimNao(v, moderadoTexto) {
     if (v === true) return '<span class="badge-sim">✅ Sim</span>';
     if (v === false) return '<span class="badge-nao">🚫 Não</span>';
@@ -237,7 +277,6 @@ function atualizarBotaoPortal() {
 
     const dados = CONFIG_FABRICANTES[fab];
 
-    // Se for bloqueio total, limpa o container e não exibe botão
     if (dados.fluxoEspecial && dados.fluxoEspecial.tipo === "sem_acionamento_total") {
         container.innerHTML = "";
         return;
@@ -271,46 +310,41 @@ function atualizarBotaoPortal() {
             </a>
         </div>`;
     } else if (dados.linkPortal) {
+        const linkPlanilhaSenhas = "https://docs.google.com/spreadsheets/d/1HhO27Ap4CFrDzWU5NjYWmXziVGV-KbHiRSBAiya4GE8/edit?gid=0#gid=0";
 
-                    const linkPlanilhaSenhas = "https://docs.google.com/spreadsheets/d/1HhO27Ap4CFrDzWU5NjYWmXziVGV-KbHiRSBAiya4GE8/edit?gid=0#gid=0";
-
-                    html = `
-                    <div style="
-                        margin-top:15px;
-                        padding-top:15px;
-                        border-top:1px solid rgba(255,255,255,.10);
-                        text-align:center;
-                        position:relative;
-                        animation:fadeIn .5s ease;
-                        min-height:72px;
-                    ">
-
-                        <p style="
-                            font-size:12px;
-                            color:rgba(255,255,255,.8);
-                            margin-bottom:8px;
-                        ">
-                            Atalho Rápido para Solicitação:
-                        </p>
-
-                        <a
-                            href="${dados.linkPortal}"
-                            target="_blank"
-                            class="btn-ir-portal"
-                            style="font-size:13px;padding:8px 20px;">
-                            Acessar Portal ${dados.nome} ➜
-                        </a>
-
-                        <a
-                            href="${linkPlanilhaSenhas}"
-                            target="_blank"
-                            class="btn-senhas"
-                            title="Planilha de Senhas">
-                            🔑 Senhas
-                        </a>
-
-                    </div>`;
-                }
+        html = `
+        <div style="
+            margin-top:15px;
+            padding-top:15px;
+            border-top:1px solid rgba(255,255,255,.10);
+            text-align:center;
+            position:relative;
+            animation:fadeIn .5s ease;
+            min-height:72px;
+        ">
+            <p style="
+                font-size:12px;
+                color:rgba(255,255,255,.8);
+                margin-bottom:8px;
+            ">
+                Atalho Rápido para Solicitação:
+            </p>
+            <a
+                href="${dados.linkPortal}"
+                target="_blank"
+                class="btn-ir-portal"
+                style="font-size:13px;padding:8px 20px;">
+                Acessar Portal ${dados.nome} ➜
+            </a>
+            <a
+                href="${linkPlanilhaSenhas}"
+                target="_blank"
+                class="btn-senhas"
+                title="Planilha de Senhas">
+                🔑 Senhas
+            </a>
+        </div>`;
+    }
 
     container.innerHTML = html;
 }
@@ -418,7 +452,6 @@ function carregarFabricante() {
     avisoFluxo.className = "alerta-fluxo-especial hidden";
     avisoNaoAtende.className = "alerta-nao-atende hidden";
 
-    // Atualiza a nota da tabela de Regras Gerais de Abertura assim que o fabricante é selecionado
     renderNotaRegraGeral(fab);
 
     if (fab === "" || !CONFIG_FABRICANTES[fab]) {
@@ -432,7 +465,6 @@ function carregarFabricante() {
     colunaTabela.classList.remove("hidden");
     document.getElementById("divTipoSolicitacao").classList.remove("hidden");
 
-    // BASE DO HTML PRAZO COM O CONTAINER VAZIO PARA RECEBER O BOTÃO
     let htmlPrazo = `
         <div style="margin-bottom: 8px;"><strong style="color: var(--azul); font-size: 15px;">${dados.nome}</strong> — ${dados.linha}</div>
         <div>${dados.garantiaProduto}</div>
@@ -443,9 +475,7 @@ function carregarFabricante() {
     document.getElementById("conteudoPrazoGarantia").innerHTML = htmlPrazo;
     painelPrazo.classList.remove("hidden");
 
-    // Atualiza imediatamente o botão do portal
     atualizarBotaoPortal();
-
     renderTabelaEspecifica(fab);
     renderChecklists(fab);
     popularComponentes(fab);
@@ -556,7 +586,6 @@ function avaliarFluxo() {
     document.getElementById("resultadoFinal").classList.add("hidden");
     avisoNaoAtende.className = "alerta-nao-atende hidden";
 
-    // Se alterou o motivo, valida o botão de portal novamente (caso do e-mail da LG / Movidesk Philco)
     atualizarBotaoPortal();
 
     if (tipo === "") {
@@ -863,6 +892,20 @@ function processarResultado() {
             scriptCrm += `Tecnologia: ${selTec.options[selTec.selectedIndex]?.text || '-'}\n`;
         }
 
+        // INJEÇÃO DOS DADOS DE ENDEREÇO
+        const cepForm = document.getElementById("cepForm") ? document.getElementById("cepForm").value : "";
+        const logradouroForm = document.getElementById("logradouroForm") ? document.getElementById("logradouroForm").value : "";
+        const numeroForm = document.getElementById("numeroForm") ? document.getElementById("numeroForm").value : "";
+        const bairroForm = document.getElementById("bairroForm") ? document.getElementById("bairroForm").value : "";
+        const cidadeForm = document.getElementById("cidadeForm") ? document.getElementById("cidadeForm").value : "";
+
+        if (cepForm) {
+            scriptCrm += `\n[ENDEREÇO DE ATENDIMENTO]\n`;
+            scriptCrm += `CEP: ${cepForm}\n`;
+            scriptCrm += `Logradouro: ${logradouroForm}, Nº ${numeroForm || 'S/N'}\n`;
+            scriptCrm += `Bairro: ${bairroForm} - ${cidadeForm}\n`;
+        }
+
         scriptCrm += `\n[EVIDÊNCIAS VALIDADAS]\n`;
         if (temEtiquetas) scriptCrm += `- Etiquetas de Série: OK\n`;
         if (tipo === "falta_peca") {
@@ -873,6 +916,7 @@ function processarResultado() {
             if (dados.exigeComprovanteInstalacao) scriptCrm += `- Comprovante de Instalação: OK\n`;
         }
         scriptCrm += `\nAção Adotada: ${textoCrmFinal}`;
+        
         document.getElementById("textoResumoCRM").value = scriptCrm;
     }
 }
