@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image" href="LogoLeveros.png">
+    <title>Triagem T&D | Atendimento ON</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="header-inner">
+            <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+            <nav>
+                <ul>
+                    <li><a href="index.html">INÍCIO</a></li>
+                    <li><a href="formn1.html">TRIAGEM N1</a></li>
+                    <li><a href="formTeD.html" class="active">TROCAS E DEVOLUÇÕES</a></li>
+                    <li><a href="formParceiro.html">PEÇAS PATRÃO</a></li>
+                    <li><a href="timeline.html">TIMELINE</a></li>
+                    <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+                </ul>
+            </nav>
+        </div>
+        <div class="ticker-wrapper">
+            <div class="ticker-content">
+                <span class="ticker-item">💡 O prazo de 7 dias do CDC conta a partir da DATA DE RECEBIMENTO.</span>
+                <span class="ticker-item">⚙️ Defeitos após 7 dias devem ser direcionados para Garantia!</span>
+                <span class="ticker-item">🛠️ Arrependimento não é aceito para produtos já instalados.</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Triagem Atendimento ON | Trocas e Devoluções (T&D)</h2>
+        <br>
+        
+        <div class="layout-wrapper">
+            <div class="form-column" style="width: 100%; max-width: 800px; margin: 0 auto;">
+                <div class="card-panel">
+                    <div class="form-group">
+                        <label for="motivoTeD">1. Qual o motivo da solicitação?</label>
+                        <select id="motivoTeD" onchange="avaliarFluxo()">
+                            <option value="">Selecione o motivo...</option>
+                            <option value="arrependimento">Arrependimento / Desistência</option>
+                            <option value="avaria">Avaria no Transporte (Amassado/Quebrado)</option>
+                            <option value="divergente">Produto Divergente do Comprado</option>
+                            <option value="defeito7dias">Defeito Funcional (Até 7 dias)</option>
+                        </select>
+                    </div>
+
+                    <div class="garantia-section hidden" id="divCamposTeD">
+                        <span class="section-title">Validação de Prazos e Condições</span>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="dataRecebimento" style="color: var(--azul);">Data de Recebimento do Produto pelo Cliente:</label>
+                            <input type="date" id="dataRecebimento" onchange="avaliarFluxo()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="produtoInstalado">O produto já foi instalado?</label>
+                            <select id="produtoInstalado" onchange="avaliarFluxo()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim</option>
+                                <option value="NAO">Não</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label for="embalagemIntacta">A embalagem original e os acessórios estão completos?</label>
+                            <select id="embalagemIntacta" onchange="avaliarFluxo()">
+                                <option value="">Selecione...</option>
+                                <option value="SIM">Sim, tudo completo</option>
+                                <option value="NAO">Não (Falta caixa/isopor/acessórios)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="card-panel result-box hidden" id="resultadoFinal" style="margin-bottom: 0;">
+                        
+                        <div id="statusTeDBox" class="status-box hidden"></div>
+                        
+                        <div id="avisoGarantia" class="uappi-box hidden" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
+                            <strong style="display:block; margin-bottom: 6px;">🔄 REDIRECIONAMENTO PARA GARANTIA</strong>
+                            O prazo de 7 dias expirou. Como o problema é de defeito funcional, o atendimento não segue mais por T&D.
+                        </div>
+
+                        <div id="avisoRecusaInstalado" class="status-nok hidden" style="padding: 14px 18px; margin-bottom: 20px; border-radius: 8px;">
+                            <strong style="display:block; margin-bottom: 6px;">🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO</strong>
+                            Para Arrependimento ou Produto Divergente, a instalação do equipamento descaracteriza o direito à devolução comercial.
+                        </div>
+
+                        <h3>Ação Recomendada</h3>
+                        <p id="textoAcao" style="white-space: pre-wrap;"></p>
+                        
+                        <h3 style="margin-top:20px;">Direcionamento CRM</h3>
+                        <p id="textoCRM" style="margin-bottom: 15px; white-space: pre-wrap;"></p>
+                        
+                        <div class="alert-crm">
+                            <span class="regra-header">📌 Regra Operacional do Processo (CDC)</span>
+                            <span id="textoRegra"></span>
+                        </div>
+
+                        <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                            <h3>📝 Script para o CRM</h3>
+                            <textarea id="textoResumoCRM" readonly rows="12" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                            
+                            <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s;">
+                                📋 Copiar Script
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcularDiferencaDias(dataInicio, dataFim) {
+            const msPorDia = 24 * 60 * 60 * 1000;
+            // Zera as horas para comparar apenas os dias
+            const inicio = new Date(dataInicio.getFullYear(), dataInicio.getMonth(), dataInicio.getDate());
+            const fim = new Date(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate());
+            return Math.floor((fim - inicio) / msPorDia);
+        }
+
+        function avaliarFluxo() {
+            const motivo = document.getElementById("motivoTeD").value;
+            const divCampos = document.getElementById("divCamposTeD");
+            const resBox = document.getElementById("resultadoFinal");
+            const statBox = document.getElementById("statusTeDBox");
+            
+            const dataRecVal = document.getElementById("dataRecebimento").value;
+            const instalado = document.getElementById("produtoInstalado").value;
+            const embalagem = document.getElementById("embalagemIntacta").value;
+
+            // Oculta avisos
+            const avisoGarantia = document.getElementById("avisoGarantia");
+            const avisoRecusa = document.getElementById("avisoRecusaInstalado");
+            avisoGarantia.classList.add("hidden");
+            avisoRecusa.classList.add("hidden");
+            statBox.classList.add("hidden");
+            resBox.classList.add("hidden");
+
+            if (motivo === "") {
+                divCampos.classList.add("hidden");
+                return;
+            }
+
+            // Mostra campos e valida se estão preenchidos
+            divCampos.classList.remove("hidden");
+            if (!dataRecVal || !instalado || !embalagem) return;
+
+            // Cálculo dos 7 dias
+            const hoje = new Date();
+            const dataRec = new Date(dataRecVal + "T00:00:00");
+            const diasDecorridos = calcularDiferencaDias(dataRec, hoje);
+            const isDentro7Dias = diasDecorridos <= 7;
+
+            let status = "";
+            let acao = "";
+            let crm = "";
+            let regra = "";
+
+            if (!isDentro7Dias) {
+                // Cenários Fora de 7 dias
+                statBox.className = "status-box status-nok";
+                statBox.innerHTML = `
+                    <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">❌ FORA DO PRAZO DE T&D (7 DIAS)</div>
+                    <div class="info-row"><span style="opacity:0.8">Dias Decorridos:</span> <strong>${diasDecorridos} dias</strong></div>
+                `;
+                statBox.classList.remove("hidden");
+
+                if (motivo === "defeito7dias") {
+                    status = "Bloqueio T&D - Direcionar Garantia";
+                    avisoGarantia.classList.remove("hidden");
+                    acao = "O prazo legal para troca com o lojista expirou. O equipamento deve ser atendido pela rede autorizada da marca.";
+                    crm = "Orientar cliente sobre o fim do prazo de loja e transferir protocolo para a Triagem de Garantia N1.";
+                    regra = "O CDC estipula 7 dias corridos para troca por defeito diretamente com a loja. Após isso, prevalece a garantia do fabricante.";
+                } else {
+                    status = "Devolução Recusada - Prazo Expirado";
+                    acao = "O prazo para devolução por arrependimento, avaria ou divergência expirou.";
+                    crm = "Informar o cliente que o prazo de 7 dias previsto no Art. 49 do CDC já foi ultrapassado. Finalizar protocolo.";
+                    regra = "O Artigo 49 do CDC garante o arrependimento apenas dentro do prazo improrrogável de 7 dias corridos após o recebimento.";
+                }
+
+            } else {
+                // Cenários Dentro de 7 dias
+                statBox.className = "status-box status-ok";
+                statBox.innerHTML = `
+                    <div style="font-weight:bold; margin-bottom:12px; font-size: 13px;">✅ DENTRO DO PRAZO DE T&D</div>
+                    <div class="info-row"><span style="opacity:0.8">Dias Decorridos:</span> <strong>${diasDecorridos} dias de 7</strong></div>
+                `;
+                statBox.classList.remove("hidden");
+
+                if (instalado === "SIM" && (motivo === "arrependimento" || motivo === "divergente")) {
+                    status = "Bloqueio T&D - Produto Instalado";
+                    avisoRecusa.classList.remove("hidden");
+                    acao = "Solicitação recusada. O produto não pode ter sido instalado/utilizado para se qualificar para arrependimento.";
+                    crm = "Informar recusa com base na perda da característica de 'produto novo'. Finalizar chamado.";
+                    regra = "Para devoluções comerciais (Arrependimento/Divergência), o produto deve retornar exatamente como foi entregue, sem indícios de uso ou instalação.";
+                } 
+                else if (embalagem === "NAO" && motivo === "arrependimento") {
+                    status = "Alerta - Produto sem Embalagem Original";
+                    acao = "O cliente descartou a embalagem. É necessário escalonar para avaliação do BKO de T&D antes de gerar a coleta.";
+                    crm = "Coletar fotos do estado atual do equipamento e abrir chamado para o setor de Trocas e Devoluções avaliar autorização.";
+                    regra = "A ausência de manuais, acessórios e embalagem original pode ensejar retenção de valores, necessitando análise do Backoffice.";
+                }
+                else {
+                    // Fluxo Feliz (Aprovado para Coleta)
+                    status = "Aprovado para Coleta T&D";
+                    acao = "Solicite ao cliente fotos de todos os ângulos do produto (mesmo se estiver na caixa) e da nota fiscal.\n\n📌 Ação: Confirmar endereço de coleta.";
+                    
+                    if (motivo === "avaria") {
+                        crm = "Abrir protocolo para T&D - Motivo: Avaria no Transporte. Anexar fotos obrigatórias da avaria.";
+                        regra = "É crucial coletar fotos detalhadas da caixa e do produto avariado para subsidiar a cobrança de sinistro junto à transportadora.";
+                    } else if (motivo === "defeito7dias") {
+                        crm = "Abrir protocolo para T&D - Motivo: Produto com Defeito. Solicitar breve relato do defeito funcional.";
+                        regra = "Troca imediata pelo lojista (Dead on Arrival). O produto será coletado e um novo enviado sem necessidade de acionar ATEC.";
+                    } else {
+                        crm = "Abrir protocolo para T&D - Motivo: Arrependimento/Divergência. Anexar confirmação de endereço.";
+                        regra = "Direito de arrependimento (Art. 49 CDC) validado. Seguir com emissão de nota de devolução e ordem de coleta via transportadora.";
+                    }
+                }
+            }
+
+            document.getElementById("textoAcao").textContent = acao;
+            document.getElementById("textoCRM").textContent = crm;
+            document.getElementById("textoRegra").textContent = regra;
+            
+            // Monta o resumo
+            const selMotivo = document.getElementById("motivoTeD");
+            let scriptCrm = `[TRIAGEM N1 - TROCAS E DEVOLUÇÕES]\n`;
+            scriptCrm += `Motivo: ${selMotivo.options[selMotivo.selectedIndex]?.text}\n`;
+            scriptCrm += `Data de Recebimento (Cliente): ${dataRecVal.split('-').reverse().join('/')}\n`;
+            scriptCrm += `Dias Decorridos: ${diasDecorridos} dias\n`;
+            scriptCrm += `Produto Instalado: ${instalado === 'SIM' ? 'Sim' : 'Não'}\n`;
+            scriptCrm += `Embalagem Intacta: ${embalagem === 'SIM' ? 'Sim' : 'Não'}\n`;
+            scriptCrm += `\n[CONCLUSÃO]\n`;
+            scriptCrm += `Status: ${status}\n`;
+            scriptCrm += `Procedimento: ${crm}\n`;
+
+            document.getElementById("textoResumoCRM").value = scriptCrm;
+            resBox.classList.remove("hidden");
+            
+            // Reseta botão copiar
+            const btnCopiar = document.getElementById("btnCopiar");
+            btnCopiar.textContent = "📋 Copiar Script";
+            btnCopiar.style.backgroundColor = "#0056b3";
+        }
+
+        function copiarResumo() {
+            const textarea = document.getElementById("textoResumoCRM");
+            textarea.select();
+            textarea.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                const btn = document.getElementById("btnCopiar");  
+                btn.textContent = "✅ Copiado com sucesso!";
+                btn.style.backgroundColor = "#28a745"; 
+                setTimeout(() => {
+                    btn.textContent = "📋 Copiar Script";
+                    btn.style.backgroundColor = "#0056b3"; 
+                }, 3000);
+            });
+        }
+    </script>
+</body>
+</html>
