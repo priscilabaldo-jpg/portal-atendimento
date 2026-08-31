@@ -128,14 +128,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     <div class="field">
       <label>Modo de conexão</label>
       <select id="conn-mode">
-        <option value="proxy" selected>🔒 Proxy Vercel (/api/chat) — recomendado</option>
-        <option value="direct">⚠️ Chave direta no navegador (só para teste)</option>
+        <option value="proxy">🔒 Proxy seguro (chave no servidor) — recomendado</option>
+        <option value="direct" selected>⚠️ Chave direta no navegador (só para teste)</option>
         <option value="none">🔎 Sem IA generativa (busca na base)</option>
       </select>
     </div>
     <div class="field" id="row-proxy">
       <label>URL do proxy</label>
-      <input type="text" id="proxy-url" placeholder="/api/chat" value="/api/chat">
+      <input type="text" id="proxy-url" placeholder="/api/chat">
       <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
       <details>
         <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
@@ -151,8 +151,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     if (req.method !== 'POST')
       return new Response('Method Not Allowed', { status: 405, headers: cors });
 
-    const { model, ...body } = await req.json();
-    if (!model) return new Response(JSON.stringify({ error: { message: 'Modelo não informado' } }), { status: 400, headers: cors });
+    const { model = 'gemini-3.7-flash', ...body } = await req.json();
     const r = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/'
         + encodeURIComponent(model) + ':generateContent',
@@ -170,7 +169,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field" id="row-key">
       <label>Gemini API Key</label>
-      <input type="password" id="api-key" placeholder="AIzaSy...">
+      <input type="password" id="api-key" placeholder="AIzaSy..." value="AQ.Ab8RN6JnHrOWhsD_VHrMfHPE0Q4Yy_AziGyQX8uyoOS_H1x_TQ">
       <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
       <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
     </div>
@@ -331,9 +330,11 @@ function addTyping(){
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
   
 function getSettings(){
-  const key = document.getElementById('api-key').value.trim();
-  const mode = document.getElementById('conn-mode').value;
-  const proxyUrl = document.getElementById('proxy-url').value.trim() || '/api/chat';
+  const HARD_CODED_KEY = 'AQ.Ab8RN6JnHrOWhsD_VHrMfHPE0Q4Yy_AziGyQX8uyoOS_H1x_TQ'; // chave direta no codigo, sem proxy
+
+  const key = document.getElementById('api-key').value.trim() || HARD_CODED_KEY;
+  const mode = document.getElementById('conn-mode').value || 'direct';
+  const proxyUrl = document.getElementById('proxy-url').value.trim();
   const model = document.getElementById('model-select').value;
 
   return {
@@ -506,7 +507,7 @@ document.getElementById('btn-settings').onclick = ()=>{
   const s = getSettings();
   connMode.value = s.mode;
   document.getElementById('proxy-url').value = s.proxyUrl;
-  document.getElementById('api-key').value = s.apiKey;
+  document.getElementById('api-key').value = s.apiKey || 'AQ.Ab8RN6JnHrOWhsD_VHrMfHPE0Q4Yy_AziGyQX8uyoOS_H1x_TQ';
   document.getElementById('remember-key').checked = s.remember;
   document.getElementById('model-select').value = s.model;
   document.getElementById('operator-name').value = s.operator;
