@@ -329,51 +329,38 @@ function addTyping(){
 --------------------------------------------------------------------------- */
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
   
-function getSettings(){
-  const HARD_CODED_KEY = 'AQ.Ab8RN6JnHrOWhsD_VHrMfHPE0Q4Yy_AziGyQX8uyoOS_H1x_TQ'; // chave direta no codigo, sem proxy
+function getSettings() {
+  const configKey =
+    typeof APP_CONFIG !== "undefined"
+      ? (APP_CONFIG.GEMINI_API_KEY || "")
+      : "";
 
-  const key = document.getElementById('api-key').value.trim() || HARD_CODED_KEY;
-  const mode = document.getElementById('conn-mode').value || 'direct';
-  const proxyUrl = document.getElementById('proxy-url').value.trim();
-  const model = document.getElementById('model-select').value;
+  const configModel =
+    typeof APP_CONFIG !== "undefined"
+      ? (APP_CONFIG.DEFAULT_MODEL || "")
+      : "";
+
+  const key =
+    document.getElementById("api-key").value.trim() || configKey;
+
+  const mode =
+    document.getElementById("conn-mode").value || "direct";
+
+  const proxyUrl =
+    document.getElementById("proxy-url").value.trim();
+
+  const model =
+    document.getElementById("model-select").value || configModel;
 
   return {
     mode,
     proxyUrl,
     apiKey: key,
     model,
-    remember: document.getElementById('remember-key').checked,
-    operator: document.getElementById('operator-name').value.trim(),
-    generative: mode !== 'none'
+    remember: document.getElementById("remember-key").checked,
+    operator: document.getElementById("operator-name").value.trim(),
+    generative: mode !== "none"
   };
-}
-
-function applyOperator(text){
-  const op = getSettings().operator;
-  if(!op) return text;
-  return text.replace(/\[Nome\]|\[Seu Nome\]/gi, op);
-}
-
-function buildPrompt(userQuestion, contextEntries){
-  const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
-  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
-}
-
-function apiError(status, raw){
-  let msg='';
-  try{ msg = JSON.parse(raw)?.error?.message || ''; }catch(e){}
-  const map = {
-    400:'requisição inválida ou chave malformada',
-    401:'chave não autenticada',
-    403:'chave inválida, restrita por domínio/IP ou API "Generative Language" não habilitada no projeto',
-    404:'modelo inexistente para esta chave (tente outro modelo)',
-    429:'cota/limite de requisições excedido',
-    500:'erro interno do Google',
-    503:'modelo temporariamente sobrecarregado'
-  };
-  const e = new Error(`HTTP ${status} — ${map[status]||'falha na API'}${msg?': '+msg.slice(0,180):''}`);
-  e.status = status;
-  return e;
 }
 
 /* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL) */
