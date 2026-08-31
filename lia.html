@@ -3,10 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Importa as configurações externas -->
-<script src="conv.js"></script>
-  
 <title>IA do Book — Leveros CX Knowledge Assistant</title>
 <style>
 :root{
@@ -135,7 +131,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field" id="row-proxy">
       <label>URL do proxy</label>
-      <input type="text" id="proxy-url" placeholder="/api/chat">
+      <input type="text" id="proxy-url" placeholder="https://ia-do-book.SEU-USUARIO.workers.dev">
       <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
       <details>
         <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
@@ -151,7 +147,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     if (req.method !== 'POST')
       return new Response('Method Not Allowed', { status: 405, headers: cors });
 
-    const { model = 'gemini-3.7-flash', ...body } = await req.json();
+    const { model = 'gemini-2.5-flash', ...body } = await req.json();
     const r = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/'
         + encodeURIComponent(model) + ':generateContent',
@@ -175,13 +171,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field">
       <label>Modelo</label>
-      <select id="model-select">
+      
+      <<select id="model-select">
         <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (Recomendado/Mais recente)</option>
         <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido e leve)</option>
         <option value="gemini-3.1-pro">Gemini 3.1 Pro (Maior capacidade de raciocínio)</option>
         <option value="gemini-2.5-flash">Gemini 2.5 Flash (Versão Estável/Legada)</option>
         <option value="gemini-flash-latest">Gemini Flash (Automático para o mais atual)</option>
       </select>
+        
       <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
     </div>
     <div class="field">
@@ -330,29 +328,23 @@ function addTyping(){
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
   
 function getSettings(){
-  // 1. Puxa a chave diretamente da variável APP_CONFIG do seu arquivo conv.js
-  const key = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.GEMINI_API_KEY) 
-              ? APP_CONFIG.GEMINI_API_KEY 
-              : ''; 
+  const legacy = localStorage.getItem('leveros_api_key')||'';
+  const key = sessionStorage.getItem('leveros_api_key') || legacy;
+  let mode = localStorage.getItem('leveros_conn_mode');
+  const proxyUrl = (localStorage.getItem('leveros_proxy_url')||'').trim().replace(/\/+$/,'');
+  if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
   
-  // 2. Força o sistema a usar o modo de chave direta no navegador e desativa o proxy
-  let mode = 'direct';
-  const proxyUrl = '';
+  // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
+  let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
   
-  // 3. Define o modelo mais recente, puxando do conv.js ou forçando o 3.7
-  let model = localStorage.getItem('leveros_model') || 
-              (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.DEFAULT_MODEL ? APP_CONFIG.DEFAULT_MODEL : 'gemini-3.7-flash');
-              
+  // 2. Expandindo o filtro para descontinuar tanto as versões 1.5 quanto as 2.x antigas
   if(/^(gemini-1\.5|gemini-2)/.test(model)) model='gemini-3.7-flash'; 
   
   return {
-    mode, 
-    proxyUrl, 
-    apiKey: key, 
-    model,
-    remember: true, // Força a lembrar a chave
+    mode, proxyUrl, apiKey: key, model,
+    remember: localStorage.getItem('leveros_remember_key')==='1',
     operator: localStorage.getItem('leveros_operator')||'',
-    generative: (!!key) // Se achou a chave no conv.js, ativa a IA
+    generative: (mode==='proxy' && !!proxyUrl) || (mode==='direct' && !!key)
   };
 }
   
