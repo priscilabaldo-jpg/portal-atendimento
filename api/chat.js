@@ -1,49 +1,54 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ erro: "Método não permitido" });
-  }
+// Lida com o CORS preflight (a requisição de segurança do navegador)
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*', 
+      'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    },
+  });
+}
 
-  const { mensagens } = req.body;
-  const ultimaMensagem = mensagens[mensagens.length - 1].content;
+// Lida com a requisição real para o Gemini
+export async function onRequestPost(context) {
+  const { request, env } = context;
 
-  const MEU_TOKEN = "1438635|d6StNI9UXdqi8JkBBDz9IRXeHM4tgRK8ZXIXj2Vqfca23d75";
-  const AGENT_ID = "45"; 
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
 
   try {
-    const urlApiTess = `https://api.tess.im/agents/${AGENT_ID}/execute`; 
+    const body = await request.json();
+    const model = body.model || 'gemini-3.7-flash';
+    
+    // Remove o 'model' do body para enviar ao Google apenas o payload correto
+    const { model: _, ...geminiBody } = body;
 
-    const resposta = await fetch(urlApiTess, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${MEU_TOKEN}`
-      },
-      body: JSON.stringify({
-        input: ultimaMensagem,
-        messages: mensagens,
-        // Preenchendo os campos obrigatórios que a API exigiu:
-        "nome-da-empresa": "Assistente Virtual",
-        "descrio": ultimaMensagem, // Usa a pergunta do usuário como descrição
-        "diferenciais": "Atendimento rápido e automatizado",
-        "call-to-action": "Confira"
-      })
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // AQUI o sistema puxa a variável que você salvou no painel!
+          'x-goog-api-key': env.GEMINI_API_KEY 
+        },
+        body: JSON.stringify(geminiBody)
+      }
+    );
+
+    const data = await response.text();
+    return new Response(data, {
+      status: response.status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
-    if (!resposta.ok) {
-      const erroDetalhado = await resposta.text();
-      return res.status(200).json({ 
-        resposta: `🔍 ERRO NA API (ID ${AGENT_ID}):\nStatus: ${resposta.status}\nDetalhes: ${erroDetalhado}` 
-      });
-    }
-
-    const dados = await resposta.json(); 
-    
-    // Varre as chaves comuns onde a resposta da I.A. costuma vir guardada
-    const textoDaTess = dados.output || dados.response || dados.result || JSON.stringify(dados);
-
-    res.status(200).json({ resposta: textoDaTess });
-    
-  } catch (erro) {
-    res.status(200).json({ resposta: `🚨 ERRO NO SERVIDOR NODE:\n${erro.message}` });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Erro de comunicação' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
