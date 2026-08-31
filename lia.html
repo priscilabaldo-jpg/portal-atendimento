@@ -330,16 +330,17 @@ function addTyping(){
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
   
 function getSettings(){
-  // 1. Puxa a chave diretamente da variável APP_CONFIG do seu arquivo conv.js
-  const key = (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.GEMINI_API_KEY) 
-              ? APP_CONFIG.GEMINI_API_KEY 
-              : ''; 
+  // 1. Prioriza a chave salva no navegador (localStorage / sessionStorage)
+  let key = localStorage.getItem('leveros_api_key') || sessionStorage.getItem('leveros_api_key') || '';
   
-  // 2. Força o sistema a usar o modo de chave direta no navegador e desativa o proxy
-  let mode = 'direct';
-  const proxyUrl = '';
+  // 2. Se não houver no navegador, tenta puxar do APP_CONFIG do arquivo conv.js
+  if(!key && typeof APP_CONFIG !== 'undefined' && APP_CONFIG.GEMINI_API_KEY){
+    key = APP_CONFIG.GEMINI_API_KEY;
+  }
+
+  let mode = localStorage.getItem('leveros_conn_mode') || 'direct';
+  const proxyUrl = localStorage.getItem('leveros_proxy_url') || '';
   
-  // 3. Define o modelo mais recente, puxando do conv.js ou forçando o 3.7
   let model = localStorage.getItem('leveros_model') || 
               (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.DEFAULT_MODEL ? APP_CONFIG.DEFAULT_MODEL : 'gemini-3.7-flash');
               
@@ -350,12 +351,11 @@ function getSettings(){
     proxyUrl, 
     apiKey: key, 
     model,
-    remember: true, // Força a lembrar a chave
+    remember: localStorage.getItem('leveros_remember_key') === '1',
     operator: localStorage.getItem('leveros_operator')||'',
-    generative: (!!key) // Se achou a chave no conv.js, ativa a IA
+    generative: (!!key)
   };
 }
-  
 function applyOperator(text){
   const op = getSettings().operator;
   if(!op) return text;
