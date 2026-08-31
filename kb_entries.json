@@ -2232,3 +2232,77 @@
   "id": 279
  }
 ]
+[
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Fluxo Geral do Formulário",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "TRIAGEM N1 | GARANTIA - FLUXO GERAL\n\nO tipo de atendimento \"Garantia\" possui duas subcategorias:\n- Não Gela/Defeito de Fabricação/Parou de Funcionar (defeito_fabrica)\n- Peça/Acessório Faltante (falta_peca)\n\nApós selecionar a subcategoria, são coletados: marca/linha do equipamento, tecnologia (Convencional/Inverter, quando aplicável), número de série, data de emissão da Nota Fiscal, data de recebimento do produto (apenas para peça faltante), se o pedido possui parceiro vinculado, se o parceiro realizou a instalação (ou se o produto já está instalado, quando não há parceiro), se o cliente possui protocolo aberto no fabricante, e o endereço do cliente (via CEP).\n\nCampos obrigatórios antes de gerar o resultado: marca, data da NF, resposta sobre protocolo do fabricante, resposta sobre parceiro vinculado, tecnologia (se a marca exigir) e a resposta correspondente sobre parceiro ter instalado ou produto estar instalado.\n\nO sistema gera automaticamente: Ação N1 Recomendada, Direcionamento CRM, Regra Operacional do Processo e um Script pronto para colar no CRM. Padrão CRM: sempre finalizar a etapa ao redirecionar o atendimento, nunca manter a etapa vinculada.",
+  "id": 280
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Regra de Peça/Acessório Faltante",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "REGRA - PEÇA/ACESSÓRIO FALTANTE (falta_peca)\n\nPrazo padrão: 15 dias corridos contados a partir da data de recebimento do produto.\nExceção: marcas LG (RAC e CAC) possuem prazo de 30 dias corridos.\n\nDentro do prazo:\nAção: orientar o cliente conforme o texto padrão e solicitar foto da etiqueta da unidade referente ao item faltante. Exceção Fujitsu: solicitar fotos das etiquetas da Condensadora E da Evaporadora.\nCRM: abrir protocolo para Garantia, Motivo: Assistência Técnica — Reposição de Peças / Item Faltante.\nSe a marca for Philco: exibir aviso de que a abertura na plataforma Movidesk do fabricante só é possível utilizando CPF; se o pedido for CNPJ, solicitar ao cliente um CPF responsável para seguir com a abertura.\n\nFora do prazo:\nAção: informar que o prazo expirou e solicitar a foto da etiqueta da unidade.\nCRM: abrir protocolo para Análise de Compra de Peça (o cliente perde a garantia do item).\n\nRegra operacional: peças faltantes devem ser validadas cruzando a informação do manual do fabricante; o prazo começa a contar a partir da DATA DE RECEBIMENTO.",
+  "id": 281
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Tabela de Prazos por Marca (Defeito de Fábrica)",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "TABELA DE PRAZOS DE GARANTIA POR MARCA (para Não Gela/Defeito de Fabricação), contados a partir da Data de Emissão da Nota Fiscal\n\nO tipo de garantia aplicada depende da instalação: se há parceiro vinculado E o parceiro realizou a instalação, aplica-se Garantia Contratual (Autorizado); caso contrário, aplica-se Garantia Legal (instalação de terceiros).\n\nAgratto: Legal 90 dias | Contratual 12 meses\nMidea/Carrier (RAC): Legal 90 dias | Contratual: Convencional 12m, Inverter 24m (+10 anos garantia do compressor)\nMidea/Carrier (CAC): Legal 90 dias | Contratual: Convencional 12m, Inverter 36m\nDaikin: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor)\nElgin (RAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/23: 12 meses, >=01/01/23: 36 meses (+10 anos garantia do compressor)\nElgin (CAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/22: 12 meses, >=01/01/22: 36 meses\nFujitsu: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor)\nGree: Legal 90 dias | Contratual <15/08/22: 12 meses, >=15/08/22: 60 meses (+10 anos garantia do compressor)\nLG (RAC): vendas antes de 01/09/2025: 1 ano; vendas a partir de 01/09/2025: 2 anos (mesma regra para Legal e Contratual, sempre com +10 anos de garantia do compressor)\nLG (CAC): Legal 90 dias | Contratual 12 meses\nPhilco/TCL: Legal 90 dias | Contratual: Convencional 12m, Inverter 24m (+10 anos garantia do compressor)\nTrane: Legal 90 dias | Contratual 36 meses\nHitachi (RAC): Legal 90 dias | Contratual 24 meses (+12 anos garantia do compressor)\nHitachi (CAC): Legal 90 dias | Contratual 12 meses\n\nA pergunta sobre tecnologia (Convencional ou Inverter) só é exibida para as marcas: Midea (RAC/CAC), Philco e TCL.",
+  "id": 282
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Fora do Prazo de Garantia",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "SE O EQUIPAMENTO ESTIVER FORA DO PRAZO DE GARANTIA (defeito de fábrica)\n\nAção: informar que o equipamento está fora do prazo de garantia aplicável; não é possível abrir visita técnica nem enviar peças.\nCRM: orientar o cliente a buscar assistência autorizada para reparo orçado, ou acionar o fabricante para localizar uma autorizada. Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).\nRegra operacional: atendimentos de produtos fora de garantia não devem ser escalonados para o BKO; a tratativa finaliza no nível 1 (N1) com a orientação ao cliente.",
+  "id": 283
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Dentro do Prazo: Marcas de Acionamento Direto com o Fabricante",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "DENTRO DA GARANTIA - MARCAS DE ACIONAMENTO DIRETO (bloqueio de N1, não abrimos ATEC)\n\nMarcas: LG (CAC), Fujitsu, Hitachi (RAC/CAC), Elgin (RAC/CAC).\n\nContatos oficiais informados ao cliente:\nLG CAC: 4004-5400 ou 0800 707 5454\nFujitsu: 0800-330-0020\nHitachi: (12) 3906-2135 ou WhatsApp (11) 97627-1763\nElgin: 0800 703 5446 ou (11) 3383-5555\n\nAção: bloqueio de atendimento N1; não realizamos o acionamento de visita técnica (ATEC) para essas linhas; o cliente deve entrar em contato diretamente com o fabricante pelos números oficiais.\nCRM: orientar o cliente a acionar a garantia diretamente com o fabricante e finalizar o atendimento. Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).\nRegra operacional: conforme processos internos do fabricante, não acionamos Visita Técnica para essas marcas; o cliente deve acionar diretamente a marca e o chamado é finalizado no N1.",
+  "id": 284
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Dentro do Prazo: Pedido com Parceiro Vinculado",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "DENTRO DA GARANTIA - PEDIDO COM PARCEIRO VINCULADO (quando a marca não é de acionamento direto)\n\nAção: bloqueio de atendimento N1; o pedido possui parceiro vinculado, que é o responsável por diagnosticar o problema no equipamento.\nCRM: orientar o parceiro (ou o cliente a contatá-lo) a solicitar a peça diretamente via Uappi/LVI; finalizar sem abrir visita técnica. Motivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia (Finalizador).\nRegra operacional: abertura de Visita Técnica em chamados com Parceiro no Pedido é bloqueada; o diagnóstico do produto deve ser feito integralmente pelo parceiro via LVI, conforme políticas de garantia.",
+  "id": 285
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Dentro do Prazo: Sem Parceiro, Produto Não Instalado",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "DENTRO DA GARANTIA - SEM PARCEIRO, PRODUTO NÃO INSTALADO\n\nAção: bloqueio de atendimento; como o produto não está instalado, não é possível solicitar abertura de visita técnica pelo fabricante.\nCRM: orientar o cliente sobre a negativa da visita devido ao equipamento não estar instalado (se for avaria aparente ou devolução, seguir via T&D).\nRegra operacional: a fábrica recusa ordens de serviço (visitas técnicas) para produtos que não estão instalados. Se estiver dentro dos 7 dias, tratar pelo fluxo de Arrependimento/Avaria; após 7 dias, deve passar por análise de troca.",
+  "id": 286
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Dentro do Prazo: Sem Parceiro, Produto Instalado",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "DENTRO DA GARANTIA - SEM PARCEIRO, PRODUTO INSTALADO (seguir com Visita Técnica)\n\nAção: o produto possui instalação particular (Garantia Legal) e encontra-se instalado; solicitar número de série e relato detalhado do defeito. Se a marca for Philco, exibir aviso de que a abertura na plataforma do fabricante exige CPF (mesma regra da peça faltante).\nCRM: após coletar as informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia / Submotivo: Leveros Acionar Fabricante.\nRegra operacional: é obrigatório anexar o número de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos antes de enviar ao time de Garantia.",
+  "id": 287
+ },
+ {
+  "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
+  "titulo": "Triagem N1 | Garantia - Cliente com Protocolo Já Aberto no Fabricante",
+  "fonte": "formn1.html (Triagem N1 - Garantia)",
+  "pagina": "-",
+  "conteudo": "REGRA ADICIONAL - PROTOCOLO JÁ ABERTO NO FABRICANTE\n\nSe o cliente informar que já possui protocolo aberto no fabricante (independentemente do cenário de garantia resultante), é obrigatório exibir aviso solicitando o número de protocolo e registrá-lo no atendimento antes de prosseguir.\nA ação final é prefixada com essa solicitação de protocolo, e o CRM recebe a marcação \"[Registrar protocolo do fabricante no ticket]\" antes do direcionamento normal.",
+  "id": 288
+ }
+]
