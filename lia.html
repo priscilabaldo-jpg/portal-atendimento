@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IA do Book — Leveros CX Knowledge Assistant</title>
+<style>
+:root{
+  --verde1:#002D32; --verde2:#005A64; --azul:#4CDDDD; --verde3:#6FFFAF; --verde4:#CEFFAE; --amarelo:#FFCE00;
+  --bg:#002D32; --panel:#003B42; --panel2:#00464E; --border:#11676D;
+  --text-main:#EAFFF7; --text-dim:#77A77A; --accent:#4CDDDD; --accent2:#6FFFAF;
+  --danger:#FFCE00; --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-main);height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde1)}
+.brand-text .t{display:block;font-weight:700;font-size:15px;color:var(--text-main)}
+.brand-text .s{display:block;font-size:11.5px;color:var(--text-dim)}
+.header-actions{display:flex;gap:8px}
+.icon-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.icon-btn:hover{background:var(--azul);border-color:var(--azul);color:var(--verde1)}
+.body{flex:1;display:flex;min-height:0}
+.sidebar{width:280px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto}
+.sidebar h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:18px 0 8px}
+.sidebar h3:first-child{margin-top:0}
+.chip{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:8px 10px;border-radius:9px;margin-bottom:6px;font-size:12.5px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--azul);color:var(--azul)}
+.stat{font-size:12px;color:var(--text-dim);line-height:1.7}
+.stat b{color:var(--verde3)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.chat{flex:1;overflow-y:auto;padding:22px 8%;display:flex;flex-direction:column;gap:16px}
+.msg{max-width:78%;padding:13px 16px;border-radius:14px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:var(--azul);color:var(--verde1);border-radius:14px 14px 2px 14px;font-weight:500}
+.msg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--border);border-radius:14px 14px 14px 2px}
+.msg.system{align-self:center;background:transparent;border:1px dashed var(--amarelo);color:var(--amarelo);font-size:12.5px;text-align:center}
+.msg.bot .src{display:block;margin-top:8px;font-size:11px;color:var(--text-dim);border-top:1px dashed var(--border);padding-top:6px}
+.msg .typing{display:inline-flex;gap:4px}
+.msg .typing span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:blink 1.2s infinite}
+.msg .typing span:nth-child(2){animation-delay:.2s}
+.msg .typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.inputbar{display:flex;gap:10px;padding:16px 8%;border-top:1px solid var(--border);background:var(--panel)}
+.inputbar textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;max-height:120px}
+.inputbar textarea:focus{outline:none;border-color:var(--azul)}
+.sendbtn{background:var(--azul);border:none;color:var(--verde1);width:46px;height:46px;border-radius:12px;cursor:pointer;font-size:18px;flex-shrink:0;font-weight:700}
+.sendbtn:hover{background:var(--verde3)}
+.badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;background:rgba(76,221,221,.15);color:var(--azul);border:1px solid rgba(76,221,221,.35);margin-left:8px}
+.badge.off{background:rgba(255,206,0,.12);color:var(--amarelo);border-color:rgba(255,206,0,.3)}
+.badge.err{background:rgba(255,80,80,.12);color:#ff8080;border-color:rgba(255,80,80,.3)}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:460px;max-width:92vw;padding:22px}
+.modal h2{margin:0 0 6px;font-size:17px;color:var(--text-main)}
+.modal p.desc{color:var(--text-dim);font-size:12.5px;margin:0 0 16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;margin-bottom:6px;color:var(--text-dim)}
+.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:10px 12px;border-radius:8px;font-size:13.5px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text-main);cursor:pointer;font-size:13px}
+.btn.primary{background:var(--azul);border-color:var(--azul);color:var(--verde1);font-weight:600}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;z-index:100;color:var(--text-main)}
+.toast.show{opacity:1}
+.small{font-size:11px;color:var(--text-dim)}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <div class="brand-logo">IA</div>
+      <div class="brand-text">
+        <span class="t">IA do Book <span id="mode-badge" class="badge off">Carregando base...</span></span>
+        <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
+      <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
+      <button class="icon-btn" id="btn-settings" title="Configurações (API Key Gemini)">⚙️</button>
+    </div>
+  </header>
+
+  <div class="body">
+    <aside class="sidebar">
+      <h3>Base de Conhecimento</h3>
+      <div class="stat">
+        <b id="stat-total">0</b> itens indexados<br>
+        <b id="stat-fontes">0</b> arquivos-fonte<br>
+        <b id="stat-secoes">0</b> seções temáticas<br>
+        <span class="small" id="kb-file-info">arquivo: kb_entries.json</span>
+      </div>
+      <h3>Explorar por seção</h3>
+      <div id="section-list"></div>
+    </aside>
+
+    <div class="main">
+      <div class="chat" id="chat"></div>
+      <div class="inputbar">
+        <textarea id="input" rows="1" placeholder="Pergunte algo, ex: 'como abrir protocolo de garantia sem laudo'..."></textarea>
+        <button class="sendbtn" id="btn-send">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="settings-overlay">
+  <div class="modal">
+    <h2>⚙️ Configurações da IA</h2>
+    <p class="desc">Sua chave é salva apenas no seu navegador (localStorage). Sem chave, o assistente funciona em modo de busca inteligente na base (sem geração de texto livre).</p>
+    <div class="field">
+      <label>Gemini API Key (opcional — ativa respostas generativas)</label>
+      <input type="password" id="api-key" placeholder="AIzaSy...">
+    </div>
+    <div class="field">
+      <label>Modelo</label>
+      <select id="model-select">
+        <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash (recomendado)</option>
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Seu nome (operador)</label>
+      <input type="text" id="operator-name" placeholder="Ex: Júlio Santos">
+      <div class="small">Substitui automaticamente [Nome] nos scripts de atendimento da base.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="btn-cancel-settings">Cancelar</button>
+      <button class="btn primary" id="btn-save-settings">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   IA DO BOOK — LEVEROS
+   Arquitetura modular de 2 arquivos:
+     1) index.html        -> interface (este arquivo)
+     2) kb_entries.json    -> base de conhecimento (dados), carregada via fetch()
+
+   PARA ATUALIZAR A BASE:
+   - Edite/substitua o arquivo kb_entries.json no mesmo diretório do index.html
+     (mesmo formato: lista de objetos com secao, titulo, fonte, pagina, conteudo)
+   - Republique/re-hospede os 2 arquivos juntos (ou apenas sobrescreva o JSON
+     se o hosting permitir substituição individual de arquivos)
+   - Clique no botão 🔄 (recarregar base) ou dê um refresh na página
+   ========================================================================= */
+
+const KB_FILE = 'kb_entries.json';
+let KB = [];
+let KB_IDX = [];
+
+function stripAccents(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function norm(s){return stripAccents((s||'').toLowerCase()).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function tokenize(s){return norm(s).split(' ').filter(w=>w.length>1);}
+
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){
+    let cur=[i];
+    for(let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      cur.push(Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost));
+    }
+    prev=cur;
+  }
+  return prev[n];
+}
+function similarity(a,b){
+  if(!a.length||!b.length) return 0;
+  const d=levenshtein(a,b);
+  return 1 - d/Math.max(a.length,b.length);
+}
+function bestTokenMatch(qTok, docTokens){
+  let best=0;
+  for(const t of docTokens){
+    if(t===qTok){ best=1; break; }
+    if(t.includes(qTok)||qTok.includes(t)){ best=Math.max(best,0.85); continue; }
+    const sim=similarity(qTok,t);
+    if(sim>best) best=sim;
+  }
+  return best;
+}
+
+function buildIndex(){
+  KB_IDX = KB.map(e=>{
+    const fullText = (e.titulo||'')+' '+(e.conteudo||'');
+    return {...e, _tokens: tokenize(fullText), _titleTokens: tokenize(e.titulo||'')};
+  });
+}
+
+function searchKB(query, topN=5){
+  const qTokens = tokenize(query);
+  if(!qTokens.length) return [];
+  const scored = KB_IDX.map(entry=>{
+    let score=0;
+    for(const qt of qTokens){
+      if(qt.length<3) continue;
+      const tScore = bestTokenMatch(qt, entry._titleTokens) * 1.6;
+      const cScore = bestTokenMatch(qt, entry._tokens);
+      score += Math.max(tScore, cScore) * (qt.length>=4?1:0.6);
+    }
+    const normContent = norm((entry.titulo||'')+' '+(entry.conteudo||''));
+    const normQuery = norm(query);
+    if(normQuery.length>4 && normContent.includes(normQuery)) score += 3;
+    return {entry, score};
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  return scored.filter(s=>s.score>0.35).slice(0,topN);
+}
+
+function renderSidebar(){
+  const secoes = [...new Set(KB.map(e=>e.secao))].sort();
+  const fontes = [...new Set(KB.map(e=>e.fonte))];
+  document.getElementById('stat-total').textContent = KB.length;
+  document.getElementById('stat-fontes').textContent = fontes.length;
+  document.getElementById('stat-secoes').textContent = secoes.length;
+  const box = document.getElementById('section-list');
+  box.innerHTML='';
+  secoes.forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='chip';
+    btn.textContent=s;
+    btn.onclick=()=>{ input.value = 'Me explique sobre: ' + s.replace(/^\d+\.\s*/,''); sendMessage(); };
+    box.appendChild(btn);
+  });
+}
+
+const chatBox = document.getElementById('chat');
+const input = document.getElementById('input');
+const toast = document.getElementById('toast');
+function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3200); }
+
+function addMsg(text, who, srcHtml){
+  const div=document.createElement('div');
+  div.className='msg '+who;
+  div.innerHTML = (text||'').replace(/\n/g,'<br>');
+  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
+}
+function addTyping(){
+  const div=document.createElement('div');
+  div.className='msg bot'; div.id='typing-indicator';
+  div.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';
+  chatBox.appendChild(div); chatBox.scrollTop=chatBox.scrollHeight;
+  return div;
+}
+
+function getSettings(){
+  return {
+    apiKey: localStorage.getItem('leveros_api_key')||'',
+    model: localStorage.getItem('leveros_model')||'gemini-2.0-flash',
+    operator: localStorage.getItem('leveros_operator')||''
+  };
+}
+function applyOperator(text){
+  const op = getSettings().operator;
+  if(!op) return text;
+  return text.replace(/\[Nome\]|\[Seu Nome\]/gi, op);
+}
+
+async function callGemini(userQuestion, contextEntries){
+  const {apiKey, model} = getSettings();
+  const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
+  const systemPrompt = `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const body = {
+    contents: [{ role:'user', parts:[{text: systemPrompt + '\n\nPERGUNTA DO USUÁRIO: ' + userQuestion}] }]
+  };
+  const resp = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if(!resp.ok){ throw new Error('HTTP '+resp.status); }
+  const data = await resp.json();
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if(!text) throw new Error('Resposta vazia da API');
+  return text;
+}
+
+function extractiveAnswer(results, query){
+  if(!results.length){
+    return {
+      text: `Não encontrei nada na base de conhecimento sobre "${query}".\nTente descrever de outra forma (ex: nome do sistema, tipo de solicitação do cliente, ou motivo/submotivo).`,
+      src: ''
+    };
+  }
+  const top = results[0].entry;
+  let text = `📌 **${top.titulo}**\n\n${top.conteudo}`;
+  let src = `Fonte: ${top.fonte} — slide/pág. ${top.pagina} · Seção: ${top.secao}`;
+  if(results.length>1){
+    src += '<br><br><b>Veja também:</b><br>' + results.slice(1).map(r=>`• ${r.entry.titulo} <span class="small">(${r.entry.fonte}, ${r.entry.pagina})</span>`).join('<br>');
+  }
+  return {text, src};
+}
+
+async function sendMessage(){
+  const q = input.value.trim();
+  if(!q) return;
+  if(!KB.length){ showToast('Base ainda não carregada — verifique kb_entries.json'); return; }
+  addMsg(q,'user');
+  input.value=''; input.style.height='auto';
+
+  const typingEl = addTyping();
+  const results = searchKB(q, 5);
+  const {apiKey} = getSettings();
+
+  try{
+    if(apiKey && results.length){
+      const answer = await callGemini(q, results);
+      typingEl.remove();
+      const srcLine = 'Gerado com IA · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ');
+      addMsg(applyOperator(answer), 'bot', srcLine);
+    } else if(apiKey && !results.length){
+      const answer = await callGemini(q, []);
+      typingEl.remove();
+      addMsg(applyOperator(answer), 'bot', 'Gerado com IA (sem trecho específico encontrado na base)');
+    } else {
+      const {text, src} = extractiveAnswer(results, q);
+      typingEl.remove();
+      addMsg(applyOperator(text), 'bot', src);
+    }
+  }catch(err){
+    typingEl.remove();
+    showToast('Falha ao chamar Gemini: '+err.message+' — usando busca na base.');
+    const {text, src} = extractiveAnswer(results, q);
+    addMsg(applyOperator(text), 'bot', src + '<br><i>(fallback: erro na API generativa)</i>');
+  }
+}
+
+document.getElementById('btn-send').onclick = sendMessage;
+input.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
+
+document.getElementById('btn-clear').onclick = ()=>{
+  chatBox.innerHTML=''; welcome();
+};
+
+const overlay = document.getElementById('settings-overlay');
+document.getElementById('btn-settings').onclick = ()=>{
+  const s = getSettings();
+  document.getElementById('api-key').value = s.apiKey;
+  document.getElementById('model-select').value = s.model;
+  document.getElementById('operator-name').value = s.operator;
+  overlay.classList.add('show');
+};
+document.getElementById('btn-cancel-settings').onclick = ()=> overlay.classList.remove('show');
+document.getElementById('btn-save-settings').onclick = ()=>{
+  localStorage.setItem('leveros_api_key', document.getElementById('api-key').value.trim());
+  localStorage.setItem('leveros_model', document.getElementById('model-select').value);
+  localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
+  overlay.classList.remove('show');
+  updateModeBadge();
+  showToast('Configurações salvas.');
+};
+function updateModeBadge(){
+  const badge = document.getElementById('mode-badge');
+  if(!KB.length){ badge.textContent='Base não carregada'; badge.className='badge err'; return; }
+  if(getSettings().apiKey){ badge.textContent='Modo IA Generativa (Gemini)'; badge.className='badge'; }
+  else { badge.textContent='Modo Busca Inteligente'; badge.className='badge off'; }
+}
+
+function welcome(){
+  addMsg('Olá! 👋 Sou a IA do Book da Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos — mesmo que escreva errado, eu entendo! 😉', 'bot');
+}
+
+async function loadKB(showToastOnSuccess){
+  try{
+    const resp = await fetch(KB_FILE + '?t=' + Date.now(), {cache:'no-store'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    if(!Array.isArray(data) || !data.length) throw new Error('JSON vazio ou formato inválido');
+    KB = data;
+    buildIndex();
+    renderSidebar();
+    updateModeBadge();
+    if(showToastOnSuccess) showToast(`Base recarregada: ${KB.length} itens.`);
+  }catch(err){
+    console.error('Erro ao carregar kb_entries.json:', err);
+    updateModeBadge();
+    addMsg(`⚠️ Não foi possível carregar a base de conhecimento (${KB_FILE}).\nMotivo: ${err.message}\n\nVerifique se o arquivo "kb_entries.json" está publicado no mesmo diretório do index.html, e se está acessível via HTTP(S) — este mecanismo não funciona ao abrir o HTML localmente via "file://".`, 'system');
+  }
+}
+
+document.getElementById('btn-reload').onclick = ()=> loadKB(true);
+
+loadKB(false);
+welcome();
+</script>
+</body>
+</html>
