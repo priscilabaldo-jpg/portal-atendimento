@@ -163,7 +163,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     return new Response(await r.text(),
       { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
   }
-}</pre>
+}
+        
+        </pre>
         <div class="hint">Deploy: <b>workers.cloudflare.com</b> → Create Worker → colar o código → Settings → Variables → criar o <i>secret</i> <b>GEMINI_API_KEY</b> → Deploy. Depois cole a URL do Worker no campo acima.</div>
       </details>
     </div>
