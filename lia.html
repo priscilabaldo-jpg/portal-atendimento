@@ -65,6 +65,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;z-index:100;color:var(--text-main)}
 .toast.show{opacity:1}
 .small{font-size:11px;color:var(--text-dim)}
+.field .hint{font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.45}
+.modal{max-height:92vh;overflow-y:auto}
+.modal details{margin:8px 0 2px}
+.modal summary{cursor:pointer;font-size:11.5px;color:var(--azul)}
+.modal pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:10px;overflow:auto;max-height:200px;color:var(--verde4);white-space:pre}
+#test-status{font-size:11.5px;margin-right:auto;align-self:center;max-width:200px;line-height:1.35}
+.ok{color:var(--verde3)}.bad{color:#ff8080}.warn{color:var(--amarelo)}
+.hidden{display:none !important}
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 </style>
@@ -112,18 +120,64 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 <div class="overlay" id="settings-overlay">
   <div class="modal">
     <h2>⚙️ Configurações da IA</h2>
-    <p class="desc">Sua chave é salva apenas no seu navegador (localStorage). Sem chave, o assistente funciona em modo de busca inteligente na base (sem geração de texto livre).</p>
+    <p class="desc"><b>Recomendado:</b> modo <b>proxy</b> — a chave fica no servidor e nunca chega ao navegador. O modo "chave direta" serve apenas para teste rápido e expõe a chave a qualquer pessoa que abrir a página.</p>
     <div class="field">
-      <label>Gemini API Key (opcional — ativa respostas generativas)</label>
+      <label>Modo de conexão</label>
+      <select id="conn-mode">
+        <option value="proxy">🔒 Proxy seguro (chave no servidor) — recomendado</option>
+        <option value="direct">⚠️ Chave direta no navegador (só para teste)</option>
+        <option value="none">🔎 Sem IA generativa (busca na base)</option>
+      </select>
+    </div>
+    <div class="field" id="row-proxy">
+      <label>URL do proxy</label>
+      <input type="text" id="proxy-url" placeholder="https://ia-do-book.SEU-USUARIO.workers.dev">
+      <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
+      <details>
+        <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
+        <pre>export default {
+  async fetch(req, env) {
+    const ORIGIN = '*'; // troque pelo dominio do site, ex: 'https://iadobook.pages.dev'
+    const cors = {
+      'Access-Control-Allow-Origin': ORIGIN,
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+    if (req.method !== 'POST')
+      return new Response('Method Not Allowed', { status: 405, headers: cors });
+
+    const { model = 'gemini-2.5-flash', ...body } = await req.json();
+    const r = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/'
+        + encodeURIComponent(model) + ':generateContent',
+      { method: 'POST',
+        headers: { 'Content-Type': 'application/json',
+                   'x-goog-api-key': env.GEMINI_API_KEY },
+        body: JSON.stringify(body) }
+    );
+    return new Response(await r.text(),
+      { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
+  }
+}</pre>
+        <div class="hint">Deploy: <b>workers.cloudflare.com</b> → Create Worker → colar o código → Settings → Variables → criar o <i>secret</i> <b>GEMINI_API_KEY</b> → Deploy. Depois cole a URL do Worker no campo acima.</div>
+      </details>
+    </div>
+    <div class="field" id="row-key">
+      <label>Gemini API Key</label>
       <input type="password" id="api-key" placeholder="AIzaSy...">
+      <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
+      <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
     </div>
     <div class="field">
       <label>Modelo</label>
       <select id="model-select">
-        <option value="gemini-2.0-flash" selected>Gemini 2.0 Flash (recomendado)</option>
-        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+        <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (recomendado)</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+        <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        <option value="gemini-flash-latest">Gemini Flash (latest)</option>
       </select>
+      <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
     </div>
     <div class="field">
       <label>Seu nome (operador)</label>
@@ -131,6 +185,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
       <div class="small">Substitui automaticamente [Nome] nos scripts de atendimento da base.</div>
     </div>
     <div class="modal-footer">
+      <span id="test-status"></span>
+      <button class="btn" id="btn-test">🧪 Testar conexão</button>
       <button class="btn" id="btn-cancel-settings">Cancelar</button>
       <button class="btn primary" id="btn-save-settings">💾 Salvar</button>
     </div>
@@ -258,11 +314,29 @@ function addTyping(){
   return div;
 }
 
+/* ---------------------------------------------------------------------------
+   SEGURANCA DA CHAVE
+   Modo padrao = 'proxy': a chave NUNCA existe no front-end. O navegador chama
+   apenas a URL do proxy; o proxy (Cloudflare Worker / Cloud Function) guarda a
+   chave como secret de servidor e a injeta no header x-goog-api-key.
+   Modo 'direct' (opcional, so para teste): chave enviada em HEADER e guardada
+   por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
+--------------------------------------------------------------------------- */
+const MODEL_FALLBACKS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-flash-latest','gemini-2.5-pro'];
+
 function getSettings(){
+  const legacy = localStorage.getItem('leveros_api_key')||'';
+  const key = sessionStorage.getItem('leveros_api_key') || legacy;
+  let mode = localStorage.getItem('leveros_conn_mode');
+  const proxyUrl = (localStorage.getItem('leveros_proxy_url')||'').trim().replace(/\/+$/,'');
+  if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
+  let model = localStorage.getItem('leveros_model')||'gemini-2.5-flash';
+  if(/^gemini-1\.5/.test(model)) model='gemini-2.5-flash';  // modelos 1.5 descontinuados
   return {
-    apiKey: localStorage.getItem('leveros_api_key')||'',
-    model: localStorage.getItem('leveros_model')||'gemini-2.0-flash',
-    operator: localStorage.getItem('leveros_operator')||''
+    mode, proxyUrl, apiKey: key, model,
+    remember: localStorage.getItem('leveros_remember_key')==='1',
+    operator: localStorage.getItem('leveros_operator')||'',
+    generative: (mode==='proxy' && !!proxyUrl) || (mode==='direct' && !!key)
   };
 }
 function applyOperator(text){
@@ -271,20 +345,81 @@ function applyOperator(text){
   return text.replace(/\[Nome\]|\[Seu Nome\]/gi, op);
 }
 
-async function callGemini(userQuestion, contextEntries){
-  const {apiKey, model} = getSettings();
+function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
-  const systemPrompt = `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}`;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-  const body = {
-    contents: [{ role:'user', parts:[{text: systemPrompt + '\n\nPERGUNTA DO USUÁRIO: ' + userQuestion}] }]
+  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
+}
+
+function apiError(status, raw){
+  let msg='';
+  try{ msg = JSON.parse(raw)?.error?.message || ''; }catch(e){}
+  const map = {
+    400:'requisição inválida ou chave malformada',
+    401:'chave não autenticada',
+    403:'chave inválida, restrita por domínio/IP ou API "Generative Language" não habilitada no projeto',
+    404:'modelo inexistente para esta chave (tente outro modelo)',
+    429:'cota/limite de requisições excedido',
+    500:'erro interno do Google',
+    503:'modelo temporariamente sobrecarregado'
   };
-  const resp = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
-  if(!resp.ok){ throw new Error('HTTP '+resp.status); }
-  const data = await resp.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if(!text) throw new Error('Resposta vazia da API');
+  const e = new Error(`HTTP ${status} — ${map[status]||'falha na API'}${msg?': '+msg.slice(0,180):''}`);
+  e.status = status;
+  return e;
+}
+
+/* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL) */
+async function rawCall(model, promptText){
+  const {mode, proxyUrl, apiKey} = getSettings();
+  const payload = { contents:[{ role:'user', parts:[{text: promptText}] }],
+                    generationConfig:{ temperature:0.2 } };
+  let url, headers={'Content-Type':'application/json'}, body;
+
+  if(mode==='proxy'){
+    if(!proxyUrl) throw new Error('URL do proxy não configurada (⚙️ Configurações).');
+    url = proxyUrl;                     // a chave fica no servidor
+    body = JSON.stringify({model, ...payload});
+  }else{
+    if(!apiKey) throw new Error('Nenhuma chave configurada (⚙️ Configurações).');
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    headers['x-goog-api-key'] = apiKey;  // header, nao query string
+    body = JSON.stringify(payload);
+  }
+
+  let resp;
+  try{ resp = await fetch(url, {method:'POST', headers, body}); }
+  catch(e){ throw new Error(mode==='proxy'
+      ? 'não foi possível alcançar o proxy (URL errada, CORS ou Worker fora do ar)'
+      : 'falha de rede/CORS ao chamar a API do Google'); }
+
+  const raw = await resp.text();
+  if(!resp.ok) throw apiError(resp.status, raw);
+  let data; try{ data = JSON.parse(raw); }catch(e){ throw new Error('resposta não-JSON do endpoint'); }
+  const cand = data?.candidates?.[0];
+  const text = cand?.content?.parts?.map(p=>p.text).filter(Boolean).join('\n');
+  if(!text){
+    const fr = cand?.finishReason || data?.promptFeedback?.blockReason;
+    throw new Error('resposta vazia da API' + (fr?` (motivo: ${fr})`:''));
+  }
   return text;
+}
+
+/* Tenta o modelo escolhido e, em caso de 404 (modelo inexistente), os alternativos */
+async function callGemini(userQuestion, contextEntries){
+  const prompt = buildPrompt(userQuestion, contextEntries);
+  const {model} = getSettings();
+  const tries = [model, ...MODEL_FALLBACKS.filter(m=>m!==model)];
+  let last;
+  for(const m of tries){
+    try{
+      const out = await rawCall(m, prompt);
+      if(m!==model){ localStorage.setItem('leveros_model', m); showToast(`Modelo ajustado para ${m}.`); }
+      return out;
+    }catch(e){
+      last = e;
+      if(e.status!==404 && e.status!==503) break;   // só vale re-tentar modelo inexistente/sobrecarregado
+    }
+  }
+  throw last;
 }
 
 function extractiveAnswer(results, query){
@@ -312,28 +447,27 @@ async function sendMessage(){
 
   const typingEl = addTyping();
   const results = searchKB(q, 5);
-  const {apiKey} = getSettings();
+  const {generative, mode} = getSettings();
 
   try{
-    if(apiKey && results.length){
-      const answer = await callGemini(q, results);
-      typingEl.remove();
-      const srcLine = 'Gerado com IA · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ');
-      addMsg(applyOperator(answer), 'bot', srcLine);
-    } else if(apiKey && !results.length){
-      const answer = await callGemini(q, []);
-      typingEl.remove();
-      addMsg(applyOperator(answer), 'bot', 'Gerado com IA (sem trecho específico encontrado na base)');
-    } else {
-      const {text, src} = extractiveAnswer(results, q);
-      typingEl.remove();
-      addMsg(applyOperator(text), 'bot', src);
-    }
+    if(!generative) throw {__silent:true};
+    const answer = await callGemini(q, results);
+    typingEl.remove();
+    const tag = (mode==='proxy'?'Gerado com IA (proxy seguro)':'Gerado com IA');
+    const srcLine = results.length
+      ? tag+' · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ')
+      : tag+' (sem trecho específico encontrado na base)';
+    addMsg(applyOperator(answer), 'bot', srcLine);
   }catch(err){
     typingEl.remove();
-    showToast('Falha ao chamar Gemini: '+err.message+' — usando busca na base.');
     const {text, src} = extractiveAnswer(results, q);
-    addMsg(applyOperator(text), 'bot', src + '<br><i>(fallback: erro na API generativa)</i>');
+    if(err && err.__silent){
+      addMsg(applyOperator(text), 'bot', src);
+    }else{
+      const detail = (err && err.message) ? err.message : 'erro desconhecido';
+      showToast('IA generativa indisponível: '+detail);
+      addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída da base — a IA generativa falhou: ${escapeHtml(detail)}</i>`);
+    }
   }
 }
 
@@ -347,27 +481,86 @@ document.getElementById('btn-clear').onclick = ()=>{
   chatBox.innerHTML=''; welcome();
 };
 
+function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
 const overlay = document.getElementById('settings-overlay');
+const connMode = document.getElementById('conn-mode');
+const statusEl = document.getElementById('test-status');
+
+function syncModeRows(){
+  const m = connMode.value;
+  document.getElementById('row-proxy').classList.toggle('hidden', m!=='proxy');
+  document.getElementById('row-key').classList.toggle('hidden', m!=='direct');
+}
+connMode.onchange = ()=>{ syncModeRows(); statusEl.textContent=''; };
+
 document.getElementById('btn-settings').onclick = ()=>{
   const s = getSettings();
+  connMode.value = s.mode;
+  document.getElementById('proxy-url').value = s.proxyUrl;
   document.getElementById('api-key').value = s.apiKey;
+  document.getElementById('remember-key').checked = s.remember;
   document.getElementById('model-select').value = s.model;
   document.getElementById('operator-name').value = s.operator;
+  statusEl.textContent='';
+  syncModeRows();
   overlay.classList.add('show');
 };
 document.getElementById('btn-cancel-settings').onclick = ()=> overlay.classList.remove('show');
-document.getElementById('btn-save-settings').onclick = ()=>{
-  localStorage.setItem('leveros_api_key', document.getElementById('api-key').value.trim());
+
+function persistSettings(){
+  const mode = connMode.value;
+  const key = document.getElementById('api-key').value.trim();
+  const remember = document.getElementById('remember-key').checked;
+  localStorage.setItem('leveros_conn_mode', mode);
+  localStorage.setItem('leveros_proxy_url', document.getElementById('proxy-url').value.trim());
   localStorage.setItem('leveros_model', document.getElementById('model-select').value);
   localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
+  // chave: nunca persistida no modo proxy; em modo direto vai para sessionStorage
+  sessionStorage.removeItem('leveros_api_key');
+  localStorage.removeItem('leveros_api_key');
+  localStorage.setItem('leveros_remember_key', remember?'1':'0');
+  if(mode==='direct' && key){
+    sessionStorage.setItem('leveros_api_key', key);
+    if(remember) localStorage.setItem('leveros_api_key', key);
+  }
+}
+
+document.getElementById('btn-save-settings').onclick = ()=>{
+  persistSettings();
   overlay.classList.remove('show');
   updateModeBadge();
-  showToast('Configurações salvas.');
+  showToast(connMode.value==='proxy' ? 'Configurações salvas — chave protegida no servidor.' : 'Configurações salvas.');
 };
+
+document.getElementById('btn-test').onclick = async ()=>{
+  persistSettings();
+  updateModeBadge();
+  const s = getSettings();
+  if(s.mode==='none'){ statusEl.className='warn'; statusEl.textContent='Modo sem IA: apenas busca na base.'; return; }
+  statusEl.className='warn'; statusEl.textContent='Testando...';
+  try{
+    await rawCall(s.model, 'Responda apenas: OK');
+    statusEl.className='ok';
+    statusEl.textContent = '✅ Conexão OK ('+s.model+(s.mode==='proxy'?' via proxy':' direto')+')';
+  }catch(e){
+    let hint='';
+    if(e.status===404) hint=' → escolha outro modelo';
+    if(e.status===403) hint=' → habilite a API Generative Language e revise restrições da chave';
+    if(e.status===429) hint=' → cota excedida, aguarde ou troque de projeto';
+    if(s.mode==='proxy' && !e.status) hint=' → confira a URL do Worker e o CORS';
+    statusEl.className='bad';
+    statusEl.textContent = '❌ '+e.message.slice(0,150)+hint;
+  }
+};
+
 function updateModeBadge(){
   const badge = document.getElementById('mode-badge');
   if(!KB.length){ badge.textContent='Base não carregada'; badge.className='badge err'; return; }
-  if(getSettings().apiKey){ badge.textContent='Modo IA Generativa (Gemini)'; badge.className='badge'; }
+  const s = getSettings();
+  if(s.mode==='proxy' && s.proxyUrl){ badge.textContent='IA Generativa · proxy seguro 🔒'; badge.className='badge'; }
+  else if(s.mode==='direct' && s.apiKey){ badge.textContent='IA Generativa · chave no navegador ⚠️'; badge.className='badge off'; }
+  else if(s.mode==='proxy'){ badge.textContent='Configure o proxy (⚙️)'; badge.className='badge off'; }
   else { badge.textContent='Modo Busca Inteligente'; badge.className='badge off'; }
 }
 
