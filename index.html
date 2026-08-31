@@ -3,199 +3,604 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image" href="LogoLeveros.png">
-<meta http-equiv="Content-Security-Policy" content="
-  default-src 'self';
-  script-src 'self' https://www.gstatic.com https://apis.google.com;
-  style-src 'self' https://fonts.googleapis.com;
-  connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com;
-  frame-src https://portal-atendimento-541ae.firebaseapp.com https://accounts.google.com;
-  img-src 'self' data: https://lh3.googleusercontent.com;
-">
-<title>CX Resolve – Portal de Atendimento</title>
-
-<link rel="stylesheet" href="style.css">
+<title>IA do Book — Leveros CX Knowledge Assistant</title>
+<style>
+:root{
+  --verde1:#002D32; --verde2:#005A64; --azul:#4CDDDD; --verde3:#6FFFAF; --verde4:#CEFFAE; --amarelo:#FFCE00;
+  --bg:#002D32; --panel:#003B42; --panel2:#00464E; --border:#11676D;
+  --text-main:#EAFFF7; --text-dim:#77A77A; --accent:#4CDDDD; --accent2:#6FFFAF;
+  --danger:#FFCE00; --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-main);height:100vh;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde1)}
+.brand-text .t{display:block;font-weight:700;font-size:15px;color:var(--text-main)}
+.brand-text .s{display:block;font-size:11.5px;color:var(--text-dim)}
+.header-actions{display:flex;gap:8px}
+.icon-btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.icon-btn:hover{background:var(--azul);border-color:var(--azul);color:var(--verde1)}
+.body{flex:1;display:flex;min-height:0}
+.sidebar{width:280px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto}
+.sidebar h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:18px 0 8px}
+.sidebar h3:first-child{margin-top:0}
+.chip{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:8px 10px;border-radius:9px;margin-bottom:6px;font-size:12.5px;cursor:pointer;transition:.15s}
+.chip:hover{border-color:var(--azul);color:var(--azul)}
+.stat{font-size:12px;color:var(--text-dim);line-height:1.7}
+.stat b{color:var(--verde3)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.chat{flex:1;overflow-y:auto;padding:22px 8%;display:flex;flex-direction:column;gap:16px}
+.msg{max-width:78%;padding:13px 16px;border-radius:14px;line-height:1.55;font-size:14px;white-space:pre-wrap}
+.msg.user{align-self:flex-end;background:var(--azul);color:var(--verde1);border-radius:14px 14px 2px 14px;font-weight:500}
+.msg.bot{align-self:flex-start;background:var(--panel2);border:1px solid var(--border);border-radius:14px 14px 14px 2px}
+.msg.system{align-self:center;background:transparent;border:1px dashed var(--amarelo);color:var(--amarelo);font-size:12.5px;text-align:center}
+.msg.bot .src{display:block;margin-top:8px;font-size:11px;color:var(--text-dim);border-top:1px dashed var(--border);padding-top:6px}
+.msg .typing{display:inline-flex;gap:4px}
+.msg .typing span{width:6px;height:6px;border-radius:50%;background:var(--text-dim);animation:blink 1.2s infinite}
+.msg .typing span:nth-child(2){animation-delay:.2s}
+.msg .typing span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.inputbar{display:flex;gap:10px;padding:16px 8%;border-top:1px solid var(--border);background:var(--panel)}
+.inputbar textarea{flex:1;resize:none;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:12px;padding:12px 14px;font-size:14px;font-family:inherit;max-height:120px}
+.inputbar textarea:focus{outline:none;border-color:var(--azul)}
+.sendbtn{background:var(--azul);border:none;color:var(--verde1);width:46px;height:46px;border-radius:12px;cursor:pointer;font-size:18px;flex-shrink:0;font-weight:700}
+.sendbtn:hover{background:var(--verde3)}
+.badge{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:20px;background:rgba(76,221,221,.15);color:var(--azul);border:1px solid rgba(76,221,221,.35);margin-left:8px}
+.badge.off{background:rgba(255,206,0,.12);color:var(--amarelo);border-color:rgba(255,206,0,.3)}
+.badge.err{background:rgba(255,80,80,.12);color:#ff8080;border-color:rgba(255,80,80,.3)}
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
+.overlay.show{display:flex}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:460px;max-width:92vw;padding:22px}
+.modal h2{margin:0 0 6px;font-size:17px;color:var(--text-main)}
+.modal p.desc{color:var(--text-dim);font-size:12.5px;margin:0 0 16px}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12.5px;margin-bottom:6px;color:var(--text-dim)}
+.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:10px 12px;border-radius:8px;font-size:13.5px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text-main);cursor:pointer;font-size:13px}
+.btn.primary{background:var(--azul);border-color:var(--azul);color:var(--verde1);font-weight:600}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;z-index:100;color:var(--text-main)}
+.toast.show{opacity:1}
+.small{font-size:11px;color:var(--text-dim)}
+.field .hint{font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.45}
+.modal{max-height:92vh;overflow-y:auto}
+.modal details{margin:8px 0 2px}
+.modal summary{cursor:pointer;font-size:11.5px;color:var(--azul)}
+.modal pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:10px;overflow:auto;max-height:200px;color:var(--verde4);white-space:pre}
+#test-status{font-size:11.5px;margin-right:auto;align-self:center;max-width:200px;line-height:1.35}
+.ok{color:var(--verde3)}.bad{color:#ff8080}.warn{color:var(--amarelo)}
+.hidden{display:none !important}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
 </head>
 <body>
-
-<div class="bg-layer"></div>
-
-<div id="login-area">
-  <div class="login-card">
-    <img src="LogoLeveros.png" class="login-logo" alt="Leveros">
-    <h2>CX Resolve</h2>
-    <p>Portal interno do time de atendimento</p>
-    <button class="login-btn" id="loginBtn">
-      <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#002D32" d="M43.6 20H24v8.4h11.1C33.6 33 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6-6C34.4 6.3 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.4-7.7 19.4-20 0-1.3-.1-2.7-.4-4H43.6z"/></svg>
-      Entrar com Google
-    </button>
-    <div class="login-error" id="loginError">
-      Acesso restrito a e-mails @leveros.com.br
-    </div>
-  </div>
-</div>
-
-<div id="conteudo" style="display: none;">
-
+<div class="app">
   <header>
-    <div class="header-inner">
-      <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
-      <nav>
-       <ul>
-           <li><a href="index.html" class="active">INÍCIO</a></li>
-                    <li><a href="formn1.html">TRIAGEM N1</a></li>
-                    <li><a href="formpatrao.html">PEÇAS PATRÃO</a></li>
-                    <li><a href="timeline.html" >TIMELINE</a></li>
-                    <li><a href="materiais.html">MATERIAIS</a></li>
-                    <li><a href="informativos.html">INFORMATIVOS</a></li>
-                    <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
-                    <li><a href="admin.html">PAINEL ADMIN</a></li>
-          <li><a href="admin.html">PAINEL ADMIN</a></li>
-          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-        </ul>
-      </nav>
-      <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+    <div class="brand">
+      <div class="brand-logo">IA</div>
+      <div class="brand-text">
+        <span class="t">IA do Book <span id="mode-badge" class="badge off">Carregando base...</span></span>
+        <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
+      <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
+      <button class="icon-btn" id="btn-settings" title="Configurações (API Key Gemini)">⚙️</button>
     </div>
   </header>
 
-  <div class="mobile-menu" id="mobileMenu">
-    <a href="index.html">Início</a>
-    <a href="timeline.html">Timeline</a>
-    <a href="materiais.html">Materiais</a>
-    <a href="informativos.html">Informativos</a>
-    <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
-    <button class="logout-btn" id="logoutBtnMobile">Sair</button>
-  </div>
-  
-  <div class="container">
-
-    <div id="homeView">
-      <div class="welcome-row">
-        <div class="welcome-text">
-          <p class="welcome-label">Portal de Atendimento</p>
-          <h1>Olá, <span id="welcomeUser">bem-vindo</span> 👋</h1>
-          <p id="welcomeDate"></p>
-        </div>
-        <div class="search-wrap">
-          <span class="search-icon">🔎</span>
-          <input type="text" id="busca" placeholder="Buscar sistema, material…">
-          <div id="resultados" class="resultados"></div>
-        </div>
+  <div class="body">
+    <aside class="sidebar">
+      <h3>Base de Conhecimento</h3>
+      <div class="stat">
+        <b id="stat-total">0</b> itens indexados<br>
+        <b id="stat-fontes">0</b> arquivos-fonte<br>
+        <b id="stat-secoes">0</b> seções temáticas<br>
+        <span class="small" id="kb-file-info">arquivo: kb_entries.json</span>
       </div>
+      <h3>Explorar por seção</h3>
+      <div id="section-list"></div>
+    </aside>
 
-      <div class="mural-header">
-        <p class="section-label">📢 Mural de Avisos</p>
-        <button class="btn-admin" id="btnAdmin" style="display:none">
-          ✏️ Publicar aviso
-        </button>
-      </div>
-
-      <div class="form-aviso" id="formAviso">
-        <textarea id="textoAviso" rows="3" placeholder="Digite o aviso para o time…"></textarea>
-        <div class="form-aviso-row">
-          <select class="cat-select" id="catAviso">
-            <option value="informativo">📋 Informativo</option>
-            <option value="urgente">🚨 Urgente</option>
-            <option value="treinamento">📚 Treinamento</option>
-            <option value="geral">📌 Geral</option>
-          </select>
-          <button class="btn-publicar" id="btnPublicarAviso">Publicar</button>
-        </div>
-      </div>
-
-      <div class="avisos-lista" id="avisosLista">
-        <div class="avisos-vazio">Carregando avisos…</div>
-      </div>
-
-      <p class="section-label">Sistemas</p>
-      <div class="sistemas-grid">
-        <div class="sistema-card">
-          <div class="sistema-info"><h3>GLPI</h3><p>Gestão de chamados</p></div>
-          <a class="sistema-btn" href="https://glpi.leveros.com.br" target="_blank" rel="noopener noreferrer">↗</a>
-        </div>
-        <div class="sistema-card">
-          <div class="sistema-info"><h3>Uappi</h3><p>Plataforma de vendas</p></div>
-          <a class="sistema-btn" href="https://www.vendas.leveros.com.br/wapstore/acesso" target="_blank" rel="noopener noreferrer">↗</a>
-        </div>
-        <div class="sistema-card">
-          <div class="sistema-info"><h3>BoxLink</h3><p>Gestão de pedidos</p></div>
-          <a class="sistema-btn" href="https://matriz.boxlink.com.br/home" target="_blank" rel="noopener noreferrer">↗</a>
-        </div>
-        <div class="sistema-card">
-          <div class="sistema-info"><h3>Intergrall</h3><p>CRM / Call center</p></div>
-          <a class="sistema-btn" href="https://wwws.intergrall.com.br/callcenter/cc_login.php" target="_blank" rel="noopener noreferrer">↗</a>
-        </div>
-      </div>
-
-      <p class="section-label">Acesso Rápido</p>
-      <div class="rapido-grid">
-        <a href="materiais.html" class="rapido-card">
-          <div class="rapido-icon mat">📚</div>
-          <div><h4>Materiais</h4><p>Guias, fluxos e passo a passo</p></div>
-        </a>
-        <a href="informativos.html" class="rapido-card">
-          <div class="rapido-icon inf">📊</div>
-          <div><h4>Informativos</h4><p>Metas operacionais da temporada</p></div>
-        </a>
-      </div>
-
-      <div class="feedback-section">
-        <h3>Sugestões de Melhoria 💡</h3>
-        <p>Sua ideia pode melhorar o dia a dia do time</p>
-        <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
-        
-        <form id="feedbackForm" action="https://formsubmit.co/COLOQUE_SEU_HASH_AQUI" method="POST">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
-          <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
-          
-          <div class="form-row">
-            <div class="form-field">
-              <label>Seu nome</label>
-              <input type="text" name="nome" id="feedbackNome" placeholder="Ex: Ana Silva" required>
-            </div>
-            <div class="form-field">
-              <label>Seu e-mail</label>
-              <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
-            </div>
-          </div>
-          
-          <div class="form-field form-full">
-            <label>Sugestão</label>
-            <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
-          </div>
-          <button type="submit" class="submit-btn">Enviar sugestão →</button>
-        </form>
-      </div>
-    </div> 
-
-  </div> 
-
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-col">
-        <img src="LogoLeveros.png" class="footer-logo" alt="Leveros">
-        <p>Portal interno de apoio ao time de Atendimento da Leveros.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Navegação</h4>
-        <a href="index.html">Início</a>
-        <a href="timeline.html">Timeline</a>
-        <a href="materiais.html">Materiais</a>
-        <a href="informativos.html">Informativos</a>
-      </div>
-      <div class="footer-col">
-        <h4>Gestão</h4>
-        <p>Responsável: Priscila Baldo | Matheus Alves</p>
-        <p>Customer Experience | Leveros</p>
+    <div class="main">
+      <div class="chat" id="chat"></div>
+      <div class="inputbar">
+        <textarea id="input" rows="1" placeholder="Pergunte algo, ex: 'como abrir protocolo de garantia sem laudo'..."></textarea>
+        <button class="sendbtn" id="btn-send">➤</button>
       </div>
     </div>
-    <div class="footer-bottom">© <span id="anoAtual"></span> CX Resolve · Portal Interno Leveros</div>
-  </footer>
-
+  </div>
 </div>
 
-<script type="module" src="app.js"></script>
+<div class="overlay" id="settings-overlay">
+  <div class="modal">
+    <h2>⚙️ Configurações da IA</h2>
+    <p class="desc"><b>Recomendado:</b> modo <b>proxy</b> — a chave fica no servidor e nunca chega ao navegador. O modo "chave direta" serve apenas para teste rápido e expõe a chave a qualquer pessoa que abrir a página.</p>
+    <div class="field">
+      <label>Modo de conexão</label>
+      <select id="conn-mode">
+        <option value="proxy">🔒 Proxy seguro (chave no servidor) — recomendado</option>
+        <option value="direct">⚠️ Chave direta no navegador (só para teste)</option>
+        <option value="none">🔎 Sem IA generativa (busca na base)</option>
+      </select>
+    </div>
+    <div class="field" id="row-proxy">
+      <label>URL do proxy</label>
+      <input type="text" id="proxy-url" placeholder="https://ia-do-book.SEU-USUARIO.workers.dev">
+      <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
+      <details>
+        <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
+        <pre>export default {
+  async fetch(req, env) {
+    const ORIGIN = '*'; // troque pelo dominio do site, ex: 'https://iadobook.pages.dev'
+    const cors = {
+      'Access-Control-Allow-Origin': ORIGIN,
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
+    if (req.method !== 'POST')
+      return new Response('Method Not Allowed', { status: 405, headers: cors });
 
+    const { model = 'gemini-2.5-flash', ...body } = await req.json();
+    const r = await fetch(
+      'https://generativelanguage.googleapis.com/v1beta/models/'
+        + encodeURIComponent(model) + ':generateContent',
+      { method: 'POST',
+        headers: { 'Content-Type': 'application/json',
+                   'x-goog-api-key': env.GEMINI_API_KEY },
+        body: JSON.stringify(body) }
+    );
+    return new Response(await r.text(),
+      { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
+  }
+}</pre>
+        <div class="hint">Deploy: <b>workers.cloudflare.com</b> → Create Worker → colar o código → Settings → Variables → criar o <i>secret</i> <b>GEMINI_API_KEY</b> → Deploy. Depois cole a URL do Worker no campo acima.</div>
+      </details>
+    </div>
+    <div class="field" id="row-key">
+      <label>Gemini API Key</label>
+      <input type="password" id="api-key" placeholder="Sua chave Gemini (ex.: AQ... ou AIzaSy...)">
+      <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
+      <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
+    </div>
+    <div class="field">
+      <label>Modelo</label>
+      
+      <select id="model-select">
+        <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (mais recente)</option>
+        <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
+        <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (rápido/leve)</option>
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (estável/legado)</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro (maior capacidade)</option>
+        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
+      </select>
+        
+      <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
+    </div>
+    <div class="field">
+      <label>Seu nome (operador)</label>
+      <input type="text" id="operator-name" placeholder="Ex: Júlio Santos">
+      <div class="small">Substitui automaticamente [Nome] nos scripts de atendimento da base.</div>
+    </div>
+    <div class="modal-footer">
+      <span id="test-status"></span>
+      <button class="btn" id="btn-test">🧪 Testar conexão</button>
+      <button class="btn" id="btn-cancel-settings">Cancelar</button>
+      <button class="btn primary" id="btn-save-settings">💾 Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================================
+   IA DO BOOK — LEVEROS
+   Arquitetura modular de 2 arquivos:
+     1) index.html        -> interface (este arquivo)
+     2) kb_entries.json    -> base de conhecimento (dados), carregada via fetch()
+
+   PARA ATUALIZAR A BASE:
+   - Edite/substitua o arquivo kb_entries.json no mesmo diretório do index.html
+     (mesmo formato: lista de objetos com secao, titulo, fonte, pagina, conteudo)
+   - Republique/re-hospede os 2 arquivos juntos (ou apenas sobrescreva o JSON
+     se o hosting permitir substituição individual de arquivos)
+   - Clique no botão 🔄 (recarregar base) ou dê um refresh na página
+   ========================================================================= */
+
+const KB_FILE = 'kb_entries.json';
+let KB = [];
+let KB_IDX = [];
+
+function stripAccents(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function norm(s){return stripAccents((s||'').toLowerCase()).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
+function tokenize(s){return norm(s).split(' ').filter(w=>w.length>1);}
+
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(!m) return n; if(!n) return m;
+  let prev=Array.from({length:n+1},(_,i)=>i);
+  for(let i=1;i<=m;i++){
+    let cur=[i];
+    for(let j=1;j<=n;j++){
+      const cost = a[i-1]===b[j-1] ? 0 : 1;
+      cur.push(Math.min(prev[j]+1, cur[j-1]+1, prev[j-1]+cost));
+    }
+    prev=cur;
+  }
+  return prev[n];
+}
+function similarity(a,b){
+  if(!a.length||!b.length) return 0;
+  const d=levenshtein(a,b);
+  return 1 - d/Math.max(a.length,b.length);
+}
+function bestTokenMatch(qTok, docTokens){
+  let best=0;
+  for(const t of docTokens){
+    if(t===qTok){ best=1; break; }
+    if(t.includes(qTok)||qTok.includes(t)){ best=Math.max(best,0.85); continue; }
+    const sim=similarity(qTok,t);
+    if(sim>best) best=sim;
+  }
+  return best;
+}
+
+function buildIndex(){
+  KB_IDX = KB.map(e=>{
+    const fullText = (e.titulo||'')+' '+(e.conteudo||'');
+    return {...e, _tokens: tokenize(fullText), _titleTokens: tokenize(e.titulo||'')};
+  });
+}
+
+function searchKB(query, topN=5){
+  const qTokens = tokenize(query);
+  if(!qTokens.length) return [];
+  const scored = KB_IDX.map(entry=>{
+    let score=0;
+    for(const qt of qTokens){
+      if(qt.length<3) continue;
+      const tScore = bestTokenMatch(qt, entry._titleTokens) * 1.6;
+      const cScore = bestTokenMatch(qt, entry._tokens);
+      score += Math.max(tScore, cScore) * (qt.length>=4?1:0.6);
+    }
+    const normContent = norm((entry.titulo||'')+' '+(entry.conteudo||''));
+    const normQuery = norm(query);
+    if(normQuery.length>4 && normContent.includes(normQuery)) score += 3;
+    return {entry, score};
+  });
+  scored.sort((a,b)=>b.score-a.score);
+  return scored.filter(s=>s.score>0.35).slice(0,topN);
+}
+
+function renderSidebar(){
+  const secoes = [...new Set(KB.map(e=>e.secao))].sort();
+  const fontes = [...new Set(KB.map(e=>e.fonte))];
+  document.getElementById('stat-total').textContent = KB.length;
+  document.getElementById('stat-fontes').textContent = fontes.length;
+  document.getElementById('stat-secoes').textContent = secoes.length;
+  const box = document.getElementById('section-list');
+  box.innerHTML='';
+  secoes.forEach(s=>{
+    const btn=document.createElement('button');
+    btn.className='chip';
+    btn.textContent=s;
+    btn.onclick=()=>{ input.value = 'Me explique sobre: ' + s.replace(/^\d+\.\s*/,''); sendMessage(); };
+    box.appendChild(btn);
+  });
+}
+
+const chatBox = document.getElementById('chat');
+const input = document.getElementById('input');
+const toast = document.getElementById('toast');
+function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3200); }
+
+function addMsg(text, who, srcHtml){
+  const div=document.createElement('div');
+  div.className='msg '+who;
+  div.innerHTML = (text||'').replace(/\n/g,'<br>');
+  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
+}
+function addTyping(){
+  const div=document.createElement('div');
+  div.className='msg bot'; div.id='typing-indicator';
+  div.innerHTML='<span class="typing"><span></span><span></span><span></span></span>';
+  chatBox.appendChild(div); chatBox.scrollTop=chatBox.scrollHeight;
+  return div;
+}
+
+/* ---------------------------------------------------------------------------
+   SEGURANCA DA CHAVE
+   Modo padrao = 'proxy': a chave NUNCA existe no front-end. O navegador chama
+   apenas a URL do proxy; o proxy (Cloudflare Worker / Cloud Function) guarda a
+   chave como secret de servidor e a injeta no header x-goog-api-key.
+   Modo 'direct' (opcional, so para teste): chave enviada em HEADER e guardada
+   por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
+--------------------------------------------------------------------------- */
+const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
+  
+function getSettings(){
+  const legacy = localStorage.getItem('leveros_api_key')||'';
+  const key = sessionStorage.getItem('leveros_api_key') || legacy;
+  let mode = localStorage.getItem('leveros_conn_mode');
+  const proxyUrl = (localStorage.getItem('leveros_proxy_url')||'').trim().replace(/\/+$/,'');
+  if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
+  
+  // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
+  let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
+  
+  // 2. Expandindo o filtro para descontinuar tanto as versões 1.5 quanto as 2.x antigas
+  if(!MODEL_FALLBACKS.includes(model)) model='gemini-3.7-flash'; 
+  
+  return {
+    mode, proxyUrl, apiKey: key, model,
+    remember: localStorage.getItem('leveros_remember_key')==='1',
+    operator: localStorage.getItem('leveros_operator')||'',
+    generative: (mode==='proxy' && !!proxyUrl) || (mode==='direct' && !!key)
+  };
+}
+  
+function applyOperator(text){
+  const op = getSettings().operator;
+  if(!op) return text;
+  return text.replace(/\[Nome\]|\[Seu Nome\]/gi, op);
+}
+
+function buildPrompt(userQuestion, contextEntries){
+  const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
+  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
+}
+
+function apiError(status, raw){
+  let msg='';
+  try{ msg = JSON.parse(raw)?.error?.message || ''; }catch(e){}
+  const map = {
+    400:'requisição inválida ou chave malformada',
+    401:'chave não autenticada',
+    403:'chave inválida, restrita por domínio/IP ou API "Generative Language" não habilitada no projeto',
+    404:'modelo inexistente para esta chave (tente outro modelo)',
+    429:'cota/limite de requisições excedido',
+    500:'erro interno do Google',
+    503:'modelo temporariamente sobrecarregado'
+  };
+  const e = new Error(`HTTP ${status} — ${map[status]||'falha na API'}${msg?': '+msg.slice(0,180):''}`);
+  e.status = status;
+  return e;
+}
+
+/* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL) */
+async function rawCall(model, promptText){
+  const {mode, proxyUrl, apiKey} = getSettings();
+  const payload = { contents:[{ role:'user', parts:[{text: promptText}] }],
+                    generationConfig:{ temperature:0.2 } };
+  let url, headers={'Content-Type':'application/json'}, body;
+
+  if(mode==='proxy'){
+    if(!proxyUrl) throw new Error('URL do proxy não configurada (⚙️ Configurações).');
+    url = proxyUrl;                     // a chave fica no servidor
+    body = JSON.stringify({model, ...payload});
+  }else{
+    if(!apiKey) throw new Error('Nenhuma chave configurada (⚙️ Configurações).');
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+    headers['x-goog-api-key'] = apiKey;  // header, nao query string
+    body = JSON.stringify(payload);
+  }
+
+  let resp;
+  try{ resp = await fetch(url, {method:'POST', headers, body}); }
+  catch(e){ throw new Error(mode==='proxy'
+      ? 'não foi possível alcançar o proxy (URL errada, CORS ou Worker fora do ar)'
+      : 'falha de rede/CORS ao chamar a API do Google'); }
+
+  const raw = await resp.text();
+  if(!resp.ok) throw apiError(resp.status, raw);
+  let data; try{ data = JSON.parse(raw); }catch(e){ throw new Error('resposta não-JSON do endpoint'); }
+  const cand = data?.candidates?.[0];
+  const text = cand?.content?.parts?.map(p=>p.text).filter(Boolean).join('\n');
+  if(!text){
+    const fr = cand?.finishReason || data?.promptFeedback?.blockReason;
+    throw new Error('resposta vazia da API' + (fr?` (motivo: ${fr})`:''));
+  }
+  return text;
+}
+
+/* Tenta o modelo escolhido e, em caso de 404 (modelo inexistente), os alternativos */
+async function callGemini(userQuestion, contextEntries){
+  const prompt = buildPrompt(userQuestion, contextEntries);
+  const {model} = getSettings();
+  const tries = [model, ...MODEL_FALLBACKS.filter(m=>m!==model)];
+  let last;
+  for(const m of tries){
+    try{
+      const out = await rawCall(m, prompt);
+      if(m!==model){ localStorage.setItem('leveros_model', m); showToast(`Modelo ajustado para ${m}.`); }
+      return out;
+    }catch(e){
+      last = e;
+      if(e.status!==404 && e.status!==503) break;   // só vale re-tentar modelo inexistente/sobrecarregado
+    }
+  }
+  throw last;
+}
+
+function extractiveAnswer(results, query){
+  if(!results.length){
+    return {
+      text: `Não encontrei nada na base de conhecimento sobre "${query}".\nTente descrever de outra forma (ex: nome do sistema, tipo de solicitação do cliente, ou motivo/submotivo).`,
+      src: ''
+    };
+  }
+  const top = results[0].entry;
+  let text = `📌 **${top.titulo}**\n\n${top.conteudo}`;
+  let src = `Fonte: ${top.fonte} — slide/pág. ${top.pagina} · Seção: ${top.secao}`;
+  if(results.length>1){
+    src += '<br><br><b>Veja também:</b><br>' + results.slice(1).map(r=>`• ${r.entry.titulo} <span class="small">(${r.entry.fonte}, ${r.entry.pagina})</span>`).join('<br>');
+  }
+  return {text, src};
+}
+
+async function sendMessage(){
+  const q = input.value.trim();
+  if(!q) return;
+  if(!KB.length){ showToast('Base ainda não carregada — verifique kb_entries.json'); return; }
+  addMsg(q,'user');
+  input.value=''; input.style.height='auto';
+
+  const typingEl = addTyping();
+  const results = searchKB(q, 5);
+  const {generative, mode} = getSettings();
+
+  try{
+    if(!generative) throw {__silent:true};
+    const answer = await callGemini(q, results);
+    typingEl.remove();
+    const tag = (mode==='proxy'?'Gerado com IA (proxy seguro)':'Gerado com IA');
+    const srcLine = results.length
+      ? tag+' · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ')
+      : tag+' (sem trecho específico encontrado na base)';
+    addMsg(applyOperator(answer), 'bot', srcLine);
+  }catch(err){
+    typingEl.remove();
+    const {text, src} = extractiveAnswer(results, q);
+    if(err && err.__silent){
+      addMsg(applyOperator(text), 'bot', src);
+    }else{
+      const detail = (err && err.message) ? err.message : 'erro desconhecido';
+      showToast('IA generativa indisponível: '+detail);
+      addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída da base — a IA generativa falhou: ${escapeHtml(detail)}</i>`);
+    }
+  }
+}
+
+document.getElementById('btn-send').onclick = sendMessage;
+input.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+});
+input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
+
+document.getElementById('btn-clear').onclick = ()=>{
+  chatBox.innerHTML=''; welcome();
+};
+
+function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+const overlay = document.getElementById('settings-overlay');
+const connMode = document.getElementById('conn-mode');
+const statusEl = document.getElementById('test-status');
+
+function syncModeRows(){
+  const m = connMode.value;
+  document.getElementById('row-proxy').classList.toggle('hidden', m!=='proxy');
+  document.getElementById('row-key').classList.toggle('hidden', m!=='direct');
+}
+connMode.onchange = ()=>{ syncModeRows(); statusEl.textContent=''; };
+
+document.getElementById('btn-settings').onclick = ()=>{
+  const s = getSettings();
+  connMode.value = s.mode;
+  document.getElementById('proxy-url').value = s.proxyUrl;
+  document.getElementById('api-key').value = s.apiKey;
+  document.getElementById('remember-key').checked = s.remember;
+  document.getElementById('model-select').value = s.model;
+  document.getElementById('operator-name').value = s.operator;
+  statusEl.textContent='';
+  syncModeRows();
+  overlay.classList.add('show');
+};
+document.getElementById('btn-cancel-settings').onclick = ()=> overlay.classList.remove('show');
+
+function persistSettings(){
+  const mode = connMode.value;
+  const key = document.getElementById('api-key').value.trim();
+  const remember = document.getElementById('remember-key').checked;
+  localStorage.setItem('leveros_conn_mode', mode);
+  localStorage.setItem('leveros_proxy_url', document.getElementById('proxy-url').value.trim());
+  localStorage.setItem('leveros_model', document.getElementById('model-select').value);
+  localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
+  // chave: nunca persistida no modo proxy; em modo direto vai para sessionStorage
+  sessionStorage.removeItem('leveros_api_key');
+  localStorage.removeItem('leveros_api_key');
+  localStorage.setItem('leveros_remember_key', remember?'1':'0');
+  if(mode==='direct' && key){
+    sessionStorage.setItem('leveros_api_key', key);
+    if(remember) localStorage.setItem('leveros_api_key', key);
+  }
+}
+
+document.getElementById('btn-save-settings').onclick = ()=>{
+  persistSettings();
+  overlay.classList.remove('show');
+  updateModeBadge();
+  showToast(connMode.value==='proxy' ? 'Configurações salvas — chave protegida no servidor.' : 'Configurações salvas.');
+};
+
+document.getElementById('btn-test').onclick = async ()=>{
+  persistSettings();
+  updateModeBadge();
+  const s = getSettings();
+  if(s.mode==='none'){ statusEl.className='warn'; statusEl.textContent='Modo sem IA: apenas busca na base.'; return; }
+  statusEl.className='warn'; statusEl.textContent='Testando...';
+  try{
+    await rawCall(s.model, 'Responda apenas: OK');
+    statusEl.className='ok';
+    statusEl.textContent = '✅ Conexão OK ('+s.model+(s.mode==='proxy'?' via proxy':' direto')+')';
+  }catch(e){
+    let hint='';
+    if(e.status===404) hint=' → escolha outro modelo';
+    if(e.status===403) hint=' → habilite a API Generative Language e revise restrições da chave';
+    if(e.status===429) hint=' → cota excedida, aguarde ou troque de projeto';
+    if(s.mode==='proxy' && !e.status) hint=' → confira a URL do Worker e o CORS';
+    statusEl.className='bad';
+    statusEl.textContent = '❌ '+e.message.slice(0,150)+hint;
+  }
+};
+
+function updateModeBadge(){
+  const badge = document.getElementById('mode-badge');
+  if(!KB.length){ badge.textContent='Base não carregada'; badge.className='badge err'; return; }
+  const s = getSettings();
+  if(s.mode==='proxy' && s.proxyUrl){ badge.textContent='IA Generativa · proxy seguro 🔒'; badge.className='badge'; }
+  else if(s.mode==='direct' && s.apiKey){ badge.textContent='IA Generativa · chave no navegador ⚠️'; badge.className='badge off'; }
+  else if(s.mode==='proxy'){ badge.textContent='Configure o proxy (⚙️)'; badge.className='badge off'; }
+  else { badge.textContent='Modo Busca Inteligente'; badge.className='badge off'; }
+}
+
+function welcome(){
+  addMsg('Olá! 👋 Sou a IA do Book da Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos — mesmo que escreva errado, eu entendo! 😉', 'bot');
+}
+
+async function loadKB(showToastOnSuccess){
+  try{
+    const resp = await fetch(KB_FILE + '?t=' + Date.now(), {cache:'no-store'});
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    if(!Array.isArray(data) || !data.length) throw new Error('JSON vazio ou formato inválido');
+    KB = data;
+    buildIndex();
+    renderSidebar();
+    updateModeBadge();
+    if(showToastOnSuccess) showToast(`Base recarregada: ${KB.length} itens.`);
+  }catch(err){
+    console.error('Erro ao carregar kb_entries.json:', err);
+    updateModeBadge();
+    addMsg(`⚠️ Não foi possível carregar a base de conhecimento (${KB_FILE}).\nMotivo: ${err.message}\n\nVerifique se o arquivo "kb_entries.json" está publicado no mesmo diretório do index.html, e se está acessível via HTTP(S) — este mecanismo não funciona ao abrir o HTML localmente via "file://".`, 'system');
+  }
+}
+
+document.getElementById('btn-reload').onclick = ()=> loadKB(true);
+
+loadKB(false);
+welcome();
+</script>
 </body>
 </html>
