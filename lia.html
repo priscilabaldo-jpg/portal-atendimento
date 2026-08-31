@@ -151,14 +151,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     if (req.method !== 'POST')
       return new Response('Method Not Allowed', { status: 405, headers: cors });
 
-    // Interactions API: espera { model, input } no corpo
     const { model = 'gemini-3.7-flash', ...body } = await req.json();
     const r = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/interactions',
+      'https://generativelanguage.googleapis.com/v1beta/models/'
+        + encodeURIComponent(model) + ':generateContent',
       { method: 'POST',
         headers: { 'Content-Type': 'application/json',
                    'x-goog-api-key': env.GEMINI_API_KEY },
-        body: JSON.stringify({ model, ...body }) }
+        body: JSON.stringify(body) }
     );
     return new Response(await r.text(),
       { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
@@ -169,7 +169,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field" id="row-key">
       <label>Gemini API Key</label>
-      <input type="password" id="api-key" placeholder="AQ.Ab... (ou AIzaSy... restrita)">
+      <input type="password" id="api-key" placeholder="AIzaSy...">
       <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
       <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
     </div>
@@ -213,14 +213,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
    - Republique/re-hospede os 2 arquivos juntos (ou apenas sobrescreva o JSON
      se o hosting permitir substituição individual de arquivos)
    - Clique no botão 🔄 (recarregar base) ou dê um refresh na página
-
-   ATENÇÃO — CHAVES DE API GEMINI (2026):
-   O Google migrou de "Standard keys" (AIzaSy...) para "Auth keys" (AQ.Ab...).
-   As Auth keys só funcionam de forma confiável no novo endpoint da
-   Interactions API (/v1beta/interactions), não mais no antigo
-   /v1beta/models/{model}:generateContent. Por isso este arquivo já chama
-   o endpoint novo em rawCall(). Se você usa uma chave Standard (AIzaSy)
-   restrita, ela também funciona nesse endpoint até setembro/2026.
    ========================================================================= */
 
 const KB_FILE = 'kb_entries.json';
@@ -392,23 +384,22 @@ function apiError(status, raw){
   return e;
 }
 
-/* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL)
-   Usa a Interactions API (v1beta/interactions), compatível com chaves
-   "Auth key" (AQ.Ab...) e com chaves "Standard" (AIzaSy...) restritas. */
+/* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL) */
 async function rawCall(model, promptText){
   const {mode, proxyUrl, apiKey} = getSettings();
+  const payload = { contents:[{ role:'user', parts:[{text: promptText}] }],
+                    generationConfig:{ temperature:0.2 } };
   let url, headers={'Content-Type':'application/json'}, body;
 
   if(mode==='proxy'){
     if(!proxyUrl) throw new Error('URL do proxy não configurada (⚙️ Configurações).');
     url = proxyUrl;                     // a chave fica no servidor
-    body = JSON.stringify({ model, input: promptText });
+    body = JSON.stringify({model, ...payload});
   }else{
     if(!apiKey) throw new Error('Nenhuma chave configurada (⚙️ Configurações).');
-    url = 'https://generativelanguage.googleapis.com/v1beta/interactions';
+    url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
     headers['x-goog-api-key'] = apiKey;  // header, nao query string
-    headers['Api-Revision'] = '2026-05-20';
-    body = JSON.stringify({ model, input: promptText });
+    body = JSON.stringify(payload);
   }
 
   let resp;
@@ -420,16 +411,11 @@ async function rawCall(model, promptText){
   const raw = await resp.text();
   if(!resp.ok) throw apiError(resp.status, raw);
   let data; try{ data = JSON.parse(raw); }catch(e){ throw new Error('resposta não-JSON do endpoint'); }
-
-  // Interactions API: o texto vem em steps[].content[] onde type === 'text',
-  // dentro de steps do tipo 'model_output'.
-  const textParts = (data.steps||[])
-    .filter(s => s.type === 'model_output')
-    .flatMap(s => (s.content||[]).filter(c => c.type === 'text').map(c => c.text));
-  const text = textParts.join('\n');
-
+  const cand = data?.candidates?.[0];
+  const text = cand?.content?.parts?.map(p=>p.text).filter(Boolean).join('\n');
   if(!text){
-    throw new Error('resposta vazia da API' + (data.status ? ` (status: ${data.status})` : ''));
+    const fr = cand?.finishReason || data?.promptFeedback?.blockReason;
+    throw new Error('resposta vazia da API' + (fr?` (motivo: ${fr})`:''));
   }
   return text;
 }
