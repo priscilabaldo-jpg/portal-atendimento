@@ -128,14 +128,14 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     <div class="field">
       <label>Modo de conexão</label>
       <select id="conn-mode">
-        <option value="proxy">🔒 Proxy seguro (chave no servidor) — recomendado</option>
+        <option value="proxy" selected>🔒 Proxy Vercel (/api/chat) — recomendado</option>
         <option value="direct">⚠️ Chave direta no navegador (só para teste)</option>
         <option value="none">🔎 Sem IA generativa (busca na base)</option>
       </select>
     </div>
     <div class="field" id="row-proxy">
       <label>URL do proxy</label>
-      <input type="text" id="proxy-url" placeholder="/api/chat">
+      <input type="text" id="proxy-url" placeholder="/api/chat" value="/api/chat">
       <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
       <details>
         <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
@@ -151,7 +151,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     if (req.method !== 'POST')
       return new Response('Method Not Allowed', { status: 405, headers: cors });
 
-    const { model = 'gemini-3.7-flash', ...body } = await req.json();
+    const { model, ...body } = await req.json();
+    if (!model) return new Response(JSON.stringify({ error: { message: 'Modelo não informado' } }), { status: 400, headers: cors });
     const r = await fetch(
       'https://generativelanguage.googleapis.com/v1beta/models/'
         + encodeURIComponent(model) + ':generateContent',
@@ -332,7 +333,7 @@ const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-fl
 function getSettings(){
   const key = document.getElementById('api-key').value.trim();
   const mode = document.getElementById('conn-mode').value;
-  const proxyUrl = document.getElementById('proxy-url').value.trim();
+  const proxyUrl = document.getElementById('proxy-url').value.trim() || '/api/chat';
   const model = document.getElementById('model-select').value;
 
   return {
