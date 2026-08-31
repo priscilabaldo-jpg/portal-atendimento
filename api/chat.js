@@ -1,54 +1,46 @@
-// Lida com o CORS preflight (a requisição de segurança do navegador)
-export async function onRequestOptions(context) {
-  return new Response(null, {
-    headers: {
-      'Access-Control-Allow-Origin': '*', 
-      'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    },
-  });
-}
+export default async function handler(req, res) {
+  const origin = process.env.ALLOWED_ORIGIN || req.headers.origin || '*';
 
-// Lida com a requisição real para o Gemini
-export async function onRequestPost(context) {
-  const { request, env } = context;
+  res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: { message: 'Método não permitido.' } });
+  }
+
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: { message: 'GEMINI_API_KEY não configurada na Vercel.' } });
+  }
+
+  const { model, ...payload } = req.body || {};
+  if (!model || typeof model !== 'string') {
+    return res.status(400).json({ error: { message: 'Modelo não informado.' } });
+  }
 
   try {
-    const body = await request.json();
-    const model = body.model || 'gemini-3.7-flash';
-    
-    // Remove o 'model' do body para enviar ao Google apenas o payload correto
-    const { model: _, ...geminiBody } = body;
-
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // AQUI o sistema puxa a variável que você salvou no painel!
-          'x-goog-api-key': env.GEMINI_API_KEY 
+          'x-goog-api-key': apiKey
         },
-        body: JSON.stringify(geminiBody)
+        body: JSON.stringify(payload)
       }
     );
 
-    const data = await response.text();
-    return new Response(data, {
-      status: response.status,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-    });
-
+    const text = await response.text();
+    res.status(response.status);
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    return res.send(text);
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Erro de comunicação' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    return res.status(502).json({
+      error: { message: `Falha ao conectar ao Gemini: ${error.message}` }
     });
   }
 }
