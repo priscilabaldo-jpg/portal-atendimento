@@ -407,6 +407,7 @@ async function rawCall(model, promptText){
     if(!apiKey) throw new Error('Nenhuma chave configurada (⚙️ Configurações).');
     url = 'https://generativelanguage.googleapis.com/v1beta/interactions';
     headers['x-goog-api-key'] = apiKey;  // header, nao query string
+    headers['Api-Revision'] = '2026-05-20';
     body = JSON.stringify({ model, input: promptText });
   }
 
