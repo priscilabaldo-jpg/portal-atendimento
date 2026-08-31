@@ -1,33 +1,54 @@
-export default async function handler(req, res) {
-  // Libera o CORS para a própria Vercel
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+// Lida com o CORS preflight (a requisição de segurança do navegador)
+export async function onRequestOptions(context) {
+  return new Response(null, {
+    headers: {
+      'Access-Control-Allow-Origin': '*', 
+      'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    },
+  });
+}
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Método não permitido' });
-  }
+// Lida com a requisição real para o Gemini
+export async function onRequestPost(context) {
+  const { request, env } = context;
 
-  // Puxa a chave de API das variáveis de ambiente da Vercel
-  const apiKey = process.env.GEMINI_API_KEY;
-  const { model = 'gemini-3.7-flash', ...body } = req.body;
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, x-goog-api-key',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
 
   try {
+    const body = await request.json();
+    const model = body.model || 'gemini-3.7-flash';
+    
+    // Remove o 'model' do body para enviar ao Google apenas o payload correto
+    const { model: _, ...geminiBody } = body;
+
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-goog-api-key': apiKey,
+          // AQUI o sistema puxa a variável que você salvou no painel!
+          'x-goog-api-key': env.GEMINI_API_KEY 
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify(geminiBody)
       }
     );
 
     const data = await response.text();
-    res.status(response.status).send(data);
+    return new Response(data, {
+      status: response.status,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+
   } catch (error) {
-    res.status(500).json({ error: 'Erro de comunicação com a IA' });
+    return new Response(JSON.stringify({ error: 'Erro de comunicação' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   }
 }
