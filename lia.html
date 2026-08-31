@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <title>IA do Book — Leveros CX Knowledge Assistant</title>
 <style>
 :root{
@@ -75,6 +76,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .hidden{display:none !important}
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+
+/* Estilos para Tabelas e Markdown */
+.msg table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13px; }
+.msg th, .msg td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; }
+.msg th { background: rgba(76,221,221,0.15); color: var(--azul); font-weight: 600; }
+.msg tr:nth-child(even) { background: rgba(0,0,0,0.15); }
+.msg p { margin: 0 0 10px 0; }
+.msg p:last-child { margin: 0; }
+.msg strong { color: var(--verde3); }
+  
 </style>
 </head>
 <body>
