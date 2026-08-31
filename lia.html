@@ -165,19 +165,19 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field" id="row-key">
       <label>Gemini API Key</label>
-      <input type="password" id="api-key" placeholder="AIzaSy...">
+      <input type="password" id="api-key" placeholder="Sua chave Gemini (ex.: AQ... ou AIzaSy...)">
       <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
       <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
     </div>
     <div class="field">
       <label>Modelo</label>
       
-      <<select id="model-select">
-        <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (Recomendado/Mais recente)</option>
-        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido e leve)</option>
-        <option value="gemini-3.1-pro">Gemini 3.1 Pro (Maior capacidade de raciocínio)</option>
-        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Versão Estável/Legada)</option>
-        <option value="gemini-flash-latest">Gemini Flash (Automático para o mais atual)</option>
+      <select id="model-select">
+        <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (recomendado)</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro (maior capacidade)</option>
+        <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
       </select>
         
       <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
@@ -325,7 +325,7 @@ function addTyping(){
    Modo 'direct' (opcional, so para teste): chave enviada em HEADER e guardada
    por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
 --------------------------------------------------------------------------- */
-const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
+const MODEL_FALLBACKS = ['gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
   
 function getSettings(){
   const legacy = localStorage.getItem('leveros_api_key')||'';
@@ -335,10 +335,10 @@ function getSettings(){
   if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
   
   // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
-  let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
+  let model = localStorage.getItem('leveros_model')||'gemini-2.5-flash';
   
   // 2. Expandindo o filtro para descontinuar tanto as versões 1.5 quanto as 2.x antigas
-  if(/^(gemini-1\.5|gemini-2)/.test(model)) model='gemini-3.7-flash'; 
+  if(!MODEL_FALLBACKS.includes(model)) model='gemini-2.5-flash'; 
   
   return {
     mode, proxyUrl, apiKey: key, model,
