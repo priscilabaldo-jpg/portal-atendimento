@@ -171,12 +171,15 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
     <div class="field">
       <label>Modelo</label>
-      <select id="model-select">
-        <option value="gemini-2.5-flash" selected>Gemini 2.5 Flash (recomendado)</option>
-        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-        <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-        <option value="gemini-flash-latest">Gemini Flash (latest)</option>
+      
+      <<select id="model-select">
+        <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (Recomendado/Mais recente)</option>
+        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (Rápido e leve)</option>
+        <option value="gemini-3.1-pro">Gemini 3.1 Pro (Maior capacidade de raciocínio)</option>
+        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Versão Estável/Legada)</option>
+        <option value="gemini-flash-latest">Gemini Flash (Automático para o mais atual)</option>
       </select>
+        
       <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
     </div>
     <div class="field">
@@ -322,16 +325,21 @@ function addTyping(){
    Modo 'direct' (opcional, so para teste): chave enviada em HEADER e guardada
    por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
 --------------------------------------------------------------------------- */
-const MODEL_FALLBACKS = ['gemini-2.5-flash','gemini-2.0-flash','gemini-flash-latest','gemini-2.5-pro'];
-
+const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.5-flash-lite', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-3.1-pro'];
+  
 function getSettings(){
   const legacy = localStorage.getItem('leveros_api_key')||'';
   const key = sessionStorage.getItem('leveros_api_key') || legacy;
   let mode = localStorage.getItem('leveros_conn_mode');
   const proxyUrl = (localStorage.getItem('leveros_proxy_url')||'').trim().replace(/\/+$/,'');
   if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
-  let model = localStorage.getItem('leveros_model')||'gemini-2.5-flash';
-  if(/^gemini-1\.5/.test(model)) model='gemini-2.5-flash';  // modelos 1.5 descontinuados
+  
+  // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
+  let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
+  
+  // 2. Expandindo o filtro para descontinuar tanto as versões 1.5 quanto as 2.x antigas
+  if(/^(gemini-1\.5|gemini-2)/.test(model)) model='gemini-3.7-flash'; 
+  
   return {
     mode, proxyUrl, apiKey: key, model,
     remember: localStorage.getItem('leveros_remember_key')==='1',
@@ -339,6 +347,7 @@ function getSettings(){
     generative: (mode==='proxy' && !!proxyUrl) || (mode==='direct' && !!key)
   };
 }
+  
 function applyOperator(text){
   const op = getSettings().operator;
   if(!op) return text;
