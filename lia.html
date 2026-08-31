@@ -316,8 +316,8 @@ function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); set
 function addMsg(text, who, srcHtml){
   const div=document.createElement('div');
   div.className='msg '+who;
-  div.innerHTML = (text||'').replace(/\n/g,'<br>');
-  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
+// Usa o Marked para processar tabelas/negritos, ou o fallback padrão caso falhe
+  div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text||'') : (text||'').replace(/\n/g,'<br>');  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
   return div;
@@ -369,7 +369,13 @@ function applyOperator(text){
 
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
-  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e sugira ao usuário reformular ou indicar a área responsável.\n\nBASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
+  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. 
+  
+  ⚠️ REGRA DE FORMATAÇÃO: Sempre que for explicar regras com múltiplos prazos, modelos de aparelhos (como Agratto, Midea, etc), defeitos ou fluxos comparativos, ORGANIZE OS DADOS OBRIGATORIAMENTE EM UMA TABELA MARKDOWN.
+  
+  Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base.
+  
+  BASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
 }
 
 function apiError(status, raw){
