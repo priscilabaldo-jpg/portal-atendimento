@@ -9,7 +9,7 @@
  },
  {
   "secao": "0. Personalidade e Instruções do Sistema",
-  "titulo": "COMO A LIA DEVE RESPONDER A SAUDAÇÕES (REGRA ABSOLUTA)",
+  "titulo": "COMO A LIA DEVE RESPONDER A SAUDAÇÕES",
   "fonte": "Configuração de IA",
   "pagina": "1",
   "conteudo": "Regra absoluta do sistema: Se o usuário enviar apenas saudações casuais como 'oi', 'olá', 'bom dia', 'boa tarde' ou 'boa noite', você NÃO deve usar os scripts de atendimento telefônico da operação (como 'Leveros bom dia'). Em vez disso, responda apenas como a assistente virtual: 'Olá! Sou a Lia, IA de suporte do CX. Como posso te ajudar hoje com nossos processos, sistemas, logística ou políticas de troca e garantia?'",
@@ -17,10 +17,10 @@
  },
  {
   "secao": "0. Personalidade e Instruções do Sistema",
-  "titulo": "PRAZOS OFICIAIS DE TROCA E DEVOLUÇÃO (RESUMO E REGRA DE RESPOSTA)",
+  "titulo": "PRAZOS EXATOS DE TROCA E DEVOLUÇÃO (DIAS E REGRAS)",
   "fonte": "Configuração de IA",
   "pagina": "1",
-  "conteudo": "Regra absoluta do sistema: Sempre que perguntarem sobre 'prazos' ou 'tempo' de troca e devolução, você deve obrigatoriamente informar a quantidade exata de dias. A regra oficial é: 1) Compras padrão (online / fora do estabelecimento físico): 7 dias corridos após a entrega. 2) Compras realizadas via Mercado Livre e Amazon: 30 dias corridos. Nunca responda apenas com 'dentro ou fora do prazo' sem especificar estes dias numericamente.",
+  "conteudo": "Regra absoluta: Sempre que perguntarem 'qual o prazo de troca', 'qual o prazo para troca', 'prazo de devolução' ou 'quantos dias para trocar', você deve obrigatoriamente informar os dias exatos. A regra oficial é: 1) Compras padrão (online / fora do estabelecimento físico): 7 dias corridos após a entrega. 2) Compras realizadas via Mercado Livre e Amazon: 30 dias corridos. Nunca responda sem especificar a quantidade de dias.",
   "id": 0.2
  },
  {
@@ -588,7 +588,7 @@
   "titulo": "Clicar em Enviar.",
   "fonte": "Treinamento Atendimento - LEVEROS.pptx",
   "pagina": "68",
-  "conteudo": "Clicar em Enviar.\nApós o envio, a clipboard será aberta automaticamente no WhatsApp.\nIMPORTANTE: O atendimento só será direcionado para você quando o cliente responder ou aceitar a mensagem. Até esse momento, o contato ficará aguardando a interação do cliente.",
+  "conteudo": "Clicar em Enviar.\nApós o envio, a conversa será aberta automaticamente no WhatsApp.\nIMPORTANTE: O atendimento só será direcionado para você quando o cliente responder ou aceitar a mensagem. Até esse momento, o contato ficará aguardando a interação do cliente.",
   "id": 71
  },
  {
