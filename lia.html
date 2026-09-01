@@ -339,12 +339,17 @@ function addTyping(){
    por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
 --------------------------------------------------------------------------- */
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
-  
+
+// URL padrão do proxy: já vem configurada para todo mundo que abrir o link,
+// sem precisar mexer em Configurações. Só é sobrescrita se a pessoa
+// configurar manualmente uma URL diferente (inclusive limpar o campo).
+const DEFAULT_PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
+
 function getSettings(){
   const legacy = localStorage.getItem('leveros_api_key')||'';
   const key = sessionStorage.getItem('leveros_api_key') || legacy;
   let mode = localStorage.getItem('leveros_conn_mode');
-  const proxyUrl = (localStorage.getItem('leveros_proxy_url')||'').trim().replace(/\/+$/,'');
+  const proxyUrl = (localStorage.getItem('leveros_proxy_url') ?? DEFAULT_PROXY_URL).trim().replace(/\/+$/,'');
   if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
   
   // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
@@ -399,7 +404,7 @@ function apiError(status, raw){
 async function rawCall(model, promptText){
   const {mode, proxyUrl, apiKey} = getSettings();
   const payload = { contents:[{ role:'user', parts:[{text: promptText}] }],
-                    generationConfig:{ temperature:0.2 } };
+                    generationConfig:{ temperature:0.2, thinkingConfig:{ thinkingBudget:0 } } };
   let url, headers={'Content-Type':'application/json'}, body;
 
   if(mode==='proxy'){
