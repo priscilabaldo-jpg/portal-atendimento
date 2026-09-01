@@ -54,26 +54,18 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 /* modal */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:50}
 .overlay.show{display:flex}
-.modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:460px;max-width:92vw;padding:22px}
-.modal h2{margin:0 0 6px;font-size:17px;color:var(--text-main)}
-.modal p.desc{color:var(--text-dim);font-size:12.5px;margin:0 0 16px}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);width:400px;max-width:92vw;padding:22px}
+.modal h2{margin:0 0 16px;font-size:17px;color:var(--text-main)}
 .field{margin-bottom:14px}
 .field label{display:block;font-size:12.5px;margin-bottom:6px;color:var(--text-dim)}
-.field input,.field select{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:10px 12px;border-radius:8px;font-size:13.5px}
-.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.field input{width:100%;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:10px 12px;border-radius:8px;font-size:13.5px}
+.modal-footer{display:flex;justify-content:flex-end;gap:10px;margin-top:16px}
 .btn{padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text-main);cursor:pointer;font-size:13px}
 .btn.primary{background:var(--azul);border-color:var(--azul);color:var(--verde1);font-weight:600}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--panel2);border:1px solid var(--border);padding:10px 18px;border-radius:10px;font-size:13px;opacity:0;transition:.3s;z-index:100;color:var(--text-main)}
 .toast.show{opacity:1}
 .small{font-size:11px;color:var(--text-dim)}
 .field .hint{font-size:11px;color:var(--text-dim);margin-top:5px;line-height:1.45}
-.modal{max-height:92vh;overflow-y:auto}
-.modal details{margin:8px 0 2px}
-.modal summary{cursor:pointer;font-size:11.5px;color:var(--azul)}
-.modal pre{background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:10px;overflow:auto;max-height:200px;color:var(--verde4);white-space:pre}
-#test-status{font-size:11.5px;margin-right:auto;align-self:center;max-width:200px;line-height:1.35}
-.ok{color:var(--verde3)}.bad{color:#ff8080}.warn{color:var(--amarelo)}
-.hidden{display:none !important}
 ::-webkit-scrollbar{width:8px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 
@@ -100,7 +92,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     <div class="header-actions">
       <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
       <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
-      <button class="icon-btn" id="btn-settings" title="Configurações (API Key Gemini)">⚙️</button>
+      <button class="icon-btn" id="btn-settings" title="Configurações do Operador">⚙️</button>
     </div>
   </header>
 
@@ -129,79 +121,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
 <div class="overlay" id="settings-overlay">
   <div class="modal">
-    <h2>⚙️ Configurações da IA</h2>
-    <p class="desc"><b>Recomendado:</b> modo <b>proxy</b> — a chave fica no servidor e nunca chega ao navegador. O modo "chave direta" serve apenas para teste rápido e expõe a chave a qualquer pessoa que abrir a página.</p>
-    <div class="field">
-      <label>Modo de conexão</label>
-      <select id="conn-mode">
-        <option value="proxy">🔒 Proxy seguro (chave no servidor) — recomendado</option>
-        <option value="direct">⚠️ Chave direta no navegador (só para teste)</option>
-        <option value="none">🔎 Sem IA generativa (busca na base)</option>
-      </select>
-    </div>
-    <div class="field" id="row-proxy">
-      <label>URL do proxy</label>
-      <input type="text" id="proxy-url" placeholder="https://ia-do-book.SEU-USUARIO.workers.dev">
-      <div class="hint">O proxy recebe a pergunta, injeta a chave no servidor e devolve a resposta do Gemini. Nenhuma chave no HTML, no localStorage ou na URL.</div>
-      <details>
-        <summary>Ver código do proxy (Cloudflare Worker — grátis, ~2 min)</summary>
-        <pre>export default {
-  async fetch(req, env) {
-    const ORIGIN = '*'; // troque pelo dominio do site, ex: 'https://iadobook.pages.dev'
-    const cors = {
-      'Access-Control-Allow-Origin': ORIGIN,
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS'
-    };
-    if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (req.method !== 'POST')
-      return new Response('Method Not Allowed', { status: 405, headers: cors });
-
-    const { model = 'gemini-2.5-flash', ...body } = await req.json();
-    const r = await fetch(
-      'https://generativelanguage.googleapis.com/v1beta/models/'
-        + encodeURIComponent(model) + ':generateContent',
-      { method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-                   'x-goog-api-key': env.GEMINI_API_KEY },
-        body: JSON.stringify(body) }
-    );
-    return new Response(await r.text(),
-      { status: r.status, headers: { ...cors, 'Content-Type': 'application/json' } });
-  }
-}</pre>
-        <div class="hint">Deploy: <b>workers.cloudflare.com</b> → Create Worker → colar o código → Settings → Variables → criar o <i>secret</i> <b>GEMINI_API_KEY</b> → Deploy. Depois cole a URL do Worker no campo acima.</div>
-      </details>
-    </div>
-    <div class="field" id="row-key">
-      <label>Gemini API Key</label>
-      <input type="password" id="api-key" placeholder="Sua chave Gemini (ex.: AQ... ou AIzaSy...)">
-      <div class="hint">Enviada em <b>header</b> (<code>x-goog-api-key</code>), nunca na URL — evita vazamento por histórico, logs e referrer. Mesmo assim continua visível no DevTools de quem abrir a página.</div>
-      <label style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="remember-key" style="width:auto">Lembrar neste navegador (se desmarcado, vale só nesta aba)</label>
-    </div>
-    <div class="field">
-      <label>Modelo</label>
-      
-      <select id="model-select">
-        <option value="gemini-3.7-flash" selected>Gemini 3.7 Flash (mais recente)</option>
-        <option value="gemini-3.6-flash">Gemini 3.6 Flash</option>
-        <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
-        <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash-Lite (rápido/leve)</option>
-        <option value="gemini-2.5-flash">Gemini 2.5 Flash (estável/legado)</option>
-        <option value="gemini-2.5-pro">Gemini 2.5 Pro (maior capacidade)</option>
-        <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash-Lite</option>
-      </select>
-        
-      <div class="hint">Se o modelo não existir para sua chave/projeto, o sistema tenta automaticamente os alternativos.</div>
-    </div>
+    <h2>⚙️ Configurações</h2>
     <div class="field">
       <label>Seu nome (operador)</label>
       <input type="text" id="operator-name" placeholder="Ex: Júlio Santos">
-      <div class="small">Substitui automaticamente [Nome] nos scripts de atendimento da base.</div>
+      <div class="hint">O seu nome substituirá automaticamente os campos [Nome] nos scripts de atendimento gerados pela IA.</div>
     </div>
     <div class="modal-footer">
-      <span id="test-status"></span>
-      <button class="btn" id="btn-test">🧪 Testar conexão</button>
       <button class="btn" id="btn-cancel-settings">Cancelar</button>
       <button class="btn primary" id="btn-save-settings">💾 Salvar</button>
     </div>
@@ -213,21 +139,16 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 <script>
 /* =========================================================================
    IA DO BOOK — LEVEROS
-   Arquitetura modular de 2 arquivos:
-     1) index.html        -> interface (este arquivo)
-     2) kb_entries.json    -> base de conhecimento (dados), carregada via fetch()
-
-   PARA ATUALIZAR A BASE:
-   - Edite/substitua o arquivo kb_entries.json no mesmo diretório do index.html
-     (mesmo formato: lista de objetos com secao, titulo, fonte, pagina, conteudo)
-   - Republique/re-hospede os 2 arquivos juntos (ou apenas sobrescreva o JSON
-     se o hosting permitir substituição individual de arquivos)
-   - Clique no botão 🔄 (recarregar base) ou dê um refresh na página
    ========================================================================= */
 
 const KB_FILE = 'kb_entries.json';
 let KB = [];
 let KB_IDX = [];
+
+// Configurações hardcoded invisíveis para o usuário final
+const PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
+const MODEL = 'gemini-3.7-flash';
+const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
 
 function stripAccents(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function norm(s){return stripAccents((s||'').toLowerCase()).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
@@ -315,7 +236,6 @@ function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); set
 function addMsg(text, who, srcHtml){
   const div=document.createElement('div');
   div.className='msg '+who;
-// Usa o Marked para processar tabelas/negritos, ou o fallback padrão caso falhe
   div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text||'') : (text||'').replace(/\n/g,'<br>');  
   if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
   chatBox.appendChild(div);
@@ -330,41 +250,12 @@ function addTyping(){
   return div;
 }
 
-/* ---------------------------------------------------------------------------
-   SEGURANCA DA CHAVE E GERENCIAMENTO DE CONFIGURAÇÕES
---------------------------------------------------------------------------- */
-const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
-
-// URL padrão do proxy
-const DEFAULT_PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
-
-function getSettings(){
-  const legacy = localStorage.getItem('leveros_api_key')||'';
-  const key = sessionStorage.getItem('leveros_api_key') || legacy;
-  
-  // 1. Força o modo 'proxy' como padrão para todos os usuários
-  let mode = localStorage.getItem('leveros_conn_mode') || 'proxy';
-  
-  // 2. Puxa a URL salva. Se for nula ou vazia, injeta a DEFAULT_PROXY_URL automaticamente
-  let savedProxyUrl = localStorage.getItem('leveros_proxy_url');
-  const proxyUrl = (savedProxyUrl ? savedProxyUrl : DEFAULT_PROXY_URL).trim().replace(/\/+$/,'');
-  
-  // 3. Atualizando o modelo padrão
-  let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
-  
-  // 4. Fallback de segurança para o modelo
-  if(!MODEL_FALLBACKS.includes(model)) model='gemini-3.7-flash';
-  
-  return {
-    mode, proxyUrl, apiKey: key, model,
-    remember: localStorage.getItem('leveros_remember_key')==='1',
-    operator: localStorage.getItem('leveros_operator')||'',
-    generative: (mode==='proxy' && !!proxyUrl) || (mode==='direct' && !!key)
-  };
+function getOperatorName(){
+  return localStorage.getItem('leveros_operator') || '';
 }
   
 function applyOperator(text){
-  const op = getSettings().operator;
+  const op = getOperatorName();
   if(!op) return text;
   return text.replace(/\[Nome\]|\[Seu Nome\]/gi, op);
 }
@@ -384,10 +275,10 @@ function apiError(status, raw){
   let msg='';
   try{ msg = JSON.parse(raw)?.error?.message || ''; }catch(e){}
   const map = {
-    400:'requisição inválida ou chave malformada',
-    401:'chave não autenticada',
-    403:'chave inválida, restrita por domínio/IP ou API "Generative Language" não habilitada no projeto',
-    404:'modelo inexistente para esta chave (tente outro modelo)',
+    400:'requisição inválida',
+    401:'chave de servidor não autenticada',
+    403:'acesso restrito',
+    404:'modelo inexistente (tente outro modelo no código)',
     429:'cota/limite de requisições excedido',
     500:'erro interno do Google',
     503:'modelo temporariamente sobrecarregado'
@@ -397,29 +288,25 @@ function apiError(status, raw){
   return e;
 }
 
-/* Faz UMA chamada ao modelo indicado, via proxy ou direto (header, nunca URL) */
-async function rawCall(model, promptText){
-  const {mode, proxyUrl, apiKey} = getSettings();
-  const payload = { contents:[{ role:'user', parts:[{text: promptText}] }],
-                    generationConfig:{ temperature:0.2, thinkingConfig:{ thinkingBudget:0 } } };
-  let url, headers={'Content-Type':'application/json'}, body;
-
-  if(mode==='proxy'){
-    if(!proxyUrl) throw new Error('URL do proxy não configurada (⚙️ Configurações).');
-    url = proxyUrl;                     // a chave fica no servidor
-    body = JSON.stringify({model, ...payload});
-  }else{
-    if(!apiKey) throw new Error('Nenhuma chave configurada (⚙️ Configurações).');
-    url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
-    headers['x-goog-api-key'] = apiKey;  // header, nao query string
-    body = JSON.stringify(payload);
-  }
-
+/* Chamada hardcoded para o Proxy Seguro */
+async function rawCall(modelToUse, promptText){
+  const payload = { 
+    model: modelToUse, 
+    contents:[{ role:'user', parts:[{text: promptText}] }],
+    generationConfig:{ temperature:0.2, thinkingConfig:{ thinkingBudget:0 } } 
+  };
+  
   let resp;
-  try{ resp = await fetch(url, {method:'POST', headers, body}); }
-  catch(e){ throw new Error(mode==='proxy'
-      ? 'não foi possível alcançar o proxy (URL errada, CORS ou Worker fora do ar)'
-      : 'falha de rede/CORS ao chamar a API do Google'); }
+  try{ 
+    resp = await fetch(PROXY_URL, {
+      method:'POST', 
+      headers:{'Content-Type':'application/json'}, 
+      body: JSON.stringify(payload)
+    }); 
+  }
+  catch(e){ 
+    throw new Error('não foi possível alcançar o proxy (URL errada ou Worker fora do ar)'); 
+  }
 
   const raw = await resp.text();
   if(!resp.ok) throw apiError(resp.status, raw);
@@ -433,23 +320,19 @@ async function rawCall(model, promptText){
   return text;
 }
 
-/* Tenta o modelo escolhido e, em caso de 404 (modelo inexistente), os alternativos */
 async function callGemini(userQuestion, contextEntries){
   const prompt = buildPrompt(userQuestion, contextEntries);
-  const {model} = getSettings();
-  const tries = [model, ...MODEL_FALLBACKS.filter(m=>m!==model)];
-  let last;
-  for(const m of tries){
+  let lastError;
+  
+  for(const m of MODEL_FALLBACKS){
     try{
-      const out = await rawCall(m, prompt);
-      if(m!==model){ localStorage.setItem('leveros_model', m); showToast(`Modelo ajustado para ${m}.`); }
-      return out;
+      return await rawCall(m, prompt);
     }catch(e){
-      last = e;
-      if(e.status!==404 && e.status!==503) break;   // só vale re-tentar modelo inexistente/sobrecarregado
+      lastError = e;
+      if(e.status!==404 && e.status!==503) break; // só tenta fallbacks se não encontrar modelo ou se estiver sobrecarregado
     }
   }
-  throw last;
+  throw lastError;
 }
 
 function extractiveAnswer(results, query){
@@ -477,27 +360,22 @@ async function sendMessage(){
 
   const typingEl = addTyping();
   const results = searchKB(q, 5);
-  const {generative, mode} = getSettings();
 
   try{
-    if(!generative) throw {__silent:true};
     const answer = await callGemini(q, results);
     typingEl.remove();
-    const tag = (mode==='proxy'?'Gerado com IA (proxy seguro)':'Gerado com IA');
+    
     const srcLine = results.length
-      ? tag+' · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ')
-      : tag+' (sem trecho específico encontrado na base)';
+      ? 'Gerado com IA · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ')
+      : 'Gerado com IA (sem trecho específico encontrado na base)';
+    
     addMsg(applyOperator(answer), 'bot', srcLine);
   }catch(err){
     typingEl.remove();
     const {text, src} = extractiveAnswer(results, q);
-    if(err && err.__silent){
-      addMsg(applyOperator(text), 'bot', src);
-    }else{
-      const detail = (err && err.message) ? err.message : 'erro desconhecido';
-      showToast('IA generativa indisponível: '+detail);
-      addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída da base — a IA generativa falhou: ${escapeHtml(detail)}</i>`);
-    }
+    const detail = (err && err.message) ? err.message : 'erro desconhecido';
+    showToast('IA indisponível no momento.');
+    addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída direto da base (falha na IA: ${escapeHtml(detail)})</i>`);
   }
 }
 
@@ -513,85 +391,26 @@ document.getElementById('btn-clear').onclick = ()=>{
 
 function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
+// Configurações do Operador
 const overlay = document.getElementById('settings-overlay');
-const connMode = document.getElementById('conn-mode');
-const statusEl = document.getElementById('test-status');
-
-function syncModeRows(){
-  const m = connMode.value;
-  document.getElementById('row-proxy').classList.toggle('hidden', m!=='proxy');
-  document.getElementById('row-key').classList.toggle('hidden', m!=='direct');
-}
-connMode.onchange = ()=>{ syncModeRows(); statusEl.textContent=''; };
-
 document.getElementById('btn-settings').onclick = ()=>{
-  const s = getSettings();
-  connMode.value = s.mode;
-  document.getElementById('proxy-url').value = s.proxyUrl;
-  document.getElementById('api-key').value = s.apiKey;
-  document.getElementById('remember-key').checked = s.remember;
-  document.getElementById('model-select').value = s.model;
-  document.getElementById('operator-name').value = s.operator;
-  statusEl.textContent='';
-  syncModeRows();
+  document.getElementById('operator-name').value = getOperatorName();
   overlay.classList.add('show');
 };
 document.getElementById('btn-cancel-settings').onclick = ()=> overlay.classList.remove('show');
-
-function persistSettings(){
-  const mode = connMode.value;
-  const key = document.getElementById('api-key').value.trim();
-  const remember = document.getElementById('remember-key').checked;
-  localStorage.setItem('leveros_conn_mode', mode);
-  localStorage.setItem('leveros_proxy_url', document.getElementById('proxy-url').value.trim());
-  localStorage.setItem('leveros_model', document.getElementById('model-select').value);
-  localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
-  // chave: nunca persistida no modo proxy; em modo direto vai para sessionStorage
-  sessionStorage.removeItem('leveros_api_key');
-  localStorage.removeItem('leveros_api_key');
-  localStorage.setItem('leveros_remember_key', remember?'1':'0');
-  if(mode==='direct' && key){
-    sessionStorage.setItem('leveros_api_key', key);
-    if(remember) localStorage.setItem('leveros_api_key', key);
-  }
-}
-
 document.getElementById('btn-save-settings').onclick = ()=>{
-  persistSettings();
+  localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
   overlay.classList.remove('show');
-  updateModeBadge();
-  showToast(connMode.value==='proxy' ? 'Configurações salvas — chave protegida no servidor.' : 'Configurações salvas.');
-};
-
-document.getElementById('btn-test').onclick = async ()=>{
-  persistSettings();
-  updateModeBadge();
-  const s = getSettings();
-  if(s.mode==='none'){ statusEl.className='warn'; statusEl.textContent='Modo sem IA: apenas busca na base.'; return; }
-  statusEl.className='warn'; statusEl.textContent='Testando...';
-  try{
-    await rawCall(s.model, 'Responda apenas: OK');
-    statusEl.className='ok';
-    statusEl.textContent = '✅ Conexão OK ('+s.model+(s.mode==='proxy'?' via proxy':' direto')+')';
-  }catch(e){
-    let hint='';
-    if(e.status===404) hint=' → escolha outro modelo';
-    if(e.status===403) hint=' → habilite a API Generative Language e revise restrições da chave';
-    if(e.status===429) hint=' → cota excedida, aguarde ou troque de projeto';
-    if(s.mode==='proxy' && !e.status) hint=' → confira a URL do Worker e o CORS';
-    statusEl.className='bad';
-    statusEl.textContent = '❌ '+e.message.slice(0,150)+hint;
-  }
+  showToast('Nome salvo com sucesso!');
 };
 
 function updateModeBadge(){
   const badge = document.getElementById('mode-badge');
-  if(!KB.length){ badge.textContent='Base não carregada'; badge.className='badge err'; return; }
-  const s = getSettings();
-  if(s.mode==='proxy' && s.proxyUrl){ badge.textContent='IA Generativa · proxy seguro 🔒'; badge.className='badge'; }
-  else if(s.mode==='direct' && s.apiKey){ badge.textContent='IA Generativa · chave no navegador ⚠️'; badge.className='badge off'; }
-  else if(s.mode==='proxy'){ badge.textContent='Configure o proxy (⚙️)'; badge.className='badge off'; }
-  else { badge.textContent='Modo Busca Inteligente'; badge.className='badge off'; }
+  if(!KB.length){ 
+    badge.textContent='Base não carregada'; badge.className='badge err'; return; 
+  }
+  badge.textContent = 'IA Generativa Ativa'; 
+  badge.className = 'badge';
 }
 
 function welcome(){
@@ -612,7 +431,7 @@ async function loadKB(showToastOnSuccess){
   }catch(err){
     console.error('Erro ao carregar kb_entries.json:', err);
     updateModeBadge();
-    addMsg(`⚠️ Não foi possível carregar a base de conhecimento (${KB_FILE}).\nMotivo: ${err.message}\n\nVerifique se o arquivo "kb_entries.json" está publicado no mesmo diretório do index.html, e se está acessível via HTTP(S) — este mecanismo não funciona ao abrir o HTML localmente via "file://".`, 'system');
+    addMsg(`⚠️ Não foi possível carregar a base de conhecimento (${KB_FILE}).\nMotivo: ${err.message}\n\nVerifique se o arquivo "kb_entries.json" está acessível.`, 'system');
   }
 }
 
