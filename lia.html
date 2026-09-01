@@ -288,12 +288,12 @@ function apiError(status, raw){
   return e;
 }
 
-/* Chamada hardcoded para o Proxy Seguro */
+/* Chamada hardcoded para o Proxy Seguro com a correção de generationConfig */
 async function rawCall(modelToUse, promptText){
   const payload = { 
     model: modelToUse, 
     contents:[{ role:'user', parts:[{text: promptText}] }],
-    generationConfig:{ temperature:0.2, thinkingConfig:{ thinkingBudget:0 } } 
+    generationConfig:{ temperature: 0.2 } 
   };
   
   let resp;
