@@ -24,6 +24,14 @@
   "id": 0.2
  },
  {
+  "secao": "0. Personalidade e Instruções do Sistema",
+  "titulo": "DICIONÁRIO MESTRE DE PRAZOS OPERACIONAIS (REGRA ABSOLUTA)",
+  "fonte": "Configuração de IA",
+  "pagina": "1",
+  "conteudo": "Regra absoluta: Sempre que um operador perguntar sobre SLA, prazos, dias, horas ou tempo de retorno para qualquer processo, use ESTE DICIONÁRIO como sua fonte principal e obrigatoriamente cite os números: \n- Envio de Evidências / Fotos: O cliente tem 24 horas (úteis) para enviar, senão o protocolo é encerrado. \n- Análise de Extravio (Logística): 7 dias úteis para retorno. \n- Análise de Troca/Devolução (N2): 3 dias úteis para contato e até 20 dias para o processo total. \n- Peça / Acessório Faltante: 15 dias corridos após a entrega (Exceção: LG RAC e CAC são 30 dias). Após isso, vira 'compra de peça'. \n- Carta de Correção (Endereço): Acréscimo de +3 dias úteis no prazo (mesma cidade) ou +7 dias úteis (cidade diferente). \n- Faturamento Agendado: Nota Fiscal gerada até 3 dias úteis antes da data de entrega. \n- Prazos de Garantia de Fábrica: Busque obrigatoriamente pela 'Tabela de Prazos de Garantia por Marca' na base para responder (Atenção às diferenças entre Garantia Legal e Contratual).",
+  "id": 0.3
+ },
+ {
   "secao": "1. Institucional: Leveros, Clientes e Canais de Venda",
   "titulo": "INTRODUÇÃO",
   "fonte": "Treinamento Atendimento - LEVEROS.pptx",
@@ -340,7 +348,7 @@
   "titulo": "⭐ Reclame Aqui (R.A.)",
   "fonte": "Treinamento Atendimento - LEVEROS.pptx",
   "pagina": "36",
-  "conteudo": "⭐ Reclame Aqui (R.A.)\nAtendimento das reclamações registradas pelos clientes na plataforma Reclame Aqui. A equipe analisa o histórico do caso, verifica as informações necessárias junto às áreas envolvidas e elabora uma resposta formal ao consumidor, buscando solucionar a demanda e melhorar sua percepção sobre a empresa.\n⚖️ Procon\nTratativa das reclamações e notificações encaminhadas pelos órgãos de defesa do consumidor. Esses casos exigem análise detalhada do histórico de atendimento, documentos e evidências para elaboração de respostas formais dentro dos prazos estabelecidos pelos órgãos competentes.\n🤝 Disputas\nAnálise e acompanhamento de disputas abertas por clientes em marketplaces, intermediadores de pagamento ou plataformas parceiras. A área reúne evidências, documentos, comprovantes e informações do pedido para defender a posição da empresa ou viabilizar a melhor solução para o caso.",
+  "conteudo": "⭐ Reclame Aqui (R.A.)\nAtendimento das reclamation registradas pelos clientes na plataforma Reclame Aqui. A equipe analisa o histórico do caso, verifica as informações necessárias junto às áreas envolvidas e elabora uma resposta formal ao consumidor, buscando solucionar a demanda e melhorar sua percepção sobre a empresa.\n⚖️ Procon\nTratativa das reclamações e notificações encaminhadas pelos órgãos de defesa do consumidor. Esses casos exigem análise detalhada do histórico de atendimento, documentos e evidências para elaboração de respostas formais dentro dos prazos estabelecidos pelos órgãos competentes.\n🤝 Disputas\nAnálise e acompanhamento de disputas abertas por clientes em marketplaces, intermediadores de pagamento ou plataformas parceiras. A área reúne evidências, documentos, comprovantes e informações do pedido para defender a posição da empresa ou viabilizar a melhor solução para o caso.",
   "id": 40
  },
  {
@@ -611,7 +619,7 @@
   "secao": "6. Sistemas: Uappi, SAP, Intergrall, Bot, AtendeAki, Rastreio",
   "titulo": "Para efetuar uma ligação, basta digitar no campo 00(zero zero) e depois o número do client",
   "fonte": "Treinamento Atendimento - LEVEROS.pptx",
-  "pagina": "71",
+  "pagina": "74",
   "conteudo": "Para efetuar uma ligação, basta digitar no campo 00(zero zero) e depois o número do cliente com DD.\n\nEXEMPLO: 0011912345678\nApós digitar o número desejado, aperte no botão de discagem e espere o cliente atender.",
   "id": 74
  },
