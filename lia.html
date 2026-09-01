@@ -85,7 +85,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .msg p { margin: 0 0 10px 0; }
 .msg p:last-child { margin: 0; }
 .msg strong { color: var(--verde3); }
-  
 </style>
 </head>
 <body>
@@ -107,7 +106,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
   <div class="body">
     <aside class="sidebar">
-      <h3>Base de Conhecimentoooooo</h3>
+      <h3>Base de Conhecimento</h3>
       <div class="stat">
         <b id="stat-total">0</b> itens indexados<br>
         <b id="stat-fontes">0</b> arquivos-fonte<br>
@@ -317,7 +316,8 @@ function addMsg(text, who, srcHtml){
   const div=document.createElement('div');
   div.className='msg '+who;
 // Usa o Marked para processar tabelas/negritos, ou o fallback padrão caso falhe
-  div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text||'') : (text||'').replace(/\n/g,'<br>');  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
+  div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text||'') : (text||'').replace(/\n/g,'<br>');  
+  if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
   return div;
@@ -331,32 +331,29 @@ function addTyping(){
 }
 
 /* ---------------------------------------------------------------------------
-   SEGURANCA DA CHAVE
-   Modo padrao = 'proxy': a chave NUNCA existe no front-end. O navegador chama
-   apenas a URL do proxy; o proxy (Cloudflare Worker / Cloud Function) guarda a
-   chave como secret de servidor e a injeta no header x-goog-api-key.
-   Modo 'direct' (opcional, so para teste): chave enviada em HEADER e guardada
-   por padrao em sessionStorage (apagada ao fechar a aba), nunca na URL.
+   SEGURANCA DA CHAVE E GERENCIAMENTO DE CONFIGURAÇÕES
 --------------------------------------------------------------------------- */
 const MODEL_FALLBACKS = ['gemini-3.7-flash', 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
 
-// URL padrão do proxy: já vem configurada para todo mundo que abrir o link,
-// sem precisar mexer em Configurações. Só é sobrescrita se a pessoa
-// configurar manualmente uma URL diferente (inclusive limpar o campo).
+// URL padrão do proxy
 const DEFAULT_PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
 
 function getSettings(){
   const legacy = localStorage.getItem('leveros_api_key')||'';
   const key = sessionStorage.getItem('leveros_api_key') || legacy;
-  let mode = localStorage.getItem('leveros_conn_mode');
-  const proxyUrl = (localStorage.getItem('leveros_proxy_url') ?? DEFAULT_PROXY_URL).trim().replace(/\/+$/,'');
-  if(!mode) mode = proxyUrl ? 'proxy' : (key ? 'direct' : 'proxy');
   
-  // 1. Atualizando o modelo padrão caso não tenha nenhum salvo
+  // 1. Força o modo 'proxy' como padrão para todos os usuários
+  let mode = localStorage.getItem('leveros_conn_mode') || 'proxy';
+  
+  // 2. Puxa a URL salva. Se for nula ou vazia, injeta a DEFAULT_PROXY_URL automaticamente
+  let savedProxyUrl = localStorage.getItem('leveros_proxy_url');
+  const proxyUrl = (savedProxyUrl ? savedProxyUrl : DEFAULT_PROXY_URL).trim().replace(/\/+$/,'');
+  
+  // 3. Atualizando o modelo padrão
   let model = localStorage.getItem('leveros_model')||'gemini-3.7-flash';
   
-  // 2. Expandindo o filtro para descontinuar tanto as versões 1.5 quanto as 2.x antigas
-  if(!MODEL_FALLBACKS.includes(model)) model='gemini-3.7-flash'; 
+  // 4. Fallback de segurança para o modelo
+  if(!MODEL_FALLBACKS.includes(model)) model='gemini-3.7-flash';
   
   return {
     mode, proxyUrl, apiKey: key, model,
