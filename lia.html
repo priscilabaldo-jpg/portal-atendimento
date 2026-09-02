@@ -154,7 +154,13 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
 <div class="toast" id="toast"></div>
 
-<script>
+<script type="module">
+/* =========================================================================
+   IMPORTANDO O BANCO DE DADOS DO SEU APP.JS
+   ========================================================================= */
+import { auth, db } from './app.js';
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
 /* =========================================================================
    IA DO BOOK — LEVEROS
    ========================================================================= */
@@ -166,7 +172,6 @@ let KB_IDX = [];
 // Configurações hardcoded invisíveis para o usuário final
 const PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
 
-// FOCO NA VELOCIDADE: Os modelos "-flash-lite" são priorizados como os mais rápidos
 const MODEL_FALLBACKS = [
   'gemini-3.5-flash-lite', 
   'gemini-2.5-flash-lite', 
@@ -250,7 +255,7 @@ function renderSidebar(){
     const btn=document.createElement('button');
     btn.className='chip';
     btn.textContent=s;
-    btn.onclick=()=>{ input.value = 'Me explique sobre: ' + s.replace(/^\d+\.\s*/,''); sendMessage(); };
+    btn.onclick=()=>{ document.getElementById('input').value = 'Me explique sobre: ' + s.replace(/^\d+\.\s*/,''); window.sendMessage(); };
     box.appendChild(btn);
   });
 }
@@ -260,15 +265,40 @@ const input = document.getElementById('input');
 const toast = document.getElementById('toast');
 function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3200); }
 
-function addMsg(text, who, srcHtml){
+function addMsg(text, who, srcHtml, saveToHistory = true){
   const div=document.createElement('div');
   div.className='msg '+who;
   div.innerHTML = typeof marked !== 'undefined' ? marked.parse(text||'') : (text||'').replace(/\n/g,'<br>');  
   if(srcHtml){ const s=document.createElement('div'); s.className='src'; s.innerHTML=srcHtml; div.appendChild(s); }
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
+  
+  if (saveToHistory && who !== 'system') {
+    // 1. Salvar no LocalStorage (para a tela manter a conversa viva)
+    let history = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
+    history.push({ text, who, srcHtml });
+    if(history.length > 50) history.shift(); 
+    localStorage.setItem('lia_chat_history', JSON.stringify(history));
+
+    // 2. Salvar no Firebase Firestore através da conexão importada do app.js
+    const operador = getOperatorName() || 'Anônimo';
+    const emailOperador = auth.currentUser ? auth.currentUser.email : 'nao_logado';
+
+    addDoc(collection(db, 'historico_ia_lia'), {
+      operador_nome: operador,
+      operador_email: emailOperador,
+      mensagem: text,
+      remetente: who,
+      origem_ia: srcHtml || null,
+      data_hora: serverTimestamp()
+    }).catch(error => {
+      console.warn("Aviso: Não foi possível salvar o histórico no Firebase. Apenas localmente.", error);
+    });
+  }
+
   return div;
 }
+
 function addTyping(){
   const div=document.createElement('div');
   div.className='msg bot'; div.id='typing-indicator';
@@ -315,17 +345,16 @@ function apiError(status, raw){
     400:'requisição inválida',
     401:'chave de servidor não autenticada',
     403:'acesso restrito',
-    404:'modelo inexistente (tente outro modelo no código)',
-    429:'cota/limite de requisições excedido',
-    500:'erro interno do Google',
-    503:'modelo temporariamente sobrecarregado'
+    404:'modelo inexistente',
+    429:'cota excedida',
+    500:'erro interno',
+    503:'sobrecarregado'
   };
   const e = new Error(`HTTP ${status} — ${map[status]||'falha na API'}${msg?': '+msg.slice(0,180):''}`);
   e.status = status;
   return e;
 }
 
-/* Chamada hardcoded para o Proxy Seguro com a correção de generationConfig */
 async function rawCall(modelToUse, promptText){
   const payload = { 
     model: modelToUse, 
@@ -342,17 +371,16 @@ async function rawCall(modelToUse, promptText){
     }); 
   }
   catch(e){ 
-    throw new Error('não foi possível alcançar o proxy (URL errada ou Worker fora do ar)'); 
+    throw new Error('falha de conexão com proxy'); 
   }
 
   const raw = await resp.text();
   if(!resp.ok) throw apiError(resp.status, raw);
-  let data; try{ data = JSON.parse(raw); }catch(e){ throw new Error('resposta não-JSON do endpoint'); }
+  let data; try{ data = JSON.parse(raw); }catch(e){ throw new Error('resposta inválida'); }
   const cand = data?.candidates?.[0];
   const text = cand?.content?.parts?.map(p=>p.text).filter(Boolean).join('\n');
   if(!text){
-    const fr = cand?.finishReason || data?.promptFeedback?.blockReason;
-    throw new Error('resposta vazia da API' + (fr?` (motivo: ${fr})`:''));
+    throw new Error('resposta vazia');
   }
   return text;
 }
@@ -360,13 +388,12 @@ async function rawCall(modelToUse, promptText){
 async function callGemini(userQuestion, contextEntries){
   const prompt = buildPrompt(userQuestion, contextEntries);
   let lastError;
-  
   for(const m of MODEL_FALLBACKS){
     try{
       return await rawCall(m, prompt);
     }catch(e){
       lastError = e;
-      if(e.status!==404 && e.status!==503) break; // só tenta fallbacks se não encontrar modelo ou se estiver sobrecarregado
+      if(e.status!==404 && e.status!==503) break; 
     }
   }
   throw lastError;
@@ -375,23 +402,21 @@ async function callGemini(userQuestion, contextEntries){
 function extractiveAnswer(results, query){
   if(!results.length){
     return {
-      text: `Não encontrei nada na base de conhecimento sobre "${query}".\nTente descrever de outra forma (ex: nome do sistema, tipo de solicitação do cliente, ou motivo/submotivo).`,
+      text: `Não encontrei nada na base de conhecimento sobre "${query}".\nTente descrever de outra forma.`,
       src: ''
     };
   }
   const top = results[0].entry;
   let text = `📌 **${top.titulo}**\n\n${top.conteudo}`;
-  let src = `Fonte: ${top.fonte} — slide/pág. ${top.pagina} · Seção: ${top.secao}`;
-  if(results.length>1){
-    src += '<br><br><b>Veja também:</b><br>' + results.slice(1).map(r=>`• ${r.entry.titulo} <span class="small">(${r.entry.fonte}, ${r.entry.pagina})</span>`).join('<br>');
-  }
+  let src = `Fonte: ${top.fonte} — pág. ${top.pagina}`;
   return {text, src};
 }
 
-async function sendMessage(){
+// Em módulos, funções atreladas a eventos 'onclick' no HTML (como na renderSidebar) precisam ser globais
+window.sendMessage = async function(){
   const q = input.value.trim();
   if(!q) return;
-  if(!KB.length){ showToast('Base ainda não carregada — verifique kb_entries.json'); return; }
+  if(!KB.length){ showToast('Base não carregada.'); return; }
   addMsg(q,'user');
   input.value=''; input.style.height='auto';
 
@@ -401,34 +426,28 @@ async function sendMessage(){
   try{
     const answer = await callGemini(q, results);
     typingEl.remove();
-    
-    const srcLine = results.length
-      ? 'Gerado com IA · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ')
-      : 'Gerado com IA (sem trecho específico encontrado na base)';
-    
+    const srcLine = results.length ? 'Gerado com IA · Baseado em: ' + results.map(r=>r.entry.titulo).slice(0,3).join(' · ') : 'Gerado com IA';
     addMsg(applyOperator(answer), 'bot', srcLine);
   }catch(err){
     typingEl.remove();
     const {text, src} = extractiveAnswer(results, q);
-    const detail = (err && err.message) ? err.message : 'erro desconhecido';
     showToast('IA indisponível no momento.');
-    addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída direto da base (falha na IA: ${escapeHtml(detail)})</i>`);
+    addMsg(applyOperator(text), 'bot', src + `<br><i>⚠️ Resposta extraída da base</i>`);
   }
 }
 
-document.getElementById('btn-send').onclick = sendMessage;
+document.getElementById('btn-send').onclick = window.sendMessage;
 input.addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); window.sendMessage(); }
 });
 input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
 
 document.getElementById('btn-clear').onclick = ()=>{
-  chatBox.innerHTML=''; welcome();
+  chatBox.innerHTML='';
+  localStorage.removeItem('lia_chat_history'); 
+  welcome();
 };
 
-function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
-// Configurações do Operador
 const overlay = document.getElementById('settings-overlay');
 document.getElementById('btn-settings').onclick = ()=>{
   document.getElementById('operator-name').value = getOperatorName();
@@ -438,7 +457,7 @@ document.getElementById('btn-cancel-settings').onclick = ()=> overlay.classList.
 document.getElementById('btn-save-settings').onclick = ()=>{
   localStorage.setItem('leveros_operator', document.getElementById('operator-name').value.trim());
   overlay.classList.remove('show');
-  showToast('Nome salvo com sucesso!');
+  showToast('Nome salvo!');
 };
 
 function updateModeBadge(){
@@ -446,41 +465,40 @@ function updateModeBadge(){
   if(!KB.length){ 
     badge.textContent='Base não carregada'; badge.className='badge err'; return; 
   }
-  badge.textContent = 'IA Generativa Ativa'; 
-  badge.className = 'badge';
+  badge.textContent = 'IA Ativa'; badge.className = 'badge';
 }
 
 function showTopAlert(){
   const alertEl = document.getElementById('top-alert');
   alertEl.style.display = 'block';
-  // Esconde o aviso de conexão suavemente após 5 segundos
   setTimeout(() => {
     alertEl.style.opacity = '0';
     alertEl.style.transition = 'opacity 0.5s ease-out';
-    setTimeout(() => { alertEl.style.display = 'none'; alertEl.style.opacity = '1'; }, 500);
+    setTimeout(() => alertEl.style.display = 'none', 500);
   }, 5000);
 }
 
 function welcome(){
-  addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot');
+  const history = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
+  if(history.length > 0){
+    history.forEach(msg => addMsg(msg.text, msg.who, msg.srcHtml, false));
+  } else {
+    addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
+  }
 }
 
 async function loadKB(showToastOnSuccess){
   try{
     const resp = await fetch(KB_FILE + '?t=' + Date.now(), {cache:'no-store'});
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data = await resp.json();
-    if(!Array.isArray(data) || !data.length) throw new Error('JSON vazio ou formato inválido');
     KB = data;
     buildIndex();
     renderSidebar();
     updateModeBadge();
-    showTopAlert(); // Mostra o banner verde de conectada no topo!
-    if(showToastOnSuccess) showToast(`Base recarregada: ${KB.length} itens.`);
+    showTopAlert();
   }catch(err){
-    console.error('Erro ao carregar kb_entries.json:', err);
     updateModeBadge();
-    addMsg(`⚠️ Não foi possível carregar a base de conhecimento (${KB_FILE}).\nMotivo: ${err.message}\n\nVerifique se o arquivo "kb_entries.json" está acessível.`, 'system');
+    addMsg(`⚠️ Erro ao carregar a base de conhecimento.`, 'system');
   }
 }
 
@@ -489,5 +507,6 @@ document.getElementById('btn-reload').onclick = ()=> loadKB(true);
 loadKB(false);
 welcome();
 </script>
+  
 </body>
 </html>
