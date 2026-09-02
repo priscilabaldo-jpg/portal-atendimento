@@ -113,7 +113,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 </head>
 <body>
 <div class="app">
-  <header>
+<header style="position: relative;">
     <div class="brand">
       <div class="brand-logo">LIA</div>
       <div class="brand-text">
@@ -121,6 +121,12 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
         <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
       </div>
     </div>
+    
+    <!-- LOGO DA LEVEROS CENTRALIZADA -->
+    <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; pointer-events: none;">
+      <img src="LogoLeveros.png" alt="Leveros" style="height: 28px; object-fit: contain; opacity: 0.95;">
+    </div>
+
     <div class="header-actions">
       <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
       <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
