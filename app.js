@@ -1834,3 +1834,5 @@ const logoutBtnGlobal = document.getElementById('logoutBtnGlobal');
 const logoutBtnMobile = document.getElementById('logoutBtnMobile');
 if (logoutBtnGlobal) logoutBtnGlobal.onclick = logout;
 if (logoutBtnMobile) logoutBtnMobile.onclick = logout;
+
+export { auth, db };
