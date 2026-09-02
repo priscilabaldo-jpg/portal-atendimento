@@ -41,8 +41,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
 .body{flex:1;display:flex;min-height:0}
 .sidebar{width:280px;background:var(--panel);border-right:1px solid var(--border);padding:16px;overflow-y:auto}
-.sidebar h3{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin:18px 0 8px}
-.sidebar h3:first-child{margin-top:0}
+
+/* Ajustes Sanfona (Collapsible) */
+.collapsible-header { display: flex; justify-content: space-between; align-items: center; cursor: pointer; padding: 12px 4px; margin-top: 8px; border-bottom: 1px solid rgba(255,255,255,0.08); transition: 0.2s; }
+.collapsible-header:hover { background: rgba(255,255,255,0.03); border-radius: 6px; }
+.collapsible-header h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); margin: 0; }
+.collapsible-header .chevron { font-size: 10px; color: var(--text-dim); transition: transform 0.3s; }
+.collapsible-header.collapsed .chevron { transform: rotate(-90deg); }
+.collapsible-content { padding-top: 10px; transition: 0.3s; }
+.collapsible-content.collapsed { display: none; }
+
+/* Estilos de Histórico de Conversas */
+.history-item { background: var(--panel2); border: 1px solid var(--border); color: var(--text-main); padding: 10px 12px; border-radius: 9px; margin-bottom: 6px; font-size: 12px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition:.15s; }
+.history-item:hover { border-color: var(--azul); }
+.history-item.active { border-color: var(--azul); background: var(--panel); border-left: 4px solid var(--azul); }
+.history-item-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 85%; }
+.delete-chat { color: #ff6b6b; font-size: 14px; font-weight: bold; opacity: 0.5; transition: 0.2s; }
+.delete-chat:hover { opacity: 1; transform: scale(1.1); }
+
 .chip{display:block;width:100%;text-align:left;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);padding:8px 10px;border-radius:9px;margin-bottom:6px;font-size:12.5px;cursor:pointer;transition:.15s}
 .chip:hover{border-color:var(--azul);color:var(--azul)}
 .stat{font-size:12px;color:var(--text-dim);line-height:1.7}
@@ -116,15 +132,42 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 
   <div class="body">
     <aside class="sidebar">
-      <h3>Base de Conhecimento</h3>
-      <div class="stat">
-        <b id="stat-total">0</b> itens indexados<br>
-        <b id="stat-fontes">0</b> arquivos-fonte<br>
-        <b id="stat-secoes">0</b> seções temáticas<br>
-        <span class="small" id="kb-file-info">arquivo: kb_entries.json</span>
+      
+      <!-- Botão Nova Conversa Lateral -->
+      <button class="btn primary" id="btn-nova-sidebar" style="width: 100%; margin-bottom: 10px; font-weight: bold; font-size: 14px;">➕ Nova Conversa</button>
+
+      <!-- Histórico de Conversas -->
+      <div class="collapsible-header" onclick="toggleCollapsible('historico-conversas', this)">
+        <h3>Conversas Anteriores</h3>
+        <span class="chevron">▼</span>
       </div>
-      <h3>Explorar por seção</h3>
-      <div id="section-list"></div>
+      <div class="collapsible-content" id="historico-conversas">
+        <div id="historico-list"></div>
+      </div>
+
+      <!-- Explorar por seção -->
+      <div class="collapsible-header" onclick="toggleCollapsible('explorar-secoes', this)">
+        <h3>Explorar por Seção</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="collapsible-content" id="explorar-secoes">
+        <div id="section-list"></div>
+      </div>
+
+      <!-- Base de Conhecimento (Info) -->
+      <div class="collapsible-header collapsed" onclick="toggleCollapsible('base-stats-container', this)">
+        <h3>Info da Base</h3>
+        <span class="chevron">▼</span>
+      </div>
+      <div class="collapsible-content collapsed" id="base-stats-container">
+        <div class="stat">
+          <b id="stat-total">0</b> itens indexados<br>
+          <b id="stat-fontes">0</b> arquivos-fonte<br>
+          <b id="stat-secoes">0</b> seções temáticas<br>
+          <span class="small" id="kb-file-info">arquivo: kb_entries.json</span>
+        </div>
+      </div>
+
     </aside>
 
     <div class="main">
@@ -168,10 +211,9 @@ import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/fir
 const KB_FILE = 'kb_entries.json';
 let KB = [];
 let KB_IDX = [];
+let currentChatId = localStorage.getItem('lia_current_chat_id'); // ID da conversa atual
 
-// Configurações hardcoded invisíveis para o usuário final
 const PROXY_URL = 'https://iadobook.matheus-mendes.workers.dev';
-
 const MODEL_FALLBACKS = [
   'gemini-3.5-flash-lite', 
   'gemini-2.5-flash-lite', 
@@ -182,6 +224,7 @@ const MODEL_FALLBACKS = [
   'gemini-2.5-pro'
 ];
 
+function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function stripAccents(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function norm(s){return stripAccents((s||'').toLowerCase()).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
 function tokenize(s){return norm(s).split(' ').filter(w=>w.length>1);}
@@ -265,6 +308,60 @@ const input = document.getElementById('input');
 const toast = document.getElementById('toast');
 function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),3200); }
 
+// Sistema Multi-Sessões
+function getChats() {
+    return JSON.parse(localStorage.getItem('lia_chats_v2') || '[]');
+}
+function saveChats(chats) {
+    localStorage.setItem('lia_chats_v2', JSON.stringify(chats));
+}
+
+function renderChatHistory() {
+    const list = document.getElementById('historico-list');
+    if(!list) return;
+    const chats = getChats();
+    
+    if(chats.length === 0) {
+        list.innerHTML = '<div style="font-size: 11px; color: var(--text-dim); text-align:center; padding: 10px 0;">Nenhuma conversa salva.</div>';
+        return;
+    }
+    
+    list.innerHTML = chats.map(c => `
+        <div class="history-item ${c.id === currentChatId ? 'active' : ''}" onclick="window.loadChat('${c.id}')">
+            <span class="history-item-text">💬 ${escapeHtml(c.title)}</span>
+            <span class="delete-chat" onclick="window.deleteChat('${c.id}', event)" title="Apagar conversa">✕</span>
+        </div>
+    `).join('');
+}
+
+window.loadChat = function(id) {
+    currentChatId = id;
+    localStorage.setItem('lia_current_chat_id', id);
+    chatBox.innerHTML = '';
+    
+    const chats = getChats();
+    const chat = chats.find(c => c.id === id);
+    if (chat && chat.messages) {
+        chat.messages.forEach(msg => addMsg(msg.text, msg.who, msg.srcHtml, false));
+    } else {
+        welcome();
+    }
+    renderChatHistory();
+}
+
+window.deleteChat = function(id, event) {
+    event.stopPropagation(); // Evita que clique para apagar também clique para carregar
+    let chats = getChats();
+    chats = chats.filter(c => c.id !== id);
+    saveChats(chats);
+    
+    if (currentChatId === id) {
+        window.novaConversa();
+    } else {
+        renderChatHistory();
+    }
+}
+
 function addMsg(text, who, srcHtml, saveToHistory = true){
   const div=document.createElement('div');
   div.className='msg '+who;
@@ -274,26 +371,38 @@ function addMsg(text, who, srcHtml, saveToHistory = true){
   chatBox.scrollTop = chatBox.scrollHeight;
   
   if (saveToHistory && who !== 'system') {
-    // 1. Salvar no LocalStorage (para a tela manter a conversa viva)
-    let history = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
-    history.push({ text, who, srcHtml });
-    if(history.length > 50) history.shift(); 
-    localStorage.setItem('lia_chat_history', JSON.stringify(history));
+    // Salvar no Histórico Local de Múltiplos Chats
+    let chats = getChats();
+    let currentChat = chats.find(c => c.id === currentChatId);
+    
+    if (!currentChat) {
+        // Cria uma nova sessão com título gerado pelas primeiras palavras
+        let title = who === 'user' ? text.substring(0, 25) + '...' : 'Nova Conversa';
+        currentChatId = Date.now().toString();
+        localStorage.setItem('lia_current_chat_id', currentChatId);
+        currentChat = { id: currentChatId, title: title, messages: [] };
+        chats.unshift(currentChat); // Adiciona no topo
+    }
+    
+    currentChat.messages.push({ text, who, srcHtml });
+    if(currentChat.messages.length > 50) currentChat.messages.shift(); // Limite
+    if(chats.length > 20) chats.pop(); // Mantém apenas os 20 últimos chats
+    
+    saveChats(chats);
+    renderChatHistory();
 
-    // 2. Salvar no Firebase Firestore através da conexão importada do app.js
+    // Salvar no Firebase Firestore (Auditoria Global em 2º plano)
     const operador = getOperatorName() || 'Anônimo';
     const emailOperador = auth.currentUser ? auth.currentUser.email : 'nao_logado';
-
     addDoc(collection(db, 'historico_ia_lia'), {
+      sessao_id: currentChatId,
       operador_nome: operador,
       operador_email: emailOperador,
       mensagem: text,
       remetente: who,
       origem_ia: srcHtml || null,
       data_hora: serverTimestamp()
-    }).catch(error => {
-      console.warn("Aviso: Não foi possível salvar o histórico no Firebase. Apenas localmente.", error);
-    });
+    }).catch(error => { console.warn("Aviso: Histórico Firebase falhou.", error); });
   }
 
   return div;
@@ -320,11 +429,14 @@ function applyOperator(text){
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
   
-  // Puxa as últimas mensagens da memória para dar contexto à IA
+  // Puxa as últimas 4 mensagens desta sessão para a IA não esquecer do assunto
   let recentHistory = "";
   try {
-    const historyRaw = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
-    recentHistory = historyRaw.slice(-4).map(msg => `${msg.who === 'user' ? 'Usuário' : 'LIA'}: ${msg.text}`).join('\n');
+    const chats = getChats();
+    const currentChat = chats.find(c => c.id === currentChatId);
+    if(currentChat && currentChat.messages) {
+        recentHistory = currentChat.messages.slice(-4).map(msg => `${msg.who === 'user' ? 'Usuário' : 'LIA'}: ${msg.text}`).join('\n');
+    }
   } catch(e){}
 
   return `Você é a LIA, assistente de atendimento da Leveros.
@@ -337,7 +449,7 @@ function buildPrompt(userQuestion, contextEntries){
   1. Se a mensagem for apenas uma saudação (ex: "oi", "olá"), responda amigavelmente se apresentando e perguntando como pode ajudar.
   2. Para perguntas sobre processos, produtos ou dúvidas, responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto e objetivo.
   3. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e peça para acionar a liderança.
-  4. Mantenha o contexto das mensagens anteriores se o usuário fizer perguntas conectadas.
+  4. Mantenha o contexto das mensagens anteriores listadas no "HISTÓRICO RECENTE" para responder perguntas de continuação.
   
   HISTÓRICO RECENTE DA CONVERSA (Contexto):
   ${recentHistory || "Nenhuma mensagem anterior neste turno."}
@@ -422,7 +534,18 @@ function extractiveAnswer(results, query){
   return {text, src};
 }
 
-// Em módulos, funções atreladas a eventos 'onclick' no HTML (como na renderSidebar) precisam ser globais
+// Botões Sanfona
+window.toggleCollapsible = function(id, headerEl) {
+    const content = document.getElementById(id);
+    if(content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        headerEl.classList.remove('collapsed');
+    } else {
+        content.classList.add('collapsed');
+        headerEl.classList.add('collapsed');
+    }
+}
+
 window.sendMessage = async function(){
   const q = input.value.trim();
   if(!q) return;
@@ -452,11 +575,15 @@ input.addEventListener('keydown', e=>{
 });
 input.addEventListener('input', ()=>{ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,120)+'px'; });
 
-document.getElementById('btn-clear').onclick = ()=>{
+window.novaConversa = () => {
   chatBox.innerHTML='';
-  localStorage.removeItem('lia_chat_history'); 
+  currentChatId = null;
+  localStorage.removeItem('lia_current_chat_id'); 
   welcome();
+  renderChatHistory();
 };
+document.getElementById('btn-clear').onclick = window.novaConversa;
+document.getElementById('btn-nova-sidebar').onclick = window.novaConversa;
 
 const overlay = document.getElementById('settings-overlay');
 document.getElementById('btn-settings').onclick = ()=>{
@@ -489,12 +616,15 @@ function showTopAlert(){
 }
 
 function welcome(){
-  const history = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
-  if(history.length > 0){
-    history.forEach(msg => addMsg(msg.text, msg.who, msg.srcHtml, false));
-  } else {
-    addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
+  if(currentChatId) {
+      const chats = getChats();
+      const chat = chats.find(c => c.id === currentChatId);
+      if(chat && chat.messages && chat.messages.length > 0){
+          chat.messages.forEach(msg => addMsg(msg.text, msg.who, msg.srcHtml, false));
+          return;
+      }
   }
+  addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
 }
 
 async function loadKB(showToastOnSuccess){
@@ -515,6 +645,7 @@ async function loadKB(showToastOnSuccess){
 document.getElementById('btn-reload').onclick = ()=> loadKB(true);
 
 loadKB(false);
+renderChatHistory();
 welcome();
 </script>
 </body>
