@@ -112,7 +112,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
     </div>
   </header>
 
-  <!-- Barra de Aviso (Toast) no Topo -->
   <div id="top-alert" class="top-alert">✅ IA Generativa Conectada! O assistente está pronto para uso.</div>
 
   <div class="body">
@@ -290,13 +289,23 @@ function applyOperator(text){
 
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
-  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização). Responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto, objetivo e cite passos/scripts quando existirem. 
   
+  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização).
+
   ⚠️ REGRA DE FORMATAÇÃO: Sempre que for explicar regras com múltiplos prazos, modelos de aparelhos (como Agratto, Midea, etc), defeitos ou fluxos comparativos, ORGANIZE OS DADOS OBRIGATORIAMENTE EM UMA TABELA MARKDOWN.
   
-  Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base.
+  Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente.
   
-  BASE DE CONHECIMENTO RELEVANTE:\n${context}\n\nPERGUNTA DO USUÁRIO: ${userQuestion}`;
+  REGRAS DE RESPOSTA:
+  1. Se a mensagem for apenas uma saudação (ex: "oi", "olá", "bom dia", "tudo bem"), responda amigavelmente se apresentando e perguntando como pode ajudar, sem depender da base de conhecimento.
+  2. Para perguntas sobre processos, produtos ou dúvidas, responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto e objetivo.
+  3. Se a base não tiver a resposta para uma dúvida técnica/processual, diga claramente que não encontrou essa informação na base, peça para verificar a dúvida e acionar a liderança
+  4. se a mensagem fugir totalmente do tema e não estiver na base, informar que ainda está aprendendo outros assuntos e que você poderá ajudar com as informações sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos.
+  
+  BASE DE CONHECIMENTO RELEVANTE:
+  ${context || "Nenhuma informação técnica enviada neste turno."}
+
+  PERGUNTA DO USUÁRIO: ${userQuestion}`;
 }
 
 function apiError(status, raw){
@@ -453,7 +462,7 @@ function showTopAlert(){
 }
 
 function welcome(){
-  addMsg('Olá! 👋 Sou a IA do Book da Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos — mesmo que escreva errado, eu entendo! 😉', 'bot');
+  addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot');
 }
 
 async function loadKB(showToastOnSuccess){
