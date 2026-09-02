@@ -17,7 +17,7 @@ body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg
 .app{display:flex;flex-direction:column;height:100vh}
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border); z-index: 10;}
 .brand{display:flex;align-items:center;gap:12px}
-.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:cefnter;justify-content:center;font-weight:700;color:var(--verde1)}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde1)}
 .brand-text .t{display:block;font-weight:700;font-size:15px;color:var(--text-main)}
 .brand-text .s{display:block;font-size:11.5px;color:var(--text-dim)}
 .header-actions{display:flex;gap:8px}
@@ -320,6 +320,13 @@ function applyOperator(text){
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
   
+  // Puxa as últimas mensagens da memória para dar contexto à IA
+  let recentHistory = "";
+  try {
+    const historyRaw = JSON.parse(localStorage.getItem('lia_chat_history') || '[]');
+    recentHistory = historyRaw.slice(-4).map(msg => `${msg.who === 'user' ? 'Usuário' : 'LIA'}: ${msg.text}`).join('\n');
+  } catch(e){}
+
   return `Você é a LIA, assistente de atendimento da Leveros.
 
   ⚠️ REGRA DE FORMATAÇÃO: Sempre que for explicar regras com múltiplos prazos, modelos de aparelhos (como Agratto, Midea, etc), defeitos ou fluxos comparativos, ORGANIZE OS DADOS OBRIGATORIAMENTE EM UMA TABELA MARKDOWN.
@@ -327,15 +334,18 @@ function buildPrompt(userQuestion, contextEntries){
   Se o usuário escrever com erros de português ou digitação, interprete a intenção normalmente.
   
   REGRAS DE RESPOSTA:
-  1. Se a mensagem for apenas uma saudação (ex: "oi", "olá", "bom dia", "tudo bem"), responda amigavelmente se apresentando e perguntando como pode ajudar, sem depender da base de conhecimento.
+  1. Se a mensagem for apenas uma saudação (ex: "oi", "olá"), responda amigavelmente se apresentando e perguntando como pode ajudar.
   2. Para perguntas sobre processos, produtos ou dúvidas, responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto e objetivo.
-  3. Se a base não tiver a resposta para uma dúvida técnica/processual, diga claramente que não encontrou essa informação na base, peça para verificar a dúvida e acionar a liderança
-  4. se a mensagem fugir totalmente do tema e não estiver na base, informar que ainda está aprendendo outros assuntos e que você poderá ajudar com as informações sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos.
+  3. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e peça para acionar a liderança.
+  4. Mantenha o contexto das mensagens anteriores se o usuário fizer perguntas conectadas.
+  
+  HISTÓRICO RECENTE DA CONVERSA (Contexto):
+  ${recentHistory || "Nenhuma mensagem anterior neste turno."}
   
   BASE DE CONHECIMENTO RELEVANTE:
   ${context || "Nenhuma informação técnica enviada neste turno."}
 
-  PERGUNTA DO USUÁRIO: ${userQuestion}`;
+  PERGUNTA ATUAL DO USUÁRIO: ${userQuestion}`;
 }
 
 function apiError(status, raw){
@@ -507,6 +517,5 @@ document.getElementById('btn-reload').onclick = ()=> loadKB(true);
 loadKB(false);
 welcome();
 </script>
-  
 </body>
 </html>
