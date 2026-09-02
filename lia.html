@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<title>IA do Book — Leveros CX Knowledge Assistant</title>
+<title>CX LIA — Leveros CX Knowledge Assistant</title>
 <style>
 :root{
   --verde1:#002D32; --verde2:#005A64; --azul:#4CDDDD; --verde3:#6FFFAF; --verde4:#CEFFAE; --amarelo:#FFCE00;
@@ -17,7 +17,7 @@ body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg
 .app{display:flex;flex-direction:column;height:100vh}
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border); z-index: 10;}
 .brand{display:flex;align-items:center;gap:12px}
-.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde1)}
+.brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:cefnter;justify-content:center;font-weight:700;color:var(--verde1)}
 .brand-text .t{display:block;font-weight:700;font-size:15px;color:var(--text-main)}
 .brand-text .s{display:block;font-size:11.5px;color:var(--text-dim)}
 .header-actions{display:flex;gap:8px}
@@ -290,7 +290,7 @@ function applyOperator(text){
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
   
-  return `Você é a "IA do Book", assistente de atendimento da Leveros (empresa de climatização).
+  return `Você é a LIA, assistente de atendimento da Leveros.
 
   ⚠️ REGRA DE FORMATAÇÃO: Sempre que for explicar regras com múltiplos prazos, modelos de aparelhos (como Agratto, Midea, etc), defeitos ou fluxos comparativos, ORGANIZE OS DADOS OBRIGATORIAMENTE EM UMA TABELA MARKDOWN.
   
