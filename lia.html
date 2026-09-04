@@ -648,40 +648,67 @@ function welcome(){
   addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
 }
 
-// 👇 FUNÇÃO ATUALIZADA PARA INJETAR A IMAGEM COMO MARKDOWN
+// 👇 FUNÇÃO ATUALIZADA COM ORDENAÇÃO CRONOLÓGICA E TAG DE ÚLTIMO POST
 async function loadFeedIntoKB() {
   try {
     const q = query(collection(db, 'timeline_posts'));
     const querySnapshot = await getDocs(q);
 
-    let newEntries = 0;
+    let postsTemp = [];
     querySnapshot.forEach((doc) => {
       const post = doc.data();
-      
       if (!post.texto) return; 
-      
+      postsTemp.push(post);
+    });
+
+    // Função ninja para converter as datas do seu banco (texto) em tempo real e ordenar
+    postsTemp.sort((a, b) => {
+       function parseDate(d) {
+          if (!d) return 0;
+          if (d.toMillis) return d.toMillis(); // Se for Timestamp nativo
+          if (typeof d === 'string') {
+              // Verifica o formato DD/MM/YYYY, HH:mm:ss
+              const m1 = d.match(/(\d{2})\/(\d{2})\/(\d{4})[,\s]+(\d{2}):(\d{2}):(\d{2})/);
+              if (m1) return new Date(m1[3], m1[2]-1, m1[1], m1[4], m1[5], m1[6]).getTime();
+              
+              // Verifica o formato "31 de julho de 2026 às 13:58:48"
+              const meses = {'janeiro':0,'fevereiro':1,'março':2,'abril':3,'maio':4,'junho':5,'julho':6,'agosto':7,'setembro':8,'outubro':9,'novembro':10,'dezembro':11};
+              const m2 = d.toLowerCase().match(/(\d{1,2})\s+de\s+([a-zç]+)\s+de\s+(\d{4})\s+às\s+(\d{1,2}):(\d{2}):(\d{2})/);
+              if (m2) return new Date(m2[3], meses[m2[2]], m2[1], m2[4], m2[5], m2[6]).getTime();
+          }
+          return 0;
+       }
+       // Ordena do mais recente (maior data) para o mais antigo
+       return parseDate(b.criadoEm) - parseDate(a.criadoEm);
+    });
+
+    let newEntries = 0;
+    postsTemp.forEach((post, index) => {
       const nomeAutor = post.autorNome || 'Equipe CX';
       let conteudoFormatado = post.texto;
 
-      // Se existir midiaUrl, anexa ao conteúdo
       if (post.midiaUrl) {
           conteudoFormatado += `\n\n![Imagem anexa ao comunicado](${post.midiaUrl})`;
       }
 
-      const kbEntry = {
-        titulo: `Comunicado do Feed: ${nomeAutor}`,
+      // O PULO DO GATO: Injeta palavras-chave ocultas apenas no post mais novo
+      let tituloPost = `Comunicado do Feed: ${nomeAutor}`;
+      if (index === 0) {
+          tituloPost += " (Último Post Recente Novo Atual)";
+      }
+
+      KB.push({
+        titulo: tituloPost,
         conteudo: conteudoFormatado,
         secao: "Feed de Comunicados",
         fonte: "Timeline Interna",
-        pagina: "Feed"
-      };
-
-      KB.push(kbEntry);
+        pagina: index === 0 ? "Último Post" : "Feed"
+      });
       newEntries++;
     });
 
     if (newEntries > 0) {
-      console.log(`✅ LIA: ${newEntries} comunicados do feed carregados com sucesso!`);
+      console.log(`✅ LIA: ${newEntries} comunicados do feed ordenados e carregados!`);
     }
   } catch (error) {
     console.error("⚠️ Erro no Firebase ao ler timeline_posts:", error);
