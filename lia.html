@@ -109,6 +109,9 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 .msg p { margin: 0 0 10px 0; }
 .msg p:last-child { margin: 0; }
 .msg strong { color: var(--verde3); }
+
+/* Limita o tamanho das imagens dentro do chat */
+.msg img { max-width: 100%; height: auto; border-radius: 8px; margin-top: 10px; display: block; border: 1px solid rgba(255,255,255,0.1); }
 </style>
 </head>
 <body>
@@ -208,7 +211,6 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
    IMPORTANDO O BANCO DE DADOS DO SEU APP.JS
    ========================================================================= */
 import { auth, db } from './app.js';
-// Imports com a função query
 import { collection, addDoc, getDocs, query, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* =========================================================================
@@ -273,7 +275,6 @@ function buildIndex(){
   });
 }
 
-// 👇 NOVA FUNÇÃO DE BUSCA ATUALIZADA
 function searchKB(query, topN=5){
   const qTokens = tokenize(query);
   if(!qTokens.length) return [];
@@ -469,6 +470,7 @@ function buildPrompt(userQuestion, contextEntries){
   2. Para perguntas sobre processos, produtos ou dúvidas, responda SOMENTE com base nos trechos da base de conhecimento fornecidos abaixo. Seja direto e objetivo.
   3. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e peça para acionar a liderança.
   4. Mantenha o contexto das mensagens anteriores listadas no "HISTÓRICO RECENTE" para responder perguntas de continuação.
+  5. Se o trecho da base de conhecimento contiver uma imagem no formato ![...](url), VOCÊ DEVE exibi-la na sua resposta exatamente como está.
   
   HISTÓRICO RECENTE DA CONVERSA (Contexto):
   ${recentHistory || "Nenhuma mensagem anterior neste turno."}
@@ -646,10 +648,9 @@ function welcome(){
   addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
 }
 
-// 👇 NOVA FUNÇÃO PARA CARREGAR O FEED SEM LIMITE E SEM PREJUDICAR A BUSCA
+// 👇 FUNÇÃO ATUALIZADA PARA INJETAR A IMAGEM COMO MARKDOWN
 async function loadFeedIntoKB() {
   try {
-    // Busca os posts sem limite restritivo
     const q = query(collection(db, 'timeline_posts'));
     const querySnapshot = await getDocs(q);
 
@@ -657,13 +658,19 @@ async function loadFeedIntoKB() {
     querySnapshot.forEach((doc) => {
       const post = doc.data();
       
-      if (!post.texto) return; // Pula posts sem texto
+      if (!post.texto) return; 
       
       const nomeAutor = post.autorNome || 'Equipe CX';
+      let conteudoFormatado = post.texto;
+
+      // Se existir midiaUrl, anexa ao conteúdo
+      if (post.midiaUrl) {
+          conteudoFormatado += `\n\n![Imagem anexa ao comunicado](${post.midiaUrl})`;
+      }
 
       const kbEntry = {
         titulo: `Comunicado do Feed: ${nomeAutor}`,
-        conteudo: post.texto,
+        conteudo: conteudoFormatado,
         secao: "Feed de Comunicados",
         fonte: "Timeline Interna",
         pagina: "Feed"
@@ -683,15 +690,12 @@ async function loadFeedIntoKB() {
 
 async function loadKB(showToastOnSuccess){
   try{
-    // 1. Carrega o KB estático do JSON
     const resp = await fetch(KB_FILE + '?t=' + Date.now(), {cache:'no-store'});
     const data = await resp.json();
     KB = data;
     
-    // 2. Puxa o Feed do Firebase e junta com a base antes de indexar
     await loadFeedIntoKB();
     
-    // 3. Indexa e renderiza a tela
     buildIndex();
     renderSidebar();
     updateModeBadge();
