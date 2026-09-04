@@ -170,7 +170,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
           <b id="stat-total">0</b> itens indexados<br>
           <b id="stat-fontes">0</b> arquivos-fonte<br>
           <b id="stat-secoes">0</b> seções temáticas<br>
-          <span class="small" id="kb-file-info">arquivo: kb_entries.json</span>
+          <span class="small" id="kb-file-info">arquivo: kb_entries.json + Feed</span>
         </div>
       </div>
 
@@ -208,7 +208,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
    IMPORTANDO O BANCO DE DADOS DO SEU APP.JS
    ========================================================================= */
 import { auth, db } from './app.js';
-import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// Imports atualizados para incluir getDocs, query e limit
+import { collection, addDoc, getDocs, query, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* =========================================================================
    IA DO BOOK — LEVEROS
@@ -633,11 +634,52 @@ function welcome(){
   addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
 }
 
+// Função que busca o Feed no Firebase (agora ajustada para a coleção e os campos corretos)
+async function loadFeedIntoKB() {
+  try {
+    const q = query(collection(db, 'timeline_posts'), limit(50));
+    const querySnapshot = await getDocs(q);
+
+    let newEntries = 0;
+    querySnapshot.forEach((doc) => {
+      const post = doc.data();
+      
+      const textoPost = post.texto;
+      if (!textoPost) return; 
+      
+      const nomeAutor = post.autorNome || 'Equipe CX';
+
+      const kbEntry = {
+        titulo: `Comunicado do Feed: ${nomeAutor}`,
+        conteudo: textoPost,
+        secao: "Feed de Comunicados",
+        fonte: "Timeline Interna",
+        pagina: "Recente"
+      };
+
+      KB.push(kbEntry);
+      newEntries++;
+    });
+
+    if (newEntries > 0) {
+      console.log(`✅ LIA: ${newEntries} comunicados do feed foram injetados na base!`);
+    }
+  } catch (error) {
+    console.error("⚠️ Erro ao puxar comunicados do feed para a LIA:", error);
+  }
+}
+
 async function loadKB(showToastOnSuccess){
   try{
+    // 1. Carrega o KB estático do JSON
     const resp = await fetch(KB_FILE + '?t=' + Date.now(), {cache:'no-store'});
     const data = await resp.json();
     KB = data;
+    
+    // 2. Puxa o Feed do Firebase e junta com a base antes de indexar
+    await loadFeedIntoKB();
+    
+    // 3. Indexa e renderiza a tela
     buildIndex();
     renderSidebar();
     updateModeBadge();
