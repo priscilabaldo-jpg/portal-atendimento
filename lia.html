@@ -208,7 +208,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
    IMPORTANDO O BANCO DE DADOS DO SEU APP.JS
    ========================================================================= */
 import { auth, db } from './app.js';
-// Imports atualizados para incluir getDocs, query e limit
+// Imports com a função query
 import { collection, addDoc, getDocs, query, limit, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* =========================================================================
@@ -273,13 +273,25 @@ function buildIndex(){
   });
 }
 
+// 👇 NOVA FUNÇÃO DE BUSCA ATUALIZADA
 function searchKB(query, topN=5){
   const qTokens = tokenize(query);
   if(!qTokens.length) return [];
+  
+  // Detecta se a intenção é buscar novidades do feed
+  const isAskingForFeed = query.toLowerCase().match(/comunicado|post|feed|aviso|t\.i|novidade/);
+
   const scored = KB_IDX.map(entry=>{
-    let score=0;
+    let score = 0;
+    
+    // Dá um super bônus se for do feed e o usuário estiver perguntando sobre posts
+    if (isAskingForFeed && entry.secao === "Feed de Comunicados") {
+        score += 8; 
+    }
+
     for(const qt of qTokens){
-      if(qt.length<3) continue;
+      // Diminuído para 2 letras para não ignorar siglas como TI, IA, RH
+      if(qt.length < 2) continue; 
       const tScore = bestTokenMatch(qt, entry._titleTokens) * 1.6;
       const cScore = bestTokenMatch(qt, entry._tokens);
       score += Math.max(tScore, cScore) * (qt.length>=4?1:0.6);
@@ -287,8 +299,10 @@ function searchKB(query, topN=5){
     const normContent = norm((entry.titulo||'')+' '+(entry.conteudo||''));
     const normQuery = norm(query);
     if(normQuery.length>4 && normContent.includes(normQuery)) score += 3;
+    
     return {entry, score};
   });
+  
   scored.sort((a,b)=>b.score-a.score);
   return scored.filter(s=>s.score>0.35).slice(0,topN);
 }
@@ -383,12 +397,11 @@ function addMsg(text, who, srcHtml, saveToHistory = true){
     let currentChat = chats.find(c => c.id === currentChatId);
     
     if (!currentChat) {
-        // Cria uma nova sessão com título gerado pelas primeiras palavras
         let title = who === 'user' ? text.substring(0, 25) + '...' : 'Nova Conversa';
         currentChatId = Date.now().toString();
         localStorage.setItem('lia_current_chat_id', currentChatId);
         currentChat = { id: currentChatId, title: title, messages: [] };
-        chats.unshift(currentChat); // Adiciona no topo
+        chats.unshift(currentChat); 
     }
     
     currentChat.messages.push({ text, who, srcHtml });
@@ -398,7 +411,7 @@ function addMsg(text, who, srcHtml, saveToHistory = true){
     saveChats(chats);
     renderChatHistory();
 
-    // Salvar no Firebase Firestore (Auditoria Global em 2º plano)
+    // Salvar no Firebase Firestore (Auditoria Global)
     const operador = getOperatorName() || 'Anônimo';
     const emailOperador = auth.currentUser ? auth.currentUser.email : 'nao_logado';
     addDoc(collection(db, 'historico_ia_lia'), {
@@ -436,7 +449,6 @@ function applyOperator(text){
 function buildPrompt(userQuestion, contextEntries){
   const context = contextEntries.map((c,i)=>`### Trecho ${i+1} — ${c.entry.titulo} (Seção: ${c.entry.secao} | Fonte: ${c.entry.fonte}, pág./slide ${c.entry.pagina})\n${c.entry.conteudo}`).join('\n\n');
   
-  // Puxa as últimas 4 mensagens desta sessão para a IA não esquecer do assunto
   let recentHistory = "";
   try {
     const chats = getChats();
@@ -634,27 +646,27 @@ function welcome(){
   addMsg('Olá! 👋 Sou a LIA a IA do CX Leveros. Pode me perguntar sobre troca e devolução, garantia, sistemas (Uappi, SAP, Intergrall...), logística, produtos/VRF ou processos internos 😉', 'bot', null, false);
 }
 
-// Função que busca o Feed no Firebase (agora ajustada para a coleção e os campos corretos)
+// 👇 NOVA FUNÇÃO PARA CARREGAR O FEED SEM LIMITE E SEM PREJUDICAR A BUSCA
 async function loadFeedIntoKB() {
   try {
-    const q = query(collection(db, 'timeline_posts'), limit(50));
+    // Busca os posts sem limite restritivo
+    const q = query(collection(db, 'timeline_posts'));
     const querySnapshot = await getDocs(q);
 
     let newEntries = 0;
     querySnapshot.forEach((doc) => {
       const post = doc.data();
       
-      const textoPost = post.texto;
-      if (!textoPost) return; 
+      if (!post.texto) return; // Pula posts sem texto
       
       const nomeAutor = post.autorNome || 'Equipe CX';
 
       const kbEntry = {
         titulo: `Comunicado do Feed: ${nomeAutor}`,
-        conteudo: textoPost,
+        conteudo: post.texto,
         secao: "Feed de Comunicados",
         fonte: "Timeline Interna",
-        pagina: "Recente"
+        pagina: "Feed"
       };
 
       KB.push(kbEntry);
@@ -662,10 +674,10 @@ async function loadFeedIntoKB() {
     });
 
     if (newEntries > 0) {
-      console.log(`✅ LIA: ${newEntries} comunicados do feed foram injetados na base!`);
+      console.log(`✅ LIA: ${newEntries} comunicados do feed carregados com sucesso!`);
     }
   } catch (error) {
-    console.error("⚠️ Erro ao puxar comunicados do feed para a LIA:", error);
+    console.error("⚠️ Erro no Firebase ao ler timeline_posts:", error);
   }
 }
 
