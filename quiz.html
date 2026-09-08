@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Metas - Leveros</title>
+    <style>
+        /* Tabela de cores Leveros */
+        :root {
+            --verde-1: #002D32;
+            --verde-2: #005A64;
+            --azul: #4CDDDD;
+            --verde-3: #6FFFAF;
+            --verde-4: #CEFFAE;
+            --amarelo: #FFCE00;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--verde-1);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        header h1 {
+            color: var(--amarelo);
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        /* Layout Principal inspirado no rascunho */
+        .container {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1100px;
+            flex-wrap: wrap;
+        }
+
+        /* Seção do Quiz (Esquerda) */
+        .quiz-section {
+            flex: 2;
+            background-color: var(--verde-2);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            border: 2px solid var(--azul);
+            min-width: 300px;
+        }
+
+        #question-text {
+            color: var(--verde-4);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.4em;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background-color: transparent;
+            border: 2px solid var(--azul);
+            color: white;
+            padding: 15px;
+            font-size: 1.1em;
+            text-align: left;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-btn:hover {
+            background-color: var(--azul);
+            color: var(--verde-1);
+            font-weight: bold;
+        }
+
+        /* Classes para acerto e erro */
+        .option-btn.correct {
+            background-color: var(--verde-3);
+            border-color: var(--verde-3);
+            color: var(--verde-1);
+            font-weight: bold;
+        }
+
+        .option-btn.wrong {
+            background-color: #ff6b6b; /* Cor extra para erro */
+            border-color: #ff6b6b;
+            color: white;
+        }
+
+        .actions {
+            margin-top: 25px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        button.action-btn {
+            background-color: var(--amarelo);
+            color: var(--verde-1);
+            border: none;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button.action-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* Seção do Sorteador (Direita) */
+        .sorteador-section {
+            flex: 1;
+            background-color: var(--verde-2);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid var(--verde-3);
+            min-width: 250px;
+        }
+
+        .sorteador-section h2 {
+            color: var(--verde-3);
+            margin-top: 0;
+            text-align: center;
+        }
+
+        /* Estilos da Roleta */
+        .roleta-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 30px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .roleta-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            /* Fundo colorido da roleta usando as cores da paleta */
+            background: conic-gradient(
+                var(--azul) 0deg 90deg, 
+                var(--verde-4) 90deg 180deg, 
+                var(--azul) 180deg 270deg, 
+                var(--verde-4) 270deg 360deg
+            );
+            border: 6px solid var(--verde-1);
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        #numero-sorteado {
+            position: relative;
+            z-index: 2;
+            background-color: var(--verde-1);
+            color: var(--amarelo);
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.8em;
+            font-weight: bold;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .pointer {
+            position: absolute;
+            top: -20px;
+            font-size: 2.5em;
+            color: var(--amarelo);
+            z-index: 3;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Responsividade para telas menores */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Treinamento de Metas</h1>
+    </header>
+
+    <main class="container">
+        <!-- Seção da Esquerda (Quiz) -->
+        <section class="quiz-section">
+            <div id="question-container">
+                <h2 id="question-text">Carregando pergunta...</h2>
+            </div>
+            <div id="options-container" class="options">
+                <!-- Os botões das alternativas são injetados aqui via JS -->
+            </div>
+            <div class="actions">
+                <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">Próxima Pergunta</button>
+            </div>
+        </section>
+
+        <!-- Seção da Direita (Sorteador) -->
+        <section class="sorteador-section">
+            <h2>Sorteador<br>de Operadores</h2>
+            
+            <div class="roleta-container">
+                <div class="pointer">▼</div>
+                <div id="roleta-bg" class="roleta-bg"></div>
+                <div id="numero-sorteado">?</div>
+            </div>
+
+            <button class="action-btn" onclick="spinRoleta()">Girar Roleta</button>
+        </section>
+    </main>
+
+    <script>
+        // Banco de perguntas focado em CSAT / Metas
+        const questions = [
+            {
+                question: "1. Como o operador pode garantir que a meta de 78% do CSAT seja alcançada?",
+                options: [
+                    "A) Atendendo o mais rápido possível e desligando rápido.",
+                    "B) Garantindo um atendimento ágil, empático e resolutivo no primeiro contato.",
+                    "C) Transferindo o cliente para outro setor para evitar notas baixas.",
+                    "D) Não informando prazos para não gerar expectativas."
+                ],
+                answer: 1 // Índice da resposta correta (0, 1, 2 ou 3)
+            },
+            {
+                question: "2. Qual atitude demonstra empatia e cordialidade durante o atendimento?",
+                options: [
+                    "A) Praticar a escuta ativa e demonstrar interesse genuíno pelo problema do cliente.",
+                    "B) Interromper o cliente para agilizar a chamada.",
+                    "C) Usar termos técnicos difíceis para mostrar conhecimento.",
+                    "D) Fazer outras tarefas enquanto o cliente fala."
+                ],
+                answer: 0
+            },
+            {
+                question: "3. Por que a 'Resolução Eficaz' é crucial para o CSAT?",
+                options: [
+                    "A) Porque aumenta o tempo de fila.",
+                    "B) Pois evita que o cliente precise retornar o contato (rechamada), garantindo sua satisfação imediata.",
+                    "C) Porque reduz o índice de vendas da equipe.",
+                    "D) Não tem impacto real na pesquisa de satisfação."
+                ],
+                answer: 1
+            }
+        ];
+
+        let currentQuestion = 0;
+        let isSpinning = false;
+        const totalOperadores = 50; // Altere para a quantidade de operadores da equipe
+
+        // Função para carregar a pergunta na tela
+        function loadQuestion() {
+            const q = questions[currentQuestion];
+            document.getElementById('question-text').innerText = q.question;
+            const optionsContainer = document.getElementById('options-container');
+            
+            // Limpa as opções antigas
+            optionsContainer.innerHTML = '';
+            
+            // Cria os botões para as alternativas
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = opt;
+                btn.onclick = () => selectAnswer(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+            
+            // Esconde o botão de próxima pergunta
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        // Função para verificar se a resposta está certa
+        function selectAnswer(selectedIndex, btnElement) {
+            const correctIndex = questions[currentQuestion].answer;
+            const buttons = document.querySelectorAll('.option-btn');
+            
+            // Desabilita todos os botões após a escolha
+            buttons.forEach(b => b.disabled = true);
+            
+            // Aplica as cores de certo/errado
+            if (selectedIndex === correctIndex) {
+                btnElement.classList.add('correct');
+            } else {
+                btnElement.classList.add('wrong');
+                buttons[correctIndex].classList.add('correct');
+            }
+            
+            // Mostra o botão para avançar
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.style.display = 'inline-block';
+            
+            if (currentQuestion >= questions.length - 1) {
+                nextBtn.innerText = 'Reiniciar Quiz';
+            } else {
+                nextBtn.innerText = 'Próxima Pergunta';
+            }
+        }
+
+        // Função para ir para a próxima pergunta
+        function nextQuestion() {
+            if (currentQuestion < questions.length - 1) {
+                currentQuestion++;
+                loadQuestion();
+                resetRoleta();
+            } else {
+                currentQuestion = 0; // Volta pro início
+                loadQuestion();
+                resetRoleta();
+            }
+        }
+
+        // Função para rodar a roleta
+        function spinRoleta() {
+            if(isSpinning) return;
+            isSpinning = true;
+            
+            const roletaBg = document.getElementById('roleta-bg');
+            const numSpan = document.getElementById('numero-sorteado');
+            
+            // Sorteia um número de 1 até o total de operadores
+            const numeroVencedor = Math.floor(Math.random() * totalOperadores) + 1;
+            
+            // Configura a animação visual da roleta rodando (CSS Transform)
+            roletaBg.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
+            const randomSpins = Math.floor(Math.random() * 5) + 5; // Dá de 5 a 10 voltas
+            const targetRotation = (randomSpins * 360) + Math.floor(Math.random() * 360);
+            roletaBg.style.transform = `rotate(${targetRotation}deg)`;
+            
+            // Efeito visual dos números passando rápido
+            let interval = setInterval(() => {
+                numSpan.innerText = Math.floor(Math.random() * totalOperadores) + 1;
+            }, 80);
+
+            // Para o sorteio após 3 segundos
+            setTimeout(() => {
+                clearInterval(interval);
+                numSpan.innerText = numeroVencedor;
+                isSpinning = false;
+            }, 3000);
+        }
+
+        // Reseta o visual da roleta
+        function resetRoleta() {
+            const roletaBg = document.getElementById('roleta-bg');
+            const numSpan = document.getElementById('numero-sorteado');
+            
+            roletaBg.style.transition = 'none';
+            roletaBg.style.transform = `rotate(0deg)`;
+            numSpan.innerText = "?";
+        }
+
+        // Inicia o quiz ao carregar a página
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
