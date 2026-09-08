@@ -42,7 +42,7 @@
             font-size: 2.5em;
         }
 
-        /* Layout Principal inspirado no rascunho */
+        /* Layout Principal */
         .container {
             display: flex;
             gap: 30px;
@@ -103,7 +103,7 @@
         }
 
         .option-btn.wrong {
-            background-color: #ff6b6b; /* Cor extra para erro */
+            background-color: #ff6b6b;
             border-color: #ff6b6b;
             color: white;
         }
@@ -167,7 +167,6 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            /* Fundo colorido da roleta usando as cores da paleta */
             background: conic-gradient(
                 var(--azul) 0deg 90deg, 
                 var(--verde-4) 90deg 180deg, 
@@ -203,7 +202,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        /* Responsividade para telas menores */
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -224,7 +222,7 @@
                 <h2 id="question-text">Carregando pergunta...</h2>
             </div>
             <div id="options-container" class="options">
-                <!-- Os botões das alternativas são injetados aqui via JS -->
+                <!-- Botões gerados via JS -->
             </div>
             <div class="actions">
                 <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">Próxima Pergunta</button>
@@ -246,54 +244,76 @@
     </main>
 
     <script>
-        // Banco de perguntas focado em CSAT / Metas
+        // Banco de perguntas focadas nas diferentes Metas
         const questions = [
             {
-                question: "1. Como o operador pode garantir que a meta de 78% do CSAT seja alcançada?",
+                // META 1: CSAT
+                question: "1. META DE CSAT (>= 78%): Como o operador garante que essa meta de satisfação seja alcançada?",
                 options: [
-                    "A) Atendendo o mais rápido possível e desligando rápido.",
-                    "B) Garantindo um atendimento ágil, empático e resolutivo no primeiro contato.",
-                    "C) Transferindo o cliente para outro setor para evitar notas baixas.",
+                    "A) Desligando a chamada o mais rápido possível.",
+                    "B) Garantindo um atendimento ágil, empático e resolutivo logo no primeiro contato.",
+                    "C) Focando apenas em ler os procedimentos técnicos sem ouvir o cliente.",
                     "D) Não informando prazos para não gerar expectativas."
                 ],
-                answer: 1 // Índice da resposta correta (0, 1, 2 ou 3)
+                answer: 1 
             },
             {
-                question: "2. Qual atitude demonstra empatia e cordialidade durante o atendimento?",
+                // META 2: FCR (First Contact Resolution / Resolução no Primeiro Contato)
+                question: "2. META DE FCR: O que é fundamental para resolver a solicitação do cliente na primeira ligação?",
                 options: [
-                    "A) Praticar a escuta ativa e demonstrar interesse genuíno pelo problema do cliente.",
-                    "B) Interromper o cliente para agilizar a chamada.",
-                    "C) Usar termos técnicos difíceis para mostrar conhecimento.",
-                    "D) Fazer outras tarefas enquanto o cliente fala."
+                    "A) Pedir para ele ligar novamente no dia seguinte para confirmar o status.",
+                    "B) Transferir para outro departamento sempre que a dúvida for complexa.",
+                    "C) Investigar a causa raiz e fornecer a solução completa e correta de forma imediata.",
+                    "D) Abrir um chamado e não acompanhar o caso."
+                ],
+                answer: 2
+            },
+            {
+                // META 3: TMA (Tempo Médio de Atendimento)
+                question: "3. META DE TMA: Qual a melhor forma de atingir a meta de tempo médio sem prejudicar a qualidade?",
+                options: [
+                    "A) Conduzir o atendimento com objetividade, dominando os sistemas e processos da Leveros.",
+                    "B) Falar rápido e interromper o cliente enquanto ele explica o problema.",
+                    "C) Pular as etapas de verificação e segurança para ganhar tempo.",
+                    "D) Fazer o cliente esperar em silêncio na linha enquanto busca informações."
                 ],
                 answer: 0
             },
             {
-                question: "3. Por que a 'Resolução Eficaz' é crucial para o CSAT?",
+                // META 4: Qualidade do Atendimento
+                question: "4. META DE QUALIDADE: Para tirar a nota máxima na monitoria de qualidade, o que é indispensável?",
                 options: [
-                    "A) Porque aumenta o tempo de fila.",
-                    "B) Pois evita que o cliente precise retornar o contato (rechamada), garantindo sua satisfação imediata.",
-                    "C) Porque reduz o índice de vendas da equipe.",
-                    "D) Não tem impacto real na pesquisa de satisfação."
+                    "A) Ser informal demais para parecer 'amigo' do cliente.",
+                    "B) Pular a saudação padrão para ir direto ao assunto.",
+                    "C) Seguir os procedimentos/roteiros, manter a cordialidade e registrar todas as informações de forma clara.",
+                    "D) Fazer apenas o que o cliente manda, mesmo que fuja das regras da empresa."
                 ],
-                answer: 1
+                answer: 2
+            },
+            {
+                // META 5: Aderência à Escala (Absenteísmo/Pausas)
+                question: "5. META DE ADERÊNCIA: Como a equipe ajuda a manter o indicador de aderência e tempo de fila saudável?",
+                options: [
+                    "A) Entrando em pausa todos no mesmo horário.",
+                    "B) Atrasando alguns minutos na volta do intervalo, pois não impacta o sistema.",
+                    "C) Cumprindo rigorosamente seus horários de login, logout e pausas programadas.",
+                    "D) Deslogando do sistema sem avisar o supervisor."
+                ],
+                answer: 2
             }
         ];
 
         let currentQuestion = 0;
         let isSpinning = false;
-        const totalOperadores = 50; // Altere para a quantidade de operadores da equipe
+        const totalOperadores = 50; // Ajuste para o número de pessoas da sua equipe
 
-        // Função para carregar a pergunta na tela
         function loadQuestion() {
             const q = questions[currentQuestion];
             document.getElementById('question-text').innerText = q.question;
             const optionsContainer = document.getElementById('options-container');
             
-            // Limpa as opções antigas
             optionsContainer.innerHTML = '';
             
-            // Cria os botões para as alternativas
             q.options.forEach((opt, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
@@ -302,19 +322,15 @@
                 optionsContainer.appendChild(btn);
             });
             
-            // Esconde o botão de próxima pergunta
             document.getElementById('next-btn').style.display = 'none';
         }
 
-        // Função para verificar se a resposta está certa
         function selectAnswer(selectedIndex, btnElement) {
             const correctIndex = questions[currentQuestion].answer;
             const buttons = document.querySelectorAll('.option-btn');
             
-            // Desabilita todos os botões após a escolha
             buttons.forEach(b => b.disabled = true);
             
-            // Aplica as cores de certo/errado
             if (selectedIndex === correctIndex) {
                 btnElement.classList.add('correct');
             } else {
@@ -322,7 +338,6 @@
                 buttons[correctIndex].classList.add('correct');
             }
             
-            // Mostra o botão para avançar
             const nextBtn = document.getElementById('next-btn');
             nextBtn.style.display = 'inline-block';
             
@@ -333,20 +348,18 @@
             }
         }
 
-        // Função para ir para a próxima pergunta
         function nextQuestion() {
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
                 loadQuestion();
                 resetRoleta();
             } else {
-                currentQuestion = 0; // Volta pro início
+                currentQuestion = 0;
                 loadQuestion();
                 resetRoleta();
             }
         }
 
-        // Função para rodar a roleta
         function spinRoleta() {
             if(isSpinning) return;
             isSpinning = true;
@@ -354,21 +367,17 @@
             const roletaBg = document.getElementById('roleta-bg');
             const numSpan = document.getElementById('numero-sorteado');
             
-            // Sorteia um número de 1 até o total de operadores
             const numeroVencedor = Math.floor(Math.random() * totalOperadores) + 1;
             
-            // Configura a animação visual da roleta rodando (CSS Transform)
             roletaBg.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
-            const randomSpins = Math.floor(Math.random() * 5) + 5; // Dá de 5 a 10 voltas
+            const randomSpins = Math.floor(Math.random() * 5) + 5; 
             const targetRotation = (randomSpins * 360) + Math.floor(Math.random() * 360);
             roletaBg.style.transform = `rotate(${targetRotation}deg)`;
             
-            // Efeito visual dos números passando rápido
             let interval = setInterval(() => {
                 numSpan.innerText = Math.floor(Math.random() * totalOperadores) + 1;
             }, 80);
 
-            // Para o sorteio após 3 segundos
             setTimeout(() => {
                 clearInterval(interval);
                 numSpan.innerText = numeroVencedor;
@@ -376,7 +385,6 @@
             }, 3000);
         }
 
-        // Reseta o visual da roleta
         function resetRoleta() {
             const roletaBg = document.getElementById('roleta-bg');
             const numSpan = document.getElementById('numero-sorteado');
@@ -386,7 +394,6 @@
             numSpan.innerText = "?";
         }
 
-        // Inicia o quiz ao carregar a página
         window.onload = loadQuestion;
     </script>
 </body>
