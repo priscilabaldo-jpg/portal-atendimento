@@ -19,6 +19,7 @@
 <style>
   /* Pequenos ajustes para a caixa de detalhes ficar bonita e legível */
   .meta-details {
+    display: none;
     font-size: 13px;
     line-height: 1.5;
     margin-top: 15px;
@@ -27,12 +28,25 @@
     text-align: left;
   }
   .meta-details h4 {
-    color: #4CAF50; /* Verde Leveros (ajuste se necessário) */
+    color: #4CAF50; 
     margin: 10px 0 3px 0;
     font-size: 14px;
   }
   .meta-details p {
     margin-bottom: 10px;
+  }
+  
+  /* Novo estilo para o Resumo do Mês */
+  .resumo-mes {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 3px solid #00c8b3;
+    padding: 10px;
+    border-radius: 0 6px 6px 0;
+    margin-bottom: 15px;
+    font-size: 13px;
+  }
+  .resumo-mes strong {
+    color: #fff;
   }
 </style>
 
@@ -92,16 +106,20 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
-          <p>Mede o quanto nossos clientes estão satisfeitos com o nosso atendimento no WhatsApp e na URA. Nossa meta é manter o índice acima de 78%.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> 78%<br>
+            <strong>📈 Resultado Alcançado:</strong> 78% (Meta Atingida)
+          </div>
+          <h4>O que é a meta?</h4>
+          <p>Mede o quanto nossos clientes estão satisfeitos com o nosso atendimento no WhatsApp e na URA.</p>
+          <h4>Como é calculado?</h4>
           <p>Soma dos clientes que avaliaram com notas 4 e 5, ou responderam "Sim" para problema resolvido, dividido pelo total de respostas.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Seja empático, tente resolver o problema no 1º contato (FCR) e sempre certifique-se de que o cliente não tem mais dúvidas antes de finalizar!</p>
         </div>
       </div>
 
-      <!-- Meta: SLA Pós Venda (NOVO) -->
+      <!-- Meta: SLA Pós Venda -->
       <div class="meta-card">
         <div class="meta-top"><span class="meta-emoji">⏳</span><span class="meta-tag op">Operacional</span></div>
         <h3>Resolução no Prazo (SLA)</h3>
@@ -109,11 +127,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
-          <p>Garantir que os protocolos de Pós-Venda sejam resolvidos dentro do prazo combinado com o cliente, acima de 80% ao mês.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> > 80%<br>
+            <strong>📈 Resultado Alcançado:</strong> Em acompanhamento
+          </div>
+          <h4>O que é a meta?</h4>
+          <p>Garantir que os protocolos de Pós-Venda sejam resolvidos dentro do prazo combinado com o cliente.</p>
+          <h4>Como é calculado?</h4>
           <p>Volume de protocolos atendidos no mês dentro do SLA dividido pelo volume total recebido.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Fique de olho na sua fila de chamados! Priorize os casos mais antigos e faça tratativas completas para evitar reaberturas e atrasos.</p>
         </div>
       </div>
@@ -126,11 +148,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
-          <p>Manter o índice de Trocas e Devoluções baixo (ideal em 1,96%). Queremos evitar que produtos voltem por motivos evitáveis.</p>
-          <h4>🧮 Como é calculado?</h4>
-          <p>Total de devoluções (tirando os sinistros/quebras de transporte) dividido pelo faturamento + devoluções.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> 1,68%<br>
+            <strong>📈 Resultado Alcançado:</strong> 1,43% (Atingida Parcialmente - 85%)
+          </div>
+          <h4>O que é a meta?</h4>
+          <p>Manter o índice de Trocas e Devoluções baixo. Queremos evitar que produtos voltem por motivos evitáveis.</p>
+          <h4>Como é calculado?</h4>
+          <p>Total de devoluções (tirando os sinistros/quebras) dividido pelo faturamento + devoluções.</p>
+          <h4>Como você pode ajudar?</h4>
           <p>Evite o envio de peças incorretas por falha na triagem, entenda a real necessidade do cliente e tire todas as dúvidas dele sobre instalação e compatibilidade.</p>
         </div>
       </div>
@@ -143,11 +169,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> 0 Volumes<br>
+            <strong>📈 Resultado Alcançado:</strong> 933 Volumes (Em Andamento)
+          </div>
+          <h4>O que é a meta?</h4>
           <p>Nós precisamos ZERAR os produtos com defeito de fábrica que ficaram parados nos estoques de 2025 para trás (CDs 1021 e 1019).</p>
-          <h4>🧮 Como é calculado?</h4>
+          <h4>Como é calculado?</h4>
           <p>Estoque atual deduzindo as entradas novas. O saldo final resultante tem que chegar a ZERO.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Dando andamento rápido aos processos de garantia, logística reversa e acionamento de laudos junto aos fabricantes para despachar essas peças.</p>
         </div>
       </div>
@@ -160,11 +190,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> 65%<br>
+            <strong>📈 Resultado Alcançado:</strong> 67,25% (Meta Atingida)
+          </div>
+          <h4>O que é a meta?</h4>
           <p>Casos onde o cliente recebeu o reembolso, mas ainda está com o produto. Precisamos recuperar 65% desses valores retidos.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <h4>Como é calculado?</h4>
           <p>Reais (R$) recuperados dividido pelo Total de R$ de perdas até o fim de 2026.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Acompanhando a logística reversa de perto, garantindo as devoluções nos Correios/Transportadoras e fazendo as cobranças de postagem no prazo.</p>
         </div>
       </div>
@@ -182,11 +216,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> R$ 342.225<br>
+            <strong>📈 Resultado Alcançado:</strong> R$ 82.852 (Meta Atingida)
+          </div>
+          <h4>O que é a meta?</h4>
           <p>É o orçamento que nossa área de atendimento tem para se sustentar. Precisamos gastar dentro do limite estipulado mensalmente.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <h4>Como é calculado?</h4>
           <p>Soma das despesas fixas (sistemas, custos operacionais) alocadas no centro de custo da nossa área.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Utilizando as ferramentas e recursos da empresa de forma consciente, evitando desperdícios e sugerindo melhorias de processo.</p>
         </div>
       </div>
@@ -199,11 +237,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta:</strong> >= 96% de adesão<br>
+            <strong>📈 Resultado:</strong> Em Andamento (Pesquisa Anual)
+          </div>
+          <h4>O que é a meta?</h4>
           <p>Garantir a nossa certificação como um "Excelente Lugar Para se Trabalhar". Precisamos de pelo menos 96% de participação da equipe na pesquisa de clima.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <h4>Como é calculado?</h4>
           <p>Número de respondentes dividido pelo número total de colaboradores aptos.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Participando ativamente da pesquisa anual, dando seus feedbacks sinceros. A sua voz é o que constrói nosso clima organizacional!</p>
         </div>
       </div>
@@ -216,11 +258,15 @@
         <div class="meta-sep"></div>
         <button class="toggle-btn btn-toggle-detalhes">Ver detalhes</button>
         <div class="meta-details">
-          <h4>🎯 O que é a meta?</h4>
+          <div class="resumo-mes">
+            <strong>🎯 Meta do Mês:</strong> R$ 2.443,50<br>
+            <strong>📈 Resultado Alcançado:</strong> R$ - (Em andamento)
+          </div>
+          <h4>O que é a meta?</h4>
           <p>Fazer o controle adequado das horas extras pagas para mantermos a saúde financeira e estarmos dentro da meta orçamentária do atendimento.</p>
-          <h4>🧮 Como é calculado?</h4>
+          <h4>Como é calculado?</h4>
           <p>Horas extras pagas multiplicadas pelo orçamento previsto pela área.</p>
-          <h4>🤝 Como você pode ajudar?</h4>
+          <h4>Como você pode ajudar?</h4>
           <p>Organizando bem suas tarefas no horário de expediente e realizando horas extras apenas com prévio alinhamento com seu gestor.</p>
         </div>
       </div>
