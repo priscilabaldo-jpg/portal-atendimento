@@ -68,6 +68,14 @@
             margin-bottom: 40px;
         }
 
+        /* Grupo de botões da tela final */
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
         /* Classes de Animação */
         .fade-in-up {
             opacity: 0;
@@ -85,11 +93,11 @@
             }
         }
 
-        /* Botão estilizado genérico */
+        /* Botão estilizado genérico (Amarelo) */
         button.action-btn {
             background-color: var(--amarelo);
             color: var(--verde-1);
-            border: none;
+            border: 2px solid var(--amarelo);
             padding: 15px 30px;
             font-size: 1.2em;
             font-weight: bold;
@@ -102,6 +110,17 @@
         button.action-btn:hover {
             transform: scale(1.05);
             filter: brightness(1.1);
+        }
+
+        /* Botão Secundário (Vazado/Transparente) */
+        button.action-btn.secondary-btn {
+            background-color: transparent;
+            color: var(--amarelo);
+        }
+
+        button.action-btn.secondary-btn:hover {
+            background-color: var(--amarelo);
+            color: var(--verde-1);
         }
 
         /* LAYOUT PRINCIPAL DO QUIZ */
@@ -264,6 +283,7 @@
             }
             .screen-content h1 { font-size: 2.2em; }
             .screen-content p { font-size: 1.5em; }
+            .button-group { flex-direction: column; }
         }
     </style>
 </head>
@@ -283,7 +303,11 @@
         <div class="screen-content">
             <h1 id="end-title">Parabéns, equipe! 🚀</h1>
             <p id="end-text">O primeiro passo para bater a meta é o conhecimento!</p>
-            <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
+            <div class="button-group fade-in-up delay-1">
+                <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
+                <!-- Novo Botão para Voltar -->
+                <button class="action-btn secondary-btn" onclick="voltarApresentacao()">Voltar à Apresentação</button>
+            </div>
         </div>
     </div>
 
@@ -330,6 +354,18 @@
             setTimeout(() => {
                 introScreen.style.display = 'none';
             }, 800);
+        }
+
+        // Função para voltar para a apresentação
+        function voltarApresentacao() {
+            // Este comando faz o navegador voltar para a página anterior (ideal se o quiz for um link dentro da apresentação)
+            window.history.back();
+
+            // Se você quiser que o botão feche a aba atual, use o código abaixo:
+            // window.close();
+
+            // Se você quiser direcionar para um link fixo, substitua pelo código abaixo colocando sua URL:
+            // window.location.href = "sua-apresentacao.html";
         }
 
         // Banco de perguntas 
@@ -445,15 +481,20 @@
             const endScreen = document.getElementById('end-screen');
             const title = document.getElementById('end-title');
             const text = document.getElementById('end-text');
+            const buttons = document.querySelector('.button-group');
             
             endScreen.style.display = 'flex';
             
             // Re-aplica as animações
             title.classList.remove('fade-in-up');
             text.classList.remove('fade-in-up', 'delay-1');
-            void endScreen.offsetWidth; // Trigger reflow para reiniciar animação
+            buttons.classList.remove('fade-in-up', 'delay-1');
+            
+            void endScreen.offsetWidth; // Trigger reflow
+            
             title.classList.add('fade-in-up');
             text.classList.add('fade-in-up', 'delay-1');
+            buttons.classList.add('fade-in-up', 'delay-1');
 
             setTimeout(() => {
                 endScreen.style.opacity = '1';
