@@ -1589,6 +1589,22 @@ document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
+  // 👇 --- NOVO CÓDIGO: ABRIR/FECHAR DETALHES DAS METAS --- 👇
+  if (target.classList.contains('btn-toggle-detalhes')) {
+    const detalhes = target.nextElementSibling;
+    if (detalhes && detalhes.classList.contains('meta-details')) {
+      if (detalhes.style.display === 'block') {
+        detalhes.style.display = 'none';
+        target.textContent = 'Ver detalhes';
+      } else {
+        detalhes.style.display = 'block';
+        target.textContent = 'Ocultar detalhes';
+      }
+    }
+    return; // Encerra aqui para não rodar o resto à toa
+  }
+  // 👆 ---------------------------------------------------- 👆
+
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
     if (pedidoId) await darBaixaPedido(pedidoId);
@@ -1625,7 +1641,6 @@ document.addEventListener('click', async (event) => {
     }
   }
 });
-
 // ====================================================================
 // 9. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
 // ====================================================================
