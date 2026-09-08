@@ -29,11 +29,79 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
+        /* TELA DE ABERTURA */
+        #intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: var(--verde-1);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .intro-content h1 {
+            color: var(--amarelo);
+            font-size: 3.5em;
+            margin-bottom: 10px;
+        }
+
+        .intro-content p {
+            color: var(--verde-4);
+            font-size: 2em;
+            margin-bottom: 40px;
+        }
+
+        /* Classes de Animação */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(40px);
+            animation: fadeInUpAnim 1s forwards;
+        }
+
+        .delay-1 { animation-delay: 1s; }
+        .delay-2 { animation-delay: 2s; }
+
+        @keyframes fadeInUpAnim {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Botão estilizado genérico */
+        button.action-btn {
+            background-color: var(--amarelo);
+            color: var(--verde-1);
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        button.action-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* LAYOUT PRINCIPAL DO QUIZ */
         header {
             margin-bottom: 30px;
             text-align: center;
+            margin-top: 20px;
         }
 
         header h1 {
@@ -42,7 +110,6 @@
             font-size: 2.5em;
         }
 
-        /* Layout Principal */
         .container {
             display: flex;
             gap: 30px;
@@ -94,7 +161,6 @@
             font-weight: bold;
         }
 
-        /* Classes para acerto e erro */
         .option-btn.correct {
             background-color: var(--verde-3);
             border-color: var(--verde-3);
@@ -112,23 +178,6 @@
             margin-top: 25px;
             display: flex;
             justify-content: flex-end;
-        }
-        
-        button.action-btn {
-            background-color: var(--amarelo);
-            color: var(--verde-1);
-            border: none;
-            padding: 12px 24px;
-            font-size: 1.1em;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button.action-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.1);
         }
 
         /* Seção do Sorteador (Direita) */
@@ -206,11 +255,23 @@
             .container {
                 flex-direction: column;
             }
+            .intro-content h1 { font-size: 2.2em; }
+            .intro-content p { font-size: 1.5em; }
         }
     </style>
 </head>
 <body>
 
+    <!-- TELA DE ABERTURA ANIMADA -->
+    <div id="intro-screen">
+        <div class="intro-content">
+            <h1 class="fade-in-up">Agora vamos ao nosso quiz!</h1>
+            <p class="fade-in-up delay-1">Desejo a todos boa sorte 🍀</p>
+            <button class="action-btn fade-in-up delay-2" onclick="startApp()">Começar</button>
+        </div>
+    </div>
+
+    <!-- CONTEÚDO PRINCIPAL DO QUIZ -->
     <header>
         <h1>CX | Perguntas e Respostas - Metas 26'27</h1>
     </header>
@@ -244,6 +305,19 @@
     </main>
 
     <script>
+        // Função para remover a tela de abertura
+        function startApp() {
+            const introScreen = document.getElementById('intro-screen');
+            // Aplica um fade-out e joga a tela levemente para cima
+            introScreen.style.opacity = '0';
+            introScreen.style.transform = 'translateY(-20px)';
+            
+            // Remove o elemento do DOM após a animação de 0.8s para que você possa clicar no quiz
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+            }, 800);
+        }
+
         // Banco de perguntas focadas nas diferentes Metas
         const questions = [
             {
@@ -258,7 +332,7 @@
                 answer: 1 
             },
             {
-                // META 2: FCR (First Contact Resolution / Resolução no Primeiro Contato)
+                // META 2: FCR
                 question: "2. META DE FCR: O que é fundamental para resolver a solicitação do cliente na primeira ligação?",
                 options: [
                     "A) Pedir para ele ligar novamente no dia seguinte para confirmar o status.",
@@ -269,7 +343,7 @@
                 answer: 2
             },
             {
-                // META 3: TMA (Tempo Médio de Atendimento)
+                // META 3: TMA
                 question: "3. META DE TMA: Qual a melhor forma de atingir a meta de tempo médio sem prejudicar a qualidade?",
                 options: [
                     "A) Conduzir o atendimento com objetividade, dominando os sistemas e processos da Leveros.",
@@ -280,7 +354,7 @@
                 answer: 0
             },
             {
-                // META 4: Qualidade do Atendimento
+                // META 4: Qualidade
                 question: "4. META DE QUALIDADE: Para tirar a nota máxima na monitoria de qualidade, o que é indispensável?",
                 options: [
                     "A) Ser informal demais para parecer 'amigo' do cliente.",
@@ -291,7 +365,7 @@
                 answer: 2
             },
             {
-                // META 5: Aderência à Escala (Absenteísmo/Pausas)
+                // META 5: Aderência
                 question: "5. META DE ADERÊNCIA: Como a equipe ajuda a manter o indicador de aderência e tempo de fila saudável?",
                 options: [
                     "A) Entrando em pausa todos no mesmo horário.",
@@ -305,7 +379,7 @@
 
         let currentQuestion = 0;
         let isSpinning = false;
-        const totalOperadores = 50; // Ajuste para o número de pessoas da sua equipe
+        const totalOperadores = 50; 
 
         function loadQuestion() {
             const q = questions[currentQuestion];
