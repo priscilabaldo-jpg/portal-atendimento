@@ -23,9 +23,244 @@
        })();
     </script>
 
-    <!-- CSS GLOBAL COMPARTILHADO DO PORTAL (o mesmo usado por index.html, formn1.html, etc.) -->
-    <!-- Ajuste o caminho abaixo caso o arquivo esteja em outra pasta, ex: "css/styles.css" -->
-    <link rel="stylesheet" href="styles.css">
+    <style>
+/* ====================================================================
+   1. VARIÁVEIS GLOBAIS E RESET
+   ==================================================================== */
+:root {
+  --verde1: #002D32;
+  --verde2: #005A64;
+  --azul:   #4CDDDD;
+  --verde3: #6FFFAF;
+  --amarelo:#FFCE00;
+  --glass:  rgba(255,255,255,0.05);
+  --glass-border: rgba(255,255,255,0.09);
+  --font: Verdana, Geneva, Tahoma, sans-serif;
+
+  --erro-cor: #FF6B6B;
+  --erro-bg: rgba(255,107,107,0.1);
+  --erro-border: rgba(255,107,107,0.2);
+
+  --sucesso-cor: var(--verde3);
+  --sucesso-bg: rgba(111,255,175,0.08);
+  --sucesso-border: rgba(111,255,175,0.25);
+
+  --bg-primary: #002d32;
+  --bg-glass-card: rgba(0, 0, 0, 0.2);
+  --accent-main: #00c8b3;
+  --accent-glow: #e0fbf7;
+  --ranking-shadow: rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 15px rgba(0,0,0,0.3);
+  --gold: #FFD700;
+  --silver: #C0C0C0;
+  --bronze: #CD7F32;
+  --text-main: #ffffff;
+  --text-sub: #ccc;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font);
+  background: var(--verde1);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+}
+
+.bg-layer {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(76,221,221,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 45% at 85% 85%, rgba(111,255,175,0.06) 0%, transparent 55%),
+    linear-gradient(160deg, #002D32 0%, #004A52 50%, #002D32 100%);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 110px 20px 40px;
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  min-height: calc(100vh - 120px);
+}
+
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--azul); opacity: 0.8; margin-bottom: 14px; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+@keyframes pulseGreen { 0%, 100% { box-shadow: 0 0 0 0 rgba(111,255,175,0.4); } 50% { box-shadow: 0 0 0 5px rgba(111,255,175,0); } }
+
+/* ====================================================================
+   3. NAVEGAÇÃO E HEADER
+   ==================================================================== */
+header.top-header { position: static; }
+.header-inner { position: fixed; top: 0; left: 0; right: 0; width: 100%; z-index: 999; background: rgba(0,40,46,0.98); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); padding: 15px 40px; display: flex; align-items: center; justify-content: space-between; gap: 15px;}
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.header-logo { height: 24px; filter: brightness(0) invert(1); }
+header nav { flex: 1; }
+nav ul, .nav-links { list-style: none; display: flex; align-items: center; justify-content: flex-end; gap: 15px; white-space: nowrap; }
+nav a, .nav-links a { color: rgba(255,255,255,0.55); text-decoration: none; font-family: var(--font); font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.05em; transition: color 0.3s; }
+nav a:hover, .nav-links a:hover { color: var(--azul); }
+nav a.active { color: white; border-bottom: 2px solid var(--azul); background: rgba(76,221,221,0.07); padding: 6px 13px; border-radius: 4px 4px 0 0; }
+.logout-btn { margin-left: 12px; padding: 6px 15px; border: 1px solid var(--amarelo); border-radius: 4px; background: transparent; color: var(--amarelo); font-family: var(--font); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.logout-btn:hover { background: var(--amarelo); color: var(--verde1); }
+.balance-pill { background: rgba(255, 215, 0, 0.1); color: #FFD700; padding: 4px 10px; border-radius: 12px; border: 1px solid rgba(255,215,0,0.2); font-size: 10px; font-weight: bold; display: flex; align-items: center; gap: 4px; }
+.hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 6px; }
+.hamburger span { display: block; width: 22px; height: 2px; background: white; border-radius: 2px; }
+.mobile-menu { display: none; position: fixed; top: 58px; left: 0; right: 0; background: rgba(0,40,46,0.98); backdrop-filter: blur(18px); border-bottom: 1px solid var(--glass-border); padding: 16px 28px; z-index: 99; flex-direction: column; gap: 4px; }
+.mobile-menu.open { display: flex; }
+.mobile-menu a { color: rgba(255,255,255,0.75); text-decoration: none; font-family: var(--font); font-size: 13px; padding: 11px 0; border-bottom: 1px solid var(--glass-border); }
+.mobile-menu .logout-btn { margin-top: 8px; margin-left: 0; width: fit-content; }
+
+/* ====================================================================
+   4. CARROSSEL DE DICAS (TICKER)
+   ==================================================================== */
+.ticker-wrapper { margin-top: 56px; background: rgba(76, 221, 221, 0.08); border-bottom: 1px dashed rgba(76, 221, 221, 0.2); width: 100%; overflow: hidden; padding: 10px 0; display: flex; white-space: nowrap; }
+.ticker-content { display: inline-flex; white-space: nowrap; animation: ticker 80s linear infinite; }
+.ticker-item { color: white; font-size: 12px; font-weight: normal; padding: 0 60px; display: inline-flex; align-items: center; letter-spacing: 0.03em; }
+.ticker-item strong { margin-left: 6px; margin-right: 6px; }
+@keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+.ticker-wrapper:hover .ticker-content { animation-play-state: paused; }
+
+/* ====================================================================
+   13. MEDIA QUERIES (CELULAR)
+   ==================================================================== */
+@media (max-width: 680px) {
+  nav ul, .nav-links { display: none; }
+  .hamburger { display: flex; }
+  .timeline-layout { grid-template-columns: 1fr; }
+}
+
+/* ====================================================================
+   16. TIMELINE / FEED SOCIAL / RANKING E MODAIS
+   ==================================================================== */
+
+.timeline-layout { display: grid; grid-template-columns: 1fr 260px; gap: 20px; max-width: 900px; width: 100%; align-items: start; margin: 0 auto;}
+.feed-container { max-width: 100%; min-width: 0; }
+
+.timeline-header { text-align: center; margin-bottom: 30px; }
+.timeline-header p.label { font-size: 10px; color: var(--accent-main); font-weight: bold; margin: 0; text-transform: uppercase; }
+.timeline-header h1 { font-size: 24px; margin: 5px 0; font-weight: 800; }
+.timeline-header h1 .high { color: var(--accent-main); }
+.timeline-header p.subtitle { font-size: 10px; color: var(--text-sub); }
+
+.create-post-box { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 20px; box-shadow: var(--shadow-card); display: flex; gap: 10px; flex-direction: column; }
+.create-post-main { display: flex; gap: 10px; }
+.user-avatar { width: 34px; height: 34px; border-radius: 50%; font-weight: bold; display: flex; align-items: center; justify-content: center; font-size: 12px; text-transform: uppercase; background: var(--azul); color: var(--verde1);}
+.create-post-input { flex: 1; border: none; background: #fff; padding: 10px 12px; border-radius: 6px; resize: none; font-size: 10px; font-family: inherit; line-height: 1.4; color: #333; }
+.create-post-input::placeholder { color: #999; font-style: italic; }
+.create-post-actions { display: flex; align-items: center; gap: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; justify-content: space-between; }
+.image-url-wrap { display: flex; align-items: center; gap: 6px; flex: 1; }
+.link-icon { font-size: 12px; color: rgba(255,255,255,0.4); margin-right: -2px; }
+.create-post-input-link { flex: 1; border: none; background: transparent; padding: 6px 0; font-size: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); color: #fff; outline: none; }
+.create-post-input-link::placeholder { color: rgba(255,255,255,0.3); }
+.right-publish { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.create-post-publish-btn { background: var(--accent-main); color: #fff; border: none; padding: 6px 18px; border-radius: 12px; font-weight: bold; font-size: 10px; cursor: pointer; transition: 0.15s; }
+.create-post-publish-btn:hover { background: #01b4a1; }
+.create-post-checkbox { display: flex; align-items: center; gap: 4px; font-size: 9px; cursor: pointer; color: var(--text-sub); }
+
+.page-loading-status { text-align: center; color: var(--text-sub); font-size: 10px; padding: 30px; }
+.post-card { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 15px; box-shadow: var(--shadow-card); position: relative; animation: post-entry 0.3s ease-out; word-break: break-word; overflow-wrap: break-word; overflow: hidden; }
+@keyframes post-entry { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+.post-user { display: flex; gap: 8px; align-items: center; }
+.post-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--azul); color: var(--verde1); font-weight: bold; font-size: 12px;}
+.post-info { display: flex; flex-direction: column; }
+.post-username { font-size: 11px; font-weight: bold; color: #fff; }
+.post-date { font-size: 9px; color: var(--text-sub); }
+.btn-apagar { opacity: 0; position: absolute; top: 12px; right: 12px; background: none; border: none; cursor: pointer; color: #FF4F4F; font-size: 12px; transition: 0.2s; }
+.post-card:hover .btn-apagar { opacity: 1; }
+.post-content { font-size: 11px; color: var(--text-main); line-height: 1.5; margin-bottom: 10px; white-space: pre-line; }
+.post-content a { color: var(--accent-glow); text-decoration: none; border-bottom: 1px solid transparent; }
+.post-content a:hover { border-bottom-color: var(--accent-glow); }
+.post-media { width: 100%; display: block; margin-top: 12px; overflow: hidden; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.15); }
+.post-media img { width: 100%; height: auto; display: block; object-fit: contain; }
+.no-data { text-align: center; color: var(--text-sub); font-size: 10px; padding: 40px; }
+
+.post-likes-info { font-size: 11px; color: rgba(255, 255, 255, 0.6); margin: 12px 0 8px; padding: 0 4px; }
+.post-likes-info strong { color: rgba(255, 255, 255, 0.9); font-weight: 700; cursor: pointer; }
+.post-likes-info strong:hover { text-decoration: underline; }
+.post-actions-bar { display: flex; align-items: center; gap: 15px; padding: 8px 0; margin-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.action-btn-post { background: transparent !important; border: none !important; color: rgba(255, 255, 255, 0.6) !important; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; transition: all 0.2s ease; font-family: inherit; outline: none; }
+.action-btn-post:hover { background: rgba(255, 255, 255, 0.05) !important; color: #fff !important; }
+.action-btn-post.liked { color: #FF6B8A !important; }
+.action-btn-post.liked i { transform: scale(1.1); }
+
+.comments-section { padding-top: 12px; }
+.comments-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; max-height: 350px; overflow-y: auto; padding-right: 4px; }
+.comments-list::-webkit-scrollbar { width: 4px; }
+.comments-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+.comment-item { display: flex; gap: 10px; align-items: flex-start; }
+.comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--azul); color: var(--verde1); display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; overflow: hidden; }
+.comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.comment-content-wrapper { flex: 1; display: flex; flex-direction: column; align-items: flex-start; }
+.comment-bubble { background: rgba(255, 255, 255, 0.06); padding: 10px 14px; border-radius: 18px; border-top-left-radius: 4px; display: inline-block; max-width: 100%; }
+.comment-bubble .comment-author { display: block; font-size: 11px; font-weight: 700; color: var(--azul); margin-bottom: 4px; }
+.comment-bubble .comment-text { font-size: 12px; color: rgba(255, 255, 255, 0.85); margin: 0; line-height: 1.4; word-break: break-word; }
+.comment-actions { display: flex; align-items: center; gap: 12px; padding: 4px 8px 0; font-size: 10px; color: rgba(255, 255, 255, 0.4); }
+.comment-actions .btn-del-comment { cursor: pointer; transition: color 0.2s; font-weight: bold; }
+.comment-actions .btn-del-comment:hover { color: #FF6B6B; }
+.comment-input-wrap { display: flex; gap: 10px; align-items: flex-start;  }
+.comment-input-group { flex: 1; display: flex; gap: 8px; align-items: flex-end; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 6px 6px 6px 14px; transition: border-color 0.2s; }
+.comment-input-group:focus-within { border-color: var(--azul); background: rgba(255, 255, 255, 0.08); }
+.comment-textarea { flex: 1; background: transparent !important; border: none !important; outline: none !important; color: #fff; font-size: 12px; font-family: inherit; resize: none; min-height: 20px; max-height: 100px; overflow-y: auto; line-height: 1.4; padding: 4px 0; }
+.comment-textarea::placeholder { color: rgba(255, 255, 255, 0.3); }
+.comment-send-btn { background: var(--azul) !important; color: var(--verde1) !important; border: none !important; border-radius: 16px !important; padding: 6px 14px; font-size: 11px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; white-space: nowrap; flex-shrink: 0; }
+.comment-send-btn:hover { opacity: 0.85; }
+.comment-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.view-all-comments { font-size: 11px; color: rgba(255, 255, 255, 0.5); cursor: pointer; margin-bottom: 12px; padding-left: 4px; font-weight: 600; }
+.view-all-comments:hover { color: rgba(255, 255, 255, 0.8); }
+.d-none { display: none !important; }
+
+.ranking-sidebar { position: sticky; top: 20px; background: transparent; border: none; padding: 0;}
+.ranking-card { background: var(--bg-glass-card); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 8px 25px var(--ranking-shadow); }
+.ranking-title { display: flex; align-items: center; gap: 6px; color: #fff; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; justify-content: center; }
+.ranking-title h2 { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #fff; margin: 0; }
+.ranking-title .coin { font-size: 12px; margin-top: -1px; color: #FFD700;}
+.ranking-subtitle { font-size: 9px; color: var(--text-sub); margin-top: -8px; margin-bottom: 15px; display: block; text-align: center;}
+.ranking-list { display: flex; flex-direction: column; gap: 6px; max-height: 380px; overflow-y: auto; padding-right: 5px; overscroll-behavior: contain; }
+.ranking-list::-webkit-scrollbar { width: 4px; }
+.ranking-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+.rank-item { display: flex; align-items: center; justify-content: space-between; border-radius: 6px; padding: 7px 10px; background: rgba(0,0,0,0.1); border: 1px solid transparent; font-size: 10px; }
+.rank-left { display: flex; align-items: center; gap: 8px; }
+.rank-left span.num { font-weight: 800; font-size: 10px; color: #fff; min-width: 14px; text-align: center; }
+.rank-username { font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.rank-username.full { max-width: none; }
+.rank-right { display: flex; align-items: center; gap: 4px; font-weight: 800; }
+.rank-right span { color: #FFD700; min-width: 45px; text-align: right;}
+.rank-podium { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.06); }
+.rank-podium .rank-username { font-size: 11px; }
+.rank-item.pos-1 { border-color: var(--gold); background: rgba(255, 215, 0, 0.04); }
+.rank-item.pos-1 .num, .rank-item.pos-1 .rank-right span { color: var(--gold); }
+.rank-item.pos-1::before { content: '🥇'; font-size: 12px; margin-left: -5px;}
+.rank-item.pos-1 span.num { display: none; }
+.rank-item.pos-2 { border-color: var(--silver); background: rgba(192, 192, 192, 0.04); }
+.rank-item.pos-2 .num, .rank-item.pos-2 .rank-right span { color: var(--silver); }
+.rank-item.pos-2::before { content: '🥈'; font-size: 12px; margin-left: -5px;}
+.rank-item.pos-2 span.num { display: none; }
+.rank-item.pos-3 { border-color: var(--bronze); background: rgba(205, 127, 50, 0.04); }
+.rank-item.pos-3 .num, .rank-item.pos-3 .rank-right span { color: var(--bronze); }
+.rank-item.pos-3::before { content: '🥉'; font-size: 12px; margin-left: -5px;}
+.rank-item.pos-3 span.num { display: none; }
+.rank-item:not(.rank-podium) { opacity: 0.8; }
+.rank-item:not(.rank-podium) span.num { font-size: 9px; color: var(--text-sub); font-weight: 600; }
+
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+.likes-modal-content { background: var(--bg-primary); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; width: 90%; max-width: 320px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; max-height: 80vh; }
+.likes-modal-header { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 14px; }
+.likes-modal-close { background: none; border: none; color: #fff; cursor: pointer; font-size: 18px; opacity: 0.7; }
+.likes-modal-close:hover { opacity: 1; }
+.likes-modal-body { padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.like-modal-item { display: flex; align-items: center; gap: 10px; }
+.like-modal-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--azul); color: var(--verde1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+.like-modal-name { font-size: 12px; color: #fff; font-weight: 600; }
+    </style>
 </head>
 <body>
 
