@@ -32,8 +32,8 @@
             overflow-x: hidden;
         }
 
-        /* TELA DE ABERTURA */
-        #intro-screen {
+        /* TELAS DE ABERTURA E FINALIZAÇÃO */
+        #intro-screen, #end-screen {
             position: fixed;
             top: 0;
             left: 0;
@@ -49,13 +49,20 @@
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
 
-        .intro-content h1 {
+        /* A tela final começa escondida */
+        #end-screen {
+            display: none;
+            opacity: 0; 
+            transform: translateY(20px);
+        }
+
+        .screen-content h1 {
             color: var(--amarelo);
             font-size: 3.5em;
             margin-bottom: 10px;
         }
 
-        .intro-content p {
+        .screen-content p {
             color: var(--verde-4);
             font-size: 2em;
             margin-bottom: 40px;
@@ -255,8 +262,8 @@
             .container {
                 flex-direction: column;
             }
-            .intro-content h1 { font-size: 2.2em; }
-            .intro-content p { font-size: 1.5em; }
+            .screen-content h1 { font-size: 2.2em; }
+            .screen-content p { font-size: 1.5em; }
         }
     </style>
 </head>
@@ -264,16 +271,25 @@
 
     <!-- TELA DE ABERTURA ANIMADA -->
     <div id="intro-screen">
-        <div class="intro-content">
+        <div class="screen-content">
             <h1 class="fade-in-up">Agora vamos ao nosso quiz!</h1>
             <p class="fade-in-up delay-1">Desejo a todos boa sorte 🍀</p>
             <button class="action-btn fade-in-up delay-2" onclick="startApp()">Começar</button>
         </div>
     </div>
 
+    <!-- TELA FINAL ANIMADA -->
+    <div id="end-screen">
+        <div class="screen-content">
+            <h1 id="end-title">Parabéns, equipe! 🚀</h1>
+            <p id="end-text">O primeiro passo para bater a meta é o conhecimento!</p>
+            <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
+        </div>
+    </div>
+
     <!-- CONTEÚDO PRINCIPAL DO QUIZ -->
     <header>
-        <h1>CX | Perguntas e Respostas - Metas 26'27</h1>
+        <h1>CX | Perguntas e Respostas - Metas</h1>
     </header>
 
     <main class="container">
@@ -308,20 +324,17 @@
         // Função para remover a tela de abertura
         function startApp() {
             const introScreen = document.getElementById('intro-screen');
-            // Aplica um fade-out e joga a tela levemente para cima
             introScreen.style.opacity = '0';
             introScreen.style.transform = 'translateY(-20px)';
             
-            // Remove o elemento do DOM após a animação de 0.8s para que você possa clicar no quiz
             setTimeout(() => {
                 introScreen.style.display = 'none';
             }, 800);
         }
 
-        // Banco de perguntas focadas nas diferentes Metas
+        // Banco de perguntas 
         const questions = [
             {
-                // META 1: CSAT
                 question: "1. META DE CSAT (>= 78%): Como o operador garante que essa meta de satisfação seja alcançada?",
                 options: [
                     "A) Desligando a chamada o mais rápido possível.",
@@ -332,7 +345,6 @@
                 answer: 1 
             },
             {
-                // META 2: FCR
                 question: "2. META DE FCR: O que é fundamental para resolver a solicitação do cliente na primeira ligação?",
                 options: [
                     "A) Pedir para ele ligar novamente no dia seguinte para confirmar o status.",
@@ -343,8 +355,7 @@
                 answer: 2
             },
             {
-                // META 3: TMA
-                question: "3. META DE TMA: Qual a melhor forma de atingir a meta de tempo médio sem prejudicar a qualidade?",
+                question: "3. META DE TMA: Qual a melhor forma de atingir a meta sem prejudicar a qualidade?",
                 options: [
                     "A) Conduzir o atendimento com objetividade, dominando os sistemas e processos da Leveros.",
                     "B) Falar rápido e interromper o cliente enquanto ele explica o problema.",
@@ -354,19 +365,17 @@
                 answer: 0
             },
             {
-                // META 4: Qualidade
-                question: "4. META DE QUALIDADE: Para tirar a nota máxima na monitoria de qualidade, o que é indispensável?",
+                question: "4. META DE QUALIDADE: Para tirar a nota máxima, o que é indispensável?",
                 options: [
                     "A) Ser informal demais para parecer 'amigo' do cliente.",
                     "B) Pular a saudação padrão para ir direto ao assunto.",
-                    "C) Seguir os procedimentos/roteiros, manter a cordialidade e registrar todas as informações de forma clara.",
-                    "D) Fazer apenas o que o cliente manda, mesmo que fuja das regras da empresa."
+                    "C) Seguir os procedimentos, manter a cordialidade e registrar todas as informações.",
+                    "D) Fazer apenas o que o cliente manda, ignorando regras da empresa."
                 ],
                 answer: 2
             },
             {
-                // META 5: Aderência
-                question: "5. META DE ADERÊNCIA: Como a equipe ajuda a manter o indicador de aderência e tempo de fila saudável?",
+                question: "5. META DE ADERÊNCIA: Como a equipe ajuda a manter esse indicador saudável?",
                 options: [
                     "A) Entrando em pausa todos no mesmo horário.",
                     "B) Atrasando alguns minutos na volta do intervalo, pois não impacta o sistema.",
@@ -416,7 +425,7 @@
             nextBtn.style.display = 'inline-block';
             
             if (currentQuestion >= questions.length - 1) {
-                nextBtn.innerText = 'Reiniciar Quiz';
+                nextBtn.innerText = 'Finalizar Quiz';
             } else {
                 nextBtn.innerText = 'Próxima Pergunta';
             }
@@ -428,10 +437,41 @@
                 loadQuestion();
                 resetRoleta();
             } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            const endScreen = document.getElementById('end-screen');
+            const title = document.getElementById('end-title');
+            const text = document.getElementById('end-text');
+            
+            endScreen.style.display = 'flex';
+            
+            // Re-aplica as animações
+            title.classList.remove('fade-in-up');
+            text.classList.remove('fade-in-up', 'delay-1');
+            void endScreen.offsetWidth; // Trigger reflow para reiniciar animação
+            title.classList.add('fade-in-up');
+            text.classList.add('fade-in-up', 'delay-1');
+
+            setTimeout(() => {
+                endScreen.style.opacity = '1';
+                endScreen.style.transform = 'translateY(0)';
+            }, 50);
+        }
+
+        function restartQuiz() {
+            const endScreen = document.getElementById('end-screen');
+            endScreen.style.opacity = '0';
+            endScreen.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                endScreen.style.display = 'none';
                 currentQuestion = 0;
                 loadQuestion();
                 resetRoleta();
-            }
+            }, 800);
         }
 
         function spinRoleta() {
