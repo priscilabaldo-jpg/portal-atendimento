@@ -116,6 +116,56 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 </head>
 <body>
 <div class="app">
+        <div class="header-inner">
+            <div class="logo-area">
+                <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+            </div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="index.html">INÍCIO</a></li>
+                    <li><a href="lia.html">LIA</a></li>
+                    <li><a href="formn1.html" class="active" >TRIAGEM N1</a></li>
+                    <li><a href="formpatrao.html" >PEÇAS PATRÃO</a></li>
+                    <li><a href="timeline.html">TIMELINE</a></li>
+                    <li><a href="materiais.html">MATERIAIS</a></li>
+                    <li><a href="informativos.html">METAS</a></li>
+                    <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
+          <li><a href="admin.html">PAINEL ADMIN</a></li>
+      
+                    <li>
+                        <div class="balance-pill" id="saldoPillGlobal">
+                            <span class="coin-icon">🪙</span><span id="valSaldoGlobal">Carregando...</span>
+                        </div>
+                    </li>
+                    <li><button class="logout-btn" id="logoutBtnGlobal">Sair</button></li>
+                </ul>
+            </nav>
+            <div class="hamburger" id="hamburgerBtn">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <div class="mobile-menu" id="mobileMenu">
+            <a href="index.html">INÍCIO</a>
+            <a href="formn1.html">TRIAGEM N1</a>
+            <a href="formpatrao.html">PEÇAS PATRÃO</a>
+            <a href="timeline.html" class="active">TIMELINE</a>
+            <a href="materiais.html">MATERIAIS</a>
+            <a href="informativos.html">INFORMATIVOS</a>
+            <a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a>
+            <a href="admin.html">PAINEL ADMIN</a>
+            <div class="balance-pill" id="saldoPillMobile">
+                <span class="coin-icon">🪙</span><span>Carregando...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+        </div>
+
+        <div class="ticker-wrapper">
+            <div class="ticker-content" id="tickerContent">
+                <span class="ticker-item">🏆 Feed Ticker: Aguardando dados...</span>
+            </div>
+        </div>
+
 <header style="position: relative;">
     <div class="brand">
       <div class="brand-logo">LIA</div>
