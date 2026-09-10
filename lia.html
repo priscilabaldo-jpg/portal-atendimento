@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="icon" type="image" href="LogoLeveros.png">
 <title>CX LIA — Leveros CX Knowledge Assistant</title>
+
+<!-- Adicionado o CSS global para puxar o visual do Menu e Ticker -->
+<link rel="stylesheet" href="style.css">
+
 <style>
 :root{
   --verde1:#002D32; --verde2:#005A64; --azul:#4CDDDD; --verde3:#6FFFAF; --verde4:#CEFFAE; --amarelo:#FFCE00;
@@ -15,7 +20,9 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-main);height:100vh;overflow:hidden}
 .app{display:flex;flex-direction:column;height:100vh}
-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border); z-index: 10;}
+
+/* Modificado: Isolamos o sub-header da LIA para não conflitar com o top-header global */
+.lia-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border); z-index: 10;}
 .brand{display:flex;align-items:center;gap:12px}
 .brand-logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--azul),var(--verde3));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--verde1)}
 .brand-text .t{display:block;font-weight:700;font-size:15px;color:var(--text-main)}
@@ -116,21 +123,26 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
 </head>
 <body>
 <div class="app">
-   
 
-        <div class="mobile-menu" id="mobileMenu">
-            <a href="index.html">INÍCIO</a>
-            <a href="formn1.html">TRIAGEM N1</a>
-            <a href="formpatrao.html">PEÇAS PATRÃO</a>
-            <a href="timeline.html" class="active">TIMELINE</a>
-            <a href="materiais.html">MATERIAIS</a>
-            <a href="informativos.html">INFORMATIVOS</a>
-            <a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a>
-            <a href="admin.html">PAINEL ADMIN</a>
-            <div class="balance-pill" id="saldoPillMobile">
-                <span class="coin-icon">🪙</span><span>Carregando...</span>
-            </div>
-            <button class="logout-btn" id="logoutBtnMobile">Sair</button>
+    <!-- CABEÇALHO GLOBAL LEVEROS (Igual às outras páginas) -->
+    <header class="top-header">
+        <div class="header-inner">
+            <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+            <nav>
+                <ul>
+                    <li><a href="index.html">INÍCIO</a></li>
+                    <li><a href="lia.html" class="active">LIA</a></li> <!-- LIA como página ativa -->
+                    <li><a href="formn1.html">TRIAGEM N1</a></li>
+                    <li><a href="formpatrao.html">PEÇAS PATRÃO</a></li>
+                    <li><a href="timeline.html">TIMELINE</a></li>
+                    <li><a href="materiais.html">MATERIAIS</a></li>
+                    <li><a href="informativos.html">METAS</a></li>
+                    <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
+                    <li><a href="admin.html">PAINEL ADMIN</a></li>
+                    <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+                </ul>
+            </nav>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
 
         <div class="ticker-wrapper">
@@ -138,27 +150,24 @@ header{display:flex;align-items:center;justify-content:space-between;padding:14p
                 <span class="ticker-item">🏆 Feed Ticker: Aguardando dados...</span>
             </div>
         </div>
+    </header>
 
-<header style="position: relative;">
-    <div class="brand">
-      <div class="brand-logo">LIA</div>
-      <div class="brand-text">
-        <span class="t">CX LIA - Versão Baby LIA<span id="mode-badge" class="badge off">Carregando base...</span></span>
-        <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
-      </div>
+    <!-- SUB-CABEÇALHO ESPECÍFICO DA LIA -->
+    <div class="lia-header" style="position: relative;">
+        <div class="brand">
+            <div class="brand-logo">LIA</div>
+            <div class="brand-text">
+                <span class="t">CX LIA - Versão Baby LIA<span id="mode-badge" class="badge off">Carregando base...</span></span>
+                <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
+            <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
+            <button class="icon-btn" id="btn-settings" title="Configurações do Operador">⚙️</button>
+        </div>
     </div>
-    
-    <!-- LOGO DA LEVEROS CENTRALIZADA -->
-    <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; pointer-events: none;">
-      <img src="LogoLeveros.png" alt="Leveros" style="height: 28px; object-fit: contain; opacity: 0.95;">
-    </div>
-
-    <div class="header-actions">
-      <button class="icon-btn" id="btn-reload" title="Recarregar base (kb_entries.json)">🔄</button>
-      <button class="icon-btn" id="btn-clear" title="Nova conversa">🗨️</button>
-      <button class="icon-btn" id="btn-settings" title="Configurações do Operador">⚙️</button>
-    </div>
-  </header>
 
   <div id="top-alert" class="top-alert">✅ IA Generativa Conectada! O assistente está pronto para uso.</div>
 
