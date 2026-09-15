@@ -2358,5 +2358,94 @@
   "pagina": "-",
   "conteudo": "REGRA ADICIONAL - PROTOCOLO JÁ ABERTO NO FABRICANTE\n\nSe o cliente informar que já possui protocolo aberto no fabricante (independentemente do cenário de garantia resultante), é obrigatório exibir aviso solicitando o número de protocolo e registrá-lo no atendimento antes de prosseguir.\nA ação final é prefixada com essa solicitação de protocolo, e o CRM recebe a marcação \"[Registrar protocolo do fabricante no ticket]\" antes do direcionamento normal.",
   "id": 288
+ }.
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Visão Geral e Sinal de Alerta - Contatora 220V Splitão",
+  "fonte": "Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx / CheckList_validação_peça_contatora_V2.docx",
+  "pagina": "1-3",
+  "conteudo": "Este procedimento se aplica quando o cliente relatar inconsistências com a contatora 220V do equipamento Splitão Midea/Carrier (condensadora 38CCN + evaporadora 40MSE).\n\nSinais de alerta (o que o cliente costuma dizer):\n- \"Comprei o Splitão e não veio a contatora 220V.\"\n- \"O equipamento não está ligando / é incompatível com a evaporadora.\"\n- \"Preciso da contatora para a evaporadora 40MSE.\"\n\nContexto técnico: a condensadora 38CCN opera com sinal de comando em 220V. Por padrão de fábrica, a contatora 220V é enviada DENTRO da caixa do Módulo Ventilador (evaporadora 40MSE), junto com o boletim técnico.",
+  "id": 289
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Diagnóstico Rápido em 3 Passos e Cenários (A x B)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx",
+  "pagina": "2-3",
+  "conteudo": "Diagnóstico rápido:\n1. Confira o modelo da condensadora no pedido: verificar se é 38CCN.\n2. Confira a embalagem: a contatora 220V é enviada DENTRO da embalagem do módulo ventilador (evaporadora), junto com o boletim técnico.\n3. Identifique a situação:\n- Caso A (Verificação de Peça): o cliente ainda não procurou na embalagem do módulo ventilador.\n- Caso B (Falta real de peça ou Reembolso): a caixa foi checada e a peça realmente não veio, ou o cliente/técnico realizou compra/serviço pontual (comprou a peça ou cobrou mão de obra).",
+  "id": 290
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Como Responder ao Cliente - Scripts (Cenário A e B)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx / Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "3",
+  "conteudo": "Cenário A (Orientar verificação na embalagem):\n\"A contatora de 220V correta para a nova condensadora 38CCN já acompanha o produto! Ela vai embalada junto com o Módulo Ventilador (evaporadora), acompanhada do boletim técnico. Pode checar nessa caixa?\"\n\nCenário B (Falta confirmada / Necessidade de Envio):\n\"Entendi! Vou solicitar o envio da Contatora 220V para o seu endereço. Essa troca é essencial para o correto funcionamento da condensadora 38CCN com a evaporadora 40MSE.\"",
+  "id": 291
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Diretrizes de Aprovação, Fluxo Financeiro e Escalonamento (Compras)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx / Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "4-5",
+  "conteudo": "Aprovação Direta (BackOffice): aprovação automática liberada para o BackOffice, sem necessidade de consulta prévia ao Compras por valor/teto (não há limitação de valor fixada inicialmente); é necessária apenas a formalização com o time de Compras via e-mail.\n\nTratativa de Valores: o valor aprovado deve ser direcionado imediatamente ao time de Compras para tratativas diretas e negociação com o fabricante (Midea/Carrier).\n\nAlerta de Volumetria e Escalonamento: caso o número de acionamentos/chamados tenha aumento significativo (mais de 5 ocorrências, por exemplo), o BackOffice deve alinhar internamente para escalar o assunto à Midea/Carrier para resolução via fabricante.\n\nImpacto de Reembolso e Centro de Custos: o reembolso é debitado inicialmente no centro de custo do time de Compras (Centro de Custo: 1102501) para posterior validação, negociação e estorno junto à Midea.",
+  "id": 292
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Orientações para Envio de Peça - Passo a Passo",
+  "fonte": "Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "7",
+  "conteudo": "Passo a passo para expedição da contatora 220V:\n1. Confirmação do Checklist Obrigatório: garantir que o cliente checou a caixa do Módulo Ventilador e que a peça realmente não está presente.\n2. Cadastro Completo do Local de Entrega: registrar no chamado Intergrall o nome do responsável no local, telefone/WhatsApp com DDD e endereço completo de entrega.\n3. Custos e Boletim Técnico: envio 100% gratuito ao cliente (item incluso no conjunto); anexar obrigatoriamente o Boletim Técnico de interligação elétrica ao chamado, para orientação de interligação.\n\nDados internos para abertura do chamado:\n- Peça Solicitada: Contatora 220V (substituição/reposição da evaporadora 40MSE).\n- Motivo: Compatibilidade com nova condensadora 38CCN (Comando 220V).\n- Custo para o cliente: Gratuito / item incluso no conjunto.",
+  "id": 293
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Códigos dos Conjuntos Afetados (SKUs)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx / Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "6-7",
+  "conteudo": "Tabela de códigos dos conjuntos afetados pela questão da contatora 220V:\n- 7.5 TR 220V: código 5000015144\n- 7.5 TR 380V: código 5000015149\n- 15 TR 220V: código 5000015154\n- 15 TR 380V: código 5000015159",
+  "id": 294
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Classificação e Registro no Intergrall - Envio e Reembolso",
+  "fonte": "Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx / CheckList_validação_peça_contatora_V2.docx",
+  "pagina": "9",
+  "conteudo": "Abertura de chamado no Intergrall para ENVIO DA PEÇA:\n- Motivo: Envio de peça Contatora\n- Sub-motivo: Item Faltante\n- Natureza: Reposição sem custo da contatora 220V\n- Centro de Custo: 1102501\n\nAbertura de chamado no Intergrall para REEMBOLSO da peça/serviço (quando o cliente/técnico comprou a peça ou cobrou mão de obra):\n- Motivo: Cancelamento Produtos Restituições\n- Sub-motivo: Custo peça contatora\n\nChecklist obrigatório de preenchimento do chamado:\n1. Identificação do Pedido/Cliente: Nº do Pedido / NF.\n2. Se envio da peça, registrar contato para entrega e alinhamento: nome do contato/responsável no local, telefone/WhatsApp com DDD, e-mail, endereço completo de entrega.\n3. Verificação inicial (obrigatória): o Módulo Ventilador (evaporadora) foi verificado? [ ] SIM - a peça NÃO estava dentro da embalagem do módulo ventilador. [ ] NÃO - atendente orientou o cliente a verificar antes do envio.\n4. Tipo de solicitação: o técnico cobrou mão de obra extra ou houve compra direta da contatora? [ ] SIM (requer solicitação de reembolso/orçamento) [ ] NÃO (instalação padrão dentro do escopo). Se SIM: informar valor do orçamento/mão de obra/peça (R$), anexar comprovante/orçamento/nota fiscal do técnico, e dados bancários para reembolso (ou via cartão, a depender da forma de pagamento).\n\nNota operacional: reembolsos aprovados automaticamente pelo Backoffice devem ser direcionados imediatamente ao time de Compras (Centro de Custo: Compras) para validação e estorno com a Midea via e-mail.",
+  "id": 295
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Template de E-mail: Backoffice para Compras (Reembolso Contatora)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx / Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "10",
+  "conteudo": "Sempre que houver aprovação automática de reembolso pelo Backoffice, enviar ao time de Compras o modelo abaixo para tratativa de estorno com a Midea:\n\nAssunto: Reembolso Aprovado - Validação e Estorno Midea Peça Contatora | Pedido #[Número do Pedido]\n\nCorpo:\n\"Time de Compras, identificamos um reembolso aprovado automaticamente pelo Backoffice que necessita de validação e estorno junto à Midea referente ao serviço de instalação da peça contatora. Seguem os detalhes da operação:\n- Centro de Custo: Compras\n- Número do Pedido: [Número do Pedido]\n- Cliente: [Nome do Cliente]\n- Valor do Reembolso: R$ [0,00]\n- Data da Aprovação: [DD/MM/AAAA]\n- Motivo da Solicitante: [Descrever brevemente o motivo, ex: Defeito no produto / Avaria / Erro de envio]\n\nPróximos passos necessários:\n1. Validar a solicitação e os dados do pedido anexados.\n2. Tratar o estorno diretamente com a equipe da Midea via e-mail.\n\nAnexos do e-mail: comprovante de reembolso / nota fiscal / fotos ou documentos informados pelo cliente.\"",
+  "id": 296
+ },
+
+  {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Template Intergrall - Dados do Chamado (Reposição / Reembolso Contatora 38CCN)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx",
+  "pagina": "7",
+  "conteudo": "TEMPLATE PARA COLAR NO INTERGRALL:\n\nDADOS DO CHAMADO - REPOSIÇÃO / REEMBOLSO CONTATORA 38CCN\n\n1. IDENTIFICAÇÃO DO PEDIDO / CLIENTE\n• Nº do Pedido / NF:\n\n2. SE ENVIO DA PEÇA, REGISTRAR CONTATO PARA ENTREGA E ALINHAMENTO\n• Nome do Contato / Responsável no local:\n• Telefone / WhatsApp com DDD:\n• E-mail:\n• Endereço Completo de Entrega da Peça:\n\n3. VERIFICAÇÃO INICIAL (CHECKLIST OBRIGATÓRIO)\n• Módulo Ventilador (Evaporadora) foi verificado?\n[ ] SIM - A peça NÃO estava dentro da embalagem do módulo ventilador.\n[ ] NÃO - Atendente orientou o cliente a verificar antes do envio.\n\n4. TIPO DE SOLICITAÇÃO, VALORES E ENCAMINHAMENTO\n• O técnico cobrou mão de obra extra ou houve compra direta da contatora?\n[ ] SIM (Requer solicitação de reembolso/orçamento)\n[ ] NÃO (Instalação padrão dentro do escopo)\n\nSE SIM PARA COBRANÇA DO TÉCNICO / REEMBOLSO:\n- Valor do Orçamento / Mão de Obra / Peça: R$\n- Comprovante / Orçamento / Nota Fiscal do Técnico em anexo\n- Dados Bancários para Reembolso via domicílio bancário em anexo, ou seguir em cartão a depender da forma de pagamento.\n\n* NOTA OPERACIONAL: Reembolsos aprovados automaticamente pelo Backoffice devem ser direcionados imediatamente ao time de Compras (Centro de Custo: Compras) para validação e estorno com a Midea via e-mail.",
+  "id": 297
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Template de E-mail - Backoffice para Compras (Reembolso Aprovado)",
+  "fonte": "CheckList_validação_peça_contatora_V2.docx / Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "10",
+  "conteudo": "TEMPLATE DE E-MAIL PARA ENVIO AO TIME DE COMPRAS:\n\nAssunto: Reembolso Aprovado - Validação e Estorno Midea Peça Contatora | Pedido #[Número do Pedido]\n\nCorpo do e-mail:\n\n\"Time de Compras,\n\nIdentificamos um reembolso aprovado automaticamente pelo Backoffice que necessita de validação e estorno junto à Midea referente ao serviço de instalação da peça contatora. Seguem os detalhes da operação:\n\n• Centro de Custo: Compras\n• Número do Pedido: [Número do Pedido]\n• Cliente: [Nome do Cliente]\n• Valor do Reembolso: R$ [0,00]\n• Data da Aprovação: [DD/MM/AAAA]\n• Motivo da Solicitante: [Descrever brevemente o motivo, ex: Defeito no produto / Avaria / Erro de envio]\n\nPróximos passos necessários:\n1. Validar a solicitação e os dados do pedido anexados.\n2. Tratar a tratativa de estorno diretamente com a equipe da Midea via e-mail.\n\nAnexos do e-mail: [Comprovante de reembolso / Nota Fiscal / Fotos ou documentos informados pelo cliente].\n\nQualquer dúvida, estamos à disposição.\n\nAtenciosamente,\"",
+  "id": 298
+ },
+ {
+  "secao": "17. Peça Contatora 220V - Splitão Midea/Carrier (38CCN/40MSE)",
+  "titulo": "Template Intergrall - Classificação Resumida do Chamado",
+  "fonte": "Manual_Operacional_e_Orientacoes_de_Envio_-_Peca_Contatora_Leveros.pptx",
+  "pagina": "9",
+  "conteudo": "TEMPLATE RESUMIDO PARA CLASSIFICAÇÃO NO INTERGRALL:\n\nSe for ENVIO DE PEÇA (reposição sem custo):\n• Motivo do Chamado: Envio de peça Contatora\n• Sub-motivo: Item Faltante\n• Centro de Custo: 1102501\n\nSe for REEMBOLSO (cliente/técnico comprou a peça ou cobrou mão de obra):\n• Motivo do Chamado: Cancelamento Produtos Restituições\n• Sub-motivo: Custo peça contatora\n• Encaminhar ao time de Compras para validação e estorno com a Midea",
+  "id": 299
  }
 ]
