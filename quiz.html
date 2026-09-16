@@ -57,7 +57,7 @@
             display: none;
             opacity: 0; 
             transform: translateY(20px);
-            overflow-y: auto; /* Permite rolar se o placar for grande */
+            overflow-y: auto;
             padding: 40px 20px;
         }
 
@@ -339,7 +339,9 @@
             <div class="button-group fade-in-up delay-2">
                 <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
                 <button class="action-btn secondary-btn" onclick="voltarApresentacao()">Voltar à Apresentação</button>
-                <button class="action-btn" style="background-color: var(--verde-3); color: var(--verde-1);" onclick="baixarExcel()">Baixar Excel</button>
+                
+                <!-- Botão de Download Excel - Ficará oculto por padrão -->
+                <button id="btn-export-excel" class="action-btn" style="background-color: var(--verde-3); color: var(--verde-1); display: none;" onclick="baixarExcel()">Baixar Excel (Admin)</button>
             </div>
         </div>
     </div>
@@ -373,25 +375,47 @@
 
     <!-- SCRIPT TIPO MÓDULO PARA IMPORTAR O FIREBASE -->
     <script type="module">
-        // Importando o SDK Firebase v9
+        // Importando o SDK Firebase v9+ e as ferramentas (Firestore e Auth)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-        // =========================================================
-        // ATENÇÃO: COLE SUAS CREDENCIAIS DO FIREBASE AQUI EMBAIXO
-        // =========================================================
+        // AS SUAS CREDENCIAIS DO FIREBASE
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJETO",
-            storageBucket: "SEU_PROJETO.appspot.com",
-            messagingSenderId: "SEU_SENDER_ID",
-            appId: "SEU_APP_ID"
+            apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
+            authDomain:  "portal-atendimento-541ae.firebaseapp.com",
+            projectId:   "portal-atendimento-541ae",
+            storageBucket: "portal-atendimento-541ae.appspot.com"
         };
 
-        // Inicializa o Firebase e o Firestore
+        // Inicializa o Firebase e os serviços
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
+        const storage = getStorage(app);
+        const provider = new GoogleAuthProvider();
+
+        // =========================================================
+        // VALIDAÇÃO DE ADMIN PARA O BOTÃO DO EXCEL
+        // =========================================================
+        const ADMIN_EMAILS = [
+            'priscila.baldo@leveros.com.br', 
+            'matheus.mendes@leveros.com.br', 
+            'arinay.santos@leveros.com.br'
+        ];
+
+        // Escuta as mudanças de autenticação do usuário
+        onAuthStateChanged(auth, (user) => {
+            const btnExcel = document.getElementById('btn-export-excel');
+            
+            // Se o usuário estiver logado e for um dos Admins
+            if (user && user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
+                if (btnExcel) btnExcel.style.display = 'inline-block'; // Mostra o botão
+            } else {
+                if (btnExcel) btnExcel.style.display = 'none'; // Esconde o botão
+            }
+        });
 
         // =========================================================
         // VARIÁVEIS GLOBAIS DO QUIZ
@@ -402,7 +426,7 @@
         
         let userName = "";
         let userScore = 0;
-        let todosResultados = []; // Guarda os dados gerais para o Excel
+        let todosResultados = []; 
 
         const questions = [
             {
@@ -458,7 +482,7 @@
         ];
 
         // =========================================================
-        // FUNÇÕES DO QUIZ (Expostas para o Window poder chamar do HTML)
+        // FUNÇÕES DO QUIZ (Expostas no objeto global window)
         // =========================================================
         window.startApp = function() {
             const inputElement = document.getElementById('user-name');
@@ -470,7 +494,7 @@
                 return;
             }
 
-            userScore = 0; // Zera a pontuação
+            userScore = 0; 
             
             const introScreen = document.getElementById('intro-screen');
             introScreen.style.opacity = '0';
@@ -512,7 +536,7 @@
             
             if (selectedIndex === correctIndex) {
                 btnElement.classList.add('correct');
-                userScore++; // Soma ponto!
+                userScore++; 
             } else {
                 btnElement.classList.add('wrong');
                 buttons[correctIndex].classList.add('correct');
@@ -542,7 +566,6 @@
             const endScreen = document.getElementById('end-screen');
             const title = document.getElementById('end-title');
             
-            // Personaliza a mensagem final
             title.innerText = `Parabéns, ${userName}! 🚀`;
             document.getElementById('end-text').innerText = `Você acertou ${userScore} de ${questions.length} perguntas.`;
 
@@ -552,7 +575,7 @@
                 endScreen.style.transform = 'translateY(0)';
             }, 50);
 
-            // 1. Salva no banco de dados
+            // 1. Salva no Firestore usando o DB configurado
             try {
                 await addDoc(collection(db, "quiz_resultados"), {
                     nome: userName,
@@ -560,7 +583,7 @@
                     total: questions.length,
                     dataHora: new Date().toISOString()
                 });
-                console.log("Resultado salvo com sucesso!");
+                console.log("Resultado salvo com sucesso no Firebase!");
             } catch (e) {
                 console.error("Erro ao salvar no Firebase: ", e);
             }
@@ -573,11 +596,10 @@
             const leaderboardDiv = document.getElementById('leaderboard-container');
             
             try {
-                // Busca os dados ordenados por acertos (do maior pro menor)
                 const q = query(collection(db, "quiz_resultados"), orderBy("acertos", "desc"));
                 const querySnapshot = await getDocs(q);
                 
-                todosResultados = []; // Limpa o array para não duplicar no Excel
+                todosResultados = []; 
                 
                 let html = "<h3>🏆 Placar Geral da Equipe</h3><ul style='list-style: none; padding: 0;'>";
                 
@@ -585,7 +607,6 @@
                 querySnapshot.forEach((doc) => {
                     const dados = doc.data();
                     
-                    // Alimenta o array do Excel
                     todosResultados.push({
                         "Posição": posicao + "º",
                         "Nome": dados.nome,
@@ -594,7 +615,6 @@
                         "Data/Hora": new Date(dados.dataHora).toLocaleString('pt-BR')
                     });
 
-                    // Monta a linha do HTML
                     let badge = posicao === 1 ? "🥇" : posicao === 2 ? "🥈" : posicao === 3 ? "🥉" : `<b>${posicao}º</b>`;
                     
                     html += `
@@ -611,7 +631,7 @@
 
             } catch (e) {
                 console.error("Erro ao carregar placar: ", e);
-                leaderboardDiv.innerHTML = "<h3>Erro ao carregar o placar.</h3>";
+                leaderboardDiv.innerHTML = "<h3>Erro ao carregar o placar. Ocorreu uma falha de conexão.</h3>";
             }
         }
 
@@ -621,12 +641,10 @@
                 return;
             }
 
-            // Cria a planilha a partir do array populado pelo Firebase
             const worksheet = XLSX.utils.json_to_sheet(todosResultados);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking");
 
-            // Faz o download
             XLSX.writeFile(workbook, "Ranking_Quiz_Leveros.xlsx");
         };
 
@@ -638,9 +656,8 @@
             setTimeout(() => {
                 endScreen.style.display = 'none';
                 
-                // Volta pra tela de digitar o nome
                 const introScreen = document.getElementById('intro-screen');
-                document.getElementById('user-name').value = ''; // Limpa o nome antigo
+                document.getElementById('user-name').value = ''; 
                 introScreen.style.display = 'flex';
                 
                 setTimeout(() => {
@@ -654,7 +671,7 @@
         };
 
         // =========================================================
-        // CÓDIGO DA ROLETA (Mantido original)
+        // CÓDIGO DA ROLETA 
         // =========================================================
         window.spinRoleta = function() {
             if(isSpinning) return;
