@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz de Metas - Leveros</title>
+    
+    <!-- Biblioteca SheetJS para gerar o Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
     <style>
         /* Tabela de cores Leveros */
         :root {
@@ -49,11 +53,12 @@
             transition: opacity 0.8s ease-out, transform 0.8s ease-out;
         }
 
-        /* A tela final começa escondida */
         #end-screen {
             display: none;
             opacity: 0; 
             transform: translateY(20px);
+            overflow-y: auto; /* Permite rolar se o placar for grande */
+            padding: 40px 20px;
         }
 
         .screen-content h1 {
@@ -65,26 +70,42 @@
         .screen-content p {
             color: var(--verde-4);
             font-size: 2em;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
-        /* Grupo de botões da tela final */
+        /* Input do nome */
+        #user-name {
+            padding: 15px;
+            font-size: 1.2em;
+            border-radius: 8px;
+            border: 2px solid var(--azul);
+            background-color: var(--verde-2);
+            color: white;
+            margin-bottom: 25px;
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+        }
+        #user-name::placeholder {
+            color: #aaa;
+        }
+
         .button-group {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 20px;
         }
 
-        /* Classes de Animação */
+        /* Animações */
         .fade-in-up {
             opacity: 0;
             transform: translateY(40px);
             animation: fadeInUpAnim 1s forwards;
         }
-
-        .delay-1 { animation-delay: 1s; }
-        .delay-2 { animation-delay: 2s; }
+        .delay-1 { animation-delay: 0.5s; }
+        .delay-2 { animation-delay: 1s; }
 
         @keyframes fadeInUpAnim {
             to {
@@ -93,7 +114,7 @@
             }
         }
 
-        /* Botão estilizado genérico (Amarelo) */
+        /* Botões */
         button.action-btn {
             background-color: var(--amarelo);
             color: var(--verde-1);
@@ -106,21 +127,36 @@
             transition: 0.3s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         }
-
         button.action-btn:hover {
             transform: scale(1.05);
             filter: brightness(1.1);
         }
-
-        /* Botão Secundário (Vazado/Transparente) */
         button.action-btn.secondary-btn {
             background-color: transparent;
             color: var(--amarelo);
         }
-
         button.action-btn.secondary-btn:hover {
             background-color: var(--amarelo);
             color: var(--verde-1);
+        }
+
+        /* Placar no End Screen */
+        #leaderboard-container {
+            background: var(--verde-2);
+            border: 2px solid var(--azul);
+            border-radius: 12px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+            text-align: left;
+        }
+        #leaderboard-container h3 {
+            margin-top: 0;
+            color: var(--verde-3);
+            text-align: center;
         }
 
         /* LAYOUT PRINCIPAL DO QUIZ */
@@ -129,7 +165,6 @@
             text-align: center;
             margin-top: 20px;
         }
-
         header h1 {
             color: var(--amarelo);
             margin: 0;
@@ -144,7 +179,7 @@
             flex-wrap: wrap;
         }
 
-        /* Seção do Quiz (Esquerda) */
+        /* Seção do Quiz */
         .quiz-section {
             flex: 2;
             background-color: var(--verde-2);
@@ -180,20 +215,17 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
         .option-btn:hover {
             background-color: var(--azul);
             color: var(--verde-1);
             font-weight: bold;
         }
-
         .option-btn.correct {
             background-color: var(--verde-3);
             border-color: var(--verde-3);
             color: var(--verde-1);
             font-weight: bold;
         }
-
         .option-btn.wrong {
             background-color: #ff6b6b;
             border-color: #ff6b6b;
@@ -206,7 +238,7 @@
             justify-content: flex-end;
         }
 
-        /* Seção do Sorteador (Direita) */
+        /* Seção do Sorteador */
         .sorteador-section {
             flex: 1;
             background-color: var(--verde-2);
@@ -219,14 +251,12 @@
             border: 2px solid var(--verde-3);
             min-width: 250px;
         }
-
         .sorteador-section h2 {
             color: var(--verde-3);
             margin-top: 0;
             text-align: center;
         }
 
-        /* Estilos da Roleta */
         .roleta-container {
             position: relative;
             width: 200px;
@@ -236,7 +266,6 @@
             justify-content: center;
             align-items: center;
         }
-
         .roleta-bg {
             position: absolute;
             width: 100%;
@@ -251,7 +280,6 @@
             border: 6px solid var(--verde-1);
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
         }
-
         #numero-sorteado {
             position: relative;
             z-index: 2;
@@ -267,7 +295,6 @@
             font-weight: bold;
             box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
         }
-
         .pointer {
             position: absolute;
             top: -20px;
@@ -278,35 +305,41 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
+            .container { flex-direction: column; }
             .screen-content h1 { font-size: 2.2em; }
             .screen-content p { font-size: 1.5em; }
-            .button-group { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <!-- TELA DE ABERTURA ANIMADA -->
+    <!-- TELA DE ABERTURA -->
     <div id="intro-screen">
         <div class="screen-content">
             <h1 class="fade-in-up">Agora vamos ao nosso quiz!</h1>
             <p class="fade-in-up delay-1">Desejo a todos boa sorte 🍀</p>
+            
+            <input type="text" id="user-name" class="fade-in-up delay-1" placeholder="Digite seu nome (Obrigatório)" required>
+            <br>
             <button class="action-btn fade-in-up delay-2" onclick="startApp()">Começar</button>
         </div>
     </div>
 
-    <!-- TELA FINAL ANIMADA -->
+    <!-- TELA FINAL -->
     <div id="end-screen">
-        <div class="screen-content">
-            <h1 id="end-title">Parabéns, equipe! 🚀</h1>
+        <div class="screen-content" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+            <h1 id="end-title">Parabéns! 🚀</h1>
             <p id="end-text">O primeiro passo para bater a meta é o conhecimento!</p>
-            <div class="button-group fade-in-up delay-1">
+            
+            <!-- Container do Placar -->
+            <div id="leaderboard-container" class="fade-in-up delay-1">
+                <h3>🏆 Carregando Placar...</h3>
+            </div>
+
+            <div class="button-group fade-in-up delay-2">
                 <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
-                <!-- Botão para Voltar à Apresentação -->
                 <button class="action-btn secondary-btn" onclick="voltarApresentacao()">Voltar à Apresentação</button>
+                <button class="action-btn" style="background-color: var(--verde-3); color: var(--verde-1);" onclick="baixarExcel()">Baixar Excel</button>
             </div>
         </div>
     </div>
@@ -317,52 +350,60 @@
     </header>
 
     <main class="container">
-        <!-- Seção da Esquerda (Quiz) -->
         <section class="quiz-section">
             <div id="question-container">
                 <h2 id="question-text">Carregando pergunta...</h2>
             </div>
-            <div id="options-container" class="options">
-                <!-- Botões gerados via JS -->
-            </div>
+            <div id="options-container" class="options"></div>
             <div class="actions">
                 <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">Próxima Pergunta</button>
             </div>
         </section>
 
-        <!-- Seção da Direita (Sorteador) -->
         <section class="sorteador-section">
             <h2>Sorteador<br>de Operadores</h2>
-            
             <div class="roleta-container">
                 <div class="pointer">▼</div>
                 <div id="roleta-bg" class="roleta-bg"></div>
                 <div id="numero-sorteado">?</div>
             </div>
-
             <button class="action-btn" onclick="spinRoleta()">Girar Roleta</button>
         </section>
     </main>
 
-    <script>
-        // Função para remover a tela de abertura
-        function startApp() {
-            const introScreen = document.getElementById('intro-screen');
-            introScreen.style.opacity = '0';
-            introScreen.style.transform = 'translateY(-20px)';
-            
-            setTimeout(() => {
-                introScreen.style.display = 'none';
-            }, 800);
-        }
+    <!-- SCRIPT TIPO MÓDULO PARA IMPORTAR O FIREBASE -->
+    <script type="module">
+        // Importando o SDK Firebase v9
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Função para ir para o link da apresentação
-        function voltarApresentacao() {
-            // SUBSTITUA O TEXTO ABAIXO PELO LINK REAL DA SUA APRESENTAÇÃO
-            window.location.href = "https://docs.google.com/presentation/d/1EysZ3n1mbWNOwfNGxFUsi5tCQMPOvSEFAMqyJWRm_V4/edit?slide=id.g3ed44f0caa6_0_12#slide=id.g3ed44f0caa6_0_12";
-        }
+        // =========================================================
+        // ATENÇÃO: COLE SUAS CREDENCIAIS DO FIREBASE AQUI EMBAIXO
+        // =========================================================
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            projectId: "SEU_PROJETO",
+            storageBucket: "SEU_PROJETO.appspot.com",
+            messagingSenderId: "SEU_SENDER_ID",
+            appId: "SEU_APP_ID"
+        };
 
-        // Banco de perguntas 
+        // Inicializa o Firebase e o Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // =========================================================
+        // VARIÁVEIS GLOBAIS DO QUIZ
+        // =========================================================
+        let currentQuestion = 0;
+        let isSpinning = false;
+        const totalOperadores = 50; 
+        
+        let userName = "";
+        let userScore = 0;
+        let todosResultados = []; // Guarda os dados gerais para o Excel
+
         const questions = [
             {
                 question: "1. META DE CSAT (>= 78%): Como o operador garante que essa meta de satisfação seja alcançada?",
@@ -416,9 +457,34 @@
             }
         ];
 
-        let currentQuestion = 0;
-        let isSpinning = false;
-        const totalOperadores = 50; 
+        // =========================================================
+        // FUNÇÕES DO QUIZ (Expostas para o Window poder chamar do HTML)
+        // =========================================================
+        window.startApp = function() {
+            const inputElement = document.getElementById('user-name');
+            userName = inputElement.value.trim();
+            
+            if (userName === "") {
+                alert("Por favor, digite seu nome para começar!");
+                inputElement.focus();
+                return;
+            }
+
+            userScore = 0; // Zera a pontuação
+            
+            const introScreen = document.getElementById('intro-screen');
+            introScreen.style.opacity = '0';
+            introScreen.style.transform = 'translateY(-20px)';
+            
+            setTimeout(() => {
+                introScreen.style.display = 'none';
+                loadQuestion();
+            }, 800);
+        };
+
+        window.voltarApresentacao = function() {
+            window.location.href = "https://docs.google.com/presentation/d/1EysZ3n1mbWNOwfNGxFUsi5tCQMPOvSEFAMqyJWRm_V4/edit?slide=id.g3ed44f0caa6_0_12#slide=id.g3ed44f0caa6_0_12";
+        };
 
         function loadQuestion() {
             const q = questions[currentQuestion];
@@ -431,14 +497,14 @@
                 const btn = document.createElement('button');
                 btn.className = 'option-btn';
                 btn.innerText = opt;
-                btn.onclick = () => selectAnswer(index, btn);
+                btn.onclick = () => window.selectAnswer(index, btn);
                 optionsContainer.appendChild(btn);
             });
             
             document.getElementById('next-btn').style.display = 'none';
         }
 
-        function selectAnswer(selectedIndex, btnElement) {
+        window.selectAnswer = function(selectedIndex, btnElement) {
             const correctIndex = questions[currentQuestion].answer;
             const buttons = document.querySelectorAll('.option-btn');
             
@@ -446,6 +512,7 @@
             
             if (selectedIndex === correctIndex) {
                 btnElement.classList.add('correct');
+                userScore++; // Soma ponto!
             } else {
                 btnElement.classList.add('wrong');
                 buttons[correctIndex].classList.add('correct');
@@ -459,9 +526,9 @@
             } else {
                 nextBtn.innerText = 'Próxima Pergunta';
             }
-        }
+        };
 
-        function nextQuestion() {
+        window.nextQuestion = function() {
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
                 loadQuestion();
@@ -469,47 +536,127 @@
             } else {
                 showEndScreen();
             }
-        }
+        };
 
-        function showEndScreen() {
+        async function showEndScreen() {
             const endScreen = document.getElementById('end-screen');
             const title = document.getElementById('end-title');
-            const text = document.getElementById('end-text');
-            const buttons = document.querySelector('.button-group');
             
-            endScreen.style.display = 'flex';
-            
-            // Re-aplica as animações
-            title.classList.remove('fade-in-up');
-            text.classList.remove('fade-in-up', 'delay-1');
-            buttons.classList.remove('fade-in-up', 'delay-1');
-            
-            void endScreen.offsetWidth; // Trigger reflow
-            
-            title.classList.add('fade-in-up');
-            text.classList.add('fade-in-up', 'delay-1');
-            buttons.classList.add('fade-in-up', 'delay-1');
+            // Personaliza a mensagem final
+            title.innerText = `Parabéns, ${userName}! 🚀`;
+            document.getElementById('end-text').innerText = `Você acertou ${userScore} de ${questions.length} perguntas.`;
 
+            endScreen.style.display = 'flex';
             setTimeout(() => {
                 endScreen.style.opacity = '1';
                 endScreen.style.transform = 'translateY(0)';
             }, 50);
+
+            // 1. Salva no banco de dados
+            try {
+                await addDoc(collection(db, "quiz_resultados"), {
+                    nome: userName,
+                    acertos: userScore,
+                    total: questions.length,
+                    dataHora: new Date().toISOString()
+                });
+                console.log("Resultado salvo com sucesso!");
+            } catch (e) {
+                console.error("Erro ao salvar no Firebase: ", e);
+            }
+
+            // 2. Carrega o Placar de todos
+            await carregarPlacar();
         }
 
-        function restartQuiz() {
+        async function carregarPlacar() {
+            const leaderboardDiv = document.getElementById('leaderboard-container');
+            
+            try {
+                // Busca os dados ordenados por acertos (do maior pro menor)
+                const q = query(collection(db, "quiz_resultados"), orderBy("acertos", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                todosResultados = []; // Limpa o array para não duplicar no Excel
+                
+                let html = "<h3>🏆 Placar Geral da Equipe</h3><ul style='list-style: none; padding: 0;'>";
+                
+                let posicao = 1;
+                querySnapshot.forEach((doc) => {
+                    const dados = doc.data();
+                    
+                    // Alimenta o array do Excel
+                    todosResultados.push({
+                        "Posição": posicao + "º",
+                        "Nome": dados.nome,
+                        "Acertos": dados.acertos,
+                        "Total Perguntas": dados.total,
+                        "Data/Hora": new Date(dados.dataHora).toLocaleString('pt-BR')
+                    });
+
+                    // Monta a linha do HTML
+                    let badge = posicao === 1 ? "🥇" : posicao === 2 ? "🥈" : posicao === 3 ? "🥉" : `<b>${posicao}º</b>`;
+                    
+                    html += `
+                        <li style="padding: 10px; margin: 5px 0; background: var(--verde-1); border-radius: 5px; border: 1px solid var(--verde-3); display: flex; justify-content: space-between; align-items: center;">
+                            <span>${badge} &nbsp; ${dados.nome}</span>
+                            <span style="color: var(--amarelo); font-weight: bold;">${dados.acertos} pts</span>
+                        </li>
+                    `;
+                    posicao++;
+                });
+                
+                html += "</ul>";
+                leaderboardDiv.innerHTML = html;
+
+            } catch (e) {
+                console.error("Erro ao carregar placar: ", e);
+                leaderboardDiv.innerHTML = "<h3>Erro ao carregar o placar.</h3>";
+            }
+        }
+
+        window.baixarExcel = function() {
+            if (todosResultados.length === 0) {
+                alert("Nenhum dado disponível para baixar ainda.");
+                return;
+            }
+
+            // Cria a planilha a partir do array populado pelo Firebase
+            const worksheet = XLSX.utils.json_to_sheet(todosResultados);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking");
+
+            // Faz o download
+            XLSX.writeFile(workbook, "Ranking_Quiz_Leveros.xlsx");
+        };
+
+        window.restartQuiz = function() {
             const endScreen = document.getElementById('end-screen');
             endScreen.style.opacity = '0';
             endScreen.style.transform = 'translateY(20px)';
             
             setTimeout(() => {
                 endScreen.style.display = 'none';
+                
+                // Volta pra tela de digitar o nome
+                const introScreen = document.getElementById('intro-screen');
+                document.getElementById('user-name').value = ''; // Limpa o nome antigo
+                introScreen.style.display = 'flex';
+                
+                setTimeout(() => {
+                    introScreen.style.opacity = '1';
+                    introScreen.style.transform = 'translateY(0)';
+                }, 50);
+
                 currentQuestion = 0;
-                loadQuestion();
                 resetRoleta();
             }, 800);
-        }
+        };
 
-        function spinRoleta() {
+        // =========================================================
+        // CÓDIGO DA ROLETA (Mantido original)
+        // =========================================================
+        window.spinRoleta = function() {
             if(isSpinning) return;
             isSpinning = true;
             
@@ -532,7 +679,7 @@
                 numSpan.innerText = numeroVencedor;
                 isSpinning = false;
             }, 3000);
-        }
+        };
 
         function resetRoleta() {
             const roletaBg = document.getElementById('roleta-bg');
@@ -543,7 +690,6 @@
             numSpan.innerText = "?";
         }
 
-        window.onload = loadQuestion;
     </script>
 </body>
 </html>
