@@ -2446,8 +2446,7 @@
   "titulo": "ABERTURA DE PROTOCOLOS EM NOME DO PATRÃO Abrtura de protocolo do patrão",
   "fonte": "Comunicado postado em 10/09/2026, 17:59:44",
   "pagina": "1",
-  "conteudo": "A partir de 14/09/2026, a Ilha Patrão possui um novo fluxo para abertura de protocolos diretamente em nome do Patrão. Passo 1 (Acionamento): Inserir o CNPJ no campo de pesquisa e selecionar a origem do ATD como 'Patrão'. Passo 2 (Consulta): A listagem exibirá CPF/CNPJ, Nome, Contato, Pedido, Data e Status, permitindo busca por qualquer um destes campos. Passo 3 (Abertura): Selecionar telefone, nome e e-mail do patrão que acionou; os dados serão registrados automaticamente. Importante: Para o cliente final, o fluxo de abertura de protocolo segue sem nenhuma alteração.\n\nLink do comunicado: https://drive.google.com/file/d/15R4b5lrna4xb-b1UGq9a-msDxQJxrYqc/view?usp=sharing",
-  "url_imagem": "https://drive.google.com/file/d/15R4b5lrna4xb-b1UGq9a-msDxQJxrYqc/view?usp=sharing",
+  "conteudo": "A partir de 14/09/2026, a Ilha Patrão possui um novo fluxo para abertura de protocolos diretamente em nome do Patrão. Passo 1 (Acionamento): Inserir o CNPJ no campo de pesquisa e selecionar a origem do ATD como 'Patrão'. Passo 2 (Consulta): A listagem exibirá CPF/CNPJ, Nome, Contato, Pedido, Data e Status, permitindo busca por qualquer um destes campos. Passo 3 (Abertura): Selecionar telefone, nome e e-mail do patrão que acionou; os dados serão registrados automaticamente. Importante: Para o cliente final, o fluxo de abertura de protocolo segue sem nenhuma alteração.\n\n![Comunicado Ilha Patrão](https://drive.google.com/uc?export=view&id=15R4b5lrna4xb-b1UGq9a-msDxQJxrYqc)",
   "id": 303
  }
 
