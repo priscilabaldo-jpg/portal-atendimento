@@ -2439,6 +2439,15 @@
   "pagina": "1",
   "conteudo": "TABELA DE EXEMPLOS PARA CLASSIFICAÇÃO:\n- Parte plástica trincada -> QUEBRADO\n- Hélice avariada -> QUEBRADO\n- Tubo de cobre amassado/rompido -> QUEBRADO\n- Partes soltas -> QUEBRADO\n- Liga mas não gela -> DEFEITO\n- Barulho excessivo -> DEFEITO\n- Pinga água na sala -> DEFEITO\n- Código de erro no display (ex: E1) -> DEFEITO\n- Falta de fluído refrigerante (gás) -> DEFEITO\n\nRegra prática: se dá para ver o dano físico só de olhar o aparelho, mesmo desligado, é quebrado. Se o problema só aparece ligando ou testando o equipamento, é defeito.",
   "id": 302
+ },
+
+ {
+  "secao": "15. Atualizações de Processos - Setembro/2026",
+  "titulo": "ABERTURA DE PROTOCOLOS EM NOME DO PATRÃO",
+  "fonte": "Comunicado postado em 10/09/2026, 17:59:44",
+  "pagina": "1",
+  "conteudo": "A partir de 14/09/2026, a Ilha Patrão possui um novo fluxo para abertura de protocolos diretamente em nome do Patrão[cite: 2]. Passo 1 (Acionamento): Inserir o CNPJ no campo de pesquisa e selecionar a origem do ATD como 'Patrão'[cite: 2]. Passo 2 (Consulta): A listagem exibirá CPF/CNPJ, Nome, Contato, Pedido, Data e Status, permitindo busca por qualquer um destes campos[cite: 2]. Passo 3 (Abertura): Selecionar telefone, nome e e-mail do patrão que acionou; os dados serão registrados automaticamente[cite: 2]. Importante: Para o cliente final, o fluxo de abertura de protocolo segue sem nenhuma alteração[cite: 2].",
+  "id": 303
  }
 
 ]
