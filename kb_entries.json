@@ -2414,5 +2414,31 @@
   "pagina": "9",
   "conteudo": "TEMPLATE RESUMIDO PARA CLASSIFICAÇÃO NO INTERGRALL:\n\nSe for ENVIO DE PEÇA (reposição sem custo):\n• Motivo do Chamado: Envio de peça Contatora\n• Sub-motivo: Item Faltante\n• Centro de Custo: 1102501\n\nSe for REEMBOLSO (cliente/técnico comprou a peça ou cobrou mão de obra):\n• Motivo do Chamado: Cancelamento Produtos Restituições\n• Sub-motivo: Custo peça contatora\n• Encaminhar ao time de Compras para validação e estorno com a Midea",
   "id": 299
+ },
+
+{
+  "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
+  "titulo": "COMUNICADO: PRODUTO QUEBRADO x PRODUTO COM DEFEITO (VISÃO GERAL)",
+  "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
+  "pagina": "1",
+  "conteudo": "COMUNICADO: ENTENDA A DIFERENÇA PARA UM ATENDIMENTO MAIS ASSERTIVO\n\nObjetivo: ampliar o conhecimento do time. Identificar a diferença entre produto com defeito e produto quebrado logo na abertura do atendimento é essencial para que o backoffice siga com as tratativas corretas.\n\nPRODUTO ESTÁ QUEBRADO\n- Definição: dano estrutural ou avaria física evidente em componentes mecânicos/plásticos.\n- Origem do problema: quedas, impactos no transporte ou má instalação.\n- Exemplos práticos: parte plástica trincada, hélice avariada, tubo de cobre amassado/rompido, partes soltas.\n- Visibilidade: geralmente visível a olho nu, antes mesmo de ligar.\n\nPRODUTO COM DEFEITO\n- Definição: falha de funcionamento, desempenho interno do sistema e falta de fluído refrigerante (gás).\n- Origem do problema: falha de fábrica, desgastes em componentes elétricos ou falta de manutenção.\n- Exemplos práticos: aparelho liga mas não gela, faz barulho excessivo, pinga água na sala, exibe código de erro no display, falta de fluído refrigerante (gás).\n- Visibilidade: geralmente invisível externamente; notado apenas durante o uso ou em testes realizados.\n\nEm caso de dúvida, verifique sempre as características do produto. Esse cuidado garante agilidade nas tratativas, evita retrabalho e melhora a experiência do cliente.",
+  "id": 300
  }
+ ,{
+  "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
+  "titulo": "COMO DIFERENCIAR PRODUTO QUEBRADO DE PRODUTO COM DEFEITO (CHECKLIST RÁPIDO)",
+  "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
+  "pagina": "1",
+  "conteudo": "PERGUNTAS RELACIONADAS: qual a diferença entre quebrado e defeito, produto quebrado ou com defeito, como classificar avaria, o aparelho não gela é defeito ou quebrado, hélice quebrada, tubo amassado, aparelho com código de erro.\n\nCHECKLIST RÁPIDO PARA CLASSIFICAR NA ABERTURA DO ATENDIMENTO:\n1) O problema é visível a olho nu, antes mesmo de ligar (peça trincada, hélice avariada, tubo de cobre amassado/rompido, partes soltas)? -> PRODUTO QUEBRADO (dano físico/estrutural; causas típicas: queda, impacto no transporte, má instalação).\n2) O problema só aparece durante o uso ou em testes (liga mas não gela, barulho excessivo, pinga água na sala, código de erro no display, falta de fluído refrigerante/gás)? -> PRODUTO COM DEFEITO (falha de funcionamento; causas típicas: falha de fábrica, desgaste elétrico ou falta de manutenção).\n3) Em caso de dúvida, verifique as características do produto antes de classificar.\n\nRESUMO: quebrado = dano físico evidente em componentes mecânicos/plásticos; defeito = falha de funcionamento/desempenho interno, geralmente invisível por fora.\n\nCONEXÃO COM OS FLUXOS JÁ EXISTENTES NA BASE: produto quebrado/avariado segue a argumentação de Troca e Devolução com submotivo 'Avaria ou produto quebrado'; produto com defeito segue a argumentação de defeito/garantia (Assistência Técnica) e a Triagem N1 de Garantia.",
+  "id": 301
+ }
+ ,{
+  "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
+  "titulo": "SINTOMAS COMUNS: É QUEBRADO OU DEFEITO? (TABELA DE EXEMPLOS)",
+  "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
+  "pagina": "1",
+  "conteudo": "TABELA DE EXEMPLOS PARA CLASSIFICAÇÃO:\n- Parte plástica trincada -> QUEBRADO\n- Hélice avariada -> QUEBRADO\n- Tubo de cobre amassado/rompido -> QUEBRADO\n- Partes soltas -> QUEBRADO\n- Liga mas não gela -> DEFEITO\n- Barulho excessivo -> DEFEITO\n- Pinga água na sala -> DEFEITO\n- Código de erro no display (ex: E1) -> DEFEITO\n- Falta de fluído refrigerante (gás) -> DEFEITO\n\nRegra prática: se dá para ver o dano físico só de olhar o aparelho, mesmo desligado, é quebrado. Se o problema só aparece ligando ou testando o equipamento, é defeito.",
+  "id": 302
+ }
+
 ]
