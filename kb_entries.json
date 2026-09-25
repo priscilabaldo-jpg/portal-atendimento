@@ -2448,6 +2448,48 @@
   "pagina": "1",
   "conteudo": "A partir de 14/09/2026, a Ilha Patrão possui um novo fluxo para abertura de protocolos diretamente em nome do Patrão. Passo 1 (Acionamento): Inserir o CNPJ no campo de pesquisa e selecionar a origem do ATD como 'Patrão'. Passo 2 (Consulta): A listagem exibirá CPF/CNPJ, Nome, Contato, Pedido, Data e Status, permitindo busca por qualquer um destes campos. Passo 3 (Abertura): Selecionar telefone, nome e e-mail do patrão que acionou; os dados serão registrados automaticamente. Importante: Para o cliente final, o fluxo de abertura de protocolo segue sem nenhuma alteração.\n\n![Comunicado Ilha Patrão](https://drive.google.com/uc?export=view&id=15R4b5lrna4xb-b1UGq9a-msDxQJxrYqc)",
   "id": 303
+ },
+
+
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "DIRETRIZ DE ATENDIMENTO ATEC E MATERIAL DE APOIO",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "1-20",
+  "conteudo": "Regra absoluta para Assistência Técnica (ATEC): O processo de abertura varia conforme o fabricante. INSTRUÇÃO DE INTERAÇÃO: Se o operador solicitar ajuda com ATEC ou abertura de OS, mas NÃO informar o fabricante na primeira mensagem, a IA NÃO deve listar todos os fluxos. A IA DEVE OBRIGATORIAMENTE pausar e perguntar: 'Para qual fabricante você precisa abrir a ATEC? Temos fluxos específicos para Midea/Carrier, Philco/Britania, Daikin e outros fabricantes.' Somente após a resposta do operador, identifique a marca e forneça o passo a passo correspondente. Além disso, você deve SEMPRE incluir no final da resposta a seguinte mensagem: 'Para visualizar as telas do sistema e o passo a passo completo, acesse os slides do Treinamento ATEC aqui: [INSERIR_LINK_DO_PPTX]'.",
+  "id": 304
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO MIDEA / CARRIER",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "2-8",
+  "conteudo": "Abertura via portal Jira Service Desk (B2B - Suporte a Revenda). Exige preenchimento da 'Planilha de abertura de OS para ATEC' (Google Sheets). Documentos necessários: Etiqueta, Número de Série e NF. Regras obrigatórias no portal: Compartilhar o chamado com 'B3639 - LEVEROS'. Categoria: 'SAC Revenda'. Subcategoria: 'Abertura de OS - Atendimento via Rede Blue Service'. O CNPJ inserido deve ser OBRIGATORIAMENTE o do CD da Garantia: 61.502.324/0013-56. O número do chamado gerado (ex: AFS-74012) deve ser registrado no protocolo com print.",
+  "id": 305
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO PHILCO / BRITANIA",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "9-13",
+  "conteudo": "Abertura via plataforma Movidesk. Login: garantia@leveros.com.br / Senha: leveros23. Acesso único: se houver sessão aberta, o operador deve aguardar. Documentos necessários: Fotos da NF e fotos do produto (com etiqueta e número de série visíveis). Regra obrigatória: A Philco/Britania só abre ATEC com o CPF do cliente. No ticket, usar o Assunto: 'Visita técnica'. Descrever o atendimento na mensagem, enviar o ticket e colar o número gerado no protocolo de atendimento.",
+  "id": 306
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO DAIKIN",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "14-17",
+  "conteudo": "Abertura via formulário no site (daikin.com.br/contato). Exige os dados de contato do cliente e anexo APENAS da Nota Fiscal de compra. Regras de preenchimento: Atendimento: 'Assistência Técnica'. Tipo: 'Atendimento Garantia Assistência Técnica'. Produto e capacidade conforme a NF. Após o envio, o número do ticket vai direto para o e-mail do cliente. O operador deve solicitar esse número ao cliente e registrar no protocolo. Se não conseguir na hora, registrar para que o Backoffice solicite depois.",
+  "id": 307
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO DEMAIS FABRICANTES (E-MAIL)",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "18-19",
+  "conteudo": "Para fabricantes sem plataforma própria, a abertura de ATEC é via e-mail direto. Evidências necessárias: Descrição da solicitação, endereço completo, telefone(s) e e-mail do cliente. Contatos: SARL GE (atendimento@sarlge.com.br), Ventisol (sac4@ventisol.com.br), Gree (soslojista@gree-am.com.br), TCL SEMP (suporteposvendas@tclsemp.com.br). O registro de acompanhamento com o retorno do fabricante deve constar no protocolo do atendimento.",
+  "id": 308
  }
 
 ]
