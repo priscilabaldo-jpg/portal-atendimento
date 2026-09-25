@@ -1,5 +1,5 @@
 [
- {
+{
   "secao": "0. Personalidade e Instruções do Sistema",
   "titulo": "QUEM É A LIA (DIRETRIZ DA IA)",
   "fonte": "Configuração de IA",
@@ -30,6 +30,46 @@
   "pagina": "1",
   "conteudo": "Regra absoluta: Sempre que um operador perguntar sobre SLA, prazos, dias, horas ou tempo de retorno para qualquer processo, use ESTE DICIONÁRIO como sua fonte principal e obrigatoriamente cite os números: \n- Envio de Evidências / Fotos: O cliente tem 24 horas (úteis) para enviar, senão o protocolo é encerrado. \n- Análise de Extravio (Logística): 7 dias úteis para retorno. \n- Análise de Troca/Devolução (N2): 3 dias úteis para contato e até 20 dias para o processo total. \n- Peça / Acessório Faltante: 15 dias corridos após a entrega (Exceção: LG RAC e CAC são 30 dias). Após isso, vira 'compra de peça'. \n- Carta de Correção (Endereço): Acréscimo de +3 dias úteis no prazo (mesma cidade) ou +7 dias úteis (cidade diferente). \n- Faturamento Agendado: Nota Fiscal gerada até 3 dias úteis antes da data de entrega. \n- Prazos de Garantia de Fábrica: Busque obrigatoriamente pela 'Tabela de Prazos de Garantia por Marca' na base para responder (Atenção às diferenças entre Garantia Legal e Contratual).",
   "id": 0.3
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: DIRETRIZ MESTRE DE ATENDIMENTO E INTERAÇÃO",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "1-20",
+  "conteudo": "Regra absoluta para Assistência Técnica (ATEC): Existem quatro fluxos de abertura de ATEC, de acordo com o fabricante do produto[cite: 1]. INSTRUÇÃO DE INTERAÇÃO (Antialucinação): Se o operador perguntar sobre ATEC, abertura de OS ou garantia, e NÃO informar o fabricante na primeira mensagem, você NÃO deve listar todos os fluxos. Você DEVE OBRIGATORIAMENTE pausar e perguntar: 'Para qual fabricante você precisa abrir a ATEC? Temos fluxos específicos para Midea/Carrier, Philco/Britania, Daikin e outros fabricantes.'[cite: 1] Somente após a resposta, forneça o passo a passo correspondente. Além disso, sempre inclua no final da sua resposta o link de apoio: 'Para visualizar as telas do sistema e o passo a passo completo, acesse os slides do Treinamento ATEC aqui: [INSERIR_LINK_DO_PPTX]'.",
+  "id": 1.0
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO MIDEA / CARRIER",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "2-8",
+  "conteudo": "Abertura via portal Jira Service Desk, opção B2B Suporte a Revenda[cite: 1]. Exige preenchimento do 'Formulário de abertura de ATEC Midea (Google Sheets)' e coleta de etiqueta, número de série e Nota Fiscal[cite: 1]. Regras no portal: Compartilhar o chamado com 'B3639 - LEVEROS'[cite: 1]. Categoria: 'SAC Revenda' / Subcategoria: 'Abertura de OS - Atendimento via Rede Blue Service'[cite: 1]. O CNPJ inserido deve ser o do CD da Garantia: 61.502.324/0013-56[cite: 1]. O número do chamado (ex: AFS-74012) deve ser copiado e colado no protocolo com print da solicitação[cite: 1].",
+  "id": 1.1
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO PHILCO / BRITANIA",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "9-13",
+  "conteudo": "Abertura via plataforma Movidesk[cite: 1]. Login: garantia@leveros.com.br / Senha: leveros23[cite: 1]. Acesso único: se houver sessão aberta, aguarde o operador terminar[cite: 1]. Documentos: Fotos da NF, etiqueta e número de série[cite: 1]. Regra obrigatória: Philco/Britania só abre ATEC com CPF[cite: 1]. No ticket, preencher Assunto como 'Visita técnica'[cite: 1]. Enviar ticket, copiar o número gerado no protocolo e anexar print para registro[cite: 1].",
+  "id": 1.2
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO DAIKIN",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "14-17",
+  "conteudo": "Abertura via formulário no site (daikin.com.br/contato)[cite: 1]. Exige os dados do cliente e anexar somente a Nota Fiscal de venda[cite: 1]. Regras de preenchimento: Atendimento: 'Assistência Técnica' / Tipo: 'Atendimento Garantia Assistência Técnica'[cite: 1]. Após o envio, um ticket da Daikin chega automaticamente no e-mail do cliente[cite: 1]. Como o operador está em contato, deve solicitar o número do ticket gerado ao cliente e registrar no protocolo[cite: 1]. Se não for possível, deixar registrado para o BackOffice Garantia entrar em contato posteriormente[cite: 1].",
+  "id": 1.3
+ },
+ {
+  "secao": "1. Regras Operacionais ATEC",
+  "titulo": "ATEC: FLUXO DEMAIS FABRICANTES",
+  "fonte": "Treinamento ATEC.pptx",
+  "pagina": "18-19",
+  "conteudo": "Para fabricantes sem plataforma própria, a abertura é via e-mail direto ao fabricante[cite: 1]. Template: 'Olá, [Nome]. [Descrição da solicitação]. Endereço completo: [Endereço] / Telefone(s): [Telefones] / E-mail: [E-mail]'[cite: 1]. E-mails: SARL GE (atendimento@sarlge.com.br), Ventisol (sac4@ventisol.com.br), Gree (soslojista@gree-am.com.br), TCL SEMP (suporteposvendas@tclsemp.com.br)[cite: 1]. Sempre registre o número do chamado no protocolo de atendimento[cite: 1].",
+  "id": 1.4
  },
  {
   "secao": "1. Institucional: Leveros, Clientes e Canais de Venda",
