@@ -1,5 +1,5 @@
 [
-{
+ {
   "secao": "0. Personalidade e Instruções do Sistema",
   "titulo": "QUEM É A LIA (DIRETRIZ DA IA)",
   "fonte": "Configuração de IA",
@@ -2332,8 +2332,16 @@
   "titulo": "QUAL O PRAZO DE GARANTIA? (TABELA DE PRAZOS POR MARCA)",
   "fonte": "formn1.html (Triagem N1 - Garantia)",
   "pagina": "-",
-  "conteudo": "PERGUNTAS RELACIONADAS: qual o prazo de garantia, tempo de garantia, meses de garantia.\n\nTABELA DE PRAZOS DE GARANTIA POR MARCA (para Não Gela/Defeito de Fabricação), contados a partir da Data de Emissão da Nota Fiscal.\n\nO tipo de garantia aplicada depende da instalação: se há parceiro vinculado E o parceiro realizou a instalação, aplica-se Garantia Contratual (Autorizado); caso contrário, aplica-se Garantia Legal (instalação de terceiros).\n\n- Agratto: Legal 90 dias | Contratual 12 meses\n- Midea/Carrier (RAC): Legal 90 dias | Contratual: Convencional 12m, Inverter 24m (+10 anos garantia do compressor)\n- Midea/Carrier (CAC): Legal 90 dias | Contratual: Convencional 12m, Inverter 36m\n- Daikin: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor)\n- Elgin (RAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/23: 12 meses, >=01/01/23: 36 meses (+10 anos garantia do compressor)\n- Elgin (CAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/22: 12 meses, >=01/01/22: 36 meses\n- Fujitsu: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor)\n- Gree: Legal 90 dias | Contratual <15/08/22: 12 meses, >=15/08/22: 60 meses (+10 anos garantia do compressor)\n- LG (RAC): vendas antes de 01/09/2025: 1 ano; vendas a partir de 01/09/2025: 2 anos (mesma regra para Legal e Contratual, sempre com +10 anos de garantia do compressor)\n- LG (CAC): Legal 90 dias | Contratual 12 meses\n- Philco/TCL: Legal 90 dias | Contratual: Convencional 12m, Inverter 24m (+10 anos garantia do compressor)\n- Trane: Legal 90 dias | Contratual 36 meses\n- Hitachi (RAC): Legal 90 dias | Contratual 24 meses (+12 anos garantia do compressor)\n- Hitachi (CAC): Legal 90 dias | Contratual 12 meses\n\nA pergunta sobre tecnologia (Convencional ou Inverter) só é exibida para as marcas: Midea (RAC/CAC), Philco e TCL.",
+  "conteudo": "PERGUNTAS RELACIONADAS: qual o prazo de garantia, tempo de garantia, meses de garantia.\n\nTABELA DE PRAZOS DE GARANTIA POR MARCA (para Não Gela/Defeito de Fabricação), contados a partir da Data de Emissão da Nota Fiscal.\n\nREGRA CONDICIONAL OBRIGATÓRIA (decisão Legal x Contratual) — siga esta ordem ANTES de citar qualquer prazo:\n1) O pedido possui parceiro/credenciado vinculado?\n2) Esse parceiro/credenciado REALIZOU a instalação (ou o produto já está instalado por ele)?\n-> Se a resposta for SIM para AMBAS as perguntas: aplica-se a GARANTIA CONTRATUAL (coluna 'Prazo Instalado por Autorizado/Parceiro').\n-> Se a resposta for NÃO a qualquer uma delas (sem parceiro vinculado, OU parceiro vinculado mas quem instalou foi terceiro/o próprio cliente): aplica-se a GARANTIA LEGAL (coluna 'Garantia Legal - ATEC').\nNUNCA aplique o prazo Contratual (mais longo, em anos) para um produto sem instalação por parceiro autorizado, mesmo que a marca ofereça garantia contratual extensa. Nesses casos o prazo correto é sempre o da Garantia Legal (90 dias na maioria das marcas).\n\n- Agratto: Legal 90 dias | Contratual 12 meses (tudo, ON/OFF e Inverter)\n- Midea/Carrier (RAC): Legal 90 dias | Contratual: ON/OFF 12m, Inverter 24m (+10 anos garantia do compressor)\n- Midea/Carrier (CAC): Legal 90 dias | Contratual: ON/OFF 12m, Inverter 36m tudo\n- Daikin: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor) - RAC e CAC\n- Elgin (RAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/23: 12 meses, >=01/01/23: 36 meses (+10 anos garantia do compressor)\n- Elgin (CAC): Legal <01/03/23: 90 dias, >=01/03/23: 12 meses | Contratual <01/01/22: 12 meses, >=01/01/22: 36 meses tudo\n- Fujitsu: Legal 90 dias | Contratual 24 meses (+5 anos garantia do compressor) - RAC e CAC\n- Gree: Legal 90 dias | Contratual <15/08/22: 12 meses, >=15/08/22: 60 meses (5 anos) (+10 anos garantia do compressor) - RAC e CAC\n- LG (RAC): EXCEÇÃO - Legal e Contratual seguem a MESMA regra (não há distinção por instalação): vendas antes de 01/09/2025: 1 ano; vendas a partir de 01/09/2025: 2 anos (sempre com +10 anos de garantia do compressor)\n- LG (CAC): EXCEÇÃO - Legal e Contratual seguem a MESMA regra (não há distinção por instalação): 1 ano tudo, independentemente de instalação por parceiro/credenciado\n- Philco/TCL: Legal 90 dias | Contratual: ON/OFF 12m, Inverter 24m (+10 anos garantia do compressor)\n- Trane: Legal 90 dias | Contratual 36 meses tudo (CAC e RAC)\n- Hitachi (RAC): Legal 90 dias | Contratual 24 meses (+12 anos garantia do compressor)\n- Hitachi (CAC): Legal 90 dias | Contratual 12 meses (ON/OFF e Inverter)\n\nATENÇÃO ESPECIAL LG: LG (RAC) e LG (CAC) são as ÚNICAS marcas em que o prazo de Garantia Legal É IGUAL ao prazo de Garantia Contratual (não há redução para 90 dias). Para todas as outras marcas listadas, a ausência de instalação por parceiro/credenciado autorizado reduz automaticamente o prazo para 90 dias (Garantia Legal), mesmo que a marca ofereça garantia contratual de vários anos.\n\nA pergunta sobre tecnologia (Convencional ou Inverter) só é exibida para as marcas: Midea (RAC/CAC), Philco e TCL.\n\nGARANTIA DO COMPRESSOR: quando indicada (ex: +5, +10 ou +12 anos), essa garantia estendida cobre EXCLUSIVAMENTE o compressor e permanece válida mesmo após o vencimento da garantia geral do equipamento (Legal ou Contratual) — não confundir com a garantia geral de defeito de fabricação.",
   "id": 282
+ },
+ {
+  "secao": "Triagem N1 | Garantia",
+  "titulo": "COMO CALCULAR SE O EQUIPAMENTO ESTÁ DENTRO OU FORA DA GARANTIA (REGRA DE CÁLCULO OBRIGATÓRIA)",
+  "fonte": "Configuração de IA",
+  "pagina": "1",
+  "conteudo": "Regra absoluta de cálculo: para determinar se um equipamento está dentro ou fora da garantia, siga SEMPRE estes passos, na ordem, e NUNCA pule etapas:\n\nPASSO 1 - Identifique a marca e a linha (RAC ou CAC) do equipamento.\nPASSO 2 - Verifique a condição de instalação (parceiro vinculado E parceiro instalou = Contratual; caso contrário = Legal), EXCETO para LG (RAC/CAC), onde Legal e Contratual são sempre o mesmo prazo.\nPASSO 3 - Identifique o prazo aplicável na 'Tabela de Prazos de Garantia por Marca' (em dias, meses ou anos) e, se a marca tiver regra por data de venda (ex: Elgin, Gree, LG), confirme a data de corte correspondente à Data de Emissão da Nota Fiscal.\nPASSO 4 - Converta o prazo para dias corridos, usando: 1 mês = 30 dias | 1 ano = 365 dias (ex: 90 dias = 90; 12 meses = 360 dias; 24 meses = 720 dias; 1 ano = 365 dias; 2 anos = 730 dias; 5 anos = 1825 dias).\nPASSO 5 - Calcule os dias transcorridos: dias_transcorridos = (Data Atual - Data de Emissão da Nota Fiscal), em dias corridos.\nPASSO 6 - Compare: SE dias_transcorridos <= prazo_aplicavel_em_dias, o equipamento está DENTRO da garantia. SE dias_transcorridos > prazo_aplicavel_em_dias, o equipamento está FORA da garantia.\n\nEXEMPLO PRÁTICO (para evitar erro de cálculo): Equipamento Gree, SEM instalação por parceiro/credenciado, Nota Fiscal emitida em 04/2026. Como não houve instalação por parceiro autorizado, aplica-se a Garantia LEGAL = 90 dias (e NÃO os 5 anos da garantia contratual, que só valeria com instalação por credenciado). Se a data atual estiver a mais de 90 dias da emissão da NF, o equipamento está FORA da garantia — mesmo que a marca Gree ofereça 5 anos de garantia contratual em outros cenários.\n\nERRO COMUM A EVITAR: aplicar o prazo da coluna 'Contratual' (anos) quando a resposta sobre instalação por parceiro/credenciado for negativa ou incompleta. Nesse caso, a coluna correta é SEMPRE a 'Garantia Legal', exceto para LG (RAC/CAC), que não tem essa distinção.\nSe houver qualquer dúvida ou ausência de informação sobre parceiro/instalação, PARE e pergunte ao operador antes de informar um prazo de garantia.",
+  "id": 282.5
  },
  {
   "secao": "11. Garantia, Assistencia Tecnica e Reposicao de Pecas",
@@ -2463,24 +2471,23 @@
   "conteudo": "TEMPLATE RESUMIDO PARA CLASSIFICAÇÃO NO INTERGRALL:\n\nSe for ENVIO DE PEÇA (reposição sem custo):\n• Motivo do Chamado: Envio de peça Contatora\n• Sub-motivo: Item Faltante\n• Centro de Custo: 1102501\n\nSe for REEMBOLSO (cliente/técnico comprou a peça ou cobrou mão de obra):\n• Motivo do Chamado: Cancelamento Produtos Restituições\n• Sub-motivo: Custo peça contatora\n• Encaminhar ao time de Compras para validação e estorno com a Midea",
   "id": 299
  },
-
-{
+ {
   "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
   "titulo": "COMUNICADO: PRODUTO QUEBRADO x PRODUTO COM DEFEITO (VISÃO GERAL)",
   "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
   "pagina": "1",
   "conteudo": "COMUNICADO: ENTENDA A DIFERENÇA PARA UM ATENDIMENTO MAIS ASSERTIVO\n\nObjetivo: ampliar o conhecimento do time. Identificar a diferença entre produto com defeito e produto quebrado logo na abertura do atendimento é essencial para que o backoffice siga com as tratativas corretas.\n\nPRODUTO ESTÁ QUEBRADO\n- Definição: dano estrutural ou avaria física evidente em componentes mecânicos/plásticos.\n- Origem do problema: quedas, impactos no transporte ou má instalação.\n- Exemplos práticos: parte plástica trincada, hélice avariada, tubo de cobre amassado/rompido, partes soltas.\n- Visibilidade: geralmente visível a olho nu, antes mesmo de ligar.\n\nPRODUTO COM DEFEITO\n- Definição: falha de funcionamento, desempenho interno do sistema e falta de fluído refrigerante (gás).\n- Origem do problema: falha de fábrica, desgastes em componentes elétricos ou falta de manutenção.\n- Exemplos práticos: aparelho liga mas não gela, faz barulho excessivo, pinga água na sala, exibe código de erro no display, falta de fluído refrigerante (gás).\n- Visibilidade: geralmente invisível externamente; notado apenas durante o uso ou em testes realizados.\n\nEm caso de dúvida, verifique sempre as características do produto. Esse cuidado garante agilidade nas tratativas, evita retrabalho e melhora a experiência do cliente.",
   "id": 300
- }
- ,{
+ },
+ {
   "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
   "titulo": "COMO DIFERENCIAR PRODUTO QUEBRADO DE PRODUTO COM DEFEITO (CHECKLIST RÁPIDO)",
   "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
   "pagina": "1",
   "conteudo": "PERGUNTAS RELACIONADAS: qual a diferença entre quebrado e defeito, produto quebrado ou com defeito, como classificar avaria, o aparelho não gela é defeito ou quebrado, hélice quebrada, tubo amassado, aparelho com código de erro.\n\nCHECKLIST RÁPIDO PARA CLASSIFICAR NA ABERTURA DO ATENDIMENTO:\n1) O problema é visível a olho nu, antes mesmo de ligar (peça trincada, hélice avariada, tubo de cobre amassado/rompido, partes soltas)? -> PRODUTO QUEBRADO (dano físico/estrutural; causas típicas: queda, impacto no transporte, má instalação).\n2) O problema só aparece durante o uso ou em testes (liga mas não gela, barulho excessivo, pinga água na sala, código de erro no display, falta de fluído refrigerante/gás)? -> PRODUTO COM DEFEITO (falha de funcionamento; causas típicas: falha de fábrica, desgaste elétrico ou falta de manutenção).\n3) Em caso de dúvida, verifique as características do produto antes de classificar.\n\nRESUMO: quebrado = dano físico evidente em componentes mecânicos/plásticos; defeito = falha de funcionamento/desempenho interno, geralmente invisível por fora.\n\nCONEXÃO COM OS FLUXOS JÁ EXISTENTES NA BASE: produto quebrado/avariado segue a argumentação de Troca e Devolução com submotivo 'Avaria ou produto quebrado'; produto com defeito segue a argumentação de defeito/garantia (Assistência Técnica) e a Triagem N1 de Garantia.",
   "id": 301
- }
- ,{
+ },
+ {
   "secao": "9. Argumentacao de Troca e Devolucao (dentro e fora do prazo)",
   "titulo": "SINTOMAS COMUNS: É QUEBRADO OU DEFEITO? (TABELA DE EXEMPLOS)",
   "fonte": "Comunicado - Entenda a diferença: Produto Quebrado x Produto com Defeito",
@@ -2488,7 +2495,6 @@
   "conteudo": "TABELA DE EXEMPLOS PARA CLASSIFICAÇÃO:\n- Parte plástica trincada -> QUEBRADO\n- Hélice avariada -> QUEBRADO\n- Tubo de cobre amassado/rompido -> QUEBRADO\n- Partes soltas -> QUEBRADO\n- Liga mas não gela -> DEFEITO\n- Barulho excessivo -> DEFEITO\n- Pinga água na sala -> DEFEITO\n- Código de erro no display (ex: E1) -> DEFEITO\n- Falta de fluído refrigerante (gás) -> DEFEITO\n\nRegra prática: se dá para ver o dano físico só de olhar o aparelho, mesmo desligado, é quebrado. Se o problema só aparece ligando ou testando o equipamento, é defeito.",
   "id": 302
  },
-
  {
   "secao": "15. Atualizações de Processos - Setembro/2026",
   "titulo": "ABERTURA DE PROTOCOLOS EM NOME DO PATRÃO Abrtura de protocolo do patrão",
@@ -2497,8 +2503,6 @@
   "conteudo": "A partir de 14/09/2026, a Ilha Patrão possui um novo fluxo para abertura de protocolos diretamente em nome do Patrão. Passo 1 (Acionamento): Inserir o CNPJ no campo de pesquisa e selecionar a origem do ATD como 'Patrão'. Passo 2 (Consulta): A listagem exibirá CPF/CNPJ, Nome, Contato, Pedido, Data e Status, permitindo busca por qualquer um destes campos. Passo 3 (Abertura): Selecionar telefone, nome e e-mail do patrão que acionou; os dados serão registrados automaticamente. Importante: Para o cliente final, o fluxo de abertura de protocolo segue sem nenhuma alteração.\n\n![Comunicado Ilha Patrão](https://drive.google.com/uc?export=view&id=15R4b5lrna4xb-b1UGq9a-msDxQJxrYqc)",
   "id": 303
  },
-
-
  {
   "secao": "1. Regras Operacionais ATEC",
   "titulo": "DIRETRIZ DE ATENDIMENTO ATEC E MATERIAL DE APOIO",
@@ -2539,5 +2543,4 @@
   "conteudo": "Para fabricantes sem plataforma própria, a abertura de ATEC é via e-mail direto. Evidências necessárias: Descrição da solicitação, endereço completo, telefone(s) e e-mail do cliente. Contatos: SARL GE (atendimento@sarlge.com.br), Ventisol (sac4@ventisol.com.br), Gree (soslojista@gree-am.com.br), TCL SEMP (suporteposvendas@tclsemp.com.br). O registro de acompanhamento com o retorno do fabricante deve constar no protocolo do atendimento.",
   "id": 308
  }
-
 ]
