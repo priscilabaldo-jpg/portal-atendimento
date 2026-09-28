@@ -18,6 +18,14 @@
             background: rgba(0,0,0,0.2); color: rgba(255,255,255,0.6); cursor: not-allowed;
         }
         .form-input-endereco:focus { outline: none; border-color: var(--azul, #4CDDDD); }
+
+        /* Corrige a exibição do separador de categorias dentro do select (evita a barra branca do optgroup) */
+        #marca option:disabled {
+            background-color: var(--fundo2, #161d2e);
+            color: var(--amarelo, #FFD166);
+            font-weight: 700;
+            font-style: normal;
+        }
     </style>
 </head>
 <body>
@@ -82,20 +90,22 @@
                             <label for="marca">Marca / Linha:</label>
                             <select id="marca" onchange="avaliarMarca()">
                                 <option value="">Selecione a marca...</option>
+                                <option value="" disabled>── RESIDENCIAL (RAC) ──</option>
                                 <option value="AGRATTO">Agratto</option>
                                 <option value="MIDEA_RAC">Midea-Carrier (RAC)</option>
-                                <option value="MIDEA_CAC">Midea-Carrier (CAC)</option>
                                 <option value="DAIKIN">Daikin</option>
                                 <option value="ELGIN_RAC">Elgin (RAC)</option>
-                                <option value="ELGIN_CAC">Elgin (CAC)</option>
                                 <option value="FUJITSU">Fujitsu</option>
                                 <option value="GREE">Gree</option>
                                 <option value="LG_RAC">LG (RAC)</option>
-                                <option value="LG_CAC">LG (CAC)</option>
                                 <option value="PHILCO">Philco</option>
                                 <option value="TCL">TCL</option>
-                                <option value="TRANE">Trane</option>
                                 <option value="HITACHI_RAC">Hitachi (RAC)</option>
+                                <option value="" disabled>── COMERCIAL (CAC) ──</option>
+                                <option value="MIDEA_CAC">Midea-Carrier (CAC)</option>
+                                <option value="ELGIN_CAC">Elgin (CAC)</option>
+                                <option value="LG_CAC">LG (CAC)</option>
+                                <option value="TRANE">Trane</option>
                                 <option value="HITACHI_CAC">Hitachi (CAC)</option>
                             </select>
                         </div>
