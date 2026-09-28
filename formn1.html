@@ -34,8 +34,8 @@
         <div class="header-inner">
             <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
             <nav>
-        <ul>
-           <li><a href="index.html">INÍCIO</a></li>
+                <ul>
+                    <li><a href="index.html">INÍCIO</a></li>
                     <li><a href="lia.html">LIA</a></li>
                     <li><a href="formn1.html" class="active" >TRIAGEM N1</a></li>
                     <li><a href="formpatrao.html" >PEÇAS PATRÃO</a></li>
@@ -43,9 +43,9 @@
                     <li><a href="materiais.html">MATERIAIS</a></li>
                     <li><a href="informativos.html">METAS</a></li>
                     <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
-          <li><a href="admin.html">PAINEL ADMIN</a></li>
-          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-        </ul>
+                    <li><a href="admin.html">PAINEL ADMIN</a></li>
+                    <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+                </ul>
             </nav>
             <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
@@ -638,12 +638,32 @@
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
 
-                if (!marca || !dataNF || protocoloFab === "" || temParceiro === "") { resBox.classList.add("hidden"); return; }
-                if (["MIDEA_RAC", "MIDEA_CAC", "PHILCO", "TCL"].includes(marca) && !tec) { resBox.classList.add("hidden"); return; }
-                if (temParceiro === "SIM" && parceiroInstalou === "") { resBox.classList.add("hidden"); return; }
-                if (temParceiro === "NAO" && produtoInstalado === "") { resBox.classList.add("hidden"); return; }
-                
-                if (sub === "falta_peca" && !dataRec) { resBox.classList.add("hidden"); return; }
+                // Verifica se há campos obrigatórios vazios
+                let pendente = false;
+                if (!marca || !dataNF || protocoloFab === "" || temParceiro === "") pendente = true;
+                if (["MIDEA_RAC", "MIDEA_CAC", "PHILCO", "TCL"].includes(marca) && !tec) pendente = true;
+                if (temParceiro === "SIM" && parceiroInstalou === "") pendente = true;
+                if (temParceiro === "NAO" && produtoInstalado === "") pendente = true;
+                if (sub === "falta_peca" && !dataRec) pendente = true;
+
+                if (pendente) {
+                    // Mantém os alertas de status escondidos
+                    statBox.classList.add("hidden");
+                    avisoUappi.classList.add("hidden");
+                    avisoFabricanteDireto.classList.add("hidden");
+                    avisoProtocolo.classList.add("hidden");
+                    avisoNaoInstalado.classList.add("hidden");
+                    avisoPhilcoCPF.classList.add("hidden");
+                    
+                    // Informa visualmente que faltam dados para a triagem
+                    document.getElementById("textoAcao").textContent = "⚠️ Preencha todos os campos obrigatórios acima para visualizar o resultado da triagem.";
+                    document.getElementById("textoCRM").textContent = "-";
+                    document.getElementById("textoRegra").textContent = "Aguardando preenchimento...";
+                    document.getElementById("textoResumoCRM").value = "";
+                    
+                    resBox.classList.remove("hidden");
+                    return;
+                }
 
                 const hoje = new Date();
                 hoje.setHours(0,0,0,0);
