@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image" href="LogoLeveros.png">
+    <title>Triagem Cortina de Ar | Atendimento ON</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Adicionado: Estilos para o checklist de verificação (Nível 1) -->
+    <style>
+        .checklist-item {
+            display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
+            border-bottom: 1px dashed var(--glass-border, #ccc);
+        }
+        .checklist-item:last-child { border-bottom: none; }
+        .checklist-item input[type="checkbox"] {
+            margin-top: 3px; width: 18px; height: 18px; accent-color: var(--azul, #4CDDDD);
+        }
+        .checklist-item span { font-size: 14px; line-height: 1.4; }
+        .pergunta-resolveu { margin-top: 14px; }
+        .btn-resolveu {
+            display: inline-block; padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
+            font-size: 14px; font-weight: 600; color: #fff; margin-right: 10px; margin-top: 8px; transition: 0.2s;
+        }
+        .btn-resolveu:hover { opacity: 0.9; }
+        .btn-sim { background: var(--verde, #28a745); }
+        .btn-nao { background: var(--vermelho, #dc3545); }
+    </style>
+</head>
+<body>
+
+    <header class="top-header">
+        <div class="header-inner">
+            <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
+            <nav>
+        <ul>
+           <li><a href="index.html">INÍCIO</a></li>
+                    <li><a href="lia.html">LIA</a></li>
+                    <li><a href="formn1.html">TRIAGEM N1</a></li>
+                    <li><a href="formpatrao.html">PEÇAS PATRÃO</a></li>
+                    <li><a href="triagemcortina.html" class="active">CORTINA DE AR</a></li>
+                    <li><a href="timeline.html">TIMELINE</a></li>
+                    <li><a href="materiais.html">MATERIAIS</a></li>
+                    <li><a href="informativos.html">METAS</a></li>
+                    <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
+          <li><a href="admin.html">PAINEL ADMIN</a></li>
+          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+        </ul>
+            </nav>
+            <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="ticker-wrapper">
+            <div class="ticker-content">
+                <span class="ticker-item">🌬️ Verifique sempre a energia e o disjuntor antes de escalar para o técnico</span>
+                <span class="ticker-item">🔋 Oriente o cliente a testar com pilhas novas no controle remoto</span>
+                <span class="ticker-item">🤝 Tenha empatia e respeito</span>
+                <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2>Triagem Atendimento ON | Cortina de Ar</h2>
+        <br>
+        <h5>Base: Matriz Pós-Vendas - Eventuais Problemas (Multiar)</h5>
+
+        <div class="layout-wrapper">
+            <div class="form-column">
+                <div class="card-panel">
+                    <div class="form-group">
+                        <label for="problema">1. Qual o problema apresentado pela Cortina de Ar?</label>
+                        <select id="problema" onchange="carregarFluxo()">
+                            <option value="">Selecione o problema...</option>
+                            <optgroup label="Verificações Básicas (Nível 1)">
+                                <option value="nao_liga">A cortina de ar não liga</option>
+                                <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
+                                <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
+                            </optgroup>
+                            <optgroup label="Análise Avançada (Nível 2 - Técnico)">
+                                <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
+                                <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
+                                <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
+                                <option value="controle_curto_alcance">Controle a 1 metro de distância não funciona</option>
+                                <option value="liga_tomada_sem_funcionar">Ligado na tomada, recebe sinal, porém não liga</option>
+                                <option value="baixa_rotacao">Cortina apresenta baixa rotação</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- CHECKLIST NÍVEL 1 -->
+                    <div class="form-group hidden" id="divChecklist">
+                        <span class="section-title">Passos de Verificação com o Cliente</span>
+                        <div id="listaChecklist"></div>
+
+                        <div class="pergunta-resolveu">
+                            <label>As verificações acima resolveram o problema?</label><br>
+                            <button class="btn-resolveu btn-sim" onclick="definirResolucao(true)">✅ Sim, resolveu</button>
+                            <button class="btn-resolveu btn-nao" onclick="definirResolucao(false)">❌ Não resolveu</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-panel result-box hidden" id="resultadoFinal" style="margin-bottom: 0;">
+
+                    <div id="statusBox" class="status-box hidden"></div>
+
+                    <h3 id="tituloResultado">Diagnóstico Técnico</h3>
+                    <p id="textoDiagnostico" style="white-space: pre-wrap;"></p>
+
+                    <h3 style="margin-top:20px;">Ação N1 Recomendada</h3>
+                    <p id="textoAcao" style="white-space: pre-wrap;"></p>
+
+                    <div class="alert-crm">
+                        <span class="regra-header">📌 Regra Operacional do Processo</span>
+                        <span id="textoRegra"></span>
+                        <div class="crm-footer">
+                            ⚠️ Padrão CRM: Finalizar a etapa ao redirecionar o atendimento. Não manter a etapa vinculada.
+                        </div>
+                    </div>
+
+                    <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
+                        <h3>📝 Script para o CRM</h3>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Copie o texto abaixo e cole no protocolo.</p>
+
+                        <textarea id="textoResumoCRM" readonly rows="10" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 12.5px;"></textarea>
+
+                        <button class="btn-resolveu" id="btnCopiar" onclick="copiarResumo()" style="background-color: #0056b3; margin-top: 10px;">📋 Copiar Script</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+const baseConhecimento = {
+    nao_liga: {
+        titulo: "A cortina de ar não liga",
+        nivel: "basico",
+        checklist: [
+            "Verifique se existe queda de energia no local.",
+            "Verifique se o cabo de alimentação foi desconectado.",
+            "Verifique se o disjuntor desarmou (recomende ao cliente manter um disjuntor exclusivo para a cortina, evitando sobrecarga no circuito e quedas de energia)."
+        ],
+        escalaPara: "liga_tomada_sem_funcionar"
+    },
+    sem_sinal_controle: {
+        titulo: "Cortina não recebe sinal do controle remoto",
+        nivel: "basico",
+        checklist: [
+            "Certifique-se de que as pilhas estejam carregadas.",
+            "Oriente o cliente a utilizar pilhas novas, garantindo assertividade no teste.",
+            "Certifique-se de que as pilhas estejam com a polaridade correta."
+        ],
+        escalaPara: "sinal_apos_troca_pilha"
+    },
+    sinal_apos_troca_pilha: {
+        titulo: "Sinal do controle não é recebido, mesmo após a troca das pilhas",
+        nivel: "basico",
+        checklist: [
+            "Isto pode ocorrer caso exista alta incidência de sol ou luz artificial direcionada ao receptor da Cortina de Ar.",
+            "Oriente o cliente a fechar as cortinas/persianas e apagar a luz do ambiente, executando o teste novamente."
+        ],
+        escalaPara: "controle_curto_alcance"
+    },
+    ruido_sem_rotacao: {
+        titulo: "Ruído excessivo, sem rotação do ventilador",
+        nivel: "avancado",
+        diagnostico: "Moto ventilador travado, com eventual problema na bobina.",
+        acao: "Não solicitar mais testes do cliente. Encaminhar para abertura de chamado técnico especializado para inspeção do moto ventilador e da bobina."
+    },
+    ventilador_contrario: {
+        titulo: "Ventilador rodando ao contrário",
+        nivel: "avancado",
+        diagnostico: "Inversão das fases do motor.",
+        acao: "Encaminhar para técnico autorizado para correção da fiação/fases do motor. Não orientar o cliente a manipular a fiação."
+    },
+    ruido_com_rotacao: {
+        titulo: "Ruído excessivo, ventilador com rotação",
+        nivel: "avancado",
+        diagnostico: "Possíveis problemas nas hélices do produto, rolamentos ou moto ventilador comprometido.",
+        acao: "Encaminhar para abertura de chamado técnico. Recomenda-se inspeção física das hélices, rolamentos e do moto ventilador."
+    },
+    controle_curto_alcance: {
+        titulo: "Controle a 1 metro de distância não funciona",
+        nivel: "avancado",
+        diagnostico: "Problema na placa receptora ou problema no próprio controle remoto.",
+        acao: "Testar com controle remoto sobressalente, se disponível, para isolar a causa. Caso persista, abrir chamado técnico para avaliação/troca da placa receptora ou do controle."
+    },
+    liga_tomada_sem_funcionar: {
+        titulo: "Equipamento ligado na tomada, recebe sinal, porém não liga",
+        nivel: "avancado",
+        diagnostico: "Problema na placa de comando, motor queimado ou cabo de alimentação avariado.",
+        acao: "Recomenda-se medir a continuidade do cabo de alimentação. Caso esteja íntegro, abrir chamado técnico para avaliação da placa de comando e do motor."
+    },
+    baixa_rotacao: {
+        titulo: "Cortina apresenta baixa rotação",
+        nivel: "avancado",
+        diagnostico: "Analisar a tensão elétrica do local. Caso a rede seja 127V, a rotação do equipamento será reduzida (dependendo da especificação de tensão do produto).",
+        acao: "Solicitar ao cliente a tensão da rede elétrica do local (127V ou 220V) e confirmar a especificação de tensão do produto instalado. Se houver incompatibilidade, orientar adequação da instalação elétrica."
+    }
+};
+
+function carregarFluxo() {
+    const problema = document.getElementById("problema").value;
+    const divChecklist = document.getElementById("divChecklist");
+    const resultadoFinal = document.getElementById("resultadoFinal");
+    const listaChecklist = document.getElementById("listaChecklist");
+
+    resultadoFinal.classList.add("hidden");
+    divChecklist.classList.add("hidden");
+
+    if (!problema) return;
+
+    const item = baseConhecimento[problema];
+
+    if (item.nivel === "basico") {
+        listaChecklist.innerHTML = "";
+        item.checklist.forEach((texto, i) => {
+            const div = document.createElement("div");
+            div.className = "checklist-item";
+            const chk = document.createElement("input");
+            chk.type = "checkbox";
+            chk.id = "chk_" + i;
+            const span = document.createElement("span");
+            span.textContent = texto;
+            div.appendChild(chk);
+            div.appendChild(span);
+            listaChecklist.appendChild(div);
+        });
+        divChecklist.classList.remove("hidden");
+    } else {
+        montarResultadoAvancado(problema);
+    }
+}
+
+function definirResolucao(resolveu) {
+    const problema = document.getElementById("problema").value;
+    const item = baseConhecimento[problema];
+
+    if (resolveu) {
+        montarResultadoResolvido(item);
+    } else {
+        montarResultadoAvancado(item.escalaPara, item.titulo);
+    }
+}
+
+function montarResultadoResolvido(item) {
+    const resultadoFinal = document.getElementById("resultadoFinal");
+    const statusBox = document.getElementById("statusBox");
+
+    statusBox.className = "status-box status-ok";
+    statusBox.textContent = "✅ PROBLEMA RESOLVIDO NAS VERIFICAÇÕES DE NÍVEL 1";
+    statusBox.classList.remove("hidden");
+
+    document.getElementById("tituloResultado").textContent = "Verificação Concluída";
+    document.getElementById("textoDiagnostico").textContent =
+        "Problema relatado: " + item.titulo + "\n\nApós orientação e verificações básicas, o cliente confirmou o funcionamento normal do equipamento.";
+    document.getElementById("textoAcao").textContent =
+        "Finalizar o atendimento orientando o cliente sobre as verificações realizadas. Não é necessário abrir chamado técnico.";
+    document.getElementById("textoRegra").textContent =
+        "Atendimentos resolvidos em Nível 1 devem ser finalizados sem escalonamento. Registrar a causa e a solução aplicada no protocolo.";
+
+    gerarScriptCRM(item.titulo, "Resolvido em Nível 1", "Finalizado sem necessidade de chamado técnico.");
+    resultadoFinal.classList.remove("hidden");
+}
+
+function montarResultadoAvancado(chaveAvancada, tituloOriginal) {
+    const item = baseConhecimento[chaveAvancada];
+    const resultadoFinal = document.getElementById("resultadoFinal");
+    const statusBox = document.getElementById("statusBox");
+
+    statusBox.className = "status-box status-nok";
+    statusBox.textContent = "🔧 NECESSÁRIO ENCAMINHAMENTO TÉCNICO";
+    statusBox.classList.remove("hidden");
+
+    document.getElementById("tituloResultado").textContent = item.titulo;
+    document.getElementById("textoDiagnostico").textContent = item.diagnostico;
+    document.getElementById("textoAcao").textContent = item.acao;
+    document.getElementById("textoRegra").textContent =
+        "Diagnósticos de nível avançado exigem inspeção técnica especializada. Não solicitar reparo pelo próprio cliente.";
+
+    const tituloParaCrm = tituloOriginal ? (tituloOriginal + " → " + item.titulo) : item.titulo;
+    gerarScriptCRM(tituloParaCrm, "Encaminhado para Análise Técnica", item.acao);
+    resultadoFinal.classList.remove("hidden");
+}
+
+function gerarScriptCRM(problemaTexto, statusTriagem, acaoResumo) {
+    let script = "[TRIAGEM CORTINA DE AR - MULTIAR]\n";
+    script += "Problema Relatado: " + problemaTexto + "\n";
+    script += "Resultado da Triagem: " + statusTriagem + "\n";
+    script += "\n[AÇÃO ADOTADA]\n" + acaoResumo + "\n";
+    document.getElementById("textoResumoCRM").value = script;
+}
+
+function copiarResumo() {
+    const textarea = document.getElementById("textoResumoCRM");
+    textarea.select();
+    textarea.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(textarea.value).then(() => {
+        const btn = document.getElementById("btnCopiar");
+        btn.textContent = "✅ Copiado com sucesso!";
+        btn.style.backgroundColor = "#28a745";
+        setTimeout(() => {
+            btn.textContent = "📋 Copiar Script";
+            btn.style.backgroundColor = "#0056b3";
+        }, 3000);
+    }).catch(() => {
+        alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
+    });
+}
+</script>
+</body>
+</html>
