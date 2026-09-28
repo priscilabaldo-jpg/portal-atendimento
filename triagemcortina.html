@@ -8,7 +8,6 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Adicionado: Estilos para o checklist de verificação (Nível 1) e separadores do select -->
     <style>
         .checklist-item {
             display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
@@ -28,7 +27,6 @@
         .btn-sim { background: var(--verde, #28a745); }
         .btn-nao { background: var(--vermelho, #dc3545); }
 
-        /* Corrige a exibição do separador de categorias dentro do select (evita a barra branca do optgroup) */
         #problema option:disabled {
             background-color: var(--fundo2, #161d2e);
             color: var(--amarelo, #FFD166);
@@ -43,8 +41,8 @@
         <div class="header-inner">
             <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
             <nav>
-        <ul>
-           <li><a href="index.html">INÍCIO</a></li>
+                <ul>
+                    <li><a href="index.html">INÍCIO</a></li>
                     <li><a href="lia.html">LIA</a></li>
                     <li><a href="formn1.html">TRIAGEM N1</a></li>
                     <li><a href="formpatrao.html">PEÇAS PATRÃO</a></li>
@@ -53,16 +51,16 @@
                     <li><a href="materiais.html">MATERIAIS</a></li>
                     <li><a href="informativos.html">METAS</a></li>
                     <li><a href="atendeuResolveu.html">ATENDEU, RESOLVEU!</a></li>
-          <li><a href="admin.html">PAINEL ADMIN</a></li>
-          <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
-        </ul>
+                    <li><a href="admin.html">PAINEL ADMIN</a></li>
+                    <li><button class="logout-btn" id="logoutBtn">Sair</button></li>
+                </ul>
             </nav>
             <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
         </div>
 
         <div class="ticker-wrapper">
             <div class="ticker-content">
-                <span class="ticker-item">🌬️ Verifique sempre a energia e o disjuntor antes de escalar para o técnico</span>
+                <span class="ticker-item">🌬️ Verifique sempre a energia e o disjuntor de antemão</span>
                 <span class="ticker-item">🔋 Oriente o cliente a testar com pilhas novas no controle remoto</span>
                 <span class="ticker-item">🤝 Tenha empatia e respeito</span>
                 <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
@@ -86,7 +84,7 @@
                             <option value="nao_liga">A cortina de ar não liga</option>
                             <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
                             <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
-                            <option value="" disabled>── ANÁLISE AVANÇADA (NÍVEL 2 - TÉCNICO) ──</option>
+                            <option value="" disabled>── ANÁLISE AVANÇADA (NÍVEL 2) ──</option>
                             <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
                             <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
                             <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
@@ -174,38 +172,38 @@ const baseConhecimento = {
     ruido_sem_rotacao: {
         titulo: "Ruído excessivo, sem rotação do ventilador",
         nivel: "avancado",
-        diagnostico: "Moto ventilador travado, com eventual problema na bobina.",
-        acao: "Não solicitar mais testes do cliente. Encaminhar para abertura de chamado técnico especializado para inspeção do moto ventilador e da bobina."
+        diagnostico: "Moto ventilador travado, eventual problema na bobina.",
+        acao: "Registar o sintoma detalhado no CRM. Escalonar o diagnóstico de travamento do moto ventilador ou falha na bobina para a equipa responsável avaliar as diretrizes de garantia."
     },
     ventilador_contrario: {
         titulo: "Ventilador rodando ao contrário",
         nivel: "avancado",
         diagnostico: "Inversão das fases do motor.",
-        acao: "Encaminhar para técnico autorizado para correção da fiação/fases do motor. Não orientar o cliente a manipular a fiação."
+        acao: "Registar o sintoma detalhado no CRM apontando inversão das fases. Direcionar para a fila de garantia determinar o fluxo de correção técnica aplicável."
     },
     ruido_com_rotacao: {
         titulo: "Ruído excessivo, ventilador com rotação",
         nivel: "avancado",
-        diagnostico: "Possíveis problemas nas hélices do produto, rolamentos ou moto ventilador comprometido.",
-        acao: "Encaminhar para abertura de chamado técnico. Recomenda-se inspeção física das hélices, rolamentos e do moto ventilador."
+        diagnostico: "Problemas nas hélices do produto, rolamentos ou moto ventilador comprometido.",
+        acao: "Registar o diagnóstico de dano mecânico nas hélices, rolamentos ou moto ventilador. Redirecionar atendimento para o Nível 2 / Backoffice seguir com a análise do problema."
     },
     controle_curto_alcance: {
         titulo: "Controle a 1 metro de distância não funciona",
         nivel: "avancado",
-        diagnostico: "Problema na placa receptora ou problema no próprio controle remoto.",
-        acao: "Testar com controle remoto sobressalente, se disponível, para isolar a causa. Caso persista, abrir chamado técnico para avaliação/troca da placa receptora ou do controle."
+        diagnostico: "Problema na placa receptora ou problema no controle remoto.",
+        acao: "O problema não se deve a falhas ambientais ou pilhas fracas. Registar no protocolo a necessidade de intervenção para análise da placa receptora ou do controlo remoto."
     },
     liga_tomada_sem_funcionar: {
-        titulo: "Equipamento ligado na tomada, recebe sinal, porém não liga",
+        titulo: "Equipamento ligado a tomada, recebe sinal, porém não liga",
         nivel: "avancado",
-        diagnostico: "Problema na placa de comando, motor queimado ou cabo de alimentação avariado.",
-        acao: "Recomenda-se medir a continuidade do cabo de alimentação. Caso esteja íntegro, abrir chamado técnico para avaliação da placa de comando e do motor."
+        diagnostico: "Problema na placa de comando, Motor queimado ou Cabo de alimentação avariado (medir continuidade).",
+        acao: "Registar no CRM as conclusões (suspeita de motor queimado, placa de comando ou cabo avariado). Escalonar para tratativa de pós-venda conforme as diretrizes do equipamento."
     },
     baixa_rotacao: {
         titulo: "Cortina apresenta baixa rotação",
         nivel: "avancado",
-        diagnostico: "Analisar a tensão elétrica do local. Caso a rede seja 127V, a rotação do equipamento será reduzida (dependendo da especificação de tensão do produto).",
-        acao: "Solicitar ao cliente a tensão da rede elétrica do local (127V ou 220V) e confirmar a especificação de tensão do produto instalado. Se houver incompatibilidade, orientar adequação da instalação elétrica."
+        diagnostico: "Analisar a tensão do local, caso seja 127V, esta rotação reduzirá.",
+        acao: "Questionar o cliente sobre a tensão da rede elétrica instalada. Caso confirme ser de 127V, orientar o cliente de que o equipamento operará com uma redução na sua rotação normal. Documentar em protocolo."
     }
 };
 
@@ -265,11 +263,11 @@ function montarResultadoResolvido(item) {
     document.getElementById("textoDiagnostico").textContent =
         "Problema relatado: " + item.titulo + "\n\nApós orientação e verificações básicas, o cliente confirmou o funcionamento normal do equipamento.";
     document.getElementById("textoAcao").textContent =
-        "Finalizar o atendimento orientando o cliente sobre as verificações realizadas. Não é necessário abrir chamado técnico.";
+        "Finalizar o atendimento orientando o cliente sobre as verificações realizadas. Não é necessário escalonamento.";
     document.getElementById("textoRegra").textContent =
-        "Atendimentos resolvidos em Nível 1 devem ser finalizados sem escalonamento. Registrar a causa e a solução aplicada no protocolo.";
+        "Atendimentos resolvidos em Nível 1 devem ser finalizados sem prosseguir para análise adicional. Registar a causa e a solução aplicada no protocolo.";
 
-    gerarScriptCRM(item.titulo, "Resolvido em Nível 1", "Finalizado sem necessidade de chamado técnico.");
+    gerarScriptCRM(item.titulo, "Resolvido em Nível 1", "Finalizado sem escalonamento para Nível 2.");
     resultadoFinal.classList.remove("hidden");
 }
 
@@ -279,17 +277,17 @@ function montarResultadoAvancado(chaveAvancada, tituloOriginal) {
     const statusBox = document.getElementById("statusBox");
 
     statusBox.className = "status-box status-nok";
-    statusBox.textContent = "🔧 NECESSÁRIO ENCAMINHAMENTO TÉCNICO";
+    statusBox.textContent = "🔧 DIAGNÓSTICO AVANÇADO (NÍVEL 2)";
     statusBox.classList.remove("hidden");
 
     document.getElementById("tituloResultado").textContent = item.titulo;
     document.getElementById("textoDiagnostico").textContent = item.diagnostico;
     document.getElementById("textoAcao").textContent = item.acao;
     document.getElementById("textoRegra").textContent =
-        "Diagnósticos de nível avançado exigem inspeção técnica especializada. Não solicitar reparo pelo próprio cliente.";
+        "O diagnóstico da matriz não prevê envio automático de técnico pelo Nível 1. A tratativa final e a avaliação dos próximos passos devem decorrer no fluxo interno estipulado pelo CRM.";
 
     const tituloParaCrm = tituloOriginal ? (tituloOriginal + " → " + item.titulo) : item.titulo;
-    gerarScriptCRM(tituloParaCrm, "Encaminhado para Análise Técnica", item.acao);
+    gerarScriptCRM(tituloParaCrm, "Escalonado para Avaliação do Pós-Vendas", item.acao);
     resultadoFinal.classList.remove("hidden");
 }
 
