@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Adicionado: Estilos para o checklist de verificação (Nível 1) -->
+    <!-- Adicionado: Estilos para o checklist de verificação (Nível 1) e separadores do select -->
     <style>
         .checklist-item {
             display: flex; align-items: flex-start; gap: 10px; padding: 10px 0;
@@ -27,6 +27,14 @@
         .btn-resolveu:hover { opacity: 0.9; }
         .btn-sim { background: var(--verde, #28a745); }
         .btn-nao { background: var(--vermelho, #dc3545); }
+
+        /* Corrige a exibição do separador de categorias dentro do select (evita a barra branca do optgroup) */
+        #problema option:disabled {
+            background-color: var(--fundo2, #161d2e);
+            color: var(--amarelo, #FFD166);
+            font-weight: 700;
+            font-style: normal;
+        }
     </style>
 </head>
 <body>
@@ -74,19 +82,17 @@
                         <label for="problema">1. Qual o problema apresentado pela Cortina de Ar?</label>
                         <select id="problema" onchange="carregarFluxo()">
                             <option value="">Selecione o problema...</option>
-                            <optgroup label="Verificações Básicas (Nível 1)">
-                                <option value="nao_liga">A cortina de ar não liga</option>
-                                <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
-                                <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
-                            </optgroup>
-                            <optgroup label="Análise Avançada (Nível 2 - Técnico)">
-                                <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
-                                <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
-                                <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
-                                <option value="controle_curto_alcance">Controle a 1 metro de distância não funciona</option>
-                                <option value="liga_tomada_sem_funcionar">Ligado na tomada, recebe sinal, porém não liga</option>
-                                <option value="baixa_rotacao">Cortina apresenta baixa rotação</option>
-                            </optgroup>
+                            <option value="" disabled>── VERIFICAÇÕES BÁSICAS (NÍVEL 1) ──</option>
+                            <option value="nao_liga">A cortina de ar não liga</option>
+                            <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
+                            <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
+                            <option value="" disabled>── ANÁLISE AVANÇADA (NÍVEL 2 - TÉCNICO) ──</option>
+                            <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
+                            <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
+                            <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
+                            <option value="controle_curto_alcance">Controle a 1 metro de distância não funciona</option>
+                            <option value="liga_tomada_sem_funcionar">Ligado na tomada, recebe sinal, porém não liga</option>
+                            <option value="baixa_rotacao">Cortina apresenta baixa rotação</option>
                         </select>
                     </div>
 
