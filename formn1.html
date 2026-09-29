@@ -84,6 +84,16 @@
                         </select>
                     </div>
 
+                    <!-- NOVO: Sub-menu exclusivo para Climatizador -->
+                    <div class="form-group hidden" id="divSubcategoriaClimatizador" style="margin-top: 15px;">
+                        <label for="subcategoriaClimatizador" style="color: var(--amarelo);">3. Problema do Climatizador:</label>
+                        <select id="subcategoriaClimatizador" onchange="avaliarFluxoClimatizador()">
+                            <option value="">Selecione...</option>
+                            <option value="item_faltante">Item Faltante</option>
+                            <option value="defeito">Defeito no Produto</option>
+                        </select>
+                    </div>
+
                     <div class="garantia-section hidden" id="divCamposGarantia">
                         <span class="section-title">Dados do Equipamento e Instalação</span>
                         
@@ -445,11 +455,17 @@
                 opcoes: [
                     { valor: "", texto: "Selecione..." },
                     { valor: "defeito_fabrica", texto: "Não Gela/Defeito de Fabricação/Parou de Funcionar" },
-                    { valor: "falta_peca", texto: "Peça/Acessório Faltante" }
+                    { valor: "falta_peca", texto: "Peça/Acessório Faltante" },
+                    { valor: "climatizador", texto: "Climatizador" }
                 ],
                 respostas: {
                     "defeito_fabrica": { acao: "", crm: "", regra: "" },
                     "falta_peca": { 
+                        acao: "Primeiramente, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
+                        crm: "Abrir protocolo para Garantia Motivo: Assistência Técnica — Reposição de Peças / Item Faltante.",
+                        regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo começa a contar a partir da DATA DE RECEBIMENTO."
+                    },
+                    "climatizador": { 
                         acao: "Primeiramente, identifique se o cliente já checou o manual do produto, pois há casos em que a peça pode vir oculta dentro da unidade ou não fazer parte do mesmo. Se o cliente não conseguir verificar, aceda ao manual do produto!", 
                         crm: "Abrir protocolo para Garantia Motivo: Assistência Técnica — Reposição de Peças / Item Faltante.",
                         regra: "Peças faltantes devem ser validadas cruzando a informação do manual do fabricante. O prazo começa a contar a partir da DATA DE RECEBIMENTO."
@@ -471,11 +487,13 @@
 
             const selectSub = document.getElementById("subcategoria");
             const divSub = document.getElementById("divSubcategoria");
+            const divClim = document.getElementById("divSubcategoriaClimatizador");
             const colunaTabela = document.getElementById("colunaTabela"); 
             
             selectSub.innerHTML = "";
             document.getElementById("divCamposGarantia").classList.add("hidden");
             document.getElementById("resultadoFinal").classList.add("hidden");
+            if (divClim) divClim.classList.add("hidden");
 
             if (tipo === "Garantia") {
                 colunaTabela.classList.remove("hidden");
@@ -496,30 +514,67 @@
             }
         }
 
+        // --- NOVA LÓGICA DO FLUXO AVALIAR --- //
         function avaliarFluxo() {
             const tipo = document.getElementById("tipoAtendimento").value;
             const sub = document.getElementById("subcategoria").value;
             const divG = document.getElementById("divCamposGarantia");
             const divRec = document.getElementById("divDataRecebimento"); 
+            const divClim = document.getElementById("divSubcategoriaClimatizador");
             
             document.getElementById("resultadoFinal").classList.add("hidden");
 
-            if (tipo === "Garantia" && sub !== "") {
-                divG.classList.remove("hidden");
-                
-                if (sub === "falta_peca") {
-                    divRec.classList.remove("hidden");
-                } else {
+            if (tipo === "Garantia") {
+                if (sub === "climatizador") {
+                    divClim.classList.remove("hidden");
+                    divG.classList.add("hidden");
                     divRec.classList.add("hidden");
-                    document.getElementById("dataRecebimento").value = ""; 
+                    document.getElementById("subcategoriaClimatizador").value = "";
+                } else if (sub !== "") {
+                    divClim.classList.add("hidden");
+                    divG.classList.remove("hidden");
+                    
+                    if (sub === "falta_peca") {
+                        divRec.classList.remove("hidden");
+                    } else {
+                        divRec.classList.add("hidden");
+                        document.getElementById("dataRecebimento").value = ""; 
+                    }
+                    processarResultado(); 
+                } else {
+                    divClim.classList.add("hidden");
+                    divG.classList.add("hidden");
+                    divRec.classList.add("hidden");
                 }
-                
             } else if (sub !== "") {
                 divG.classList.add("hidden");
                 divRec.classList.add("hidden");
+                divClim.classList.add("hidden");
                 processarResultado(); 
             }
         }
+
+        function avaliarFluxoClimatizador() {
+            const probClim = document.getElementById("subcategoriaClimatizador").value;
+            const divG = document.getElementById("divCamposGarantia");
+            const divRec = document.getElementById("divDataRecebimento");
+
+            document.getElementById("resultadoFinal").classList.add("hidden");
+
+            if (probClim === "item_faltante") {
+                divG.classList.remove("hidden");
+                divRec.classList.remove("hidden");
+                processarResultado();
+            } else if (probClim === "defeito") {
+                divG.classList.add("hidden");
+                divRec.classList.add("hidden");
+                processarResultado(); 
+            } else {
+                divG.classList.add("hidden");
+                divRec.classList.add("hidden");
+            }
+        }
+        // ------------------------------------ //
 
         function avaliarMarca() {
             const marca = document.getElementById("marca").value;
@@ -615,6 +670,55 @@
 
             if (sub === "") return;
 
+            // --- LÓGICA EXCLUSIVA: CLIMATIZADOR COM DEFEITO --- //
+            if (sub === "climatizador") {
+                const probClim = document.getElementById("subcategoriaClimatizador").value;
+                if (probClim === "") return;
+
+                if (probClim === "defeito") {
+                    statBox.classList.add("hidden");
+                    avisoUappi.classList.add("hidden");
+                    avisoProtocolo.classList.add("hidden");
+                    avisoNaoInstalado.classList.add("hidden");
+                    avisoPhilcoCPF.classList.add("hidden");
+                    
+                    // Mostra caixa amarela customizada
+                    avisoFabricanteDireto.classList.remove("hidden");
+                    avisoFabricanteDireto.innerHTML = `
+                        <strong style="display:block; margin-bottom: 6px;">🚫 AVISO: CLIMATIZADORES NÃO POSSUEM ATEC</strong>
+                        O fabricante orienta que o equipamento seja levado até uma assistência técnica autorizada.
+                    `;
+                    
+                    statusTriagem = "Climatizador - Defeito";
+                    
+                    const actMsg = "Bloqueio de atendimento N1. Climatizadores não possuem ATEC (Visita Técnica).\n\nO fabricante orienta que o equipamento seja levado até uma assistência técnica autorizada.\n\n📞 Contatos AGRATTO/VENTISOL (Repasse ao cliente):\n📧 E-mail: sac@agratto.com.br\n📱 WhatsApp: (48) 9 9937-0153";
+                    const crmMsg = "Orientar o cliente a levar o climatizador até uma assistência técnica autorizada. Informar os contatos do fabricante (Agratto/Ventisol). Finalizar o atendimento.\nMotivo: Informações Sobre Garantia / Submotivo: Dúvidas sobre garantia. (Finalizador)";
+                    const regraMsg = "Climatizadores não possuem ATEC. O equipamento deve ser levado à assistência autorizada e o N1 deve fornecer os contatos do fabricante.";
+
+                    document.getElementById("textoAcao").textContent = actMsg;
+                    document.getElementById("textoCRM").textContent = crmMsg;
+                    document.getElementById("textoRegra").textContent = regraMsg;
+
+                    let scriptCrm = `[TRIAGEM N1 - RESUMO DO ATENDIMENTO]\n`;
+                    scriptCrm += `Tipo: Garantia\n`;
+                    scriptCrm += `Problema: Climatizador - Defeito no Produto\n`;
+                    scriptCrm += `\n[CONCLUSÃO E PROCEDIMENTO ADOTADO]\n`;
+                    scriptCrm += `Resultado da Triagem: ${statusTriagem}\n`;
+                    scriptCrm += `Ação do Atendimento: ${crmMsg}\n`;
+                    document.getElementById("textoResumoCRM").value = scriptCrm;
+
+                    resBox.classList.remove("hidden");
+                    return; // Interrompe a função aqui para não pedir marca/nota
+                }
+            }
+            // ------------------------------------------------ //
+
+            // Restaura texto padrão caso tenha sido modificado pelo Climatizador
+            avisoFabricanteDireto.innerHTML = `
+                <strong style="display:block; margin-bottom: 6px;">🚫 AVISO: ACIONAMENTO DIRETO</strong>
+                Não acionamos Visita Técnica (ATEC) para esta marca/linha. O cliente deve entrar em contato diretamente com o fabricante.
+            `;
+
             // DICIONÁRIO DE CONTATOS DE FABRICANTES PARA INJEÇÃO NA RESPOSTA
             const contatosFabricantes = {
                 "AGRATTO": "sac@agratto.com.br | (48) 9 9937-0153 (WhatsApp)",
@@ -648,13 +752,16 @@
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
 
+                // Variável nova para detectar se é o fluxo de falta de peça
+                const isFluxoFaltaPeca = (sub === "falta_peca" || (sub === "climatizador" && document.getElementById("subcategoriaClimatizador").value === "item_faltante"));
+
                 // Verifica se há campos obrigatórios vazios
                 let pendente = false;
                 if (!marca || !dataNF || protocoloFab === "" || temParceiro === "") pendente = true;
                 if (["MIDEA_RAC", "MIDEA_CAC", "PHILCO", "TCL"].includes(marca) && !tec) pendente = true;
                 if (temParceiro === "SIM" && parceiroInstalou === "") pendente = true;
                 if (temParceiro === "NAO" && produtoInstalado === "") pendente = true;
-                if (sub === "falta_peca" && !dataRec) pendente = true;
+                if (isFluxoFaltaPeca && !dataRec) pendente = true;
 
                 if (pendente) {
                     // Mantém os alertas de status escondidos
@@ -666,7 +773,7 @@
                     avisoPhilcoCPF.classList.add("hidden");
                     
                     // Informa visualmente que faltam dados para a triagem
-                    document.getElementById("textoAcao").textContent = "⚠️ Preencha todos os campos obrigatórios acima para visualizar o resultado da triagem.";
+                    document.getElementById("textoAcao").textContent = "⚠️️ Preencha todos os campos obrigatórios acima para visualizar o resultado da triagem.";
                     document.getElementById("textoCRM").textContent = "-";
                     document.getElementById("textoRegra").textContent = "Aguardando preenchimento...";
                     document.getElementById("textoResumoCRM").value = "";
@@ -678,7 +785,7 @@
                 const hoje = new Date();
                 hoje.setHours(0,0,0,0);
 
-                if (sub === "falta_peca") {
+                if (isFluxoFaltaPeca) {
                     
                     const dataInicialRec = new Date(dataRec + "T00:00:00");
                     const prazoDiasFalta = (marca === "LG_RAC" || marca === "LG_CAC") ? 30 : 15;
@@ -824,7 +931,14 @@
             const selTipo = document.getElementById("tipoAtendimento");
             const selSub = document.getElementById("subcategoria");
             scriptCrm += `Tipo: ${selTipo.options[selTipo.selectedIndex]?.text || '-'}\n`;
-            scriptCrm += `Problema: ${selSub.options[selSub.selectedIndex]?.text || '-'}\n`;
+            
+            // Adaptando a descrição do problema para mostrar "Climatizador - Problema Selecionado"
+            if (sub === "climatizador") {
+                const selClim = document.getElementById("subcategoriaClimatizador");
+                scriptCrm += `Problema: Climatizador - ${selClim.options[selClim.selectedIndex]?.text || '-'}\n`;
+            } else {
+                scriptCrm += `Problema: ${selSub.options[selSub.selectedIndex]?.text || '-'}\n`;
+            }
 
             if (tipo === "Garantia") {
                 const selMarca = document.getElementById("marca");
@@ -846,7 +960,7 @@
                 
                 scriptCrm += `Data NF: ${formatarData(document.getElementById("dataNF").value)}\n`;
                 
-                if (sub === "falta_peca") {
+                if (sub === "falta_peca" || (sub === "climatizador" && document.getElementById("subcategoriaClimatizador").value === "item_faltante")) {
                     scriptCrm += `Data Recebimento: ${formatarData(document.getElementById("dataRecebimento").value)}\n`;
                 }
                 
@@ -955,13 +1069,15 @@
                 }
             }
 
-            // Pacote de dados atualizado com o linkNF e numeroSerie
+            // Pacote de dados atualizado
             const payload = {
                 protocoloCRM: inputProtocolo, 
                 linkNF: inputLinkNF, 
                 numeroSerie: document.getElementById("numeroSerie").value.trim(),
                 tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
-                subcategoria: selSub.options[selSub.selectedIndex]?.text || '-',
+                subcategoria: (selSub.value === "climatizador") 
+                    ? `${selSub.options[selSub.selectedIndex]?.text} - ${document.getElementById("subcategoriaClimatizador").options[document.getElementById("subcategoriaClimatizador").selectedIndex]?.text}` 
+                    : (selSub.options[selSub.selectedIndex]?.text || '-'),
                 marca: selMarca.options[selMarca.selectedIndex]?.text || '-',
                 dataNF: dataNFFormatada, 
                 statusTriagem: document.getElementById("statusGarantiaBox").innerText.split('\n')[0] || 'Sem Status', 
