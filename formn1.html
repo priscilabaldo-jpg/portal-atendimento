@@ -26,6 +26,81 @@
             font-weight: 700;
             font-style: normal;
         }
+
+        /* Guia de ATEC: contraste consistente com o tema escuro, independente do CSS global. */
+        #guiaAtec {
+            margin: 20px 0 22px; padding: clamp(16px, 3vw, 24px);
+            background: #142f3a; color: #f2f8fa; border: 1px solid #396573;
+            border-left: 4px solid #64dbc5; border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+            overflow-wrap: anywhere;
+        }
+        #guiaAtec .atec-cabecalho { margin-bottom: 17px; }
+        #guiaAtec .atec-selo {
+            display: inline-block; padding: 5px 10px; border-radius: 999px;
+            background: #235750; color: #b8ffdf; font-size: 11px;
+            font-weight: 800; letter-spacing: .055em; text-transform: uppercase;
+        }
+        #guiaAtec #tituloGuiaAtec {
+            display: block; margin: 10px 0 0; color: #fff;
+            font-size: clamp(16px, 1.5vw, 19px); font-weight: 800;
+            line-height: 1.35; letter-spacing: 0;
+        }
+        #guiaAtec #introGuiaAtec {
+            display: block; margin: 0 0 18px; padding: 11px 13px;
+            background: #1d444e; color: #e7f9f8; border-radius: 9px;
+            font-size: 13px; line-height: 1.55;
+        }
+        #guiaAtec .atec-etapa-label {
+            margin: 0 0 11px; color: #a7e8db; font-size: 11px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+        }
+        #guiaAtec #passosGuiaAtec {
+            list-style: none; counter-reset: etapa; padding: 0; margin: 0 0 21px;
+            display: grid; gap: 9px;
+        }
+        #guiaAtec #passosGuiaAtec li {
+            counter-increment: etapa; position: relative; min-width: 0;
+            margin: 0; padding: 12px 13px 12px 51px;
+            border: 1px solid #426571; border-radius: 10px;
+            background: #213f4a; color: #f0f7f8;
+            font-size: 13px; line-height: 1.58; letter-spacing: 0;
+        }
+        #guiaAtec #passosGuiaAtec li::before {
+            content: counter(etapa); position: absolute; left: 12px; top: 12px;
+            display: grid; place-items: center; width: 27px; height: 27px;
+            border-radius: 8px; background: #5dd4bc; color: #11343a;
+            font-size: 13px; font-weight: 900;
+        }
+        #guiaAtec a, #guiaAtec a:visited {
+            color: #a8efff; text-decoration: underline; text-underline-offset: 3px;
+            font-weight: 700; overflow-wrap: anywhere;
+        }
+        #guiaAtec a:hover, #guiaAtec a:focus-visible { color: #fff; }
+        #guiaAtec .atec-registro {
+            padding: 15px; border: 1px solid #5c878b; border-radius: 10px;
+            background: #21454d;
+        }
+        #guiaAtec .atec-registro label {
+            display: block; margin: 0 0 9px; color: #e1fff3;
+            font-size: 13px; line-height: 1.4;
+        }
+        #guiaAtec #chamadoAtec {
+            display: block; box-sizing: border-box; width: 100%; max-width: 100%;
+            min-height: 42px; padding: 10px 12px; border-radius: 8px;
+            border: 1px solid #93babe; outline: none; background: #fff;
+            color: #183641; font-size: 14px; line-height: 1.3;
+        }
+        #guiaAtec #chamadoAtec:focus-visible { border-color: #46d7c0; box-shadow: 0 0 0 3px rgba(93,212,188,.35); }
+        #guiaAtec .atec-ajuda {
+            display: block; margin-top: 9px; color: #d6e8e9;
+            font-size: 12px; line-height: 1.5;
+        }
+        @media (max-width: 600px) {
+            #guiaAtec { padding: 15px; }
+            #guiaAtec #passosGuiaAtec li { padding: 11px 11px 11px 47px; font-size: 13px; }
+            #guiaAtec #passosGuiaAtec li::before { left: 10px; top: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -131,11 +206,6 @@
                         </div>
                         
                         <div class="form-group" style="margin-top: 15px;">
-                            <label for="numeroSerie">Número de Série da Unidade:</label>
-                            <input type="text" id="numeroSerie" placeholder="Ex: 1234567890ABC" onchange="processarResultado()" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                        </div>
-                        
-                        <div class="form-group" style="margin-top: 15px;">
                             <label for="dataNF">Data de Emissão da Nota Fiscal:</label>
                             <input type="date" id="dataNF" onchange="processarResultado()">
                         </div>
@@ -179,6 +249,12 @@
                                 <option value="SIM">Sim</option>
                                 <option value="NAO">Não</option>
                             </select>
+                        </div>
+
+                        <div class="form-group hidden" id="divOrdemServicoFabricante" style="margin-top: 15px;">
+                            <label for="ordemServicoFabricante">Número da ordem de serviço (OS) aberta pelo cliente com o fabricante: <strong>* obrigatório para monitorar</strong></label>
+                            <input type="text" id="ordemServicoFabricante" autocomplete="off" placeholder="Informe o número da OS do fabricante" oninput="processarResultado()" aria-describedby="ajudaOrdemServicoFabricante">
+                            <small id="ajudaOrdemServicoFabricante">Solicite o número ao cliente antes de registrar o protocolo de monitoramento.</small>
                         </div>
 
                         <!-- NOVO BLOCO DE ENDEREÇO COM VIA CEP -->
@@ -232,7 +308,7 @@
 
                         <div id="avisoProtocolo" class="protocolo-box hidden">
                             <strong style="display:block; margin-bottom: 6px;">📝 PROTOCOLO DO FABRICANTE</strong>
-                            O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
+                            O cliente já possui atendimento no fabricante. Para monitorar, solicite obrigatoriamente o número da ordem de serviço (OS) que ele abriu e registre-o no protocolo de atendimento.
                         </div>
 
                         <div id="avisoPhilcoCPF" class="uappi-box hidden" style="background-color: #e7f1ff; color: #084298; border: 1px solid #b6d4fe;">
@@ -240,7 +316,22 @@
                             Na plataforma Movidesk do fabricante, a abertura de ATEC/Solicitação de peças faltantes ou plásticas, só é possível utilizando CPF. Caso o pedido seja CNPJ, solicite ao cliente um CPF responsável para seguir com a abertura.
                         </div>
 
-                        <h3>Ação N1 Recomendada</h3>
+        
+                <section id="guiaAtec" class="guia-atec hidden" aria-live="polite" aria-labelledby="tituloGuiaAtec">
+                    <div class="atec-cabecalho">
+                        <span class="atec-selo">🛠️ Roteiro de abertura</span>
+                        <h3 id="tituloGuiaAtec">Abertura da ATEC pelo operador</h3>
+                    </div>
+                    <p id="introGuiaAtec"></p>
+                    <p class="atec-etapa-label">Passo a passo por fabricante</p>
+                    <ol id="passosGuiaAtec"></ol>
+                    <div class="atec-registro">
+                        <label for="chamadoAtec"><strong>📝 Número do chamado ATEC</strong> (após abertura)</label>
+                        <input id="chamadoAtec" type="text" placeholder="Ex.: AFS-74012 ou ticket do fabricante" autocomplete="off" aria-describedby="atecAjuda" oninput="atualizarChamadoAtec()">
+                        <small id="atecAjuda" class="atec-ajuda">Registre o número no CRM e anexe print/evidência da solicitação.</small>
+                    </div>
+                </section>
+                <h3>Ação N1 Recomendada</h3>
                         <p id="textoAcao" style="white-space: pre-wrap;"></p>
                         
                         <h3 style="margin-top:20px;">Direcionamento CRM</h3>
@@ -654,6 +745,79 @@
             return { meses, dias, obs };
         }
 
+
+        const procedimentosAtec = {
+            MIDEA_RAC: 'MIDEA', MIDEA_CAC: 'MIDEA', PHILCO: 'PHILCO', DAIKIN: 'DAIKIN', AGRATTO: 'VENTISOL', LG_RAC: 'SARL_GE', GREE: 'GREE', TCL: 'TCL'
+        };
+        const guiasAtec = {
+            MIDEA: {
+                titulo: 'Midea / Carrier — Jira Service Desk',
+                passos: [
+                    'Colete fotos da etiqueta, número de série e Nota Fiscal. Faça uma cópia do <a href="https://docs.google.com/spreadsheets/d/1q-5znFeAhXLLiTbjnIxEZEe7cPKwE1NQtsKfFilr6wU/edit" target="_blank" rel="noopener noreferrer">formulário de abertura Midea</a>, preencha-o e mantenha os dados da revenda; altere apenas o e-mail do solicitante.',
+                    'No Jira After Sales, faça login pelo acesso corporativo e selecione B2B – Suporte a Revenda.',
+                    'Em Compartilhar com, selecione B3639 – LEVEROS. Em Participantes, não selecione nada.',
+                    'Categoria: SAC Revenda. Subcategoria: Abertura de OS – Atendimento via Rede Blue Service. Informe o CNPJ do CD da Garantia: 61.502.324/0013-56.',
+                    'Descreva o defeito relatado. Anexe a NF e a etiqueta no campo de NF, e a planilha preenchida no campo do formulário.',
+                    'Clique em Enviar; copie o identificador gerado (ex.: AFS-74012), registre no CRM e anexe um print da solicitação.'
+                ]
+            },
+            PHILCO: {
+                titulo: 'Philco / Britânia — Movidesk',
+                passos: [
+                    'Reúna fotos da NF, etiqueta, produto e número de série. O formulário exige CPF: se o pedido for CNPJ, solicite CPF do responsável.',
+                    'Acesse a Movidesk com as credenciais corporativas fornecidas por canal seguro. O acesso aceita apenas um operador por vez; se estiver ocupado, aguarde.',
+                    'Clique no botão + e em Novo Ticket. Preencha os dados do cliente e deixe Ordem de serviço em branco.',
+                    'Anexe fotos legíveis da NF, etiqueta e número de série do produto.',
+                    'Assunto: Visita técnica. Na mensagem, descreva o atendimento e o defeito.',
+                    'Envie, copie o número do ticket, registre-o no CRM e anexe um print. Não inclua senha no protocolo.'
+                ]
+            },
+            DAIKIN: {
+                titulo: 'Daikin — formulário do fabricante',
+                passos: [
+                    'Acesse <a href="https://www.daikin.com.br/contato" target="_blank" rel="noopener noreferrer">daikin.com.br/contato</a> e informe e-mail, telefone e dados do cliente.',
+                    'Selecione Atendimento: Assistência Técnica; Tipo: Atendimento Garantia Assistência Técnica.',
+                    'Informe produto e capacidade conforme a NF e descreva a solicitação do cliente.',
+                    'Anexe somente a Nota Fiscal de venda e envie o formulário.',
+                    'Peça ao cliente o número do ticket enviado ao e-mail dele e registre no CRM. Se não for possível obtê-lo, registre a pendência para o BackOffice Garantia solicitar depois.'
+                ]
+            },
+            VENTISOL: { titulo: 'Agratto / Ventisol — e-mail ao fabricante', contato: 'sac4@ventisol.com.br' },
+            SARL_GE: { titulo: 'LG (RAC) — e-mail via SARL GE', contato: 'atendimento@sarlge.com.br' },
+            GREE: { titulo: 'Gree — e-mail ao fabricante', contato: 'soslojista@gree-am.com.br' },
+            TCL: { titulo: 'TCL SEMP — e-mail ao fabricante', contato: 'suporteposvendas@tclsemp.com.br' }
+        };
+        function atualizarChamadoAtec() {
+            const guia = document.getElementById('guiaAtec');
+            if (guia.classList.contains('hidden')) return;
+            const campo = document.getElementById('chamadoAtec');
+            const resumo = document.getElementById('textoResumoCRM');
+            const marcador = '\nATEC - Número do chamado: ';
+            resumo.value = resumo.value.split(marcador)[0] + marcador + (campo.value.trim() || 'PENDENTE — registrar após abertura') + '\n';
+        }
+        function mostrarGuiaAtec(marca, protocoloFab) {
+            const guia = document.getElementById('guiaAtec');
+            const config = guiasAtec[procedimentosAtec[marca]];
+            if (!config) { guia.classList.add('hidden'); return false; }
+            if (guia.dataset.marca !== marca) document.getElementById('chamadoAtec').value = '';
+            guia.dataset.marca = marca;
+            document.getElementById('tituloGuiaAtec').textContent = config.titulo;
+            document.getElementById('introGuiaAtec').textContent = protocoloFab === 'SIM'
+                ? 'Já existe protocolo no fabricante: consulte número e andamento antes de criar outro chamado; evite duplicidade.'
+                : 'O operador abre a ATEC diretamente; não encaminhe a abertura ao time de Garantia.';
+            const lista = document.getElementById('passosGuiaAtec');
+            lista.replaceChildren();
+            const passos = config.passos || [
+                'Envie a solicitação por e-mail para <a href="mailto:' + config.contato + '">' + config.contato + '</a>. Descreva a solicitação do cliente e informe endereço completo, telefone(s) e e-mail.',
+                'Use o modelo do treinamento:<br><br>Olá, [destinatário]<br>Descrever a solicitação do cliente: [relato]<br><br>• Endereço completo do cliente: [endereço]<br>• Telefone(s) do cliente: [telefone]<br>• E-mail do cliente: [e-mail]<br><br>Aguardo retorno.<br>Atenciosamente,<br>[Seu nome]',
+                'Confirme com o fabricante os anexos exigidos. Registre o envio no CRM e anexe a evidência do e-mail.',
+                'Quando o fabricante retornar com o número da OS ou do chamado, registre o identificador no CRM e no campo abaixo. Não registre a ATEC como confirmada sem o retorno do fabricante.'
+            ];
+            passos.forEach(passo => { const li = document.createElement('li'); li.innerHTML = passo; lista.appendChild(li); });
+            guia.classList.remove('hidden');
+            return true;
+        }
+
         function processarResultado() {
             const tipo = document.getElementById("tipoAtendimento").value;
             const sub = document.getElementById("subcategoria").value;
@@ -666,6 +830,11 @@
             const avisoNaoInstalado = document.getElementById("avisoNaoInstalado");
             const avisoPhilcoCPF = document.getElementById("avisoPhilcoCPF");
 
+            document.getElementById("guiaAtec").classList.add("hidden");
+            const campoOrdemServico = document.getElementById("ordemServicoFabricante");
+            const divOrdemServico = document.getElementById("divOrdemServicoFabricante");
+            divOrdemServico.classList.add("hidden");
+            campoOrdemServico.required = false;
             let statusTriagem = "";
 
             if (sub === "") return;
@@ -751,6 +920,7 @@
                 const parceiroInstalou = document.getElementById("parceiroInstalou").value;
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
+                let rotaMonitoramentoAtec = false;
 
                 // Variável nova para detectar se é o fluxo de falta de peça
                 const isFluxoFaltaPeca = (sub === "falta_peca" || (sub === "climatizador" && document.getElementById("subcategoriaClimatizador").value === "item_faltante"));
@@ -899,9 +1069,27 @@
                                 if (marca === "PHILCO") {
                                     avisoPhilcoCPF.classList.remove("hidden");
                                 }
-                                textoAcaoFinal = `O produto possui instalação particular (Garantia Legal de ${strPrazo}) e encontra-se instalado. Solicite número de série e relato detalhado do defeito.`;
-                                textoCrmFinal = "Após coleta das informações, abrir protocolo com o motivo Assistência Técnica - Atendimento em Garantia / Submotivo: Leveros Acionar Fabricante.";
-                                textoRegraFinal = "Obrigatório anexar o numero de série no protocolo e confirmar se os dados de endereço e telefone do cliente estão atualizados e corretos! antes de enviar ao time de Garantia.";
+                                const nomeMarcaAtec = document.getElementById('marca').selectedOptions[0]?.text || marca;
+                                if (protocoloFab === "SIM") {
+                                    rotaMonitoramentoAtec = true;
+                                    divOrdemServico.classList.remove("hidden");
+                                    campoOrdemServico.required = true;
+                                    // O fabricante já possui chamado: não criar duplicidade nem mostrar guia de abertura.
+                                    textoAcaoFinal = `Produto instalado e dentro da garantia (${strPrazo}). Solicite obrigatoriamente ao cliente o número da ordem de serviço (OS) que ele abriu com ${nomeMarcaAtec}. Com a OS em mãos, consulte o andamento e abra um protocolo de atendimento para monitorar. Se não obtiver a OS, não conclua o protocolo de monitoramento; solicite o número ao cliente. Não abra outra ATEC.`;
+                                    textoCrmFinal = 'Chamado já aberto no fabricante: solicitar obrigatoriamente ao cliente o número da ordem de serviço (OS) aberta com o fabricante. Com a OS, abrir protocolo no CRM para monitorar e registrar o número, o andamento informado e a próxima ação. Sem a OS, não concluir o protocolo de monitoramento. Não abrir nova ATEC. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Monitorar.';
+                                    textoRegraFinal = 'O número da OS aberta pelo cliente com o fabricante é obrigatório para o protocolo de monitoramento. Sem ele, solicite a informação ao cliente antes de concluir o registro; nunca abra uma ATEC duplicada. Registre a OS e a evidência disponível no CRM.';
+                                } else {
+                                    const temGuiaAtec = mostrarGuiaAtec(marca, protocoloFab);
+                                    textoAcaoFinal = temGuiaAtec
+                                        ? `Produto instalado e dentro da garantia (${strPrazo}). Confira NF, etiqueta, número de série, telefone e endereço; siga abaixo os passos para abrir a ATEC ${nomeMarcaAtec} diretamente.`
+                                        : `Produto instalado e dentro da garantia (${strPrazo}). O treinamento não especifica abertura de ATEC para ${nomeMarcaAtec}; confirme o procedimento com a liderança antes de abrir. Não direcione automaticamente para Garantia.`;
+                                    textoCrmFinal = temGuiaAtec
+                                        ? 'Operador N1: abrir a ATEC no canal indicado no guia; registrar o número do chamado no CRM e anexar evidência. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Acionar Fabricante.'
+                                        : 'Procedimento da marca pendente de validação pela liderança. Não registrar ATEC como aberta sem identificador ou retorno do fabricante.';
+                                    textoRegraFinal = temGuiaAtec
+                                        ? 'Antes da abertura, confirme a instalação, os dados de contato, NF e número de série. Após a abertura, registre o número e a evidência no CRM.'
+                                        : 'Sem procedimento para esta marca no treinamento fornecido: não invente canal, endereço de e-mail ou campos.';
+                                }
                             }
                         }
                     }
@@ -909,8 +1097,11 @@
 
                 if (protocoloFab === "SIM") {
                     avisoProtocolo.classList.remove("hidden");
-                    textoAcaoFinal = "Solicite ao cliente o número do protocolo em aberto com o fabricante. \n\n" + textoAcaoFinal;
-                    textoCrmFinal = "[Registrar protocolo do fabricante no ticket] - " + textoCrmFinal;
+                    // Fora da rota de monitoramento, mantenha o lembrete de registrar o protocolo existente.
+                    if (!rotaMonitoramentoAtec) {
+                        textoAcaoFinal = "Solicite ao cliente o número da ordem de serviço (OS) aberta com o fabricante. \n\n" + textoAcaoFinal;
+                        textoCrmFinal = "[Registrar número da OS do fabricante no ticket] - " + textoCrmFinal;
+                    }
                 }
 
             } else {
@@ -948,9 +1139,6 @@
                     const selTec = document.getElementById("tecnologia");
                     scriptCrm += `Tecnologia: ${selTec.options[selTec.selectedIndex]?.text || '-'}\n`;
                 }
-
-                const valNumeroSerie = document.getElementById("numeroSerie").value.trim();
-                scriptCrm += `Número de Série: ${valNumeroSerie ? valNumeroSerie : 'Não informado'}\n`;
                 
                 const formatarData = (dataStr) => {
                     if (!dataStr) return '-';
@@ -1000,17 +1188,28 @@
                 scriptCrm += `Resultado da Triagem: ${statusTriagem}\n`;
             }
             scriptCrm += `Ação do Atendimento: ${textoCrmFinal}\n`;
+            if (rotaMonitoramentoAtec) {
+                scriptCrm += `OS do fabricante (aberta pelo cliente): ${campoOrdemServico.value.trim() || 'PENDENTE — solicitar ao cliente antes de concluir o monitoramento'}\n`;
+            }
 
             document.getElementById("textoResumoCRM").value = scriptCrm;
+            if (!document.getElementById("guiaAtec").classList.contains("hidden")) atualizarChamadoAtec();
 
             const btnCopiar = document.getElementById("btnCopiar");
-            btnCopiar.textContent = "📋 Copiar Script";
-            btnCopiar.style.backgroundColor = "#0056b3";
+            btnCopiar.textContent = rotaMonitoramentoAtec && !campoOrdemServico.value.trim() ? "🔒 Informe a OS para copiar o script" : "📋 Copiar Script";
+            btnCopiar.disabled = rotaMonitoramentoAtec && !campoOrdemServico.value.trim();
+            btnCopiar.style.backgroundColor = btnCopiar.disabled ? "#667680" : "#0056b3";
 
             resBox.classList.remove("hidden");
         }
 
         function copiarResumo() {
+            const campoOS = document.getElementById("ordemServicoFabricante");
+            if (campoOS.required && !campoOS.value.trim()) {
+                alert("Solicite e informe o número da ordem de serviço (OS) aberta pelo cliente com o fabricante antes de copiar o protocolo de monitoramento.");
+                campoOS.focus();
+                return;
+            }
             const textarea = document.getElementById("textoResumoCRM");
             
             textarea.select();
@@ -1022,8 +1221,10 @@
                 btn.style.backgroundColor = "#28a745"; 
                 
                 setTimeout(() => {
-                    btn.textContent = "📋 Copiar Script";
-                    btn.style.backgroundColor = "#0056b3"; 
+                    if (!btn.disabled) {
+                        btn.textContent = "📋 Copiar Script";
+                        btn.style.backgroundColor = "#0056b3";
+                    } 
                 }, 3000);
             }).catch(err => {
                 console.error('Erro ao copiar texto: ', err);
@@ -1032,6 +1233,12 @@
         }
 
        function enviarParaSheets() {
+            const campoOS = document.getElementById("ordemServicoFabricante");
+            if (campoOS.required && !campoOS.value.trim()) {
+                alert("Informe a OS aberta pelo cliente com o fabricante antes de registrar o monitoramento.");
+                campoOS.focus();
+                return;
+            }
             // ⚠️ IMPORTANTE: COLOQUE AQUI A NOVA URL GERADA NO GOOGLE APPS SCRIPT
             const urlAppScript = "https://script.google.com/macros/s/AKfycbzvF7iH2mc1Ap1dZ7Fb3K97QUu-_wl_M1m5yWVWQ7IhrOnfRzGUjqln5WKJrG2oxz00/exec"; 
             
@@ -1073,7 +1280,6 @@
             const payload = {
                 protocoloCRM: inputProtocolo, 
                 linkNF: inputLinkNF, 
-                numeroSerie: document.getElementById("numeroSerie").value.trim(),
                 tipoAtendimento: selTipo.options[selTipo.selectedIndex]?.text || '-',
                 subcategoria: (selSub.value === "climatizador") 
                     ? `${selSub.options[selSub.selectedIndex]?.text} - ${document.getElementById("subcategoriaClimatizador").options[document.getElementById("subcategoriaClimatizador").selectedIndex]?.text}` 
