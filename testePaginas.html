@@ -907,6 +907,7 @@
                 const parceiroInstalou = document.getElementById("parceiroInstalou").value;
                 const produtoInstalado = document.getElementById("produtoInstalado").value;
                 const protocoloFab = document.getElementById("protocoloFabricante").value;
+                let rotaMonitoramentoAtec = false;
 
                 // Variável nova para detectar se é o fluxo de falta de peça
                 const isFluxoFaltaPeca = (sub === "falta_peca" || (sub === "climatizador" && document.getElementById("subcategoriaClimatizador").value === "item_faltante"));
@@ -1056,16 +1057,24 @@
                                     avisoPhilcoCPF.classList.remove("hidden");
                                 }
                                 const nomeMarcaAtec = document.getElementById('marca').selectedOptions[0]?.text || marca;
-                                const temGuiaAtec = mostrarGuiaAtec(marca, protocoloFab);
-                                textoAcaoFinal = temGuiaAtec
-                                    ? `Produto instalado e dentro da garantia (${strPrazo}). Confira NF, etiqueta, número de série, telefone e endereço; siga abaixo os passos para abrir a ATEC ${nomeMarcaAtec} diretamente.`
-                                    : `Produto instalado e dentro da garantia (${strPrazo}). O treinamento não especifica abertura de ATEC para ${nomeMarcaAtec}; confirme o procedimento com a liderança antes de abrir. Não direcione automaticamente para Garantia.`;
-                                textoCrmFinal = temGuiaAtec
-                                    ? 'Operador N1: abrir a ATEC no canal indicado no guia; registrar o número do chamado no CRM e anexar evidência. Motivo: Assistência Técnica - Atendimento em Garantia. Validar o submotivo CRM vigente com a liderança.'
-                                    : 'Procedimento da marca pendente de validação pela liderança. Não registrar ATEC como aberta sem identificador ou retorno do fabricante.';
-                                textoRegraFinal = temGuiaAtec
-                                    ? 'Antes da abertura, confirme a instalação, os dados de contato, NF e número de série; consulte qualquer protocolo já existente para evitar duplicidade. Após a abertura, registre número e evidência no CRM.'
-                                    : 'Sem procedimento para esta marca no treinamento fornecido: não invente canal, endereço de e-mail ou campos.';
+                                if (protocoloFab === "SIM") {
+                                    rotaMonitoramentoAtec = true;
+                                    // O fabricante já possui chamado: não criar duplicidade nem mostrar guia de abertura.
+                                    textoAcaoFinal = `Produto instalado e dentro da garantia (${strPrazo}). Solicite ao cliente o número do chamado já aberto com ${nomeMarcaAtec}, consulte o andamento e abra um protocolo de atendimento para monitorar a tratativa. Não abra outra ATEC.`;
+                                    textoCrmFinal = 'Chamado já aberto no fabricante: abrir protocolo no CRM para monitorar; registrar o número do chamado existente, o andamento informado e a próxima ação. Não abrir nova ATEC. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Monitorar.';
+                                    textoRegraFinal = 'Com chamado em aberto no fabricante, acompanhe a tratativa pelo protocolo de monitoramento e evite abertura duplicada. Registre o número informado pelo cliente e a evidência disponível no CRM.';
+                                } else {
+                                    const temGuiaAtec = mostrarGuiaAtec(marca, protocoloFab);
+                                    textoAcaoFinal = temGuiaAtec
+                                        ? `Produto instalado e dentro da garantia (${strPrazo}). Confira NF, etiqueta, número de série, telefone e endereço; siga abaixo os passos para abrir a ATEC ${nomeMarcaAtec} diretamente.`
+                                        : `Produto instalado e dentro da garantia (${strPrazo}). O treinamento não especifica abertura de ATEC para ${nomeMarcaAtec}; confirme o procedimento com a liderança antes de abrir. Não direcione automaticamente para Garantia.`;
+                                    textoCrmFinal = temGuiaAtec
+                                        ? 'Operador N1: abrir a ATEC no canal indicado no guia; registrar o número do chamado no CRM e anexar evidência. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Acionar Fabricante.'
+                                        : 'Procedimento da marca pendente de validação pela liderança. Não registrar ATEC como aberta sem identificador ou retorno do fabricante.';
+                                    textoRegraFinal = temGuiaAtec
+                                        ? 'Antes da abertura, confirme a instalação, os dados de contato, NF e número de série. Após a abertura, registre o número e a evidência no CRM.'
+                                        : 'Sem procedimento para esta marca no treinamento fornecido: não invente canal, endereço de e-mail ou campos.';
+                                }
                             }
                         }
                     }
@@ -1073,8 +1082,11 @@
 
                 if (protocoloFab === "SIM") {
                     avisoProtocolo.classList.remove("hidden");
-                    textoAcaoFinal = "Solicite ao cliente o número do protocolo em aberto com o fabricante. \n\n" + textoAcaoFinal;
-                    textoCrmFinal = "[Registrar protocolo do fabricante no ticket] - " + textoCrmFinal;
+                    // Fora da rota de monitoramento, mantenha o lembrete de registrar o protocolo existente.
+                    if (!rotaMonitoramentoAtec) {
+                        textoAcaoFinal = "Solicite ao cliente o número do protocolo em aberto com o fabricante. \n\n" + textoAcaoFinal;
+                        textoCrmFinal = "[Registrar protocolo do fabricante no ticket] - " + textoCrmFinal;
+                    }
                 }
 
             } else {
