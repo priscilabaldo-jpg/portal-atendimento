@@ -27,10 +27,80 @@
             font-style: normal;
         }
 
-        .guia-atec { margin:18px 0; padding:18px; background:#eaf4ff; color:#15324c; border:1px solid #a6ccec; border-radius:10px }
-        .guia-atec h3 {color:#15324c} .guia-atec li {margin:9px 0;line-height:1.5}
-        .guia-atec a {color:#0056b3;text-decoration:underline}
-        .guia-atec input {width:100%;box-sizing:border-box;padding:10px;border-radius:6px;border:1px solid #aac}
+        /* Guia de ATEC: contraste consistente com o tema escuro, independente do CSS global. */
+        #guiaAtec {
+            margin: 20px 0 22px; padding: clamp(16px, 3vw, 24px);
+            background: #142f3a; color: #f2f8fa; border: 1px solid #396573;
+            border-left: 4px solid #64dbc5; border-radius: 14px;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, .16);
+            overflow-wrap: anywhere;
+        }
+        #guiaAtec .atec-cabecalho { margin-bottom: 17px; }
+        #guiaAtec .atec-selo {
+            display: inline-block; padding: 5px 10px; border-radius: 999px;
+            background: #235750; color: #b8ffdf; font-size: 11px;
+            font-weight: 800; letter-spacing: .055em; text-transform: uppercase;
+        }
+        #guiaAtec #tituloGuiaAtec {
+            display: block; margin: 10px 0 0; color: #fff;
+            font-size: clamp(16px, 1.5vw, 19px); font-weight: 800;
+            line-height: 1.35; letter-spacing: 0;
+        }
+        #guiaAtec #introGuiaAtec {
+            display: block; margin: 0 0 18px; padding: 11px 13px;
+            background: #1d444e; color: #e7f9f8; border-radius: 9px;
+            font-size: 13px; line-height: 1.55;
+        }
+        #guiaAtec .atec-etapa-label {
+            margin: 0 0 11px; color: #a7e8db; font-size: 11px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: .08em;
+        }
+        #guiaAtec #passosGuiaAtec {
+            list-style: none; counter-reset: etapa; padding: 0; margin: 0 0 21px;
+            display: grid; gap: 9px;
+        }
+        #guiaAtec #passosGuiaAtec li {
+            counter-increment: etapa; position: relative; min-width: 0;
+            margin: 0; padding: 12px 13px 12px 51px;
+            border: 1px solid #426571; border-radius: 10px;
+            background: #213f4a; color: #f0f7f8;
+            font-size: 13px; line-height: 1.58; letter-spacing: 0;
+        }
+        #guiaAtec #passosGuiaAtec li::before {
+            content: counter(etapa); position: absolute; left: 12px; top: 12px;
+            display: grid; place-items: center; width: 27px; height: 27px;
+            border-radius: 8px; background: #5dd4bc; color: #11343a;
+            font-size: 13px; font-weight: 900;
+        }
+        #guiaAtec a, #guiaAtec a:visited {
+            color: #a8efff; text-decoration: underline; text-underline-offset: 3px;
+            font-weight: 700; overflow-wrap: anywhere;
+        }
+        #guiaAtec a:hover, #guiaAtec a:focus-visible { color: #fff; }
+        #guiaAtec .atec-registro {
+            padding: 15px; border: 1px solid #5c878b; border-radius: 10px;
+            background: #21454d;
+        }
+        #guiaAtec .atec-registro label {
+            display: block; margin: 0 0 9px; color: #e1fff3;
+            font-size: 13px; line-height: 1.4;
+        }
+        #guiaAtec #chamadoAtec {
+            display: block; box-sizing: border-box; width: 100%; max-width: 100%;
+            min-height: 42px; padding: 10px 12px; border-radius: 8px;
+            border: 1px solid #93babe; outline: none; background: #fff;
+            color: #183641; font-size: 14px; line-height: 1.3;
+        }
+        #guiaAtec #chamadoAtec:focus-visible { border-color: #46d7c0; box-shadow: 0 0 0 3px rgba(93,212,188,.35); }
+        #guiaAtec .atec-ajuda {
+            display: block; margin-top: 9px; color: #d6e8e9;
+            font-size: 12px; line-height: 1.5;
+        }
+        @media (max-width: 600px) {
+            #guiaAtec { padding: 15px; }
+            #guiaAtec #passosGuiaAtec li { padding: 11px 11px 11px 47px; font-size: 13px; }
+            #guiaAtec #passosGuiaAtec li::before { left: 10px; top: 11px; }
+        }
     </style>
 </head>
 <body>
@@ -246,13 +316,19 @@
                         </div>
 
         
-                <section id="guiaAtec" class="guia-atec hidden" aria-live="polite">
-                    <h3 id="tituloGuiaAtec">Abertura da ATEC pelo operador</h3>
+                <section id="guiaAtec" class="guia-atec hidden" aria-live="polite" aria-labelledby="tituloGuiaAtec">
+                    <div class="atec-cabecalho">
+                        <span class="atec-selo">🛠️ Roteiro de abertura</span>
+                        <h3 id="tituloGuiaAtec">Abertura da ATEC pelo operador</h3>
+                    </div>
                     <p id="introGuiaAtec"></p>
+                    <p class="atec-etapa-label">Passo a passo por fabricante</p>
                     <ol id="passosGuiaAtec"></ol>
-                    <label for="chamadoAtec"><strong>Número do chamado ATEC (após abertura):</strong></label>
-                    <input id="chamadoAtec" type="text" placeholder="Informe o número após abrir a ATEC" autocomplete="off" oninput="atualizarChamadoAtec()">
-                    <small>Registre o número no CRM e anexe print/evidência da solicitação.</small>
+                    <div class="atec-registro">
+                        <label for="chamadoAtec"><strong>📝 Número do chamado ATEC</strong> (após abertura)</label>
+                        <input id="chamadoAtec" type="text" placeholder="Ex.: AFS-74012 ou ticket do fabricante" autocomplete="off" aria-describedby="atecAjuda" oninput="atualizarChamadoAtec()">
+                        <small id="atecAjuda" class="atec-ajuda">Registre o número no CRM e anexe print/evidência da solicitação.</small>
+                    </div>
                 </section>
                 <h3>Ação N1 Recomendada</h3>
                         <p id="textoAcao" style="white-space: pre-wrap;"></p>
