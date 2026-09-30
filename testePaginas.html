@@ -251,6 +251,12 @@
                             </select>
                         </div>
 
+                        <div class="form-group hidden" id="divOrdemServicoFabricante" style="margin-top: 15px;">
+                            <label for="ordemServicoFabricante">Número da ordem de serviço (OS) aberta pelo cliente com o fabricante: <strong>* obrigatório para monitorar</strong></label>
+                            <input type="text" id="ordemServicoFabricante" autocomplete="off" placeholder="Informe o número da OS do fabricante" oninput="processarResultado()" aria-describedby="ajudaOrdemServicoFabricante">
+                            <small id="ajudaOrdemServicoFabricante">Solicite o número ao cliente antes de registrar o protocolo de monitoramento.</small>
+                        </div>
+
                         <!-- NOVO BLOCO DE ENDEREÇO COM VIA CEP -->
                         <div class="form-group" style="margin-top: 25px; border-top: 1px dashed var(--glass-border); padding-top: 15px;">
                             <label style="color: var(--azul);">Endereço do Cliente:</label>
@@ -302,7 +308,7 @@
 
                         <div id="avisoProtocolo" class="protocolo-box hidden">
                             <strong style="display:block; margin-bottom: 6px;">📝 PROTOCOLO DO FABRICANTE</strong>
-                            O cliente informou que já possui tratativa. É obrigatório solicitar o número de protocolo e registrar no atendimento antes de prosseguir.
+                            O cliente já possui atendimento no fabricante. Para monitorar, solicite obrigatoriamente o número da ordem de serviço (OS) que ele abriu e registre-o no protocolo de atendimento.
                         </div>
 
                         <div id="avisoPhilcoCPF" class="uappi-box hidden" style="background-color: #e7f1ff; color: #084298; border: 1px solid #b6d4fe;">
@@ -741,7 +747,7 @@
 
 
         const procedimentosAtec = {
-            MIDEA_RAC: 'MIDEA', MIDEA_CAC: 'MIDEA', PHILCO: 'PHILCO', DAIKIN: 'DAIKIN', GREE: 'GREE', TCL: 'TCL'
+            MIDEA_RAC: 'MIDEA', MIDEA_CAC: 'MIDEA', PHILCO: 'PHILCO', DAIKIN: 'DAIKIN', AGRATTO: 'VENTISOL', LG_RAC: 'SARL_GE', GREE: 'GREE', TCL: 'TCL'
         };
         const guiasAtec = {
             MIDEA: {
@@ -776,6 +782,8 @@
                     'Peça ao cliente o número do ticket enviado ao e-mail dele e registre no CRM. Se não for possível obtê-lo, registre a pendência para o BackOffice Garantia solicitar depois.'
                 ]
             },
+            VENTISOL: { titulo: 'Agratto / Ventisol — e-mail ao fabricante', contato: 'sac4@ventisol.com.br' },
+            SARL_GE: { titulo: 'LG (RAC) — e-mail via SARL GE', contato: 'atendimento@sarlge.com.br' },
             GREE: { titulo: 'Gree — e-mail ao fabricante', contato: 'soslojista@gree-am.com.br' },
             TCL: { titulo: 'TCL SEMP — e-mail ao fabricante', contato: 'suporteposvendas@tclsemp.com.br' }
         };
@@ -800,9 +808,10 @@
             const lista = document.getElementById('passosGuiaAtec');
             lista.replaceChildren();
             const passos = config.passos || [
-                'Envie um e-mail ao fabricante: ' + config.contato + ', descrevendo a solicitação do cliente.',
-                'Informe endereço completo, telefone(s) e e-mail do cliente. Confirme com o fabricante os anexos exigidos para a abertura.',
-                'Registre no CRM o identificador informado no retorno do fabricante e anexe a evidência do e-mail.'
+                'Envie a solicitação por e-mail para <a href="mailto:' + config.contato + '">' + config.contato + '</a>. Descreva a solicitação do cliente e informe endereço completo, telefone(s) e e-mail.',
+                'Use o modelo do treinamento:<br><br>Olá, [destinatário]<br>Descrever a solicitação do cliente: [relato]<br><br>• Endereço completo do cliente: [endereço]<br>• Telefone(s) do cliente: [telefone]<br>• E-mail do cliente: [e-mail]<br><br>Aguardo retorno.<br>Atenciosamente,<br>[Seu nome]',
+                'Confirme com o fabricante os anexos exigidos. Registre o envio no CRM e anexe a evidência do e-mail.',
+                'Quando o fabricante retornar com o número da OS ou do chamado, registre o identificador no CRM e no campo abaixo. Não registre a ATEC como confirmada sem o retorno do fabricante.'
             ];
             passos.forEach(passo => { const li = document.createElement('li'); li.innerHTML = passo; lista.appendChild(li); });
             guia.classList.remove('hidden');
@@ -822,6 +831,10 @@
             const avisoPhilcoCPF = document.getElementById("avisoPhilcoCPF");
 
             document.getElementById("guiaAtec").classList.add("hidden");
+            const campoOrdemServico = document.getElementById("ordemServicoFabricante");
+            const divOrdemServico = document.getElementById("divOrdemServicoFabricante");
+            divOrdemServico.classList.add("hidden");
+            campoOrdemServico.required = false;
             let statusTriagem = "";
 
             if (sub === "") return;
@@ -1059,10 +1072,12 @@
                                 const nomeMarcaAtec = document.getElementById('marca').selectedOptions[0]?.text || marca;
                                 if (protocoloFab === "SIM") {
                                     rotaMonitoramentoAtec = true;
+                                    divOrdemServico.classList.remove("hidden");
+                                    campoOrdemServico.required = true;
                                     // O fabricante já possui chamado: não criar duplicidade nem mostrar guia de abertura.
-                                    textoAcaoFinal = `Produto instalado e dentro da garantia (${strPrazo}). Solicite ao cliente o número do chamado já aberto com ${nomeMarcaAtec}, consulte o andamento e abra um protocolo de atendimento para monitorar a tratativa. Não abra outra ATEC.`;
-                                    textoCrmFinal = 'Chamado já aberto no fabricante: abrir protocolo no CRM para monitorar; registrar o número do chamado existente, o andamento informado e a próxima ação. Não abrir nova ATEC. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Monitorar.';
-                                    textoRegraFinal = 'Com chamado em aberto no fabricante, acompanhe a tratativa pelo protocolo de monitoramento e evite abertura duplicada. Registre o número informado pelo cliente e a evidência disponível no CRM.';
+                                    textoAcaoFinal = `Produto instalado e dentro da garantia (${strPrazo}). Solicite obrigatoriamente ao cliente o número da ordem de serviço (OS) que ele abriu com ${nomeMarcaAtec}. Com a OS em mãos, consulte o andamento e abra um protocolo de atendimento para monitorar. Se não obtiver a OS, não conclua o protocolo de monitoramento; solicite o número ao cliente. Não abra outra ATEC.`;
+                                    textoCrmFinal = 'Chamado já aberto no fabricante: solicitar obrigatoriamente ao cliente o número da ordem de serviço (OS) aberta com o fabricante. Com a OS, abrir protocolo no CRM para monitorar e registrar o número, o andamento informado e a próxima ação. Sem a OS, não concluir o protocolo de monitoramento. Não abrir nova ATEC. Motivo: Assistência Técnica - Atendimento em Garantia. Submotivo: Monitorar.';
+                                    textoRegraFinal = 'O número da OS aberta pelo cliente com o fabricante é obrigatório para o protocolo de monitoramento. Sem ele, solicite a informação ao cliente antes de concluir o registro; nunca abra uma ATEC duplicada. Registre a OS e a evidência disponível no CRM.';
                                 } else {
                                     const temGuiaAtec = mostrarGuiaAtec(marca, protocoloFab);
                                     textoAcaoFinal = temGuiaAtec
@@ -1084,8 +1099,8 @@
                     avisoProtocolo.classList.remove("hidden");
                     // Fora da rota de monitoramento, mantenha o lembrete de registrar o protocolo existente.
                     if (!rotaMonitoramentoAtec) {
-                        textoAcaoFinal = "Solicite ao cliente o número do protocolo em aberto com o fabricante. \n\n" + textoAcaoFinal;
-                        textoCrmFinal = "[Registrar protocolo do fabricante no ticket] - " + textoCrmFinal;
+                        textoAcaoFinal = "Solicite ao cliente o número da ordem de serviço (OS) aberta com o fabricante. \n\n" + textoAcaoFinal;
+                        textoCrmFinal = "[Registrar número da OS do fabricante no ticket] - " + textoCrmFinal;
                     }
                 }
 
@@ -1173,18 +1188,28 @@
                 scriptCrm += `Resultado da Triagem: ${statusTriagem}\n`;
             }
             scriptCrm += `Ação do Atendimento: ${textoCrmFinal}\n`;
+            if (rotaMonitoramentoAtec) {
+                scriptCrm += `OS do fabricante (aberta pelo cliente): ${campoOrdemServico.value.trim() || 'PENDENTE — solicitar ao cliente antes de concluir o monitoramento'}\n`;
+            }
 
             document.getElementById("textoResumoCRM").value = scriptCrm;
             if (!document.getElementById("guiaAtec").classList.contains("hidden")) atualizarChamadoAtec();
 
             const btnCopiar = document.getElementById("btnCopiar");
-            btnCopiar.textContent = "📋 Copiar Script";
-            btnCopiar.style.backgroundColor = "#0056b3";
+            btnCopiar.textContent = rotaMonitoramentoAtec && !campoOrdemServico.value.trim() ? "🔒 Informe a OS para copiar o script" : "📋 Copiar Script";
+            btnCopiar.disabled = rotaMonitoramentoAtec && !campoOrdemServico.value.trim();
+            btnCopiar.style.backgroundColor = btnCopiar.disabled ? "#667680" : "#0056b3";
 
             resBox.classList.remove("hidden");
         }
 
         function copiarResumo() {
+            const campoOS = document.getElementById("ordemServicoFabricante");
+            if (campoOS.required && !campoOS.value.trim()) {
+                alert("Solicite e informe o número da ordem de serviço (OS) aberta pelo cliente com o fabricante antes de copiar o protocolo de monitoramento.");
+                campoOS.focus();
+                return;
+            }
             const textarea = document.getElementById("textoResumoCRM");
             
             textarea.select();
@@ -1196,8 +1221,10 @@
                 btn.style.backgroundColor = "#28a745"; 
                 
                 setTimeout(() => {
-                    btn.textContent = "📋 Copiar Script";
-                    btn.style.backgroundColor = "#0056b3"; 
+                    if (!btn.disabled) {
+                        btn.textContent = "📋 Copiar Script";
+                        btn.style.backgroundColor = "#0056b3";
+                    } 
                 }, 3000);
             }).catch(err => {
                 console.error('Erro ao copiar texto: ', err);
@@ -1206,6 +1233,12 @@
         }
 
        function enviarParaSheets() {
+            const campoOS = document.getElementById("ordemServicoFabricante");
+            if (campoOS.required && !campoOS.value.trim()) {
+                alert("Informe a OS aberta pelo cliente com o fabricante antes de registrar o monitoramento.");
+                campoOS.focus();
+                return;
+            }
             // ⚠️ IMPORTANTE: COLOQUE AQUI A NOVA URL GERADA NO GOOGLE APPS SCRIPT
             const urlAppScript = "https://script.google.com/macros/s/AKfycbzvF7iH2mc1Ap1dZ7Fb3K97QUu-_wl_M1m5yWVWQ7IhrOnfRzGUjqln5WKJrG2oxz00/exec"; 
             
