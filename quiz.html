@@ -139,6 +139,22 @@
             background-color: var(--amarelo);
             color: var(--verde-1);
         }
+        
+        button.delete-btn {
+            background-color: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-left: 10px;
+            transition: 0.2s;
+        }
+        button.delete-btn:hover {
+            background-color: #cc0000;
+        }
 
         /* Placar no End Screen */
         #leaderboard-container {
@@ -147,9 +163,9 @@
             border-radius: 12px;
             padding: 20px;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             margin-bottom: 20px;
-            max-height: 250px;
+            max-height: 350px;
             overflow-y: auto;
             text-align: left;
         }
@@ -173,29 +189,41 @@
 
         .container {
             display: flex;
-            gap: 30px;
+            justify-content: center;
             width: 100%;
-            max-width: 1100px;
-            flex-wrap: wrap;
+            max-width: 800px;
         }
 
         /* Seção do Quiz */
         .quiz-section {
-            flex: 2;
+            width: 100%;
             background-color: var(--verde-2);
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 16px rgba(0,0,0,0.4);
             border: 2px solid var(--azul);
-            min-width: 300px;
+            position: relative;
+        }
+
+        #timer-display {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background-color: var(--verde-1);
+            color: var(--amarelo);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            border: 1px solid var(--verde-3);
         }
 
         #question-text {
             color: var(--verde-4);
-            margin-top: 0;
+            margin-top: 20px;
             margin-bottom: 25px;
             font-size: 1.4em;
             line-height: 1.4;
+            padding-right: 100px; /* Evitar sobreposição com o timer */
         }
 
         .options {
@@ -238,76 +266,17 @@
             justify-content: flex-end;
         }
 
-        /* Seção do Sorteador */
-        .sorteador-section {
-            flex: 1;
-            background-color: var(--verde-2);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            border: 2px solid var(--verde-3);
-            min-width: 250px;
-        }
-        .sorteador-section h2 {
-            color: var(--verde-3);
-            margin-top: 0;
-            text-align: center;
-        }
-
-        .roleta-container {
-            position: relative;
-            width: 200px;
-            height: 200px;
-            margin: 30px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .roleta-bg {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: conic-gradient(
-                var(--azul) 0deg 90deg, 
-                var(--verde-4) 90deg 180deg, 
-                var(--azul) 180deg 270deg, 
-                var(--verde-4) 270deg 360deg
-            );
-            border: 6px solid var(--verde-1);
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
-        #numero-sorteado {
-            position: relative;
-            z-index: 2;
-            background-color: var(--verde-1);
-            color: var(--amarelo);
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2.8em;
-            font-weight: bold;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
-        }
-        .pointer {
-            position: absolute;
-            top: -20px;
-            font-size: 2.5em;
-            color: var(--amarelo);
-            z-index: 3;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
         @media (max-width: 768px) {
-            .container { flex-direction: column; }
             .screen-content h1 { font-size: 2.2em; }
             .screen-content p { font-size: 1.5em; }
+            #timer-display {
+                position: relative;
+                top: 0;
+                right: 0;
+                display: inline-block;
+                margin-bottom: 10px;
+            }
+            #question-text { padding-right: 0; }
         }
     </style>
 </head>
@@ -321,7 +290,7 @@
             
             <input type="text" id="user-name" class="fade-in-up delay-1" placeholder="Digite seu nome (Obrigatório)" required>
             <br>
-            <button class="action-btn fade-in-up delay-2" onclick="startApp()">Começar</button>
+            <button id="btn-start" class="action-btn fade-in-up delay-2" onclick="startApp()">Começar</button>
         </div>
     </div>
 
@@ -337,7 +306,6 @@
             </div>
 
             <div class="button-group fade-in-up delay-2">
-                <button class="action-btn" onclick="restartQuiz()">Jogar Novamente</button>
                 <button class="action-btn secondary-btn" onclick="voltarApresentacao()">Voltar à Apresentação</button>
                 
                 <!-- Botão de Download Excel - Ficará oculto por padrão -->
@@ -353,6 +321,7 @@
 
     <main class="container">
         <section class="quiz-section">
+            <div id="timer-display">Tempo: 0.0s</div>
             <div id="question-container">
                 <h2 id="question-text">Carregando pergunta...</h2>
             </div>
@@ -361,23 +330,12 @@
                 <button id="next-btn" class="action-btn" style="display:none;" onclick="nextQuestion()">Próxima Pergunta</button>
             </div>
         </section>
-
-        <section class="sorteador-section">
-            <h2>Sorteador<br>de Operadores</h2>
-            <div class="roleta-container">
-                <div class="pointer">▼</div>
-                <div id="roleta-bg" class="roleta-bg"></div>
-                <div id="numero-sorteado">?</div>
-            </div>
-            <button class="action-btn" onclick="spinRoleta()">Girar Roleta</button>
-        </section>
     </main>
 
     <!-- SCRIPT TIPO MÓDULO PARA IMPORTAR O FIREBASE -->
     <script type="module">
-        // Importando o SDK Firebase v9+ e as ferramentas (Firestore e Auth)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -389,7 +347,6 @@
             storageBucket: "portal-atendimento-541ae.appspot.com"
         };
 
-        // Inicializa o Firebase e os serviços
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -397,23 +354,24 @@
         const provider = new GoogleAuthProvider();
 
         // =========================================================
-        // VALIDAÇÃO DE ADMIN PARA O BOTÃO DO EXCEL
+        // VALIDAÇÃO DE ADMIN 
         // =========================================================
         const ADMIN_EMAILS = [
             'priscila.baldo@leveros.com.br', 
             'matheus.mendes@leveros.com.br', 
             'arinay.santos@leveros.com.br'
         ];
+        
+        window.isAdmin = false;
 
-        // Escuta as mudanças de autenticação do usuário
         onAuthStateChanged(auth, (user) => {
             const btnExcel = document.getElementById('btn-export-excel');
-            
-            // Se o usuário estiver logado e for um dos Admins
             if (user && user.email && ADMIN_EMAILS.includes(user.email.toLowerCase())) {
-                if (btnExcel) btnExcel.style.display = 'inline-block'; // Mostra o botão
+                window.isAdmin = true;
+                if (btnExcel) btnExcel.style.display = 'inline-block'; 
             } else {
-                if (btnExcel) btnExcel.style.display = 'none'; // Esconde o botão
+                window.isAdmin = false;
+                if (btnExcel) btnExcel.style.display = 'none'; 
             }
         });
 
@@ -421,16 +379,18 @@
         // VARIÁVEIS GLOBAIS DO QUIZ
         // =========================================================
         let currentQuestion = 0;
-        let isSpinning = false;
-        const totalOperadores = 50; 
-        
         let userName = "";
         let userScore = 0;
         let todosResultados = []; 
+        
+        // Variáveis de Tempo
+        let totalTimeMs = 0;
+        let questionStartTime = 0;
+        let timerInterval;
 
         const questions = [
             {
-                question: "1. GPTW & CLIMA: Qual é a meta de adesão para manter o selo GPTW, sob a responsabilidade de Tamiris Santos?",
+                question: "1. GPTW & CLIMA: Qual é a meta de adesão para manter o selo GPTW?",
                 options: [
                     "A) 100% de adesão",
                     "B) ≥ 96% de adesão",
@@ -440,7 +400,7 @@
                 answer: 1 
             },
             {
-                question: "2. CSAT: No indicador de Satisfação no Atendimento (CSAT) liderado por Alê Mincov, qual foi o resultado atingido no mês de setembro frente à meta de 78%?",
+                question: "2. CSAT: No indicador de Satisfação no Atendimento (CSAT), qual foi o resultado atingido no mês de setembro frente à meta de 78%?",
                 options: [
                     "A) 75%",
                     "B) 78%",
@@ -470,7 +430,7 @@
                 answer: 2
             },
             {
-                question: "5. DEPÓSITO DEFEITO FABRICANTE: O indicador sob responsabilidade do André Bernardes tem como meta zerar o saldo. Quantos volumes foram registrados no mês de setembro?",
+                question: "5. DEPÓSITO DEFEITO FABRICANTE: O indicador tem como meta zerar o saldo. Quantos volumes foram registrados no mês de setembro?",
                 options: [
                     "A) 0 volumes",
                     "B) 342 volumes",
@@ -480,7 +440,7 @@
                 answer: 2
             },
             {
-                question: "6. RECUPERAÇÃO DE VALORES: Qual é o principal objetivo da meta 'Recuperação de Valores Perdidos' gerida por Victor Medina?",
+                question: "6. RECUPERAÇÃO DE VALORES: Qual é o principal objetivo da meta 'Recuperação de Valores Perdidos'?",
                 options: [
                     "A) Recuperar o cliente que cancelou a compra após o prazo.",
                     "B) Recuperar valor de vendas onde o cliente fica com o produto e o dinheiro simultaneamente.",
@@ -502,19 +462,41 @@
         ];
 
         // =========================================================
-        // FUNÇÕES DO QUIZ (Expostas no objeto global window)
+        // FUNÇÕES DO QUIZ
         // =========================================================
-        window.startApp = function() {
+        window.startApp = async function() {
             const inputElement = document.getElementById('user-name');
             userName = inputElement.value.trim();
             
             if (userName === "") {
-                alert("Por favor, digite seu nome para começar!");
+                alert("Por favor, digite o seu nome para começar!");
                 inputElement.focus();
                 return;
             }
 
+            const btnStart = document.getElementById('btn-start');
+            btnStart.disabled = true;
+            btnStart.innerText = "A verificar...";
+
+            try {
+                // Verifica se a pessoa já jogou
+                const qCheck = query(collection(db, "quiz_resultados"), where("nome", "==", userName));
+                const checkSnapshot = await getDocs(qCheck);
+                
+                if (!checkSnapshot.empty) {
+                    alert("Você já realizou este quiz! Cada pessoa só pode jogar uma vez.");
+                    btnStart.disabled = false;
+                    btnStart.innerText = "Começar";
+                    return;
+                }
+            } catch(e) {
+                console.error("Erro ao validar acesso: ", e);
+            }
+
+            // Inicia o Quiz
             userScore = 0; 
+            totalTimeMs = 0;
+            currentQuestion = 0;
             
             const introScreen = document.getElementById('intro-screen');
             introScreen.style.opacity = '0';
@@ -546,9 +528,24 @@
             });
             
             document.getElementById('next-btn').style.display = 'none';
+
+            // Inicia o temporizador
+            questionStartTime = Date.now();
+            document.getElementById('timer-display').innerText = "Tempo: 0.0s";
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const diff = (Date.now() - questionStartTime) / 1000;
+                document.getElementById('timer-display').innerText = `Tempo: ${diff.toFixed(1)}s`;
+            }, 100);
         }
 
         window.selectAnswer = function(selectedIndex, btnElement) {
+            // Para o temporizador e contabiliza o tempo desta questão
+            clearInterval(timerInterval);
+            const timeTaken = Date.now() - questionStartTime;
+            totalTimeMs += timeTaken;
+
             const correctIndex = questions[currentQuestion].answer;
             const buttons = document.querySelectorAll('.option-btn');
             
@@ -576,7 +573,6 @@
             if (currentQuestion < questions.length - 1) {
                 currentQuestion++;
                 loadQuestion();
-                resetRoleta();
             } else {
                 showEndScreen();
             }
@@ -587,7 +583,7 @@
             const title = document.getElementById('end-title');
             
             title.innerText = `Parabéns, ${userName}! 🚀`;
-            document.getElementById('end-text').innerText = `Você acertou ${userScore} de ${questions.length} perguntas.`;
+            document.getElementById('end-text').innerText = `Acertaste ${userScore} de ${questions.length} perguntas em ${(totalTimeMs/1000).toFixed(2)}s.`;
 
             endScreen.style.display = 'flex';
             setTimeout(() => {
@@ -595,12 +591,13 @@
                 endScreen.style.transform = 'translateY(0)';
             }, 50);
 
-            // 1. Salva no Firestore usando o DB configurado
+            // Grava os resultados
             try {
                 await addDoc(collection(db, "quiz_resultados"), {
                     nome: userName,
                     acertos: userScore,
                     total: questions.length,
+                    tempoTotal: totalTimeMs,
                     dataHora: new Date().toISOString()
                 });
                 console.log("Resultado salvo com sucesso no Firebase!");
@@ -608,39 +605,69 @@
                 console.error("Erro ao salvar no Firebase: ", e);
             }
 
-            // 2. Carrega o Placar de todos
             await carregarPlacar();
         }
 
-        async function carregarPlacar() {
+        window.carregarPlacar = async function() {
             const leaderboardDiv = document.getElementById('leaderboard-container');
             
             try {
+                // Consulta base: ordena apenas por acertos no Firestore
                 const q = query(collection(db, "quiz_resultados"), orderBy("acertos", "desc"));
                 const querySnapshot = await getDocs(q);
                 
-                todosResultados = []; 
+                let resultadosBrutos = [];
                 
+                querySnapshot.forEach((doc) => {
+                    const dados = doc.data();
+                    resultadosBrutos.push({
+                        id: doc.id,
+                        nome: dados.nome,
+                        acertos: dados.acertos,
+                        total: dados.total,
+                        tempoTotal: dados.tempoTotal || 999999999, // Fallback se o tempo não existir
+                        dataHora: dados.dataHora
+                    });
+                });
+
+                // Ordenação local (Desempate por tempo)
+                resultadosBrutos.sort((a, b) => {
+                    if (b.acertos !== a.acertos) {
+                        return b.acertos - a.acertos;
+                    }
+                    return a.tempoTotal - b.tempoTotal;
+                });
+                
+                todosResultados = []; 
                 let html = "<h3>🏆 Placar Geral da Equipe</h3><ul style='list-style: none; padding: 0;'>";
                 
                 let posicao = 1;
-                querySnapshot.forEach((doc) => {
-                    const dados = doc.data();
-                    
+                resultadosBrutos.forEach((dados) => {
                     todosResultados.push({
                         "Posição": posicao + "º",
                         "Nome": dados.nome,
                         "Acertos": dados.acertos,
-                        "Total Perguntas": dados.total,
+                        "Tempo (Segundos)": (dados.tempoTotal / 1000).toFixed(2),
                         "Data/Hora": new Date(dados.dataHora).toLocaleString('pt-BR')
                     });
 
                     let badge = posicao === 1 ? "🥇" : posicao === 2 ? "🥈" : posicao === 3 ? "🥉" : `<b>${posicao}º</b>`;
                     
+                    // Botão de Excluir para Admins
+                    let adminBtnHtml = window.isAdmin 
+                        ? `<button class="delete-btn" onclick="deletarResultado('${dados.id}')">Excluir</button>` 
+                        : '';
+
                     html += `
                         <li style="padding: 10px; margin: 5px 0; background: var(--verde-1); border-radius: 5px; border: 1px solid var(--verde-3); display: flex; justify-content: space-between; align-items: center;">
-                            <span>${badge} &nbsp; ${dados.nome}</span>
-                            <span style="color: var(--amarelo); font-weight: bold;">${dados.acertos} pts</span>
+                            <div>
+                                <span>${badge} &nbsp; ${dados.nome}</span>
+                                ${adminBtnHtml}
+                            </div>
+                            <div style="text-align: right;">
+                                <span style="color: var(--amarelo); font-weight: bold; display:block;">${dados.acertos} pts</span>
+                                <span style="color: #aaa; font-size: 0.8em;">${(dados.tempoTotal / 1000).toFixed(1)}s</span>
+                            </div>
                         </li>
                     `;
                     posicao++;
@@ -655,77 +682,31 @@
             }
         }
 
+        // =========================================================
+        // FUNÇÕES ADMINISTRATIVAS E EXPORTAÇÃO
+        // =========================================================
+        window.deletarResultado = async function(docId) {
+            if(confirm("Tem certeza de que deseja excluir esta tentativa? O operador poderá jogar novamente após a exclusão.")) {
+                try {
+                    await deleteDoc(doc(db, "quiz_resultados", docId));
+                    alert("A tentativa foi excluída com sucesso.");
+                    await carregarPlacar(); // Recarrega o placar após deletar
+                } catch(e) {
+                    alert("Erro ao excluir: " + e.message);
+                }
+            }
+        };
+
         window.baixarExcel = function() {
             if (todosResultados.length === 0) {
-                alert("Nenhum dado disponível para baixar ainda.");
+                alert("Nenhum dado disponível para descarregar ainda.");
                 return;
             }
-
             const worksheet = XLSX.utils.json_to_sheet(todosResultados);
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Ranking");
-
             XLSX.writeFile(workbook, "Ranking_Quiz_Leveros.xlsx");
         };
-
-        window.restartQuiz = function() {
-            const endScreen = document.getElementById('end-screen');
-            endScreen.style.opacity = '0';
-            endScreen.style.transform = 'translateY(20px)';
-            
-            setTimeout(() => {
-                endScreen.style.display = 'none';
-                
-                const introScreen = document.getElementById('intro-screen');
-                document.getElementById('user-name').value = ''; 
-                introScreen.style.display = 'flex';
-                
-                setTimeout(() => {
-                    introScreen.style.opacity = '1';
-                    introScreen.style.transform = 'translateY(0)';
-                }, 50);
-
-                currentQuestion = 0;
-                resetRoleta();
-            }, 800);
-        };
-
-        // =========================================================
-        // CÓDIGO DA ROLETA 
-        // =========================================================
-        window.spinRoleta = function() {
-            if(isSpinning) return;
-            isSpinning = true;
-            
-            const roletaBg = document.getElementById('roleta-bg');
-            const numSpan = document.getElementById('numero-sorteado');
-            
-            const numeroVencedor = Math.floor(Math.random() * totalOperadores) + 1;
-            
-            roletaBg.style.transition = 'transform 3s cubic-bezier(0.25, 0.1, 0.25, 1)';
-            const randomSpins = Math.floor(Math.random() * 5) + 5; 
-            const targetRotation = (randomSpins * 360) + Math.floor(Math.random() * 360);
-            roletaBg.style.transform = `rotate(${targetRotation}deg)`;
-            
-            let interval = setInterval(() => {
-                numSpan.innerText = Math.floor(Math.random() * totalOperadores) + 1;
-            }, 80);
-
-            setTimeout(() => {
-                clearInterval(interval);
-                numSpan.innerText = numeroVencedor;
-                isSpinning = false;
-            }, 3000);
-        };
-
-        function resetRoleta() {
-            const roletaBg = document.getElementById('roleta-bg');
-            const numSpan = document.getElementById('numero-sorteado');
-            
-            roletaBg.style.transition = 'none';
-            roletaBg.style.transform = `rotate(0deg)`;
-            numSpan.innerText = "?";
-        }
 
     </script>
 </body>
