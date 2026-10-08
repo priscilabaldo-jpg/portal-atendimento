@@ -1,3 +1,8 @@
+Aqui está o código completo e atualizado, já com a regra que permite aos administradores (priscila.baldo, matheus.mendes e arinay.santos) jogarem o quiz quantas vezes quiserem, enquanto os restantes utilizadores continuam limitados a uma única tentativa.
+
+Basta copiar este código e substituir no seu ficheiro:
+
+HTML
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -334,7 +339,6 @@
 
     <!-- SCRIPT TIPO MÓDULO PARA IMPORTAR O FIREBASE -->
     <script type="module">
-        // Importando também o signInWithPopup
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, query, orderBy, where, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -474,7 +478,11 @@
                 const qCheck = query(collection(db, "quiz_resultados"), where("email", "==", userEmail));
                 const checkSnapshot = await getDocs(qCheck);
                 
-                if (!checkSnapshot.empty) {
+                // Verifica se o email logado está na lista de administradores
+                const isUserAdmin = ADMIN_EMAILS.includes(userEmail.toLowerCase());
+                
+                // Bloqueia apenas se NÃO for admin e já tiver jogado
+                if (!checkSnapshot.empty && !isUserAdmin) {
                     alert(`Olá ${userName}, você já realizou este quiz! Cada utilizador só pode jogar uma vez.`);
                     btnStart.disabled = false;
                     btnStart.innerHTML = originalText;
