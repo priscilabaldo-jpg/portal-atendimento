@@ -2552,59 +2552,59 @@
   "id": 308
  },
  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Quando usar e regra de elegibilidade",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "1-3",
-    "conteudo": "CSDEVOL é o procedimento para tratar pedidos NÃO faturados, evitando faturamento indevido. Só se aplica quando, no Fluxo de Documentos do pedido (VA03), existir APENAS a linha 'Venda Normal'. Se já houver Fatura ou Remessa, este fluxo NÃO se aplica — seguir o processo de devolução pós-faturamento. Pré-requisitos: acesso ao SAP (transações VA03, VA02 e ZDEVOL) e o número do pedido ou Referência do Cliente. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.1
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Passo 1 e 2 - Acessar o SAP e localizar o pedido (VA03)",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "4-5",
-    "conteudo": "Passo 1: Acesse o sistema SAP com login e senha corporativos. Passo 2: Abra a transação VA03. No campo 'Referência Cliente', informe o número do pedido passado pelo cliente e clique em 'Executar pesquisa'. Selecione o pedido correto na lista de resultados. Atenção: se houver mais de um resultado, confirme CPF/CNPJ, data ou valor para garantir que é o pedido certo. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.2
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Passo 3 e 4 - Fluxo de Documentos e confirmação de não faturado",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "6-7",
-    "conteudo": "Passo 3: Com o pedido aberto, clique em 'Fluxo de Documentos' no menu superior da tela. Passo 4: Analise a lista exibida. Se aparecer APENAS UMA linha, referente à 'Venda Normal', o pedido NÃO foi faturado e o processo pode continuar. Se houver mais linhas (ex.: fatura, remessa), o pedido JÁ foi faturado e este processo NÃO se aplica — direcionar para o fluxo de devolução pós-faturamento. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.3
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Passo 5 - Bloquear o pedido (BloqRemessa)",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "8",
-    "conteudo": "Passo 5: Confirmado que o pedido não foi faturado, siga com o bloqueio. Clique no ícone de 'lápis com óculos' para habilitar edição e efetue o bloqueio. Preencha o campo 'BloqRemessa' com o motivo adequado (ex.: TRATATIVA T&D) e grave. Este bloqueio é essencial para evitar que o pedido seja faturado indevidamente enquanto o CSDEVOL está sendo tratado. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.4
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Passo 6 e 7 - Copiar número do documento e atenção à concorrência (VA02)",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "9-10",
-    "conteudo": "Passo 6: Após validar todos os dados, clique em 'Venda Normal' e copie o número do documento (Nº doc.) — ele será usado no ZDEVOL. Passo 7 (ATENÇÃO): Saia da tela da transação VA03. Certifique-se de que a transação VA02 NÃO esteja aberta (por você ou por outro operador) para o mesmo pedido. Se estiver aberta, o bloqueio ou o faturamento pode ser interrompido/sobrescrito, gerando faturamento INCORRETO do pedido. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.5
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Passo 8 e 9 - Emitir o CSDEVOL (ZDEVOL) e registrar o atendimento",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "11-14",
-    "conteudo": "Passo 8: Abra a transação ZDEVOL e informe o número do documento copiado. Preencha corretamente os itens e as quantidades a devolver (atenção especial em devoluções parciais, revisando item a item). Confira os dados antes de gravar. Passo 9: Registre o atendimento no ticket/CRM anexando evidências (print do Fluxo de Documentos com 1 linha, motivo do BloqRemessa, número do documento) e direcione o caso ao time BackOffice para conclusão. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.6
-  },
-  {
-    "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
-    "titulo": "CSDEVOL: Checklist Resumido",
-    "fonte": "Treinamento emissão CSDEVOL.pptx",
-    "pagina": "20",
-    "conteudo": "Checklist antes de finalizar um CSDEVOL: 1) Fluxo de Documentos com apenas 1 linha 'Venda Normal' (sem fatura/remessa). 2) BloqRemessa aplicado e gravado com motivo correto. 3) VA02 confirmada como NÃO aberta (própria ou de terceiros). 4) Número do documento copiado corretamente. 5) ZDEVOL preenchido com itens e quantidades revisados. 6) Ticket/CRM atualizado com evidências e encaminhado ao BackOffice. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
-    "id": 159.7
-  }
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Quando usar e regra de elegibilidade",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "1-3",
+  "conteudo": "CSDEVOL é o procedimento para tratar pedidos NÃO faturados, evitando faturamento indevido. Só se aplica quando, no Fluxo de Documentos do pedido (VA03), existir APENAS a linha 'Venda Normal'. Se já houver Fatura ou Remessa, este fluxo NÃO se aplica — seguir o processo de devolução pós-faturamento. Pré-requisitos: acesso ao SAP (transações VA03, VA02 e ZDEVOL) e o número do pedido ou Referência do Cliente. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.1
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Passo 1 e 2 - Acessar o SAP e localizar o pedido (VA03)",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "4-5",
+  "conteudo": "Passo 1: Acesse o sistema SAP com login e senha corporativos. Passo 2: Abra a transação VA03. No campo 'Referência Cliente', informe o número do pedido passado pelo cliente e clique em 'Executar pesquisa'. Selecione o pedido correto na lista de resultados. Atenção: se houver mais de um resultado, confirme CPF/CNPJ, data ou valor para garantir que é o pedido certo. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.2
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Passo 3 e 4 - Fluxo de Documentos e confirmação de não faturado",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "6-7",
+  "conteudo": "Passo 3: Com o pedido aberto, clique em 'Fluxo de Documentos' no menu superior da tela. Passo 4: Analise a lista exibida. Se aparecer APENAS UMA linha, referente à 'Venda Normal', o pedido NÃO foi faturado e o processo pode continuar. Se houver mais linhas (ex.: fatura, remessa), o pedido JÁ foi faturado e este processo NÃO se aplica — direcionar para o fluxo de devolução pós-faturamento. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.3
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Passo 5 - Bloquear o pedido (BloqRemessa)",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "8",
+  "conteudo": "Passo 5: Confirmado que o pedido não foi faturado, siga com o bloqueio. Clique no ícone de 'lápis com óculos' para habilitar edição e efetue o bloqueio. Preencha o campo 'BloqRemessa' com o motivo adequado (ex.: TRATATIVA T&D) e grave. Este bloqueio é essencial para evitar que o pedido seja faturado indevidamente enquanto o CSDEVOL está sendo tratado. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.4
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Passo 6 e 7 - Copiar número do documento e atenção à concorrência (VA02)",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "9-10",
+  "conteudo": "Passo 6: Após validar todos os dados, clique em 'Venda Normal' e copie o número do documento (Nº doc.) — ele será usado no ZDEVOL. Passo 7 (ATENÇÃO): Saia da tela da transação VA03. Certifique-se de que a transação VA02 NÃO esteja aberta (por você ou por outro operador) para o mesmo pedido. Se estiver aberta, o bloqueio ou o faturamento pode ser interrompido/sobrescrito, gerando faturamento INCORRETO do pedido. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.5
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Passo 8 e 9 - Emitir o CSDEVOL (ZDEVOL) e registrar o atendimento",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "11-14",
+  "conteudo": "Passo 8: Abra a transação ZDEVOL e informe o número do documento copiado. Preencha corretamente os itens e as quantidades a devolver (atenção especial em devoluções parciais, revisando item a item). Confira os dados antes de gravar. Passo 9: Registre o atendimento no ticket/CRM anexando evidências (print do Fluxo de Documentos com 1 linha, motivo do BloqRemessa, número do documento) e direcione o caso ao time BackOffice para conclusão. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.6
+ },
+ {
+  "secao": "10. Tramites e Casos Especiais (Marketplace, Titularidade, Disputas)",
+  "titulo": "CSDEVOL: Checklist Resumido",
+  "fonte": "Treinamento emissão CSDEVOL.pptx",
+  "pagina": "20",
+  "conteudo": "Checklist antes de finalizar um CSDEVOL: 1) Fluxo de Documentos com apenas 1 linha 'Venda Normal' (sem fatura/remessa). 2) BloqRemessa aplicado e gravado com motivo correto. 3) VA02 confirmada como NÃO aberta (própria ou de terceiros). 4) Número do documento copiado corretamente. 5) ZDEVOL preenchido com itens e quantidades revisados. 6) Ticket/CRM atualizado com evidências e encaminhado ao BackOffice. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
+  "id": 159.7
+ }
 ]
