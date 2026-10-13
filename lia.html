@@ -302,16 +302,27 @@ function buildIndex(){
   });
 }
 
+// Stopwords: termos genéricos que não devem pesar na busca (evita que
+// "como"/"fazer" eclipsem termos técnicos raros como "csdevol")
+const STOPWORDS = new Set('como fazer de a o que para com em no na os as do da dos das um uma e ou se eu tu ele nos vos eles por qual quais quando onde porque quero preciso gostaria pode poderia favor obrigado ola oi bom dia tarde noite'.split(' '));
+
+function tokenWeight(qt){
+  if(STOPWORDS.has(qt)) return 0.15; // quase ignora termos genéricos
+  if(qt.length >= 6) return 1.5;     // termos técnicos/raros longos ganham peso extra
+  if(qt.length >= 4) return 1.0;
+  return 0.6;
+}
+
 function searchKB(query, topN=5){
   const qTokens = tokenize(query);
   if(!qTokens.length) return [];
-  
+
   // Detecta se a intenção é buscar novidades do feed
   const isAskingForFeed = query.toLowerCase().match(/comunicado|post|feed|aviso|t\.i|novidade/);
 
   const scored = KB_IDX.map(entry=>{
     let score = 0;
-    
+
     // Dá um super bônus se for do feed e o usuário estiver perguntando sobre posts
     if (isAskingForFeed && entry.secao === "Feed de Comunicados") {
         score += 8; 
@@ -322,15 +333,17 @@ function searchKB(query, topN=5){
       if(qt.length < 2) continue; 
       const tScore = bestTokenMatch(qt, entry._titleTokens) * 1.6;
       const cScore = bestTokenMatch(qt, entry._tokens);
-      score += Math.max(tScore, cScore) * (qt.length>=4?1:0.6);
+      // CORREÇÃO: pondera pelo peso do termo (stopwords quase não contam,
+      // termos técnicos raros/longos contam mais) em vez de peso fixo por tamanho
+      score += Math.max(tScore, cScore) * tokenWeight(qt);
     }
     const normContent = norm((entry.titulo||'')+' '+(entry.conteudo||''));
     const normQuery = norm(query);
     if(normQuery.length>4 && normContent.includes(normQuery)) score += 3;
-    
+
     return {entry, score};
   });
-  
+
   scored.sort((a,b)=>b.score-a.score);
   return scored.filter(s=>s.score>0.35).slice(0,topN);
 }
