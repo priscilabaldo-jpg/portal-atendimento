@@ -17,31 +17,35 @@
 <link rel="stylesheet" href="style.css">
 
   <style>
-  /* NOVO CSS PARA O BANNER - FORÇANDO ALINHAMENTO NO CONTAINER */
+  /* CSS DEFINITIVO PARA TRAVAR O TAMANHO DA IMAGEM */
   .hero-banner-container {
     width: 100%;
-    margin: 20px 0 30px 0; /* Remove as margens laterais automáticas para seguir o fluxo normal */
+    max-width: 100%; /* Impede que o contêiner expanda além da tela */
+    margin: 20px 0 30px 0; 
     box-sizing: border-box;
+    overflow: hidden; /* Corta qualquer coisa que tente vazar */
   }
 
   .hero-banner {
     width: 100%;
+    max-width: 100%;
     background-color: #ffffff;
     border-radius: 12px;   
     box-shadow: 0 4px 12px rgba(0, 45, 50, 0.15); 
-    padding: 15px; /* Padding interno um pouco menor */
+    padding: 15px; 
     box-sizing: border-box;
-    /* Removemos o display: flex aqui para deixar a imagem se ajustar ao block */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .hero-banner .banner-img {
-    width: 100%; /* Força a imagem a ter 100% da largura do quadrado branco, nem mais nem menos */
-    max-height: 450px; /* Impede que a imagem fique extremamente alta em telas grandes */
+    max-width: 100%; /* REGRA DE OURO: A imagem nunca ultrapassa o limite branco */
     height: auto;          
+    max-height: 400px; /* Limita a altura para não ocupar a tela toda */
     display: block;
-    margin: 0 auto; /* Centraliza a imagem caso ela não ocupe os 100% */
     border-radius: 6px;
-    object-fit: contain; /* Garante que nada será cortado */
+    object-fit: contain;
   }
   </style>
 </head>
@@ -113,10 +117,10 @@
         </div>
       </div>
 
-      <!-- INÍCIO DA IMAGEM DO FLUXOGRAMA COM ESTRUTURA CORRIGIDA -->
+      <!-- INÍCIO DA IMAGEM DO FLUXOGRAMA -->
       <div class="hero-banner-container">
         <div class="hero-banner">
-          <img src="/Gemini_Generated_Image_dui4zjdui4zjdui4.jpg" alt="Fluxo de Atendimento - Canal Online" class="banner-img">
+          <img src="Gemini_Generated_Image_dui4zjdui4zjdui4.jpg" alt="Fluxo de Atendimento - Canal Online" class="banner-img">
         </div>
       </div>
       <!-- FIM DA IMAGEM DO FLUXOGRAMA -->
