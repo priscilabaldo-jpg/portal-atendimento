@@ -17,35 +17,53 @@
 <link rel="stylesheet" href="style.css">
 
   <style>
-  /* CSS DEFINITIVO PARA TRAVAR O TAMANHO DA IMAGEM */
+  /* CSS DEFINITIVO PARA O BANNER DO FLUXOGRAMA - ALINHADO E CENTRALIZADO */
   .hero-banner-container {
     width: 100%;
-    max-width: 100%; /* Impede que o contêiner expanda além da tela */
-    margin: 20px 0 30px 0; 
+    max-width: 1140px; /* ajuste para o MESMO valor de max-width do .container no style.css, se diferente */
+    margin: 24px auto 32px auto;
+    padding: 0 20px;
     box-sizing: border-box;
-    overflow: hidden; /* Corta qualquer coisa que tente vazar */
   }
 
   .hero-banner {
     width: 100%;
-    max-width: 100%;
     background-color: #ffffff;
-    border-radius: 12px;   
-    box-shadow: 0 4px 12px rgba(0, 45, 50, 0.15); 
-    padding: 15px; 
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 45, 50, 0.12);
+    border: 1px solid rgba(0, 45, 50, 0.08);
+    padding: 24px;
     box-sizing: border-box;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    gap: 14px;
+  }
+
+  .hero-banner-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #002D32;
+    align-self: flex-start;
   }
 
   .hero-banner .banner-img {
-    max-width: 100%; /* REGRA DE OURO: A imagem nunca ultrapassa o limite branco */
-    height: auto;          
-    max-height: 400px; /* Limita a altura para não ocupar a tela toda */
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    max-height: 460px;
     display: block;
-    border-radius: 6px;
+    margin: 0 auto;
+    border-radius: 10px;
     object-fit: contain;
+  }
+
+  @media (max-width: 768px) {
+    .hero-banner { padding: 14px; }
+    .hero-banner .banner-img { max-height: 260px; }
   }
   </style>
 </head>
@@ -100,7 +118,7 @@
     <a href="admin.html" id="navAdminMobile" style="display: none;">Painel Admin</a>
     <button class="logout-btn" id="logoutBtnMobile">Sair</button>
   </div>
-  
+
   <div class="container">
 
     <div id="homeView">
@@ -120,6 +138,7 @@
       <!-- INÍCIO DA IMAGEM DO FLUXOGRAMA -->
       <div class="hero-banner-container">
         <div class="hero-banner">
+          <div class="hero-banner-title">📊 Fluxo Atual de Atendimento — Canal Online</div>
           <img src="Gemini_Generated_Image_dui4zjdui4zjdui4.jpg" alt="Fluxo de Atendimento - Canal Online" class="banner-img">
         </div>
       </div>
@@ -185,12 +204,12 @@
         <h3>Sugestões de Melhoria 💡</h3>
         <p>Sua ideia pode melhorar o dia a dia do time</p>
         <div class="success-msg" id="successMsg">✅ Sugestão enviada com sucesso! Obrigado pela contribuição.</div>
-        
+
         <form id="feedbackForm" action="https://formsubmit.co/COLOQUE_SEU_HASH_AQUI" method="POST">
           <input type="hidden" name="_captcha" value="false">
           <input type="hidden" name="_subject" value="Nova sugestão - Portal CX Resolve">
           <input type="hidden" name="_cc" value="matheus.mendes@leveros.com.br">
-          
+
           <div class="form-row">
             <div class="form-field">
               <label>Seu nome</label>
@@ -201,7 +220,7 @@
               <input type="email" name="email" id="feedbackEmail" placeholder="nome@leveros.com.br" required>
             </div>
           </div>
-          
+
           <div class="form-field form-full">
             <label>Sugestão</label>
             <textarea name="mensagem" rows="4" placeholder="Descreva sua sugestão em detalhes…" required></textarea>
