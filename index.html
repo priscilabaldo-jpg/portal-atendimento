@@ -17,58 +17,92 @@
 <link rel="stylesheet" href="style.css">
 
   <style>
-  /* CSS DEFINITIVO PARA O BANNER DO FLUXOGRAMA - ALINHADO E CENTRALIZADO */
-  .hero-banner-container {
+  /* ===================================================================
+     FLUXOGRAMA EM HTML/CSS PURO - substitui a imagem estática
+     Reaproveita as cores do design system (--verde1, --amarelo, --azul)
+     =================================================================== */
+  .fluxo-wrap {
     width: 100%;
-    max-width: 1140px; /* ajuste para o MESMO valor de max-width do .container no style.css, se diferente */
-    margin: 24px auto 48px auto; /* mais respiro embaixo, separando do Mural/Forms */
-    padding: 0 20px;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-  }
-
-  .hero-banner {
-    width: 100%;
-    max-width: 820px; /* banner não ocupa a largura toda, fica mais "card" e centralizado */
-    background-color: #ffffff;
+    max-width: 1140px;
+    margin: 24px auto 48px auto;
+    background: #ffffff;
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 45, 50, 0.12);
     border: 1px solid rgba(0, 45, 50, 0.08);
-    padding: 18px;
+    padding: 28px;
     box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin: 0 auto;
+    color: #0b2e30;
+    overflow-x: auto;
+  }
+  .fluxo-top h3 { font-size: 18px; font-weight: 800; color: var(--verde1); margin-bottom: 4px; }
+  .fluxo-top p { font-size: 12px; color: #4a6a6c; margin-bottom: 20px; }
+
+  .fluxo-grid { display: flex; align-items: stretch; gap: 18px; min-width: 760px; }
+  .fluxo-start-col { display: flex; align-items: center; flex-shrink: 0; }
+  .fluxo-sections { display: flex; flex-direction: column; gap: 16px; flex: 1; }
+
+  .fsec {
+    background: rgba(76,221,221,0.08);
+    border: 1px solid rgba(76,221,221,0.35);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .fsec h4 {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--verde1); margin-bottom: 10px;
   }
 
-  .hero-banner-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #002D32;
-    align-self: flex-start;
+  .fchain { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+  .fbox {
+    border-radius: 8px; padding: 8px 12px; font-size: 11px; line-height: 1.35;
+    min-width: 120px; max-width: 185px; box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  }
+  .fbox strong { display: block; font-size: 11px; font-weight: 700; margin-bottom: 2px; }
+  .fbox span { display: block; font-size: 9.5px; opacity: 0.85; font-weight: 400; margin-top: 2px; }
+
+  .fbox.dark { background: var(--verde1); color: #fff; }
+  .fbox.yellow { background: var(--amarelo); color: #3a2c00; font-weight: 600; text-align: center; }
+  .fbox.green { background: #DCF7D1; color: #19521F; border: 1px solid #9FE6A0; }
+  .fbox.cyan { background: #D7F3F5; color: #0B4D52; border: 1px solid #8FDEE3; }
+
+  .farrow { width: 20px; height: 2px; background: #6FAFB2; position: relative; flex-shrink: 0; }
+  .farrow::after {
+    content: ''; position: absolute; right: -1px; top: -3px;
+    border: 4px solid transparent; border-left-color: #6FAFB2;
   }
 
-  .hero-banner .banner-img {
-    width: auto;
-    max-width: 100%;
-    height: auto;
-    max-height: 300px; /* reduzido para não dominar a tela */
-    display: block;
-    margin: 0 auto;
-    border-radius: 8px;
-    object-fit: contain;
+  .fbranch {
+    display: flex; flex-direction: column; gap: 8px; position: relative;
+    padding-left: 14px; border-left: 2px solid #6FAFB2; margin-left: 2px;
+  }
+  .fbranch-item { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; position: relative; }
+  .fbranch-item::before {
+    content: ''; position: absolute; left: -14px; top: 50%;
+    width: 12px; height: 2px; background: #6FAFB2;
   }
 
-  @media (max-width: 768px) {
-    .hero-banner-container { margin-bottom: 32px; }
-    .hero-banner { padding: 12px; max-width: 100%; }
-    .hero-banner .banner-img { max-height: 200px; }
+  .flabel {
+    font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 10px;
+    text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
+  }
+  .flabel.sim { background: #DCF7D1; color: #19521F; }
+  .flabel.nao { background: #FFE3E3; color: #7A1F1F; }
+
+  .fnota {
+    font-size: 10px; color: #517577; margin-top: 18px; padding-top: 14px;
+    border-top: 1px dashed rgba(0,45,50,0.15);
+  }
+
+  @media (max-width: 900px) {
+    .fluxo-wrap { padding: 18px; }
+    .fluxo-grid { min-width: 0; flex-direction: column; }
+    .fluxo-start-col { justify-content: flex-start; margin-bottom: 10px; }
+    .fchain { flex-direction: column; align-items: flex-start; }
+    .farrow { width: 2px; height: 14px; }
+    .farrow::after { right: -3px; top: auto; bottom: -1px; border-left-color: transparent; border-top-color: #6FAFB2; }
+    .fbranch { border-left: none; border-top: 2px solid #6FAFB2; padding-left: 0; padding-top: 10px; margin-left: 0; }
+    .fbranch-item::before { left: 0; top: -10px; width: 2px; height: 10px; }
   }
   </style>
 </head>
@@ -140,14 +174,119 @@
         </div>
       </div>
 
-      <!-- INÍCIO DA IMAGEM DO FLUXOGRAMA -->
-      <div class="hero-banner-container">
-        <div class="hero-banner">
-          <div class="hero-banner-title">📊 Fluxo Atual de Atendimento — Canal Online</div>
-          <img src="Gemini_Generated_Image_dui4zjdui4zjdui4.jpg" alt="Fluxo de Atendimento - Canal Online" class="banner-img">
+      <!-- INÍCIO DO FLUXOGRAMA EM HTML/CSS -->
+      <div class="fluxo-wrap">
+        <div class="fluxo-top">
+          <h3>Fluxo atual — Célula de Atendimento | Canal Online</h3>
+          <p>Canais de entrada: WhatsApp e URA</p>
         </div>
+        <div class="fluxo-grid">
+          <div class="fluxo-start-col">
+            <div class="fbox dark"><strong>1. Cliente entra em contato</strong><span>WhatsApp ou URA</span></div>
+          </div>
+          <div class="fluxo-sections">
+
+            <section class="fsec">
+              <h4>Entregas</h4>
+              <div class="fchain">
+                <div class="fbox dark"><strong>2. N1 valida atualizações</strong><span>Protocolo, Uappi e demais registros</span></div>
+                <div class="farrow"></div>
+                <div class="fbox yellow"><strong>3. Há atraso, ocorrência ou informação relevante?</strong></div>
+                <div class="fbranch">
+                  <div class="fbranch-item">
+                    <span class="flabel sim">Sim</span>
+                    <div class="farrow"></div>
+                    <div class="fbox green"><strong>4. Encaminha ao BackOffice — Entregas</strong><span>Solicita atualização correta com a transportadora ou confirmação de dados</span></div>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>5. BackOffice atualiza e retorno no cliente</strong><span>Confirma status e informações</span></div>
+                  </div>
+                  <div class="fbranch-item">
+                    <span class="flabel nao">Não</span>
+                    <div class="farrow"></div>
+                    <div class="fbox dark"><strong>Segue atendimento e orienta cliente</strong></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="fsec">
+              <h4>Trocas e Devoluções</h4>
+              <div class="fchain">
+                <div class="fbox dark"><strong>2. N1 analisa o pedido</strong></div>
+                <div class="farrow"></div>
+                <div class="fbox yellow"><strong>3. Pedido não faturado?</strong></div>
+                <div class="fbranch">
+                  <div class="fbranch-item">
+                    <span class="flabel sim">Sim</span>
+                    <div class="farrow"></div>
+                    <div class="fbox green"><strong>4. N1 bloqueia pedido e gera CSDEVOL</strong></div>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>BackOffice segue para continuidade</strong></div>
+                  </div>
+                  <div class="fbranch-item">
+                    <span class="flabel nao">Não</span>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>4. Pós-recebimento: até 7 dias e produto não instalado?</strong></div>
+                    <div class="fbranch">
+                      <div class="fbranch-item">
+                        <span class="flabel sim">Sim</span>
+                        <div class="farrow"></div>
+                        <div class="fbox green"><strong>5. N1 aprova</strong><span>Informa aprovação; confirma endereço e produto para troca ou dados bancários para cancelamento</span></div>
+                        <div class="farrow"></div>
+                        <div class="fbox cyan"><strong>6. BackOffice analisa e acompanha conclusão</strong></div>
+                      </div>
+                      <div class="fbranch-item">
+                        <span class="flabel nao">Não</span>
+                        <div class="farrow"></div>
+                        <div class="fbox cyan"><strong>5. N1 orienta cliente sobre análise e envia ao BackOffice</strong></div>
+                        <div class="farrow"></div>
+                        <div class="fbox cyan"><strong>6. BackOffice analisa e acompanha conclusão</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="fsec">
+              <h4>Garantia</h4>
+              <div class="fchain">
+                <div class="fbox dark"><strong>2. N1 identifica o tipo de cliente</strong></div>
+                <div class="farrow"></div>
+                <div class="fbox green"><strong>3. Há patrão envolvido?</strong></div>
+                <div class="fbranch">
+                  <div class="fbranch-item">
+                    <span class="flabel sim">Sim</span>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>4. N1 abre solicitação de peças</strong></div>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>BackOffice segue para continuidade</strong></div>
+                  </div>
+                  <div class="fbranch-item">
+                    <span class="flabel nao">Não</span>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>4. Cliente final: encaminha ao BackOffice</strong></div>
+                    <div class="farrow"></div>
+                    <div class="fbox cyan"><strong>5. Necessita ATEC?</strong></div>
+                    <div class="fbranch">
+                      <div class="fbranch-item">
+                        <span class="flabel sim">Sim</span>
+                        <div class="farrow"></div>
+                        <div class="fbox cyan"><strong>6. N1 abre solicitação de ATEC</strong><span>No site do fabricante</span></div>
+                        <div class="farrow"></div>
+                        <div class="fbox cyan"><strong>7. BackOffice acompanha atendimento</strong></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </div>
+        <p class="fnota">Nota: N1 possui autonomia somente nas etapas indicadas no fluxo.</p>
       </div>
-      <!-- FIM DA IMAGEM DO FLUXOGRAMA -->
+      <!-- FIM DO FLUXOGRAMA EM HTML/CSS -->
 
       <div class="mural-header">
         <p class="section-label">📢 Mural de Avisos</p>
