@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Triagem Trocas e Devoluções | Atendimento ON</title>
+  <title>Regras de Decisão | Trocas e Devoluções</title>
   <link rel="icon" type="image" href="LogoLeveros.png">
   <link rel="stylesheet" href="style.css">
   <style>
@@ -28,10 +28,7 @@
       <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
       <nav>
         <ul>
-          <li><a href="index.html">INÍCIO</a></li>
-          <li><a href="lia.html">LIA</a></li>
-          <li><a href="formn1.html">TRIAGEM N1</a></li>
-          <li><a href="#" class="active">TROCAS/DEVOLUÇÕES</a></li>
+          <li><a href="#" class="active">REGRAS TROCAS/DEVOLUÇÕES</a></li>
         </ul>
       </nav>
       <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
@@ -39,8 +36,8 @@
   </header>
 
   <div class="container">
-    <h2>Triagem Atendimento ON | Trocas e Devoluções</h2>
-    <h5>Última atualização: auto</h5>
+    <h2>Regras de Tomada de Decisão | Trocas e Devoluções</h2>
+    <h5>Sem registro em planilha — apenas decisão e orientações</h5>
 
     <div class="layout-wrapper">
       <div class="form-column">
@@ -83,7 +80,7 @@
                   <option>Marketplace</option>
                   <option>Parceiro</option>
                 </select>
-                <small style="opacity:.7">Nota: direito de arrependimento (CDC art. 49) aplica-se a vendas fora do estabelecimento. Ajuste nas regras.</small>
+                <small style="opacity:.7">Nota: art. 49 do CDC aplica-se a vendas fora do estabelecimento.</small>
               </div>
               <div class="form-group">
                 <label for="estadoProduto">Estado do Produto</label>
@@ -162,9 +159,7 @@
             </div>
           </div>
 
-          <div class="form-actions" style="margin-top: 16px; display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btnEnviarPlanilha" onclick="enviarParaSheets()">📤 Enviar para Planilha</button>
-          </div>
+          <!-- Removido: botão de enviar para planilha -->
 
         </div>
       </div>
@@ -172,15 +167,13 @@
   </div>
 
 <script>
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/SEU_SCRIPT/exec'; // TODO: informe sua URL
-
-  // ===== Regras configuráveis =====
+  // ===== Regras configuráveis (pode editar só este bloco) =====
   const RULES = {
     prazos: { arrependimentoDias: 7, avariaHoras: 48, divergFaltanteDias: 7, defeitoInicialDias: 7 },
     canais: {
       'Marketplace': { permiteArrependimento: true },
       'Parceiro': { permiteArrependimento: true },
-      'Loja Própria': { permiteArrependimento: true } // ajuste se a venda for em loja física
+      'Loja Própria': { permiteArrependimento: true } // ajuste conforme política de loja física
     },
     estadoProduto: {
       'LACRADO': { arrependimentoOk: true },
@@ -194,227 +187,121 @@
     }
   };
 
-  function aplicarMascaraCep(input){
-    let v = (input.value || '').replace(/\D/g,'').slice(0,8);
-    if(v.length>5) v = v.slice(0,5) + '-' + v.slice(5);
-    input.value = v;
-  }
+  // ===== Módulo de decisão puro (pode reutilizar sem DOM) =====
+  function decideTrocasDevolucoes(input){
+    const diasEntre = (a,b)=>{ if(!a||!b) return null; const d1=new Date(a+'T00:00:00'); const d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/86400000); };
+    const horasEntre = (a,b)=>{ if(!a||!b) return null; const d1=new Date(a+'T00:00:00'); const d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/3600000); };
 
-  function limparCamposEndereco(){
-    ['ruaForm','bairroForm','cidadeForm','ufForm'].forEach(id=>document.getElementById(id).value='');
-  }
+    const res = { elegivel:false, motivoBloqueio:[], tipoSugerido: input.tipo||'', observacoes:[], requisitos:[], indicadores:[] };
+    if(!input.tipo || !input.motivo){ res.motivoBloqueio.push('Selecione tipo e motivo.'); return res; }
 
-  async function buscarCep(cep){
-    cep = (cep||'').replace(/\D/g,'');
-    if(cep.length!==8){ limparCamposEndereco(); return; }
-    try{
-      const r = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
-      const j = await r.json();
-      if(j.erro){ limparCamposEndereco(); alert('CEP não encontrado.'); return; }
-      document.getElementById('ruaForm').value = j.logradouro||'';
-      document.getElementById('bairroForm').value = j.bairro||'';
-      document.getElementById('cidadeForm').value = j.localidade||'';
-      document.getElementById('ufForm').value = j.uf||'';
-    }catch(e){ limparCamposEndereco(); alert('Erro ao consultar CEP.'); }
-  }
-
-  function carregarMotivos(){
-    const tipo = document.getElementById('tipoAtendimento').value;
-    const sel = document.getElementById('motivo');
-    sel.innerHTML = '';
-    document.getElementById('divMotivo').classList.toggle('hidden', !tipo);
-    if(!tipo) return;
-    const base = [
-      {v:'ARREP_7', t:'Arrependimento (até 7 dias do recebimento)'},
-      {v:'AVARIA', t:'Avaria no transporte (no recebimento)'},
-      {v:'DIVERG', t:'Produto divergente (modelo/voltagem/acessórios)'},
-      {v:'FALTANTE', t:'Item/acessório faltante'},
-      {v:'DEF_7', t:'Defeito até 7 dias'},
-      {v:'DEF_APOS_7', t:'Defeito após 7 dias (encaminhar Garantia)'}
-    ];
-    for(const o of base){ const opt = document.createElement('option'); opt.value=o.v; opt.textContent=o.t; sel.appendChild(opt); }
-    sel.value='';
-  }
-
-  function diasEntre(a,b){ if(!a||!b) return null; const d1=new Date(a+'T00:00:00'); const d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/(1000*60*60*24)); }
-  function horasEntre(a,b){ if(!a||!b) return null; const d1=new Date(a+'T00:00:00'); const d2=new Date(b+'T00:00:00'); return Math.round((d2-d1)/(1000*60*60)); }
-  const get = id => (document.getElementById(id)?.value||'');
-
-  function avaliarRegras(){
-    const tipo = get('tipoAtendimento');
-    const motivo = get('motivo');
-    const receb = get('dataRecebimento');
-    const solic = get('dataSolicitacao');
-    const estado = get('estadoProduto');
-    const canal = get('canal');
-
-    const res = { elegivel:false, motivoBloqueio:[], tipoSugerido: tipo||'', observacoes:[], requisitos:[], indicadores:[] };
-
-    if(!tipo || !motivo){ res.motivoBloqueio.push('Selecione tipo e motivo.'); return res; }
-
-    const d = diasEntre(receb,solic);
-    const h = horasEntre(receb,solic);
+    const d = diasEntre(input.dataRecebimento, input.dataSolicitacao);
+    const h = horasEntre(input.dataRecebimento, input.dataSolicitacao);
     const dentro7 = (d!=null && d<=RULES.prazos.arrependimentoDias && d>=0);
 
-    // Obrigatórios gerais
-    RULES.obrigatorios.sempre.forEach(id=>{ if(!get(id)) res.requisitos.push(id); });
-    // Endereço para coleta
-    ['cepForm','ruaForm','numeroForm','bairroForm','cidadeForm','ufForm'].forEach(id=>{ if(!get(id)) res.requisitos.push(id); });
+    // Obrigatórios
+    (RULES.obrigatorios.sempre||[]).forEach(id=>{ if(!input[id]) res.requisitos.push(id); });
+    ;['cep','rua','numero','bairro','cidade','uf'].forEach(id=>{ if(!input[id]) res.requisitos.push(id); });
+    if((RULES.obrigatorios.evidenciasPara||[]).includes(input.motivo) && !input.evidencias) res.requisitos.push('evidencias');
 
-    // Evidências para alguns motivos
-    if(RULES.obrigatorios.evidenciasPara.includes(motivo) && !get('evidencias')) res.requisitos.push('evidencias');
-
-    // Regras por motivo
-    if(motivo==='ARREP_7'){
-      const allowCanal = !!(RULES.canais[canal]?.permiteArrependimento);
-      const allowEstado = !!(RULES.estadoProduto[estado]?.arrependimentoOk);
+    // Motivos
+    if(input.motivo==='ARREP_7'){
+      const allowCanal = !!(RULES.canais[input.canal]?.permiteArrependimento);
+      const allowEstado = !!(RULES.estadoProduto[input.estadoProduto]?.arrependimentoOk);
       if(!allowCanal) res.motivoBloqueio.push('Canal não elegível para arrependimento.');
       if(!dentro7) res.motivoBloqueio.push('Fora do prazo de 7 dias para arrependimento.');
-      if(!allowEstado) res.motivoBloqueio.push('Estado do produto não permite arrependimento (usado/instalado).');
+      if(!allowEstado) res.motivoBloqueio.push('Estado do produto não permite arrependimento.');
       res.tipoSugerido = 'DEVOLUCAO';
     }
-    else if(motivo==='AVARIA'){
-      if(h==null || h>RULES.prazos.avariaHoras) res.motivoBloqueio.push('Avaria deve ser reportada no ato do recebimento (até 48h).');
-      res.tipoSugerido = tipo || 'TROCA';
+    else if(input.motivo==='AVARIA'){
+      if(h==null || h>RULES.prazos.avariaHoras) res.motivoBloqueio.push('Avaria deve ser reportada até 48h.');
+      res.tipoSugerido = input.tipo || 'TROCA';
     }
-    else if(motivo==='DIVERG'){
+    else if(input.motivo==='DIVERG'){
       if(!dentro7) res.motivoBloqueio.push('Divergência deve ser reportada até 7 dias.');
       res.tipoSugerido = 'TROCA';
     }
-    else if(motivo==='FALTANTE'){
-      if(!dentro7) res.motivoBloqueio.push('Item faltante deve ser reportado até 7 dias.');
+    else if(input.motivo==='FALTANTE'){
+      if(!dentro7) res.motivoBloqueio.push('Item faltante até 7 dias.');
       res.tipoSugerido = 'TROCA';
       res.observacoes.push('Avaliar envio apenas do item faltante quando aplicável.');
     }
-    else if(motivo==='DEF_7'){
-      if(!dentro7) res.motivoBloqueio.push('Defeito inicial fora de 7 dias: direcionar para Garantia.');
+    else if(input.motivo==='DEF_7'){
+      if(!dentro7) res.motivoBloqueio.push('Defeito inicial fora de 7 dias: Garantia.');
       res.tipoSugerido = 'TROCA';
     }
-    else if(motivo==='DEF_APOS_7'){
-      res.motivoBloqueio.push('Defeito após 7 dias: tratar via Garantia/Assistência.');
+    else if(input.motivo==='DEF_APOS_7'){
+      res.motivoBloqueio.push('Defeito após 7 dias: Garantia/Assistência.');
       res.tipoSugerido = 'GARANTIA';
     }
 
-    if(res.requisitos.length){ res.motivoBloqueio.push('Preencha campos obrigatórios: '+res.requisitos.join(', ')); }
-
+    if(res.requisitos.length) res.motivoBloqueio.push('Preencha obrigatórios: '+res.requisitos.join(', '));
     res.elegivel = res.motivoBloqueio.length===0;
     if(res.elegivel) res.indicadores.push('Elegível para '+(res.tipoSugerido==='DEVOLUCAO'?'devolução':'troca'));
-
     return { ...res, dDias:d, hHoras:h };
   }
 
+  // ===== Integração com a UI =====
+  function aplicarMascaraCep(input){ let v=(input.value||'').replace(/\D/g,'').slice(0,8); if(v.length>5) v=v.slice(0,5)+'-'+v.slice(5); input.value=v; }
+  function limparCamposEndereco(){ ['ruaForm','bairroForm','cidadeForm','ufForm'].forEach(id=>document.getElementById(id).value=''); }
+  async function buscarCep(cep){ cep=(cep||'').replace(/\D/g,''); if(cep.length!==8){ limparCamposEndereco(); return; } try{ const r=await fetch(`https://viacep.com.br/ws/${cep}/json/`); const j=await r.json(); if(j.erro){ limparCamposEndereco(); alert('CEP não encontrado.'); return; } document.getElementById('ruaForm').value=j.logradouro||''; document.getElementById('bairroForm').value=j.bairro||''; document.getElementById('cidadeForm').value=j.localidade||''; document.getElementById('ufForm').value=j.uf||''; }catch(e){ limparCamposEndereco(); alert('Erro ao consultar CEP.'); } }
+  function carregarMotivos(){ const tipo=document.getElementById('tipoAtendimento').value; const sel=document.getElementById('motivo'); sel.innerHTML=''; document.getElementById('divMotivo').classList.toggle('hidden', !tipo); if(!tipo) return; const base=[{v:'ARREP_7',t:'Arrependimento (até 7 dias)'},{v:'AVARIA',t:'Avaria no transporte'},{v:'DIVERG',t:'Produto divergente'},{v:'FALTANTE',t:'Item/acessório faltante'},{v:'DEF_7',t:'Defeito até 7 dias'},{v:'DEF_APOS_7',t:'Defeito após 7 dias (Garantia)'}]; for(const o of base){ const opt=document.createElement('option'); opt.value=o.v; opt.textContent=o.t; sel.appendChild(opt);} sel.value=''; }
+  const get = id => (document.getElementById(id)?.value||'');
+
   function avaliarFluxo(){
-    const tipo = get('tipoAtendimento');
-    const motivo = get('motivo');
+    const input = {
+      tipo: get('tipoAtendimento'), motivo: get('motivo'), dataRecebimento: get('dataRecebimento'), dataSolicitacao: get('dataSolicitacao'),
+      canal: get('canal'), estadoProduto: get('estadoProduto'), nfNumero: get('nfNumero'), linkNF: get('linkNF'), evidencias: get('evidencias'),
+      cep: get('cepForm'), rua: get('ruaForm'), numero: get('numeroForm'), complemento: get('complementoForm'), bairro: get('bairroForm'), cidade: get('cidadeForm'), uf: get('ufForm')
+    };
 
-    if(!tipo){ document.getElementById('guiaAcoes').classList.add('hidden'); return; }
+    if(!input.tipo){ document.getElementById('guiaAcoes').classList.add('hidden'); return; }
 
-    // Monta passos informativos básicos (mantidos do layout anterior)
-    const passo = [];
-    let intro = '';
-    let titulo = 'Passos recomendados';
+    const R = decideTrocasDevolucoes(input);
 
-    // Avalia regras
-    const R = avaliarRegras();
+    // Construção de passos e UI
+    const passo=[]; let intro=''; let titulo='Passos recomendados';
+    const mapaTit={ ARREP_7:'Arrependimento de Compra', AVARIA:'Avaria no Transporte', DIVERG:'Produto Divergente', FALTANTE:'Item/Acessório Faltante', DEF_7:'Defeito até 7 dias', DEF_APOS_7:'Defeito após 7 dias' };
+    if(mapaTit[input.motivo]) titulo = mapaTit[input.motivo];
 
-    // Ajusta título/intro baseado no motivo
-    const mapaTit = { ARREP_7:'Arrependimento de Compra', AVARIA:'Avaria no Transporte', DIVERG:'Produto Divergente', FALTANTE:'Item/Acessório Faltante', DEF_7:'Defeito até 7 dias', DEF_APOS_7:'Defeito após 7 dias' };
-    if(mapaTit[motivo]) titulo = mapaTit[motivo];
-
-    // Sugerir passos de acordo com o tipo sugerido
-    if(R.tipoSugerido==='DEVOLUCAO'){
-      intro = 'Processo de devolução — confirmar conferência e condições.';
-      passo.push('Validar integridade e acessórios.');
-      passo.push('Agendar coleta na transportadora.');
-      passo.push('Ao retornar e conferir: acionar reembolso.');
-    } else if(R.tipoSugerido==='TROCA'){
-      intro = 'Processo de troca — coletar e reexpedir produto.';
-      passo.push('Solicitar evidências quando aplicável.');
-      passo.push('Agendar coleta e registrar no pedido.');
-      passo.push('Programar envio do novo item/apenas faltante.');
-    } else if(R.tipoSugerido==='GARANTIA'){
-      intro = 'Direcionar para Garantia conforme política do fabricante.';
-      passo.push('Fornecer contatos e procedimentos da assistência.');
-    }
-
-    // Observações adicionais vindas das regras
+    if(R.tipoSugerido==='DEVOLUCAO'){ intro='Processo de devolução — confirmar conferência e condições.'; passo.push('Validar integridade e acessórios.'); passo.push('Agendar coleta na transportadora.'); passo.push('Ao retornar e conferir: acionar reembolso.'); }
+    else if(R.tipoSugerido==='TROCA'){ intro='Processo de troca — coletar e reexpedir produto.'; passo.push('Solicitar evidências quando aplicável.'); passo.push('Agendar coleta e registrar no pedido.'); passo.push('Programar envio do novo item/apenas faltante.'); }
+    else if(R.tipoSugerido==='GARANTIA'){ intro='Direcionar para Garantia conforme política do fabricante.'; passo.push('Fornecer contatos e procedimentos da assistência.'); }
     R.observacoes.forEach(x=>passo.push(x));
 
-    // UI
-    const guia = document.getElementById('guiaAcoes');
-    guia.classList.remove('hidden');
-    document.getElementById('tituloGuia').textContent = titulo;
+    const guia=document.getElementById('guiaAcoes'); guia.classList.remove('hidden');
+    document.getElementById('tituloGuia').textContent=titulo;
+    const d=(R.dDias!=null?` (Dias desde recebimento: ${R.dDias})`:'');
+    document.getElementById('introGuia').textContent=(intro||'')+d;
 
-    const d = (R.dDias!=null? ` (Dias desde recebimento: ${R.dDias})` : '');
-    document.getElementById('introGuia').textContent = (intro||'') + d;
+    const status=document.getElementById('statusElegibilidade')||document.createElement('div');
+    status.id='statusElegibilidade'; status.className='atec-ajuda';
+    guia.insertBefore(status, document.getElementById('pills'));
+    if(R.elegivel){ status.innerHTML = `<span class="status-ok">Elegível</span> — sugerido: <b>${R.tipoSugerido}</b>`; }
+    else { status.innerHTML = `<span class="status-erro">Não elegível</span> — ${R.motivoBloqueio.join(' | ')}`; }
 
-    const status = document.getElementById('statusElegibilidade');
-    if(R.elegivel){
-      status.innerHTML = `<span class="status-ok">Elegível</span> — sugerido: <b>${R.tipoSugerido}</b>`;
-    } else {
-      status.innerHTML = `<span class="status-erro">Não elegível</span> — ${R.motivoBloqueio.join(' | ')}`;
-    }
-
-    const pills = document.getElementById('pills');
-    pills.innerHTML='';
+    const pills=document.getElementById('pills'); pills.innerHTML='';
     if(R.indicadores){ R.indicadores.forEach(t=>{ const b=document.createElement('span'); b.className='pill'; b.textContent=t; pills.appendChild(b); }); }
 
-    const ol = document.getElementById('passosGuia');
-    ol.innerHTML = '';
+    const ol=document.getElementById('passosGuia'); ol.innerHTML='';
     passo.forEach(p=>{ const li=document.createElement('li'); li.textContent=p; ol.appendChild(li); });
 
-    processarResultado(R);
+    document.getElementById('resumo').value = montarResumo(R, input);
   }
 
-  function montarResumo(R){
-    const dados = {
-      tipo: get('tipoAtendimento'), motivo: get('motivo'), recebimento: get('dataRecebimento'), solicitacao: get('dataSolicitacao'),
-      canal: get('canal'), estadoProduto: get('estadoProduto'), nfNumero: get('nfNumero'), linkNF: get('linkNF'), evidencias: get('evidencias'),
-      endereco: { cep: get('cepForm'), rua: get('ruaForm'), numero: get('numeroForm'), compl: get('complementoForm'), bairro: get('bairroForm'), cidade: get('cidadeForm'), uf: get('ufForm') }
-    };
-    const partes = [];
-    partes.push(`Tipo: ${dados.tipo} | Motivo: ${dados.motivo}`);
-    partes.push(`Recebimento: ${dados.recebimento} | Solicitação: ${dados.solicitacao}`);
-    partes.push(`Canal: ${dados.canal} | Estado: ${dados.estadoProduto}`);
-    partes.push(`NF: ${dados.nfNumero} ${dados.linkNF? '('+dados.linkNF+')':''}`);
-    if(dados.evidencias) partes.push(`Evidências: ${dados.evidencias}`);
-    partes.push(`Endereço coleta: ${dados.endereco.cep} - ${dados.endereco.rua}, ${dados.endereco.numero} ${dados.endereco.compl} - ${dados.endereco.bairro} - ${dados.endereco.cidade}/${dados.endereco.uf}`);
+  function montarResumo(R, input){
+    const partes=[];
+    partes.push(`Tipo: ${input.tipo} | Motivo: ${input.motivo}`);
+    partes.push(`Recebimento: ${input.dataRecebimento} | Solicitação: ${input.dataSolicitacao}`);
+    partes.push(`Canal: ${input.canal} | Estado: ${input.estadoProduto}`);
+    partes.push(`NF: ${input.nfNumero} ${input.linkNF? '('+input.linkNF+')':''}`);
+    if(input.evidencias) partes.push(`Evidências: ${input.evidencias}`);
+    partes.push(`Endereço coleta: ${input.cep} - ${input.rua}, ${input.numero} ${input.complemento} - ${input.bairro} - ${input.cidade}/${input.uf}`);
     if(R){ partes.push(`Elegível: ${R.elegivel? 'Sim':'Não'} | Sugerido: ${R.tipoSugerido}`); if(!R.elegivel) partes.push('Bloqueios: '+R.motivoBloqueio.join(' | ')); }
     return partes.join('\n');
   }
 
-  function processarResultado(R){
-    document.getElementById('resumo').value = montarResumo(R||avaliarRegras());
-  }
-
-  async function copiarResumo(){
-    try{ await navigator.clipboard.writeText(document.getElementById('resumo').value); alert('Resumo copiado.'); }
-    catch(e){ alert('Não foi possível copiar.'); }
-  }
-
-  async function enviarParaSheets(){
-    const btn = document.getElementById('btnEnviarPlanilha');
-    btn.disabled = true; btn.textContent = '⏳ Enviando...';
-    const R = avaliarRegras();
-    const payload = {
-      origem: 'TROCAS_DEV', criadoEm: new Date().toISOString(),
-      tipo: get('tipoAtendimento'), motivo: get('motivo'), dataRecebimento: get('dataRecebimento'), dataSolicitacao: get('dataSolicitacao'),
-      canal: get('canal'), estadoProduto: get('estadoProduto'), nfNumero: get('nfNumero'), linkNF: get('linkNF'), evidencias: get('evidencias'),
-      cep: get('cepForm'), rua: get('ruaForm'), numero: get('numeroForm'), complemento: get('complementoForm'), bairro: get('bairroForm'), cidade: get('cidadeForm'), uf: get('ufForm'),
-      resumo: document.getElementById('resumo').value,
-      regras: { elegivel: R.elegivel, motivoBloqueio: R.motivoBloqueio, tipoSugerido: R.tipoSugerido, diasDesdeReceb: R.dDias, horasDesdeReceb: R.hHoras }
-    };
-    try{
-      const r = await fetch(APPS_SCRIPT_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      const j = await r.json().catch(()=>({ok:false}));
-      if(r.ok && (j.ok!==false)){
-        btn.textContent = '✅ Enviado com Sucesso!';
-      }else{ throw new Error('Falha no retorno'); }
-    }catch(e){
-      alert('Erro ao enviar. Verifique a conexão/URL da planilha.');
-      btn.textContent = '📤 Tentar Novamente'; btn.disabled = false;
-    }
-  }
+  async function copiarResumo(){ try{ await navigator.clipboard.writeText(document.getElementById('resumo').value); alert('Resumo copiado.'); } catch(e){ alert('Não foi possível copiar.'); } }
 </script>
 </body>
 </html>
