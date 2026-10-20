@@ -19,151 +19,149 @@
                         sans: ['Inter', 'sans-serif'],
                     },
                     colors: {
-                        verde1: '#002D32',
-                        verde2: '#005A64',
-                        azul: '#4CDDDD',
-                        verde3: '#6FFFAF',
-                        verde4: '#CEFFAE',
-                        amarelo: '#FFCE00',
+                        // Cores Leveros
+                        leveros: {
+                            v1: '#002D32', // Verde 1 (Dark)
+                            v2: '#005A64', // Verde 2 (Medium Dark)
+                            azul: '#4CDDDD', // Azul (Highlight)
+                            v3: '#6FFFAF', // Verde 3 (Light/Success)
+                            v4: '#CEFFAE', // Verde 4 (Lighter)
+                            amarelo: '#FFCE00' // Amarelo (Warning/Progress)
+                        },
                         background: '#f8fafc',
-                        surface: '#ffffff',
-                        danger: '#ef4444' // Keeping red for potential error states
+                        surface: '#ffffff'
                     }
                 }
             }
         }
     </script>
     <style>
-        /* Custom scrollbar */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        
-        .drag-over {
-            background-color: #f1f5f9;
-            border: 2px dashed #005A64;
-        }
+        ::-webkit-scrollbar-thumb { background: #005A64; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #002D32; }
+        .drag-over { background-color: #f1f5f9; border: 2px dashed #005A64; }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
     </style>
 </head>
 <body class="bg-background text-gray-800 font-sans h-screen flex overflow-hidden">
 
-    <!-- Sidebar -->
-    <aside class="w-64 bg-verde1 text-white flex flex-col hidden md:flex z-20 shadow-lg">
-        <div class="h-16 flex items-center px-6 border-b border-verde2">
-            <i class="fa-solid fa-leaf text-azul text-xl mr-3"></i>
-            <span class="font-bold text-lg">Leveros Flow</span>
-        </div>
-        <nav class="flex-1 p-4 space-y-2">
-            <a href="#" onclick="app.switchTab('dashboard')" id="nav-dashboard" class="nav-item flex items-center px-4 py-3 bg-verde2 text-azul rounded-lg transition-colors">
-                <i class="fa-solid fa-house w-6"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
-            <a href="#" onclick="app.switchTab('tasks')" id="nav-tasks" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:bg-verde2 hover:text-white rounded-lg transition-colors">
-                <i class="fa-solid fa-list-check w-6"></i>
-                <span class="font-medium">Atividades</span>
-            </a>
-            <a href="#" onclick="app.openProjectModal()" class="flex items-center px-4 py-3 text-gray-300 hover:bg-verde2 hover:text-white rounded-lg transition-colors">
-                <i class="fa-solid fa-folder-plus w-6"></i>
-                <span class="font-medium">Novo Projeto</span>
-            </a>
-        </nav>
-        <div class="p-4 border-t border-verde2 bg-verde1">
-            <div class="flex items-center">
-                <div class="w-10 h-10 rounded-full bg-azul text-verde1 flex items-center justify-center font-bold">
-                    AS
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium text-white">Ariany Santos</p>
-                    <p class="text-xs text-azul">Administrador</p>
-                </div>
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 bg-leveros-v1 flex items-center justify-center z-50 transition-opacity duration-300">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center mx-4">
+            <div class="w-20 h-20 bg-leveros-azul rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <i class="fa-solid fa-chart-pie text-leveros-v1 text-4xl"></i>
             </div>
+            <h2 class="text-2xl font-bold text-leveros-v1 mb-2">ProcessFlow Leveros</h2>
+            <p class="text-gray-500 mb-8">Faça login para gerenciar projetos e atividades.</p>
+            
+            <button id="btn-google-login" class="w-full flex items-center justify-center bg-white border-2 border-gray-200 text-gray-700 font-medium py-3 px-4 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" class="w-5 h-5 mr-3">
+                Entrar com Google
+            </button>
         </div>
-    </aside>
+    </div>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
-        <!-- Header -->
-        <header class="h-16 bg-surface border-b border-gray-200 flex items-center justify-between px-6 z-10 shadow-sm">
-            <div class="flex items-center md:hidden">
-                <i class="fa-solid fa-leaf text-verde1 text-xl mr-2"></i>
-                <span class="font-bold text-lg text-verde1">Leveros Flow</span>
+    <!-- MAIN APP APP (Hidden until logged in) -->
+    <div id="app-container" class="flex w-full h-full hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-leveros-v1 text-white flex flex-col hidden md:flex z-20 shadow-xl">
+            <div class="h-16 flex items-center px-6 border-b border-leveros-v2 bg-leveros-v1">
+                <i class="fa-solid fa-chart-pie text-leveros-azul text-xl mr-3"></i>
+                <span class="font-bold text-lg tracking-wide">ProcessFlow</span>
             </div>
-            <h1 id="page-title" class="text-xl font-semibold text-verde1 hidden md:block">Visão Geral</h1>
-            <div class="flex items-center space-x-4">
-                <button onclick="app.openModal()" class="bg-azul hover:bg-teal-400 text-verde1 px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm flex items-center">
-                    <i class="fa-solid fa-plus mr-2"></i> Nova Atividade
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" onclick="window.app.switchTab('dashboard')" id="nav-dashboard" class="nav-item flex items-center px-4 py-3 bg-leveros-v2 text-white rounded-lg transition-colors border-l-4 border-leveros-azul">
+                    <i class="fa-solid fa-house w-6 text-leveros-azul"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" onclick="window.app.switchTab('tasks')" id="nav-tasks" class="nav-item flex items-center px-4 py-3 text-gray-300 hover:bg-leveros-v2 hover:text-white rounded-lg transition-colors border-l-4 border-transparent">
+                    <i class="fa-solid fa-list-check w-6"></i>
+                    <span class="font-medium">Atividades</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-leveros-v2 bg-leveros-v1">
+                <div class="flex items-center">
+                    <img id="user-photo" src="https://placehold.co/100x100/4CDDDD/002D32?text=U" alt="User" class="w-10 h-10 rounded-full border-2 border-leveros-azul object-cover">
+                    <div class="ml-3 overflow-hidden">
+                        <p id="user-name" class="text-sm font-medium text-white truncate">Usuário</p>
+                        <button id="btn-logout" class="text-xs text-leveros-azul hover:text-white transition-colors mt-1">Sair da conta</button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden relative bg-gray-50">
+            <!-- Header -->
+            <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 shadow-sm">
+                <div class="flex items-center md:hidden">
+                    <i class="fa-solid fa-chart-pie text-leveros-v1 text-xl mr-2"></i>
+                    <span class="font-bold text-lg text-leveros-v1">ProcessFlow</span>
+                </div>
+                <h1 id="page-title" class="text-xl font-bold text-leveros-v1 hidden md:block">Visão Geral</h1>
+                <div class="flex items-center space-x-4">
+                    <button onclick="window.app.openModal()" class="bg-leveros-v2 hover:bg-leveros-v1 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-all shadow-md flex items-center">
+                        <i class="fa-solid fa-plus mr-2 text-leveros-azul"></i> Nova Atividade
+                    </button>
+                </div>
+            </header>
+
+            <!-- Dynamic Content Area -->
+            <div id="content-area" class="flex-1 overflow-y-auto p-6">
+                <!-- Content injected via JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Form -->
+    <div id="task-modal" class="fixed inset-0 bg-leveros-v1 bg-opacity-80 hidden flex items-center justify-center z-50 transition-opacity backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-leveros-v1">Distribuir Nova Atividade</h3>
+                <button onclick="window.app.closeModal()" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
                 </button>
             </div>
-        </header>
-
-        <!-- Dynamic Content Area -->
-        <div id="content-area" class="flex-1 overflow-y-auto p-6">
-            <!-- Content injected via JS -->
-        </div>
-    </main>
-
-    <!-- Modal Form (Task) -->
-    <div id="task-modal" class="fixed inset-0 bg-verde1 bg-opacity-80 hidden flex items-center justify-center z-50 transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-verde1 text-white">
-                <h3 class="text-lg font-semibold">Distribuir Nova Atividade</h3>
-                <button onclick="app.closeModal()" class="text-gray-300 hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            <div class="overflow-y-auto flex-1">
-                <form id="task-form" class="p-6 space-y-4" onsubmit="app.submitTask(event)">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-bold text-verde1 mb-1">Título da Atividade</label>
-                            <input type="text" id="task-title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul focus:border-transparent">
+            <div class="overflow-y-auto p-6">
+                <form id="task-form" class="space-y-5" onsubmit="window.app.submitTask(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="col-span-1 md:col-span-2">
+                            <label class="block text-sm font-bold text-leveros-v2 mb-1">Título da Atividade *</label>
+                            <input type="text" id="task-title" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-leveros-azul focus:border-transparent bg-gray-50" placeholder="Ex: Mapeamento de Processos">
                         </div>
                         
                         <div>
-                            <label class="block text-sm font-bold text-verde1 mb-1">Projeto</label>
-                            <select id="task-project" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul">
-                                <!-- Injected via JS -->
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-verde1 mb-1">Responsável</label>
-                            <select id="task-assignee" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul">
-                                <!-- Injected via JS -->
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-verde1 mb-1">Status Inicial</label>
-                            <select id="task-status" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul">
-                                <option value="pending">Pendente</option>
-                                <option value="in-progress">Em Andamento</option>
-                                <option value="validated">Validado</option>
-                            </select>
+                            <label class="block text-sm font-bold text-leveros-v2 mb-1">Projeto Relacionado *</label>
+                            <input type="text" id="task-project" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-leveros-azul focus:border-transparent bg-gray-50" placeholder="Nome do Projeto (ex: Migração ERP)">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-bold text-verde1 mb-1">Prazo de Entrega</label>
-                            <input type="date" id="task-date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul">
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-bold text-verde1 mb-1">Observações</label>
-                            <textarea id="task-obs" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul" placeholder="Detalhes ou observações da atividade..."></textarea>
-                        </div>
-
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-bold text-verde1 mb-1">Sugestões de Melhorias</label>
-                            <textarea id="task-sug" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul" placeholder="Ideias para otimizar este processo..."></textarea>
+                            <label class="block text-sm font-bold text-leveros-v2 mb-1">Responsável *</label>
+                            <select id="task-assignee" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-leveros-azul focus:border-transparent bg-gray-50">
+                                <option value="Ariany Santos">Ariany Santos</option>
+                                <option value="Priscila Baldo">Priscila Baldo</option>
+                                <option value="Matheus Alves">Matheus Alves</option>
+                                <option value="Alessandra Mincov">Alessandra Mincov</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="pt-4 flex justify-end space-x-3 border-t border-gray-100 mt-6">
-                        <button type="button" onclick="app.closeModal()" class="px-4 py-2 text-sm font-bold text-verde2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none">
+                    <div>
+                        <label class="block text-sm font-bold text-leveros-v2 mb-1">Observações Gerais</label>
+                        <textarea id="task-obs" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-leveros-azul focus:border-transparent bg-gray-50" placeholder="Detalhes, links ou instruções..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-leveros-v2 mb-1">Sugestões de Melhorias</label>
+                        <textarea id="task-sug" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-leveros-azul focus:border-transparent bg-gray-50" placeholder="Ideias para otimizar esse processo..."></textarea>
+                    </div>
+
+                    <div class="pt-4 border-t border-gray-200 flex justify-end space-x-3">
+                        <button type="button" onclick="window.app.closeModal()" class="px-5 py-2.5 text-sm font-bold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 focus:outline-none transition-colors">
                             Cancelar
                         </button>
-                        <button type="submit" class="px-4 py-2 text-sm font-bold text-verde1 bg-azul rounded-lg hover:bg-teal-400 focus:outline-none shadow">
+                        <button type="submit" class="px-5 py-2.5 text-sm font-bold text-leveros-v1 bg-leveros-azul rounded-xl hover:bg-[#3bc2c2] focus:outline-none shadow-md transition-colors">
                             Salvar Atividade
                         </button>
                     </div>
@@ -172,61 +170,116 @@
         </div>
     </div>
 
-    <!-- Modal Form (Project) -->
-    <div id="project-modal" class="fixed inset-0 bg-verde1 bg-opacity-80 hidden flex items-center justify-center z-50 transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden flex flex-col">
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-verde2 text-white">
-                <h3 class="text-lg font-semibold">Novo Projeto</h3>
-                <button onclick="app.closeProjectModal()" class="text-gray-300 hover:text-white transition-colors">
-                    <i class="fa-solid fa-xmark text-xl"></i>
-                </button>
-            </div>
-            <form id="project-form" class="p-6 space-y-4" onsubmit="app.submitProject(event)">
-                <div>
-                    <label class="block text-sm font-bold text-verde1 mb-1">Nome do Projeto</label>
-                    <input type="text" id="project-name" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-azul">
-                </div>
-                <div class="pt-4 flex justify-end space-x-3">
-                    <button type="button" onclick="app.closeProjectModal()" class="px-4 py-2 text-sm font-bold text-verde2 bg-gray-100 border border-gray-300 rounded-lg hover:bg-gray-200 focus:outline-none">
-                        Cancelar
-                    </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-bold text-verde1 bg-azul rounded-lg hover:bg-teal-400 focus:outline-none shadow">
-                        Adicionar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Firebase SDK & App Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 
-    <script>
-        const app = {
+        // Handle global vars from environment if present, otherwise use mock config to prevent crash
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "mock-key",
+            authDomain: "mock-domain.firebaseapp.com",
+            projectId: "mock-project"
+        };
+
+        let app, auth, provider;
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            provider = new GoogleAuthProvider();
+        } catch(e) {
+            console.warn("Firebase initialization skipped or failed. Using mock auth mode.", e);
+        }
+
+        // Main App Logic Object attached to window for HTML event handlers
+        window.app = {
+            currentUser: null,
             state: {
-                currentTab: 'dashboard',
-                users: ['Ariany Santos', 'Priscila Baldo', 'Matheus Alves', 'Alessandra Mincov'],
-                projects: ['Otimização de Frota', 'Expansão B2B', 'Campanha Black Friday'],
+                currentTab: 'tasks',
                 tasks: [
-                    { id: 'T1', title: 'Mapeamento de Rotas', project: 'Otimização de Frota', assignee: 'Matheus Alves', status: 'pending', date: '2026-10-25', obs: 'Verificar planilhas antigas.', sug: 'Integrar API do Maps.' },
-                    { id: 'T2', title: 'Análise de Concorrência', project: 'Expansão B2B', assignee: 'Priscila Baldo', status: 'in-progress', date: '2026-10-22', obs: '', sug: '' },
-                    { id: 'T3', title: 'Revisão de Criativos', project: 'Campanha Black Friday', assignee: 'Ariany Santos', status: 'validated', date: '2026-10-18', obs: 'Aprovado pela diretoria.', sug: 'Criar templates no Figma.' },
-                    { id: 'T4', title: 'Levantamento de Leads', project: 'Expansão B2B', assignee: 'Alessandra Mincov', status: 'pending', date: '2026-10-26', obs: '', sug: '' }
+                    { id: 'T1', title: 'Atualização do Sistema', project: 'Gestão de Projetos', assignee: 'Ariany Santos', status: 'in-progress', creator: 'Sistema', obs: '', sug: 'Usar paleta Leveros' },
+                    { id: 'T2', title: 'Validação de Base de Clientes', project: 'CRM Integrado', assignee: 'Matheus Alves', status: 'pending', creator: 'Sistema', obs: 'Analisar inconsistências', sug: '' },
+                    { id: 'T3', title: 'Treinamento Equipe Comercial', project: 'Expansão Q4', assignee: 'Priscila Baldo', status: 'validated', creator: 'Sistema', obs: 'Realizado online', sug: 'Gravar próximas sessões' }
                 ]
             },
 
             init() {
-                this.render();
+                this.setupAuth();
+            },
+
+            setupAuth() {
+                const loginScreen = document.getElementById('login-screen');
+                const appContainer = document.getElementById('app-container');
+                const btnLogin = document.getElementById('btn-google-login');
+                const btnLogout = document.getElementById('btn-logout');
+
+                // Mock login for environments where popup is blocked (like iframes)
+                const mockLogin = () => {
+                    this.handleLoginSuccess({
+                        displayName: 'Usuário Leveros',
+                        photoURL: 'https://placehold.co/100x100/4CDDDD/002D32?text=UL',
+                        email: 'user@leveros.com'
+                    });
+                };
+
+                btnLogin.addEventListener('click', async () => {
+                    if (!auth) { mockLogin(); return; }
+                    try {
+                        // Attempt real Google Auth
+                        const result = await signInWithPopup(auth, provider);
+                        this.handleLoginSuccess(result.user);
+                    } catch (error) {
+                        console.error("Auth error, falling back to mock login.", error);
+                        // Fallback for iframe restrictions
+                        mockLogin();
+                    }
+                });
+
+                btnLogout.addEventListener('click', () => {
+                    if (auth) signOut(auth);
+                    this.currentUser = null;
+                    appContainer.classList.add('hidden');
+                    loginScreen.classList.remove('hidden');
+                });
+
+                if (auth) {
+                    onAuthStateChanged(auth, (user) => {
+                        if (user) {
+                            this.handleLoginSuccess(user);
+                        }
+                    });
+                }
+            },
+
+            handleLoginSuccess(user) {
+                this.currentUser = user;
+                document.getElementById('user-name').textContent = user.displayName || 'Usuário';
+                if(user.photoURL) {
+                    document.getElementById('user-photo').src = user.photoURL;
+                }
+                
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                
+                this.switchTab('tasks'); // Default to tasks
             },
 
             switchTab(tab) {
                 this.state.currentTab = tab;
+                
+                // Update Nav UI
                 document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('bg-verde2', 'text-azul');
-                    el.classList.add('text-gray-300');
+                    el.classList.remove('bg-leveros-v2', 'text-white', 'border-leveros-azul');
+                    el.classList.add('text-gray-300', 'border-transparent');
+                    el.querySelector('i').classList.remove('text-leveros-azul');
                 });
                 const activeNav = document.getElementById(`nav-${tab}`);
                 if(activeNav) {
-                    activeNav.classList.remove('text-gray-300', 'hover:bg-verde2', 'hover:text-white');
-                    activeNav.classList.add('bg-verde2', 'text-azul');
+                    activeNav.classList.remove('text-gray-300', 'border-transparent');
+                    activeNav.classList.add('bg-leveros-v2', 'text-white', 'border-leveros-azul');
+                    activeNav.querySelector('i').classList.add('text-leveros-azul');
                 }
+
                 document.getElementById('page-title').innerText = tab === 'dashboard' ? 'Visão Geral' : 'Controle de Atividades (Kanban)';
                 this.render();
             },
@@ -245,67 +298,20 @@
                 const pending = this.state.tasks.filter(t => t.status === 'pending').length;
                 const inProgress = this.state.tasks.filter(t => t.status === 'in-progress').length;
                 const validated = this.state.tasks.filter(t => t.status === 'validated').length;
-                const total = this.state.tasks.length;
 
                 return `
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-verde1">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-sm font-bold text-gray-500">Total Atividades</p><h3 class="text-3xl font-black text-verde1 mt-1">${total}</h3></div>
-                                <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-verde1"><i class="fa-solid fa-layer-group"></i></div>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-gray-400">
+                            <p class="text-sm font-bold text-gray-500 uppercase">Pendentes</p>
+                            <h3 class="text-4xl font-bold text-leveros-v1 mt-2">${pending}</h3>
                         </div>
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-amarelo">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-sm font-bold text-gray-500">Pendentes</p><h3 class="text-3xl font-black text-verde1 mt-1">${pending}</h3></div>
-                                <div class="w-10 h-10 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600"><i class="fa-regular fa-clock"></i></div>
-                            </div>
+                        <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-leveros-amarelo">
+                            <p class="text-sm font-bold text-gray-500 uppercase">Em Andamento</p>
+                            <h3 class="text-4xl font-bold text-leveros-v1 mt-2">${inProgress}</h3>
                         </div>
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-azul">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-sm font-bold text-gray-500">Em Andamento</p><h3 class="text-3xl font-black text-verde1 mt-1">${inProgress}</h3></div>
-                                <div class="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600"><i class="fa-solid fa-spinner"></i></div>
-                            </div>
-                        </div>
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-verde3">
-                            <div class="flex justify-between items-start">
-                                <div><p class="text-sm font-bold text-gray-500">Validados</p><h3 class="text-3xl font-black text-verde1 mt-1">${validated}</h3></div>
-                                <div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center text-green-600"><i class="fa-solid fa-check-double"></i></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                            <h3 class="text-lg font-bold text-verde1">Atividades Recentes</h3>
-                            <button onclick="app.switchTab('tasks')" class="text-sm text-verde2 hover:text-azul font-bold">Ver Kanban</button>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead>
-                                    <tr class="bg-verde1 text-white text-sm uppercase tracking-wider">
-                                        <th class="px-6 py-3 font-medium">Atividade</th>
-                                        <th class="px-6 py-3 font-medium">Projeto</th>
-                                        <th class="px-6 py-3 font-medium">Responsável</th>
-                                        <th class="px-6 py-3 font-medium">Status</th>
-                                        <th class="px-6 py-3 font-medium text-right">Prazo</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200">
-                                    ${this.state.tasks.slice(0,5).map(task => `
-                                        <tr class="hover:bg-gray-50 transition-colors">
-                                            <td class="px-6 py-4 text-sm font-bold text-verde1">${task.title}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-600">${task.project}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-600 flex items-center">
-                                                <div class="w-6 h-6 rounded-full bg-verde2 text-azul flex items-center justify-center text-xs mr-2 font-bold">${task.assignee.charAt(0)}</div>
-                                                ${task.assignee}
-                                            </td>
-                                            <td class="px-6 py-4 text-sm">${this.getStatusBadge(task.status)}</td>
-                                            <td class="px-6 py-4 text-sm text-gray-500 text-right font-medium">${this.formatDate(task.date)}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
+                        <div class="bg-white rounded-2xl shadow-sm p-6 border-l-4 border-leveros-v3">
+                            <p class="text-sm font-bold text-gray-500 uppercase">Validados</p>
+                            <h3 class="text-4xl font-bold text-leveros-v1 mt-2">${validated}</h3>
                         </div>
                     </div>
                 `;
@@ -313,13 +319,16 @@
 
             getKanbanHTML() {
                 const getColumnTasks = (status) => this.state.tasks.filter(t => t.status === status).map(t => this.getTaskCardHTML(t)).join('');
+                
                 return `
                     <div class="flex flex-col md:flex-row gap-6 h-full pb-4">
                         <!-- Pendentes -->
-                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                            <div class="p-4 border-b-4 border-amarelo bg-white flex justify-between items-center">
-                                <h3 class="font-bold text-verde1 flex items-center">Pendentes</h3>
-                                <span class="bg-amarelo text-verde1 text-xs font-black px-2 py-1 rounded">${this.state.tasks.filter(t=>t.status==='pending').length}</span>
+                        <div class="flex-1 flex flex-col bg-gray-200/50 rounded-2xl border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white/60 rounded-t-2xl flex justify-between items-center">
+                                <h3 class="font-bold text-leveros-v1 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-gray-400 mr-2 shadow-sm"></span>Pendentes
+                                </h3>
+                                <span class="bg-white text-leveros-v1 shadow-sm text-xs font-bold px-3 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='pending').length}</span>
                             </div>
                             <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="pending">
                                 ${getColumnTasks('pending')}
@@ -327,10 +336,12 @@
                         </div>
 
                         <!-- Em Andamento -->
-                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                            <div class="p-4 border-b-4 border-azul bg-white flex justify-between items-center">
-                                <h3 class="font-bold text-verde1 flex items-center">Em Andamento</h3>
-                                <span class="bg-azul text-verde1 text-xs font-black px-2 py-1 rounded">${this.state.tasks.filter(t=>t.status==='in-progress').length}</span>
+                        <div class="flex-1 flex flex-col bg-gray-200/50 rounded-2xl border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white/60 rounded-t-2xl flex justify-between items-center">
+                                <h3 class="font-bold text-leveros-v1 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-leveros-amarelo mr-2 shadow-sm"></span>Em Andamento
+                                </h3>
+                                <span class="bg-white text-leveros-v1 shadow-sm text-xs font-bold px-3 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='in-progress').length}</span>
                             </div>
                             <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="in-progress">
                                 ${getColumnTasks('in-progress')}
@@ -338,10 +349,12 @@
                         </div>
 
                         <!-- Validados -->
-                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200 shadow-sm">
-                            <div class="p-4 border-b-4 border-verde3 bg-white flex justify-between items-center">
-                                <h3 class="font-bold text-verde1 flex items-center">Validados</h3>
-                                <span class="bg-verde3 text-verde1 text-xs font-black px-2 py-1 rounded">${this.state.tasks.filter(t=>t.status==='validated').length}</span>
+                        <div class="flex-1 flex flex-col bg-gray-200/50 rounded-2xl border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white/60 rounded-t-2xl flex justify-between items-center">
+                                <h3 class="font-bold text-leveros-v1 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-leveros-v3 mr-2 shadow-sm"></span>Validados
+                                </h3>
+                                <span class="bg-white text-leveros-v1 shadow-sm text-xs font-bold px-3 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='validated').length}</span>
                             </div>
                             <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="validated">
                                 ${getColumnTasks('validated')}
@@ -352,103 +365,78 @@
             },
 
             getTaskCardHTML(task) {
-                let extraContent = '';
-                if(task.obs) extraContent += `<p class="text-xs text-gray-500 mt-2 bg-gray-50 p-1.5 rounded"><span class="font-bold">Obs:</span> ${task.obs}</p>`;
-                if(task.sug) extraContent += `<p class="text-xs text-verde2 mt-1 bg-verde4 p-1.5 rounded bg-opacity-30"><span class="font-bold">Sugestão:</span> ${task.sug}</p>`;
+                // Determine border color based on status
+                let borderClass = 'border-l-4 border-gray-300';
+                if(task.status === 'in-progress') borderClass = 'border-l-4 border-leveros-amarelo';
+                if(task.status === 'validated') borderClass = 'border-l-4 border-leveros-v3';
 
                 return `
-                    <div class="bg-white p-4 rounded-lg shadow border border-gray-200 cursor-grab hover:shadow-md transition-shadow task-card flex flex-col" draggable="true" data-id="${task.id}">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="text-[10px] font-bold px-2 py-1 bg-gray-100 text-verde2 rounded uppercase">${task.project}</span>
-                            <span class="text-[10px] text-gray-400 font-bold">${this.formatDate(task.date)}</span>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 ${borderClass} cursor-grab hover:shadow-md transition-all task-card" draggable="true" data-id="${task.id}">
+                        <!-- PROMINENT PROJECT BADGE -->
+                        <div class="mb-3 inline-block">
+                            <span class="bg-leveros-v1 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
+                                <i class="fa-solid fa-folder-open mr-1 text-leveros-azul"></i> ${task.project}
+                            </span>
                         </div>
-                        <h4 class="font-bold text-verde1 mb-2 leading-snug">${task.title}</h4>
-                        ${extraContent}
-                        <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-100">
-                            <div class="flex items-center" title="${task.assignee}">
-                                <div class="w-6 h-6 rounded-full bg-verde1 text-white flex items-center justify-center text-xs font-bold">${task.assignee.charAt(0)}</div>
-                                <span class="text-xs font-bold text-verde1 ml-2 truncate max-w-[100px]">${task.assignee.split(' ')[0]}</span>
+                        
+                        <h4 class="font-bold text-gray-900 mb-2 text-base leading-snug">${task.title}</h4>
+                        
+                        ${task.obs ? `<p class="text-xs text-gray-500 mb-1"><strong class="text-leveros-v2">Obs:</strong> ${task.obs}</p>` : ''}
+                        ${task.sug ? `<p class="text-xs text-gray-500 mb-3"><strong class="text-leveros-v2">Ideia:</strong> ${task.sug}</p>` : ''}
+                        
+                        <div class="mt-4 pt-3 border-t border-gray-100 flex flex-col gap-2">
+                            <div class="flex justify-between items-center w-full">
+                                <div class="flex items-center" title="Responsável: ${task.assignee}">
+                                    <div class="w-8 h-8 rounded-full bg-leveros-v2 text-white flex items-center justify-center text-xs font-bold shadow-sm">${task.assignee.split(' ').map(n=>n[0]).join('').substring(0,2)}</div>
+                                    <span class="text-xs font-medium text-gray-700 ml-2">${task.assignee}</span>
+                                </div>
+                                <div class="flex space-x-1">
+                                    ${task.status !== 'pending' ? `<button onclick="window.app.moveTask('${task.id}', 'pending')" class="w-7 h-7 rounded bg-gray-50 text-gray-500 hover:text-leveros-v1 hover:bg-gray-200 flex items-center justify-center transition-colors" title="Mover para Pendente"><i class="fa-solid fa-arrow-left text-xs"></i></button>` : ''}
+                                    ${task.status === 'pending' ? `<button onclick="window.app.moveTask('${task.id}', 'in-progress')" class="w-7 h-7 rounded bg-gray-50 text-gray-500 hover:text-leveros-amarelo hover:bg-yellow-50 flex items-center justify-center transition-colors" title="Mover para Em Andamento"><i class="fa-solid fa-arrow-right text-xs"></i></button>` : ''}
+                                    ${task.status === 'in-progress' ? `<button onclick="window.app.moveTask('${task.id}', 'validated')" class="w-7 h-7 rounded bg-gray-50 text-gray-500 hover:text-leveros-v3 hover:bg-green-50 flex items-center justify-center transition-colors" title="Validar Processo"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
+                                </div>
                             </div>
-                            <div class="flex space-x-1">
-                                ${task.status !== 'pending' ? `<button onclick="app.moveTask('${task.id}', 'pending')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:bg-amarelo hover:text-verde1 flex items-center justify-center"><i class="fa-solid fa-arrow-left text-xs"></i></button>` : ''}
-                                ${task.status === 'pending' ? `<button onclick="app.moveTask('${task.id}', 'in-progress')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:bg-azul hover:text-verde1 flex items-center justify-center"><i class="fa-solid fa-arrow-right text-xs"></i></button>` : ''}
-                                ${task.status === 'in-progress' ? `<button onclick="app.moveTask('${task.id}', 'validated')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:bg-verde3 hover:text-verde1 flex items-center justify-center"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
-                            </div>
+                            <div class="text-[10px] text-gray-400 mt-1">Registrado por: ${task.creator}</div>
                         </div>
                     </div>
                 `;
             },
 
-            getStatusBadge(status) {
-                switch(status) {
-                    case 'pending': return '<span class="px-2 py-1 bg-yellow-50 text-yellow-700 border border-amarelo rounded text-xs font-bold">Pendente</span>';
-                    case 'in-progress': return '<span class="px-2 py-1 bg-teal-50 text-teal-700 border border-azul rounded text-xs font-bold">Em Andamento</span>';
-                    case 'validated': return '<span class="px-2 py-1 bg-green-50 text-green-700 border border-verde3 rounded text-xs font-bold">Validado</span>';
-                }
-            },
-
-            formatDate(dateString) {
-                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-                return new Date(dateString).toLocaleDateString('pt-BR', options);
-            },
-
-            populateDropdowns() {
-                const projSelect = document.getElementById('task-project');
-                projSelect.innerHTML = this.state.projects.map(p => `<option value="${p}">${p}</option>`).join('');
-                
-                const userSelect = document.getElementById('task-assignee');
-                userSelect.innerHTML = this.state.users.map(u => `<option value="${u}">${u}</option>`).join('');
-            },
-
             openModal() {
-                this.populateDropdowns();
-                document.getElementById('task-date').valueAsDate = new Date();
                 document.getElementById('task-modal').classList.remove('hidden');
             },
+
             closeModal() {
                 document.getElementById('task-modal').classList.add('hidden');
                 document.getElementById('task-form').reset();
             },
 
-            openProjectModal() {
-                document.getElementById('project-modal').classList.remove('hidden');
-            },
-            closeProjectModal() {
-                document.getElementById('project-modal').classList.add('hidden');
-                document.getElementById('project-form').reset();
-            },
-
             submitTask(e) {
                 e.preventDefault();
+                const creatorName = this.currentUser ? (this.currentUser.displayName || 'Usuário Logado') : 'Desconhecido';
+                
                 const newTask = {
-                    id: 'T' + (this.state.tasks.length + 1),
+                    id: 'T' + Date.now(),
                     title: document.getElementById('task-title').value,
                     project: document.getElementById('task-project').value,
                     assignee: document.getElementById('task-assignee').value,
-                    status: document.getElementById('task-status').value,
-                    date: document.getElementById('task-date').value,
+                    status: 'pending',
                     obs: document.getElementById('task-obs').value,
-                    sug: document.getElementById('task-sug').value
+                    sug: document.getElementById('task-sug').value,
+                    creator: creatorName
                 };
+                
                 this.state.tasks.unshift(newTask);
                 this.closeModal();
-                if(this.state.currentTab !== 'tasks') this.switchTab('tasks');
-                else this.render();
-            },
-
-            submitProject(e) {
-                e.preventDefault();
-                const newProject = document.getElementById('project-name').value;
-                if(newProject && !this.state.projects.includes(newProject)) {
-                    this.state.projects.push(newProject);
-                }
-                this.closeProjectModal();
-                alert(`Projeto "${newProject}" criado com sucesso!`);
+                this.render();
             },
 
             moveTask(id, newStatus) {
                 const task = this.state.tasks.find(t => t.id === id);
-                if(task) { task.status = newStatus; this.render(); }
+                if(task) {
+                    task.status = newStatus;
+                    this.render();
+                }
             },
 
             setupDragAndDrop() {
@@ -468,20 +456,27 @@
 
                 columns.forEach(col => {
                     col.addEventListener('dragover', (e) => {
-                        e.preventDefault(); col.classList.add('drag-over');
+                        e.preventDefault();
+                        col.classList.add('drag-over');
                     });
-                    col.addEventListener('dragleave', () => col.classList.remove('drag-over'));
+                    col.addEventListener('dragleave', () => {
+                        col.classList.remove('drag-over');
+                    });
                     col.addEventListener('drop', (e) => {
                         e.preventDefault();
                         col.classList.remove('drag-over');
                         const id = e.dataTransfer.getData('text/plain');
-                        this.moveTask(id, col.dataset.status);
+                        const newStatus = col.dataset.status;
+                        this.moveTask(id, newStatus);
                     });
                 });
             }
         };
 
-        document.addEventListener('DOMContentLoaded', () => app.init());
+        // Initialize when DOM is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            window.app.init();
+        });
     </script>
 </body>
 </html>
