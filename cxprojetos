@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Controle Gerencial</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#475569',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        background: '#f8fafc',
+                        surface: '#ffffff'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        /* Drag and Drop styles */
+        .drag-over {
+            background-color: #e2e8f0;
+            border: 2px dashed #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background text-gray-800 font-sans h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-surface border-r border-gray-200 flex flex-col hidden md:flex z-20">
+        <div class="h-16 flex items-center px-6 border-b border-gray-200">
+            <i class="fa-solid fa-chart-pie text-primary text-xl mr-3"></i>
+            <span class="font-bold text-lg text-gray-800">ProcessFlow</span>
+        </div>
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" onclick="app.switchTab('dashboard')" id="nav-dashboard" class="nav-item flex items-center px-4 py-3 bg-blue-50 text-primary rounded-lg transition-colors">
+                <i class="fa-solid fa-house w-6"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="#" onclick="app.switchTab('tasks')" id="nav-tasks" class="nav-item flex items-center px-4 py-3 text-secondary hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                <i class="fa-solid fa-list-check w-6"></i>
+                <span class="font-medium">Atividades</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-secondary hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                <i class="fa-solid fa-folder-open w-6"></i>
+                <span class="font-medium">Projetos</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 text-secondary hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                <i class="fa-solid fa-users w-6"></i>
+                <span class="font-medium">Equipe</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200">
+            <div class="flex items-center">
+                <div class="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center font-bold">
+                    AD
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-900">Analista de Dados</p>
+                    <p class="text-xs text-gray-500">Validador Master</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden relative">
+        <!-- Header -->
+        <header class="h-16 bg-surface border-b border-gray-200 flex items-center justify-between px-6 z-10">
+            <div class="flex items-center md:hidden">
+                <i class="fa-solid fa-chart-pie text-primary text-xl mr-2"></i>
+                <span class="font-bold text-lg">ProcessFlow</span>
+            </div>
+            <h1 id="page-title" class="text-xl font-semibold hidden md:block">Visão Geral</h1>
+            <div class="flex items-center space-x-4">
+                <button onclick="app.openModal()" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center">
+                    <i class="fa-solid fa-plus mr-2"></i> Nova Atividade
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Content Area -->
+        <div id="content-area" class="flex-1 overflow-y-auto p-6">
+            <!-- Content injected via JS -->
+        </div>
+    </main>
+
+    <!-- Modal Form (Hidden by default) -->
+    <div id="task-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50 transition-opacity">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-900">Distribuir Nova Atividade</h3>
+                <button onclick="app.closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form id="task-form" class="p-6 space-y-4" onsubmit="app.submitTask(event)">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Título do Processo/Atividade</label>
+                    <input type="text" id="task-title" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Ex: Validação de Base de Clientes">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Projeto Relacionado</label>
+                    <select id="task-project" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="Projeto Apolo">Projeto Apolo</option>
+                        <option value="Migração ERP">Migração ERP</option>
+                        <option value="Auditoria Q3">Auditoria Q3</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Responsável</label>
+                    <select id="task-assignee" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                        <option value="Carlos Silva">Carlos Silva (Analista Jr)</option>
+                        <option value="Ana Mendes">Ana Mendes (Eng. de Dados)</option>
+                        <option value="Roberto Costa">Roberto Costa (QA)</option>
+                    </select>
+                </div>
+                <div class="flex space-x-4">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prazo de Entrega</label>
+                        <input type="date" id="task-date" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                    </div>
+                </div>
+                <div class="pt-4 flex justify-end space-x-3">
+                    <button type="button" onclick="app.closeModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        Distribuir Atividade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // App State and Logic
+        const app = {
+            state: {
+                currentTab: 'dashboard',
+                tasks: [
+                    { id: 'T1', title: 'Extração de Dados CRM', project: 'Migração ERP', assignee: 'Carlos Silva', status: 'pending', date: '2026-10-25' },
+                    { id: 'T2', title: 'Validação de Regras de Negócio', project: 'Projeto Apolo', assignee: 'Ana Mendes', status: 'in-progress', date: '2026-10-22' },
+                    { id: 'T3', title: 'Conciliação de Relatórios', project: 'Auditoria Q3', assignee: 'Roberto Costa', status: 'validated', date: '2026-10-18' },
+                    { id: 'T4', title: 'Limpeza de Dados Inconsistentes', project: 'Migração ERP', assignee: 'Carlos Silva', status: 'pending', date: '2026-10-26' }
+                ]
+            },
+
+            init() {
+                // Set default date in form
+                document.getElementById('task-date').valueAsDate = new Date();
+                this.render();
+            },
+
+            switchTab(tab) {
+                this.state.currentTab = tab;
+                
+                // Update Nav UI
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('bg-blue-50', 'text-primary');
+                    el.classList.add('text-secondary');
+                });
+                const activeNav = document.getElementById(`nav-${tab}`);
+                if(activeNav) {
+                    activeNav.classList.remove('text-secondary', 'hover:bg-gray-50');
+                    activeNav.classList.add('bg-blue-50', 'text-primary');
+                }
+
+                // Update Title
+                document.getElementById('page-title').innerText = tab === 'dashboard' ? 'Visão Geral' : 'Controle de Atividades (Kanban)';
+                
+                this.render();
+            },
+
+            render() {
+                const contentArea = document.getElementById('content-area');
+                if (this.state.currentTab === 'dashboard') {
+                    contentArea.innerHTML = this.getDashboardHTML();
+                } else if (this.state.currentTab === 'tasks') {
+                    contentArea.innerHTML = this.getKanbanHTML();
+                    this.setupDragAndDrop();
+                }
+            },
+
+            getDashboardHTML() {
+                const pending = this.state.tasks.filter(t => t.status === 'pending').length;
+                const inProgress = this.state.tasks.filter(t => t.status === 'in-progress').length;
+                const validated = this.state.tasks.filter(t => t.status === 'validated').length;
+                const total = this.state.tasks.length;
+
+                return `
+                    <!-- Metric Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Total Distribuído</p>
+                                    <h3 class="text-3xl font-bold text-gray-900 mt-1">${total}</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-primary">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Pendentes</p>
+                                    <h3 class="text-3xl font-bold text-gray-900 mt-1">${pending}</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-danger">
+                                    <i class="fa-regular fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Em Andamento</p>
+                                    <h3 class="text-3xl font-bold text-gray-900 mt-1">${inProgress}</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-warning">
+                                    <i class="fa-solid fa-spinner"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Validados</p>
+                                    <h3 class="text-3xl font-bold text-gray-900 mt-1">${validated}</h3>
+                                </div>
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-success">
+                                    <i class="fa-solid fa-check-double"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Tasks List -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900">Atividades Recentes</h3>
+                            <button onclick="app.switchTab('tasks')" class="text-sm text-primary hover:underline font-medium">Ver todas no Kanban</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-gray-50 text-gray-500 text-sm uppercase tracking-wider">
+                                        <th class="px-6 py-3 font-medium">Atividade</th>
+                                        <th class="px-6 py-3 font-medium">Projeto</th>
+                                        <th class="px-6 py-3 font-medium">Responsável</th>
+                                        <th class="px-6 py-3 font-medium">Status</th>
+                                        <th class="px-6 py-3 font-medium text-right">Prazo</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    ${this.state.tasks.slice(0,5).map(task => `
+                                        <tr class="hover:bg-gray-50 transition-colors">
+                                            <td class="px-6 py-4 text-sm font-medium text-gray-900">${task.title}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-600">${task.project}</td>
+                                            <td class="px-6 py-4 text-sm text-gray-600 flex items-center">
+                                                <div class="w-6 h-6 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center text-xs mr-2 font-bold">${task.assignee.charAt(0)}</div>
+                                                ${task.assignee}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm">
+                                                ${this.getStatusBadge(task.status)}
+                                            </td>
+                                            <td class="px-6 py-4 text-sm text-gray-500 text-right font-medium">${this.formatDate(task.date)}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            },
+
+            getKanbanHTML() {
+                const getColumnTasks = (status) => this.state.tasks.filter(t => t.status === status).map(t => this.getTaskCardHTML(t)).join('');
+                
+                return `
+                    <div class="flex flex-col md:flex-row gap-6 h-full pb-4">
+                        <!-- Pendentes -->
+                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-800 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-danger mr-2"></span>Pendentes
+                                </h3>
+                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='pending').length}</span>
+                            </div>
+                            <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="pending">
+                                ${getColumnTasks('pending')}
+                            </div>
+                        </div>
+
+                        <!-- Em Andamento -->
+                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-800 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-warning mr-2"></span>Em Andamento
+                                </h3>
+                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='in-progress').length}</span>
+                            </div>
+                            <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="in-progress">
+                                ${getColumnTasks('in-progress')}
+                            </div>
+                        </div>
+
+                        <!-- Validados / Concluídos -->
+                        <div class="flex-1 flex flex-col bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
+                            <div class="p-4 border-b border-gray-200 bg-white flex justify-between items-center">
+                                <h3 class="font-semibold text-gray-800 flex items-center">
+                                    <span class="w-3 h-3 rounded-full bg-success mr-2"></span>Validados
+                                </h3>
+                                <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1 rounded-full">${this.state.tasks.filter(t=>t.status==='validated').length}</span>
+                            </div>
+                            <div class="p-4 flex-1 overflow-y-auto space-y-4 kanban-column" data-status="validated">
+                                ${getColumnTasks('validated')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            getTaskCardHTML(task) {
+                return `
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 cursor-grab hover:shadow-md transition-shadow task-card" draggable="true" data-id="${task.id}">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded uppercase tracking-wider">${task.project}</span>
+                            <span class="text-xs text-gray-400 font-medium">${this.formatDate(task.date)}</span>
+                        </div>
+                        <h4 class="font-medium text-gray-900 mb-3 leading-snug">${task.title}</h4>
+                        <div class="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                            <div class="flex items-center" title="${task.assignee}">
+                                <div class="w-7 h-7 rounded-full bg-blue-100 text-primary flex items-center justify-center text-xs font-bold border border-blue-200">${task.assignee.charAt(0)}</div>
+                                <span class="text-sm text-gray-600 ml-2 hidden sm:inline-block truncate max-w-[100px]">${task.assignee}</span>
+                            </div>
+                            <!-- Quick Action Buttons instead of just drag -->
+                            <div class="flex space-x-1">
+                                ${task.status !== 'pending' ? `<button onclick="app.moveTask('${task.id}', 'pending')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:text-danger hover:bg-red-50 flex items-center justify-center" title="Mover para Pendente"><i class="fa-solid fa-arrow-left text-xs"></i></button>` : ''}
+                                ${task.status === 'pending' ? `<button onclick="app.moveTask('${task.id}', 'in-progress')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:text-warning hover:bg-yellow-50 flex items-center justify-center" title="Mover para Em Andamento"><i class="fa-solid fa-arrow-right text-xs"></i></button>` : ''}
+                                ${task.status === 'in-progress' ? `<button onclick="app.moveTask('${task.id}', 'validated')" class="w-6 h-6 rounded bg-gray-100 text-gray-500 hover:text-success hover:bg-green-50 flex items-center justify-center" title="Validar Processo"><i class="fa-solid fa-check text-xs"></i></button>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            getStatusBadge(status) {
+                switch(status) {
+                    case 'pending': return '<span class="px-2 py-1 bg-red-50 text-danger rounded-full text-xs font-medium flex items-center w-max"><span class="w-1.5 h-1.5 bg-danger rounded-full mr-1.5"></span>Pendente</span>';
+                    case 'in-progress': return '<span class="px-2 py-1 bg-yellow-50 text-warning rounded-full text-xs font-medium flex items-center w-max"><span class="w-1.5 h-1.5 bg-warning rounded-full mr-1.5"></span>Em Andamento</span>';
+                    case 'validated': return '<span class="px-2 py-1 bg-green-50 text-success rounded-full text-xs font-medium flex items-center w-max"><span class="w-1.5 h-1.5 bg-success rounded-full mr-1.5"></span>Validado</span>';
+                }
+            },
+
+            formatDate(dateString) {
+                const options = { day: '2-digit', month: 'short' };
+                return new Date(dateString).toLocaleDateString('pt-BR', options);
+            },
+
+            openModal() {
+                document.getElementById('task-modal').classList.remove('hidden');
+            },
+
+            closeModal() {
+                document.getElementById('task-modal').classList.add('hidden');
+                document.getElementById('task-form').reset();
+                document.getElementById('task-date').valueAsDate = new Date();
+            },
+
+            submitTask(e) {
+                e.preventDefault();
+                const newTask = {
+                    id: 'T' + (this.state.tasks.length + 1),
+                    title: document.getElementById('task-title').value,
+                    project: document.getElementById('task-project').value,
+                    assignee: document.getElementById('task-assignee').value,
+                    status: 'pending',
+                    date: document.getElementById('task-date').value
+                };
+                
+                this.state.tasks.unshift(newTask);
+                this.closeModal();
+                this.render();
+            },
+
+            moveTask(id, newStatus) {
+                const task = this.state.tasks.find(t => t.id === id);
+                if(task) {
+                    task.status = newStatus;
+                    this.render();
+                }
+            },
+
+            setupDragAndDrop() {
+                const cards = document.querySelectorAll('.task-card');
+                const columns = document.querySelectorAll('.kanban-column');
+
+                cards.forEach(card => {
+                    card.addEventListener('dragstart', (e) => {
+                        e.dataTransfer.setData('text/plain', card.dataset.id);
+                        setTimeout(() => card.classList.add('opacity-50'), 0);
+                    });
+                    card.addEventListener('dragend', () => {
+                        card.classList.remove('opacity-50');
+                        columns.forEach(col => col.classList.remove('drag-over'));
+                    });
+                });
+
+                columns.forEach(col => {
+                    col.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        col.classList.add('drag-over');
+                    });
+                    col.addEventListener('dragleave', () => {
+                        col.classList.remove('drag-over');
+                    });
+                    col.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        col.classList.remove('drag-over');
+                        const id = e.dataTransfer.getData('text/plain');
+                        const newStatus = col.dataset.status;
+                        this.moveTask(id, newStatus);
+                    });
+                });
+            }
+        };
