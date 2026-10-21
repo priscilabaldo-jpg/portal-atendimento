@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CX FLOW | Leveros</title>
+    <title>Projetos & Tarefas | Leveros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script>
@@ -63,7 +63,7 @@
             <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3 shrink-0">
                     <i class="fas fa-layer-group text-leveros-azul text-2xl"></i>
-                    <h1 class="text-lg font-bold hidden sm:block">CX FLOW</h1>
+                    <h1 class="text-lg font-bold hidden sm:block">Projetos & Tarefas</h1>
                 </div>
 
                 <nav id="nav" class="flex items-center gap-1 overflow-x-auto text-sm">
@@ -169,7 +169,7 @@
             membros: [], projetos: [], cronogramas: [], tarefas: [],
             view: 'dashboard',
             projetoAtual: null,
-            filtros: { projeto: '', resp: '', q: '' },
+            filtros: { projeto: '', resp: '', q: '', sit: '' },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false },
             drawerTaskId: null,
@@ -380,8 +380,8 @@
             return { total: ts.length, feitas, pct: ts.length ? Math.round((feitas / ts.length) * 100) : 0, atrasadas: ts.filter(t => situacao(t).key === 'atrasada').length };
         }
 
-        function kpi(label, valor, icon, borda, cor) {
-            return `<div class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${borda} flex items-center justify-between">
+        function kpi(label, valor, icon, borda, cor, attrs) {
+            return `<div ${attrs} role="button" tabindex="0" title="Clique para ver os detalhes" class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${borda} flex items-center justify-between cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all">
                 <div><p class="text-xs text-gray-500 font-medium uppercase tracking-wide">${label}</p><h3 class="text-3xl font-bold text-leveros-verde1 mt-1">${valor}</h3></div>
                 <i class="fas ${icon} text-2xl ${cor} opacity-70"></i></div>`;
         }
@@ -411,7 +411,7 @@
                     <div class="flex items-center justify-between gap-2 mb-2">
                         <div class="flex items-center gap-2 min-w-0"><span class="w-3 h-3 rounded-full shrink-0" style="background:${c}"></span><span class="font-semibold text-sm truncate">${esc(p.nome)}</span></div>
                         <div class="flex items-center gap-2 shrink-0">
-                            ${pr.atrasadas ? `<span class="text-[11px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full">🔴 ${pr.atrasadas} atrasada${pr.atrasadas > 1 ? 's' : ''}</span>` : ''}
+                            ${pr.atrasadas ? `<span data-action="filtrar-quadro" data-projeto="${esc(p.id)}" data-sit="atrasada" title="Ver tarefas atrasadas" class="text-[11px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded-full hover:bg-red-200">🔴 ${pr.atrasadas} atrasada${pr.atrasadas > 1 ? 's' : ''}</span>` : ''}
                             <span class="text-sm font-bold text-leveros-verde2">${pr.pct}%</span>
                         </div>
                     </div>
@@ -426,7 +426,7 @@
             }).filter(x => x.total > 0).sort((a, b) => b.total - a.total);
             const maxCarga = Math.max(1, ...carga.map(c => c.total));
             const cargaHTML = carga.length ? carga.map(c => `
-                <div class="flex items-center gap-3">
+                <div data-action="filtrar-quadro" data-resp="${esc(c.m.email)}" data-sit="abertas" title="Ver tarefas de ${esc(c.m.nome)}" class="flex items-center gap-3 p-1.5 -m-1.5 rounded-lg cursor-pointer hover:bg-gray-50">
                     ${avatar(c.m.email, 'w-8 h-8 text-xs')}
                     <div class="flex-1 min-w-0">
                         <div class="flex justify-between text-xs mb-1"><span class="font-semibold truncate">${esc(c.m.nome)}</span><span class="text-gray-500">${c.total} aberta${c.total > 1 ? 's' : ''}${c.atr ? ` · <span class="text-red-600 font-bold">${c.atr} atrasada${c.atr > 1 ? 's' : ''}</span>` : ''}</span></div>
@@ -444,11 +444,11 @@
                 </div>
 
                 <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-                    ${kpi('Projetos ativos', ativos.length, 'fa-folder-open', 'border-leveros-verde2', 'text-leveros-verde2')}
-                    ${kpi('Tarefas abertas', abertas.length, 'fa-list-check', 'border-blue-400', 'text-blue-500')}
-                    ${kpi('Atrasadas', atrasadas.length, 'fa-triangle-exclamation', 'border-red-500', 'text-red-500')}
-                    ${kpi('Vencem em breve', breve.length, 'fa-hourglass-half', 'border-yellow-400', 'text-yellow-500')}
-                    ${kpi('Concluídas', concl, 'fa-circle-check', 'border-leveros-verde3', 'text-green-600')}
+                    ${kpi('Projetos ativos', ativos.length, 'fa-folder-open', 'border-leveros-verde2', 'text-leveros-verde2', 'data-action="nav" data-view="projetos"')}
+                    ${kpi('Tarefas abertas', abertas.length, 'fa-list-check', 'border-blue-400', 'text-blue-500', 'data-action="filtrar-quadro" data-sit="abertas"')}
+                    ${kpi('Atrasadas', atrasadas.length, 'fa-triangle-exclamation', 'border-red-500', 'text-red-500', 'data-action="filtrar-quadro" data-sit="atrasada"')}
+                    ${kpi('Vencem em breve', breve.length, 'fa-hourglass-half', 'border-yellow-400', 'text-yellow-500', 'data-action="filtrar-quadro" data-sit="breve"')}
+                    ${kpi('Concluídas', concl, 'fa-circle-check', 'border-leveros-verde3', 'text-green-600', 'data-action="filtrar-quadro" data-sit="concluida"')}
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-5 gap-5">
@@ -532,11 +532,12 @@
         // VIEW: QUADRO (KANBAN) — todos veem tudo
         // ==========================================================
         function tarefasFiltradas() {
-            const { projeto, resp, q } = state.filtros;
+            const { projeto, resp, q, sit } = state.filtros;
             const termo = q.trim().toLowerCase();
             return state.tarefas.filter(t =>
                 (!projeto || t.projetoId === projeto) &&
                 (!resp || t.responsavelEmail === resp) &&
+                (!sit || (sit === 'abertas' ? t.status !== 'Validado' : situacao(t).key === sit)) &&
                 (!termo || `${t.titulo} ${t.descricao || ''}`.toLowerCase().includes(termo)));
         }
 
@@ -578,10 +579,11 @@
                 <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
                     <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Arraste os cards para mudar o status.</p></div>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
+                <div class="bg-white rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                     <div><label class="lbl">Buscar</label><input id="f-q" class="inp" placeholder="Título ou descrição..." value="${esc(f.q)}"></div>
                     <div><label class="lbl">Projeto</label><select id="f-projeto" class="inp"><option value="">Todos</option>${optionsProjetos(f.projeto, false)}</select></div>
                     <div><label class="lbl">Responsável</label><select id="f-resp" class="inp"><option value="">Todos</option>${optionsMembros(f.resp)}</select></div>
+                    <div><label class="lbl">Situação</label><select id="f-sit" class="inp">${[['', 'Todas'], ['abertas', 'Abertas'], ['atrasada', '🔴 Atrasadas'], ['breve', '🟡 Entrega em breve'], ['ok', '🟢 No prazo'], ['concluida', '✅ Concluídas']].map(([v, l]) => `<option value="${v}" ${f.sit === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
                     <div class="flex gap-2"><button data-action="filtro-minhas" class="flex-1 px-3 py-2 text-sm font-semibold border border-leveros-verde2 text-leveros-verde2 rounded-lg hover:bg-leveros-verde4/40">Só as minhas</button><button data-action="limpar-filtros" class="px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50" title="Limpar filtros"><i class="fas fa-eraser"></i></button></div>
                 </div>
                 <div id="board">${boardHTML()}</div>
@@ -663,10 +665,10 @@
                         </div>
                     </div>
                     <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-                        <div class="bg-gray-50 rounded-lg p-2"><div class="text-xl font-bold text-leveros-verde1">${pr.pct}%</div><div class="text-[11px] text-gray-500">concluído</div></div>
-                        <div class="bg-gray-50 rounded-lg p-2"><div class="text-xl font-bold text-leveros-verde1">${pr.total}</div><div class="text-[11px] text-gray-500">tarefas</div></div>
-                        <div class="bg-gray-50 rounded-lg p-2"><div class="text-xl font-bold text-leveros-verde1">${pr.feitas}</div><div class="text-[11px] text-gray-500">validadas</div></div>
-                        <div class="bg-gray-50 rounded-lg p-2"><div class="text-xl font-bold ${pr.atrasadas ? 'text-red-600' : 'text-leveros-verde1'}">${pr.atrasadas}</div><div class="text-[11px] text-gray-500">atrasadas</div></div>
+                        <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.pct}%</div><div class="text-[11px] text-gray-500">concluído</div></div>
+                        <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.total}</div><div class="text-[11px] text-gray-500">tarefas</div></div>
+                        <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" data-sit="concluida" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.feitas}</div><div class="text-[11px] text-gray-500">validadas</div></div>
+                        <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" data-sit="atrasada" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-red-50 transition-colors"><div class="text-xl font-bold ${pr.atrasadas ? 'text-red-600' : 'text-leveros-verde1'}">${pr.atrasadas}</div><div class="text-[11px] text-gray-500">atrasadas</div></div>
                     </div>
                     <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden mt-4"><div class="h-full rounded-full transition-all" style="width:${pr.pct}%;background:${c}"></div></div>
                 </div>
@@ -1049,9 +1051,10 @@
                 case 'nova-tarefa': modalTarefa(d.projeto || '', d.cron || ''); break;
                 case 'mudar-status': await moverStatus(d.id, d.status); break;
                 case 'toggle-concluidas': state.minhasMostrarConcluidas = !state.minhasMostrarConcluidas; render(true); break;
-                case 'ver-quadro': state.filtros = { projeto: d.projeto, resp: '', q: '' }; navegar('quadro'); break;
+                case 'ver-quadro': state.filtros = { projeto: d.projeto, resp: '', q: '', sit: '' }; navegar('quadro'); break;
+                case 'filtrar-quadro': state.filtros = { projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
-                case 'limpar-filtros': state.filtros = { projeto: '', resp: '', q: '' }; navegar('quadro'); break;
+                case 'limpar-filtros': state.filtros = { projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
                 case 'salvar-tarefa': await salvarTarefa(d.id); break;
                 case 'enviar-comentario': await enviarComentario(d.id); break;
                 case 'excluir-tarefa': await excluirTarefa(d.id); break;
@@ -1067,6 +1070,7 @@
         });
 
         document.addEventListener('keydown', (e) => {
+            if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[role=button][data-action]')) { e.preventDefault(); e.target.click(); return; }
             if (e.key === 'Escape') { if (!$('#modal').classList.contains('hidden')) fecharModal(); else fecharDrawer(); }
             if (e.target.id === 'dt-comentario' && e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault(); if (state.drawerTaskId) enviarComentario(state.drawerTaskId);
@@ -1081,6 +1085,7 @@
             const id = e.target.id;
             if (id === 'f-projeto') { state.filtros.projeto = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
+            if (id === 'f-sit') { state.filtros.sit = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
             }
