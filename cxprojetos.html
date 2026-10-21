@@ -165,7 +165,7 @@
             membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [], rotinas: [],
             view: 'dashboard',
             projetoAtual: null,
-            filtros: { projeto: '', resp: '', q: '', sit: '', rotinaResp: '' },
+            filtros: { projeto: '', resp: '', q: '', sit: '', rotinaModo: 'minhas', rotinaResp: '' },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
             drawerTaskId: null, drawerPerm: '',
@@ -689,15 +689,21 @@
         }
 
         // ==========================================================
-        // VIEW: ROTINA / AVULSAS (NOVA FUNCIONALIDADE)
+        // VIEW: ROTINA / AVULSAS
         // ==========================================================
         function rotinasHTML() {
-            const fResp = state.filtros.rotinaResp || state.user.email;
-            // Filtra as atividades do usuário selecionado e ordena por data (mais recente)
-            const minhasRotinas = state.rotinas.filter(r => r.responsavelEmail === fResp).sort((a,b) => b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm));
+            // Define a aba ativa (por padrão 'minhas')
+            const modo = state.filtros.rotinaModo || 'minhas';
+            const isMinhas = modo === 'minhas';
+            
+            // Define de quem é a lista que vamos puxar
+            const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
+            
+            // Filtra as atividades do usuário selecionado e ordena por data
+            const rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp).sort((a,b) => b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm));
 
-            const concluidas = minhasRotinas.filter(r => r.status === 'Concluído');
-            const pendentes = minhasRotinas.length - concluidas.length;
+            const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído');
+            const pendentes = rotinasFiltradas.length - concluidas.length;
             const tempoTotal = concluidas.reduce((acc, r) => acc + (Number(r.tempo) || 0), 0);
             const horas = Math.floor(tempoTotal / 60);
             const min = tempoTotal % 60;
@@ -710,23 +716,34 @@
                         <h2 class="text-2xl font-bold text-leveros-verde1">Rotina e Atividades Avulsas</h2>
                         <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados.</p>
                     </div>
-                    <div>
-                        <label class="lbl inline-block mr-2">Visão de:</label>
-                        <select id="filtro-rotina-resp" class="inp inline-block w-auto py-1 shadow-sm font-semibold" onchange="document.getElementById('btn-filt-rot').click()">
-                            ${isAdmin() ? optionsMembros(fResp) : `<option value="${state.user.email}">${state.user.nome}</option>`}
-                        </select>
-                        <button id="btn-filt-rot" data-action="filtrar-rotina" class="hidden"></button>
-                    </div>
                 </div>
+
+                <!-- SUB-MENU (Abas) -->
+                <div class="flex gap-2 mb-6 border-b border-gray-200 pb-2">
+                    <button data-action="set-rotina-modo" data-modo="minhas" class="px-4 py-2 font-semibold text-sm rounded-lg transition-colors ${isMinhas ? 'bg-leveros-verde2 text-white' : 'text-gray-500 hover:bg-gray-100'}"><i class="fas fa-user mr-2"></i>Minha Rotina</button>
+                    <button data-action="set-rotina-modo" data-modo="equipe" class="px-4 py-2 font-semibold text-sm rounded-lg transition-colors ${!isMinhas ? 'bg-leveros-verde2 text-white' : 'text-gray-500 hover:bg-gray-100'}"><i class="fas fa-users mr-2"></i>Visão da Equipe</button>
+                </div>
+
+                <!-- SELETOR DE EQUIPE (Aparece apenas na Visão da Equipe) -->
+                ${!isMinhas ? `
+                <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+                    <label class="lbl mb-0">Ver rotina de:</label>
+                    <select id="filtro-rotina-resp" class="inp w-auto py-1.5 font-semibold text-leveros-verde1" onchange="document.getElementById('btn-filt-rot').click()">
+                        ${optionsMembros(fResp)}
+                    </select>
+                    <button id="btn-filt-rot" data-action="filtrar-rotina" class="hidden"></button>
+                </div>
+                ` : ''}
 
                 <!-- Dashboard Rotina -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                    ${kpi('Total de Lançamentos', minhasRotinas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}
+                    ${kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}
                     ${kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}
                     ${kpi('Tempo Total (Concluídas)', `${horas}h ${min}m`, 'fa-clock', 'border-blue-400', 'text-blue-500', '')}
                 </div>
 
-                <!-- Formulário de Lançamento Rápido -->
+                <!-- Formulário de Lançamento Rápido (Aparece Apenas na Minha Rotina) -->
+                ${isMinhas ? `
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
                     <h3 class="font-bold text-gray-700 mb-3 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Lançamento Rápido</h3>
                     <form id="form-rotina" class="flex flex-col sm:flex-row gap-3 items-end">
@@ -738,6 +755,7 @@
                         <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-semibold flex items-center justify-center gap-2 h-[38px]"><i class="fas fa-plus"></i> Inserir</button>
                     </form>
                 </div>
+                ` : ''}
 
                 <!-- Planilha / Tabela de Atividades -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -750,33 +768,33 @@
                                     <th class="p-3 font-semibold">Descrição</th>
                                     <th class="p-3 font-semibold text-center w-28">Tempo (min)</th>
                                     <th class="p-3 font-semibold text-center w-32">Status</th>
-                                    <th class="p-3 font-semibold text-center w-16">Ação</th>
+                                    ${isMinhas || isAdmin() ? '<th class="p-3 font-semibold text-center w-16">Ação</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100 text-sm">
-                                ${minhasRotinas.map(r => `
+                                ${rotinasFiltradas.map(r => `
                                     <tr class="hover:bg-gray-50 transition-colors">
                                         <td class="p-3 text-gray-600">${fmtBR(r.data)}</td>
                                         <td class="p-3 text-gray-500"><span class="bg-gray-100 border border-gray-200 px-2 py-1 rounded text-[11px] font-medium">${esc(r.categoria)}</span></td>
                                         <td class="p-3 font-medium text-gray-800">${esc(r.descricao)}</td>
                                         <td class="p-3 text-center text-gray-600 font-medium">${r.tempo}</td>
                                         <td class="p-3 text-center">
-                                            <button data-action="rotina-toggle-status" data-id="${esc(r.id)}" class="text-[11px] font-bold px-3 py-1 rounded-full border transition-colors ${r.status === 'Concluído' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'}">
+                                            <button ${isMinhas || isAdmin() ? `data-action="rotina-toggle-status" data-id="${esc(r.id)}"` : 'disabled'} class="text-[11px] font-bold px-3 py-1 rounded-full border transition-colors ${r.status === 'Concluído' ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'} ${!(isMinhas || isAdmin()) ? 'cursor-default opacity-80' : ''}">
                                                 ${r.status === 'Concluído' ? '<i class="fas fa-check mr-1"></i>' : ''}${r.status}
                                             </button>
                                         </td>
+                                        ${isMinhas || isAdmin() ? `
                                         <td class="p-3 text-center">
                                             <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
-                                        </td>
+                                        </td>` : ''}
                                     </tr>
-                                `).join('') || `<tr><td colspan="6" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa registrada por este colaborador.</td></tr>`}
+                                `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada.</td></tr>`}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>`;
         }
-
 
         // ==========================================================
         // MODAIS E DRAWER
@@ -1348,7 +1366,7 @@
                         descricao: $('#nr-desc').value.trim(),
                         tempo: Number($('#nr-tempo').value),
                         status: $('#nr-status').value,
-                        responsavelEmail: state.filtros.rotinaResp || state.user.email,
+                        responsavelEmail: state.user.email,
                         criadoPorEmail: state.user.email,
                         criadoEm: serverTimestamp()
                     };
@@ -1390,6 +1408,11 @@
                 case 'filtrar-quadro': state.filtros = { ...state.filtros, projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
+                case 'set-rotina-modo':
+                    state.filtros.rotinaModo = d.modo;
+                    if (d.modo === 'minhas') state.filtros.rotinaResp = state.user.email;
+                    render(true);
+                    break;
                 case 'filtrar-rotina': state.filtros.rotinaResp = $('#filtro-rotina-resp').value; render(true); break;
                 case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
                 case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
