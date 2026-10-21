@@ -731,7 +731,16 @@
         function modalMembro() {
             abrirModal('Equipe', `
                 <p class="text-sm text-gray-500 mb-3">Quem entra no portal é adicionado automaticamente. Para atribuir tarefas a alguém que ainda não acessou, cadastre-o aqui.</p>
-                <div class="mb-4 max-h-40 overflow-y-auto border rounded-lg divide-y">${state.membros.sort((a, b) => a.nome.localeCompare(b.nome)).map(m => `<div class="flex items-center gap-2 p-2 text-sm">${avatar(m.email)}<span class="font-semibold">${esc(m.nome)}</span><span class="text-gray-400 text-xs truncate">${esc(m.email)}</span></div>`).join('')}</div>
+                <div class="mb-4 max-h-40 overflow-y-auto border rounded-lg divide-y">
+                    ${state.membros.sort((a, b) => a.nome.localeCompare(b.nome)).map(m => `
+                        <div class="flex items-center gap-2 p-2 text-sm">
+                            ${avatar(m.email)}
+                            <span class="font-semibold flex-1 truncate">${esc(m.nome)}</span>
+                            <span class="text-gray-400 text-xs truncate">${esc(m.email)}</span>
+                            ${isAdmin() ? `<button type="button" data-action="excluir-membro" data-email="${esc(m.email)}" class="text-gray-400 hover:text-red-500 ml-2 px-1" title="Excluir membro da base"><i class="fas fa-trash"></i></button>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div><label class="lbl">Nome</label><input id="nm-nome" class="inp" required placeholder="Nome Sobrenome"></div>
                     <div><label class="lbl">E-mail corporativo</label><input id="nm-email" type="email" class="inp" required placeholder="nome@leveros.com.br"></div>
@@ -1023,9 +1032,11 @@
         }
 
         async function notificarAtribuicao(tarefa, projeto) {
-            const para = tarefa.responsavelEmail;
+            const para = (tarefa.responsavelEmail || '').trim();
             
             if (!para) return; 
+            
+            console.log("Enviando e-mail para:", `"${para}"`);
 
             const membro = getMembro(para);
             const link = window.location.href.split('#')[0];
@@ -1043,10 +1054,10 @@
                                 to_name: membro.nome, 
                                 subject: assunto, 
                                 task_title: tarefa.titulo,
-                                project_name: projeto?.nome || '', 
+                                project_name: projeto?.nome || 'Projeto Geral', 
                                 due_date: fmtBR(tarefa.prazo), 
                                 assigned_by: state.user.nome,
-                                description: tarefa.descricao || '', 
+                                description: tarefa.descricao || 'Sem detalhes adicionais.', 
                                 link: link
                             }
                         })
@@ -1056,7 +1067,7 @@
                 }
             } catch (e) {
                 console.error('Falha ao enviar e-mail via EmailJS:', e);
-                toast('Tarefa salva, mas o e-mail de notificação falhou. Verifique as chaves.', 'erro');
+                toast('Tarefa salva, mas o e-mail de notificação falhou. Verifique o console (F12).', 'erro');
             }
         }
 
@@ -1143,6 +1154,22 @@
                 const b = writeBatch(db);
                 refs.slice(i, i + 400).forEach(r => b.delete(r));
                 await b.commit();
+            }
+        }
+
+        async function excluirMembro(email) {
+            if (!isAdmin()) return toast('Apenas administradores podem excluir membros.', 'erro');
+            if (email === state.user.email) return toast('Você não pode excluir a si mesmo.', 'erro');
+            if (!confirm(`Tem certeza que deseja remover ${email} da base de usuários?`)) return;
+            
+            try {
+                await deleteDoc(doc(db, 'proj_membros', email));
+                toast('Membro removido da base.');
+                fecharModal();
+                modalMembro(); // Reabre o modal para mostrar a lista atualizada
+            } catch (e) { 
+                console.error(e); 
+                toast('Sem permissão para excluir membro.', 'erro'); 
             }
         }
 
@@ -1282,6 +1309,7 @@
                 case 'excluir-tarefa': await excluirTarefa(d.id); break;
                 case 'excluir-cronograma': await excluirCronograma(d.id); break;
                 case 'excluir-projeto': await excluirProjeto(d.id); break;
+                case 'excluir-membro': await excluirMembro(d.email); break;
                 case 'arquivar-projeto': {
                     const p = getProjeto(d.id);
                     await updateDoc(doc(db, 'projetos', d.id), { status: p.status === 'arquivado' ? 'ativo' : 'arquivado' });
