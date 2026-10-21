@@ -155,7 +155,7 @@
             'Alta':  { cls: 'bg-orange-100 text-orange-700', icon: 'fa-arrow-up' }
         };
         
-        // Novas definições para a aba Rotinas
+        // Definições Rotina
         const STATUS_ROTINA_META = {
             'Não iniciado': 'bg-pink-100 text-pink-700 border-pink-200',
             'Iniciado': 'bg-blue-100 text-blue-700 border-blue-200',
@@ -766,19 +766,25 @@
                 ${isMinhas ? `
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6">
                     <h3 class="font-bold text-gray-700 mb-4 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Lançamento Rápido</h3>
-                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
                         <div><label class="lbl">Data Inicial *</label><input id="nr-data" type="date" class="inp" required value="${hojeISO()}"></div>
                         <div><label class="lbl">Prazo <span class="font-normal normal-case text-gray-400">(opcional)</span></label><input id="nr-prazo" type="date" class="inp"></div>
                         <div><label class="lbl">Categoria *</label><select id="nr-cat" class="inp">${CATS_ROTINA.map(c=>`<option>${c}</option>`).join('')}</select></div>
                         <div><label class="lbl">Status *</label><select id="nr-status" class="inp">${STATUS_ROTINA.map(s=>`<option ${s==='Não iniciado'?'selected':''}>${s}</option>`).join('')}</select></div>
+                        <div>
+                            <label class="lbl">Cor</label>
+                            <div class="flex gap-1 mt-1 flex-wrap">
+                                ${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="nr-cor" value="${c}" class="peer hidden" ${i === 0 ? 'checked' : ''}><span class="block w-6 h-6 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}
+                            </div>
+                        </div>
                         
-                        <div class="md:col-span-2"><label class="lbl">Título *</label><input id="nr-titulo" class="inp" required placeholder="Resumo rápido"></div>
+                        <div class="md:col-span-3"><label class="lbl">Título *</label><input id="nr-titulo" class="inp" required placeholder="Resumo rápido"></div>
                         <div class="md:col-span-2"><label class="lbl">Link de Acesso</label><input id="nr-acesso" class="inp" placeholder="https://..."></div>
                         
-                        <div class="md:col-span-2"><label class="lbl">Descrição</label><input id="nr-desc" class="inp" placeholder="Detalhes adicionais (opcional)"></div>
+                        <div class="md:col-span-3"><label class="lbl">Descrição</label><input id="nr-desc" class="inp" placeholder="Detalhes adicionais (opcional)"></div>
                         <div class="md:col-span-2"><label class="lbl">Observação</label><input id="nr-obs" class="inp" placeholder="Anotações para alteração futura..."></div>
                         
-                        <div class="md:col-span-4 flex justify-end mt-2">
+                        <div class="md:col-span-5 flex justify-end mt-2">
                             <button type="submit" class="px-6 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-semibold flex items-center justify-center gap-2 shadow-sm"><i class="fas fa-plus"></i> Inserir Atividade</button>
                         </div>
                     </form>
@@ -801,13 +807,13 @@
                             </thead>
                             <tbody class="divide-y divide-gray-100 text-sm">
                                 ${rotinasFiltradas.map(r => `
-                                    <tr class="hover:bg-gray-50 transition-colors">
+                                    <tr class="hover:bg-gray-50 transition-colors border-l-4" style="border-left-color: ${r.cor || '#e5e7eb'}">
                                         <td class="p-3 align-top">
                                             <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
                                             <div class="mt-1">${renderPrazoRotina(r)}</div>
                                         </td>
                                         <td class="p-3 align-top">
-                                            <span class="bg-gray-100 border border-gray-200 px-2 py-1 rounded text-[11px] font-medium block w-max mb-1 truncate max-w-full" title="${esc(r.categoria)}">${esc(r.categoria)}</span>
+                                            <span class="px-2 py-1 rounded text-[11px] font-bold block w-max mb-1 truncate max-w-full border" style="background:${r.cor ? r.cor+'26' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}" title="${esc(r.categoria)}">${esc(r.categoria)}</span>
                                             <span class="px-2 py-1 rounded border text-[10px] font-bold block w-max ${STATUS_ROTINA_META[r.status] || ''}">${esc(r.status)}</span>
                                         </td>
                                         <td class="p-3 align-top">
@@ -865,8 +871,17 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label class="lbl">Data Inicial *</label><input id="er-data" type="date" class="inp" required value="${esc(r.data)}"></div>
                     <div><label class="lbl">Prazo <span class="font-normal normal-case text-gray-400">(opcional)</span></label><input id="er-prazo" type="date" class="inp" value="${esc(r.prazo || '')}"></div>
+                    
                     <div><label class="lbl">Categoria *</label><select id="er-cat" class="inp">${CATS_ROTINA.map(c=>`<option ${c===r.categoria?'selected':''}>${c}</option>`).join('')}</select></div>
                     <div><label class="lbl">Status *</label><select id="er-status" class="inp">${STATUS_ROTINA.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></div>
+                    
+                    <div class="sm:col-span-2">
+                        <label class="lbl">Cor</label>
+                        <div class="flex gap-2 mt-1 flex-wrap">
+                            ${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="er-cor" value="${c}" class="peer hidden" ${c === (r.cor || PALETA[0]) ? 'checked' : ''}><span class="block w-6 h-6 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}
+                        </div>
+                    </div>
+                    
                     <div class="sm:col-span-2"><label class="lbl">Título *</label><input id="er-titulo" class="inp" required value="${esc(r.titulo || r.descricao)}"></div>
                     <div class="sm:col-span-2"><label class="lbl">Descrição</label><input id="er-desc" class="inp" value="${esc(r.descricao || '')}"></div>
                     <div class="sm:col-span-2"><label class="lbl">Link de Acesso</label><input id="er-acesso" class="inp" placeholder="https://..." value="${esc(r.acesso || '')}"></div>
@@ -1416,10 +1431,12 @@
                     await notificarAtribuicao(dados, getProjeto(projetoId));
                 }
                 else if (e.target.id === 'form-rotina') {
+                    const corSelecionada = document.querySelector('input[name=nr-cor]:checked')?.value || PALETA[0];
                     const dados = {
                         data: $('#nr-data').value,
                         prazo: $('#nr-prazo').value || null,
                         categoria: $('#nr-cat').value,
+                        cor: corSelecionada,
                         titulo: $('#nr-titulo').value.trim(),
                         descricao: $('#nr-desc').value.trim(),
                         acesso: $('#nr-acesso').value.trim(),
@@ -1441,10 +1458,12 @@
                 }
                 else if (e.target.id === 'form-editar-rotina') {
                     const id = $('#er-id').value;
+                    const corSelecionada = document.querySelector('input[name=er-cor]:checked')?.value || PALETA[0];
                     const upd = {
                         data: $('#er-data').value,
                         prazo: $('#er-prazo').value || null,
                         categoria: $('#er-cat').value,
+                        cor: corSelecionada,
                         status: $('#er-status').value,
                         titulo: $('#er-titulo').value.trim(),
                         descricao: $('#er-desc').value.trim(),
@@ -1512,6 +1531,16 @@
                             await deleteDoc(doc(db, 'rotinas', d.id));
                             toast('Atividade avulsa excluída.');
                         } catch(err) { console.error(err); toast('Erro ao excluir rotina', 'erro'); }
+                    }
+                    break;
+                }
+                case 'rotina-toggle-status': {
+                    const r = state.rotinas.find(x => x.id === d.id);
+                    if(r) {
+                        try {
+                            const nv = r.status === 'Concluído' ? 'Pendente' : 'Concluído';
+                            await updateDoc(doc(db, 'rotinas', d.id), { status: nv });
+                        } catch(err) { console.error(err); toast('Erro ao alterar status', 'erro'); }
                     }
                     break;
                 }
