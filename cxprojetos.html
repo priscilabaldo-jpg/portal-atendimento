@@ -680,8 +680,10 @@
                 <button data-action="nav" data-view="projetos" class="text-sm text-gray-500 hover:text-leveros-verde2 mb-3"><i class="fas fa-arrow-left mr-1"></i> Projetos</button>
                 <div class="bg-white rounded-xl shadow-sm p-5 mb-5 border-t-4" style="border-color:${c}">
                     <div class="flex items-start justify-between gap-3 flex-wrap">
-                        <div class="min-w-0"><h2 class="text-2xl font-bold text-leveros-verde1">${esc(p.nome)} ${p.status === 'arquivado' ? '<span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full align-middle">Arquivado</span>' : ''}</h2>
-                        <p class="text-sm text-gray-500 mt-1">${esc(p.descricao || 'Sem descrição')}</p></div>
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-2xl font-bold text-leveros-verde1">${esc(p.nome)} ${p.status === 'arquivado' ? '<span class="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full align-middle">Arquivado</span>' : ''}</h2>
+                            <p class="text-sm text-gray-500 mt-1">${esc(p.descricao || 'Sem descrição')}</p>
+                        </div>
                         <div class="flex gap-2 flex-wrap">
                             <button data-action="novo-cronograma" data-projeto="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 font-semibold"><i class="fas fa-calendar-plus mr-1"></i> Cronograma</button>
                             <button data-action="ver-quadro" data-projeto="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-leveros-verde2 text-leveros-verde2 hover:bg-leveros-verde4/40 font-semibold"><i class="fas fa-columns mr-1"></i> Ver no quadro</button>
@@ -689,6 +691,22 @@
                             <button data-action="excluir-projeto" data-id="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50" title="Excluir projeto"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     </div>
+                    
+                    <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1"><i class="fas fa-heart-crack text-red-400 mr-1"></i> Qual a Dor?</h4>
+                            <p class="text-sm text-gray-700">${esc(p.dor || 'Não informada')}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1"><i class="fas fa-bullseye text-blue-400 mr-1"></i> O Que Queremos Sanar?</h4>
+                            <p class="text-sm text-gray-700">${esc(p.sanar || 'Não informado')}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1"><i class="fas fa-chart-line text-leveros-verde2 mr-1"></i> KPI a Medir</h4>
+                            <p class="text-sm text-gray-700 font-semibold">${esc(p.kpi || 'Não informado')}</p>
+                        </div>
+                    </div>
+                    
                     <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                         <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.pct}%</div><div class="text-[11px] text-gray-500">concluído</div></div>
                         <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.total}</div><div class="text-[11px] text-gray-500">tarefas</div></div>
@@ -894,7 +912,12 @@
             abrirModal('Novo Projeto', `
                 <div class="grid gap-4">
                     <div><label class="lbl">Nome do projeto *</label><input id="np-nome" class="inp" required maxlength="80" placeholder="Ex: Implantação do novo ERP"></div>
-                    <div><label class="lbl">Descrição</label><textarea id="np-desc" rows="3" class="inp" placeholder="Objetivo e escopo..."></textarea></div>
+                    <div><label class="lbl">Descrição</label><textarea id="np-desc" rows="2" class="inp" placeholder="Objetivo e escopo..."></textarea></div>
+                    
+                    <div><label class="lbl">Qual a dor?</label><textarea id="np-dor" rows="2" class="inp" placeholder="Qual problema atual gerou este projeto?"></textarea></div>
+                    <div><label class="lbl">O que queremos sanar?</label><textarea id="np-sanar" rows="2" class="inp" placeholder="O que será resolvido ao final do projeto?"></textarea></div>
+                    <div><label class="lbl">Qual o KPI a medir?</label><input id="np-kpi" class="inp" placeholder="Ex: Redução de 20% no tempo de atendimento"></div>
+                    
                     <div><label class="lbl">Primeiro cronograma</label><input id="np-cron" class="inp" value="Cronograma principal" maxlength="80"></div>
                     <div><label class="lbl">Cor</label><div class="flex gap-2 flex-wrap">${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="np-cor" value="${c}" class="peer hidden" ${i === 0 ? 'checked' : ''}><span class="block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}</div></div>
                 </div>`, 'form-projeto', 'Criar projeto');
@@ -1385,8 +1408,16 @@
                     const nome = $('#np-nome').value.trim();
                     const cor = document.querySelector('input[name=np-cor]:checked')?.value || PALETA[0];
                     const ref = await addDoc(collection(db, 'projetos'), {
-                        nome, descricao: $('#np-desc').value.trim(), cor, status: 'ativo',
-                        criadoPorEmail: state.user.email, criadoPorNome: state.user.nome, criadoEm: serverTimestamp()
+                        nome, 
+                        descricao: $('#np-desc').value.trim(), 
+                        dor: $('#np-dor').value.trim(), 
+                        sanar: $('#np-sanar').value.trim(), 
+                        kpi: $('#np-kpi').value.trim(), 
+                        cor, 
+                        status: 'ativo',
+                        criadoPorEmail: state.user.email, 
+                        criadoPorNome: state.user.nome, 
+                        criadoEm: serverTimestamp()
                     });
                     const nCron = $('#np-cron').value.trim();
                     if (nCron) await addDoc(collection(db, 'cronogramas'), { projetoId: ref.id, nome: nCron, criadoPorEmail: state.user.email, criadoEm: serverTimestamp() });
