@@ -126,15 +126,10 @@
         const DOMINIO = '@leveros.com.br';
         const ADMINS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br'];
 
-        // Notificações por e-mail ao atribuir tarefa:
-        //  'firestore-mail' -> grava na coleção "mail" (extensão Trigger Email do Firebase; já prevista nas suas regras)
-        //  'emailjs'        -> envia via API do EmailJS (preencha as chaves abaixo)
-        //  'simulado'       -> apenas loga no console e mostra um aviso (útil para testes)
+        // Notificações por e-mail ao atribuir tarefa via EmailJS
         const EMAIL_CONFIG = {
-            provider: 'firestore-mail',
+            provider: 'emailjs',
             emailjs: { serviceId: 'service_bs7w0ss', templateId: 'template_oet9kkt', publicKey: 'AUZIT5qioj8fQ_cQ8' }
-            // Template do EmailJS deve usar as variáveis: {{to_email}}, {{to_name}}, {{subject}}, {{task_title}},
-            // {{project_name}}, {{due_date}}, {{assigned_by}}, {{description}}, {{link}}
         };
 
         const app = initializeApp(firebaseConfig);
@@ -353,7 +348,6 @@
                 b.classList.toggle('bg-leveros-verde2', ativo);
             });
 
-            // No quadro, atualiza só o board para não perder o foco dos filtros
             if (!forcar && state.view === 'quadro' && $('#board')) {
                 $('#board').innerHTML = boardHTML();
                 return;
@@ -368,7 +362,6 @@
             v.firstElementChild?.classList.add('fade-in');
         }
 
-        // Re-render quando virar o dia (para atualizar semáforos)
         setInterval(() => { if (state.user && state.diaAtual && state.diaAtual !== hojeISO()) render(true); }, 60000);
 
         // ==========================================================
@@ -522,8 +515,7 @@
                 </div>
                 ${blocos || '<div class="bg-white rounded-xl p-10 text-center text-gray-400"><i class="fas fa-mug-hot text-4xl mb-3 text-leveros-azul"></i><p>Você não tem tarefas abertas. Aproveite!</p></div>'}
                 ${concl.length ? `<section class="mt-8">
-                    <button data-action="toggle-concluidas" class="text-sm font-bold text-gray-500 hover:text-gray-700 mb-2"><i class="fas fa-chevron-${state.minhasMostrarConcluidas ? 'down' : 'right'} mr-1"></i>✅ Concluídas (${concl.length})</button>
-                    ${state.minhasMostrarConcluidas ? `<div class="flex flex-col gap-2">${concl.map(linha).join('')}</div>` : ''}
+                    <button data-action="toggle-concluidas" class="text-sm font-bold text-gray-500 hover:text-gray-700 mb-2"><i class="fas fa-chevron-${state.minhasMostrarConcluidas ? 'down' : 'right'} mr-1"></i>✅ Concluídas (${concl.length})</button>${state.minhasMostrarConcluidas ? `<div class="flex flex-col gap-2">${concl.map(linha).join('')}</div>` : ''}
                 </section>` : ''}
             </div>`;
         }
@@ -677,7 +669,7 @@
         }
 
         // ==========================================================
-        // MODAIS
+        // MODAIS E DRAWER
         // ==========================================================
         function abrirModal(titulo, corpo, formId, labelSalvar = 'Salvar', largura = 'max-w-lg') {
             const m = $('#modal');
@@ -744,9 +736,6 @@
                 <p class="text-xs text-gray-400 mt-3"><i class="far fa-envelope mr-1"></i>O responsável receberá um e-mail automático ao ser atribuído.</p>`, 'form-tarefa', 'Criar tarefa', 'max-w-2xl');
         }
 
-        // ==========================================================
-        // DRAWER: DETALHE DA TAREFA + COLABORAÇÃO
-        // ==========================================================
         function abrirDrawer(id) {
             const t = getTarefa(id);
             if (!t) return;
@@ -821,7 +810,7 @@
         }
 
         // ==========================================================
-        // AÇÕES DE DADOS
+        // AÇÕES DE DADOS E ENVIO DE E-MAIL
         // ==========================================================
         async function logAtividade(tarefaId, texto, tipo = 'sistema') {
             await addDoc(collection(db, 'tarefas', tarefaId, 'comentarios'), {
@@ -832,48 +821,40 @@
 
         async function notificarAtribuicao(tarefa, projeto) {
             const para = tarefa.responsavelEmail;
-            if (!para || para === state.user.email) return; // não notifica a si mesmo
+            
+            // ATUALIZAÇÃO AQUI: Removemos a trava que impedia enviar para si mesmo
+            if (!para) return; 
+
             const membro = getMembro(para);
             const link = window.location.href.split('#')[0];
             const assunto = `[Projetos] Nova tarefa atribuída a você: ${tarefa.titulo}`;
-            const html = `<div style="font-family:Segoe UI,Arial,sans-serif;max-width:560px;margin:auto;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
-                <div style="background:#002D32;color:#fff;padding:16px 20px"><strong>Nova tarefa atribuída a você</strong></div>
-                <div style="padding:20px;color:#1f2937">
-                  <p>Olá, ${esc(primeiroNome(membro.nome))}! <strong>${esc(state.user.nome)}</strong> atribuiu uma tarefa a você.</p>
-                  <table style="width:100%;font-size:14px;margin:12px 0">
-                    <tr><td style="color:#6b7280;width:90px">Tarefa</td><td><strong>${esc(tarefa.titulo)}</strong></td></tr>
-                    <tr><td style="color:#6b7280">Projeto</td><td>${esc(projeto?.nome || '—')}</td></tr>
-                    <tr><td style="color:#6b7280">Prazo</td><td>${fmtBR(tarefa.prazo)}</td></tr>
-                    ${tarefa.descricao ? `<tr><td style="color:#6b7280;vertical-align:top">Detalhes</td><td>${esc(tarefa.descricao)}</td></tr>` : ''}
-                  </table>
-                  <a href="${esc(link)}" style="display:inline-block;background:#005A64;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Abrir no portal</a>
-                </div></div>`;
+
             try {
-                if (EMAIL_CONFIG.provider === 'firestore-mail') {
-                    await addDoc(collection(db, 'mail'), { to: [para], message: { subject: assunto, html } });
-                } else if (EMAIL_CONFIG.provider === 'emailjs') {
+                if (EMAIL_CONFIG.provider === 'emailjs') {
                     const c = EMAIL_CONFIG.emailjs;
                     const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             service_id: c.serviceId, template_id: c.templateId, user_id: c.publicKey,
                             template_params: {
-                                to_email: para, to_name: membro.nome, subject: assunto, task_title: tarefa.titulo,
-                                project_name: projeto?.nome || '', due_date: fmtBR(tarefa.prazo), assigned_by: state.user.nome,
-                                description: tarefa.descricao || '', link
+                                to_email: para, 
+                                to_name: membro.nome, 
+                                subject: assunto, 
+                                task_title: tarefa.titulo,
+                                project_name: projeto?.nome || '', 
+                                due_date: fmtBR(tarefa.prazo), 
+                                assigned_by: state.user.nome,
+                                description: tarefa.descricao || '', 
+                                link: link
                             }
                         })
                     });
                     if (!resp.ok) throw new Error(await resp.text());
-                } else {
-                    console.info('[E-MAIL SIMULADO]', { para, assunto, html });
-                    toast(`(Simulação) e-mail enviado para ${membro.nome}`, 'info');
-                    return;
+                    toast(`E-mail de atribuição enviado para ${membro.nome}`);
                 }
-                toast(`E-mail de atribuição enviado para ${membro.nome}`);
             } catch (e) {
-                console.error('Falha ao enviar e-mail:', e);
-                toast('Tarefa salva, mas o e-mail de notificação falhou.', 'erro');
+                console.error('Falha ao enviar e-mail via EmailJS:', e);
+                toast('Tarefa salva, mas o e-mail de notificação falhou. Verifique as chaves.', 'erro');
             }
         }
 
@@ -889,13 +870,9 @@
         async function salvarTarefa(id) {
             const t = getTarefa(id); if (!t) return;
             const novo = {
-                titulo: $('#dt-titulo').value.trim(),
-                descricao: $('#dt-desc').value.trim(),
-                responsavelEmail: $('#dt-resp').value,
-                prazo: $('#dt-prazo').value,
-                prioridade: $('#dt-prio').value,
-                status: $('#dt-status').value,
-                cronogramaId: $('#dt-cron').value
+                titulo: $('#dt-titulo').value.trim(), descricao: $('#dt-desc').value.trim(),
+                responsavelEmail: $('#dt-resp').value, prazo: $('#dt-prazo').value,
+                prioridade: $('#dt-prio').value, status: $('#dt-status').value, cronogramaId: $('#dt-cron').value
             };
             if (!novo.titulo) return toast('O título não pode ficar vazio.', 'erro');
             if (!novo.prazo) return toast('Informe o prazo.', 'erro');
@@ -966,7 +943,7 @@
         }
 
         // ==========================================================
-        // SUBMITS DE FORMULÁRIOS
+        // SUBMITS E EVENTOS
         // ==========================================================
         document.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1022,14 +999,11 @@
                 }
             } catch (err) {
                 console.error(err);
-                toast(err.message?.startsWith('Use um') ? err.message : 'Erro ao salvar. Verifique permissões e conexão.', 'erro');
+                toast(err.message?.startsWith('Use um') ? err.message : 'Erro ao salvar. Verifique permissões.', 'erro');
                 if (btn) { btn.disabled = false; btn.innerHTML = original; }
             }
         });
 
-        // ==========================================================
-        // DELEGAÇÃO DE EVENTOS
-        // ==========================================================
         document.addEventListener('click', async (e) => {
             const el = e.target.closest('[data-action]');
             if (!el) return;
@@ -1037,7 +1011,7 @@
             switch (a) {
                 case 'login':
                     $('#login-error').classList.add('hidden');
-                    signInWithPopup(auth, provider).catch((err) => { console.error(err); mostrarErroLogin('Não foi possível entrar. Tente novamente.'); });
+                    signInWithPopup(auth, provider).catch((err) => { console.error(err); mostrarErroLogin('Não foi possível entrar.'); });
                     break;
                 case 'logout': if (confirm('Deseja sair?')) signOut(auth); break;
                 case 'nav': navegar(d.view); break;
@@ -1095,7 +1069,7 @@
             }
         });
 
-        // Drag & drop do Kanban
+        // Drag & Drop
         document.addEventListener('dragstart', (e) => {
             const card = e.target.closest?.('.task-card'); if (!card) return;
             e.dataTransfer.setData('text/plain', card.dataset.id);
