@@ -688,6 +688,7 @@
                             <button data-action="novo-cronograma" data-projeto="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50 font-semibold"><i class="fas fa-calendar-plus mr-1"></i> Cronograma</button>
                             <button data-action="ver-quadro" data-projeto="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-leveros-verde2 text-leveros-verde2 hover:bg-leveros-verde4/40 font-semibold"><i class="fas fa-columns mr-1"></i> Ver no quadro</button>
                             ${donos ? `<button data-action="arquivar-projeto" data-id="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50" title="${p.status === 'arquivado' ? 'Reativar' : 'Arquivar'}"><i class="fas fa-box-archive"></i></button>
+                            <button data-action="editar-projeto" data-id="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-gray-300 hover:bg-gray-50" title="Editar Projeto"><i class="fas fa-edit"></i></button>
                             <button data-action="excluir-projeto" data-id="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50" title="Excluir projeto"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     </div>
@@ -921,6 +922,23 @@
                     <div><label class="lbl">Primeiro cronograma</label><input id="np-cron" class="inp" value="Cronograma principal" maxlength="80"></div>
                     <div><label class="lbl">Cor</label><div class="flex gap-2 flex-wrap">${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="np-cor" value="${c}" class="peer hidden" ${i === 0 ? 'checked' : ''}><span class="block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}</div></div>
                 </div>`, 'form-projeto', 'Criar projeto');
+        }
+
+        function modalEditarProjeto(id) {
+            const p = getProjeto(id);
+            if (!p) return;
+            abrirModal('Editar Projeto', `
+                <input type="hidden" id="ep-id" value="${p.id}">
+                <div class="grid gap-4">
+                    <div><label class="lbl">Nome do projeto *</label><input id="ep-nome" class="inp" required maxlength="80" value="${esc(p.nome)}"></div>
+                    <div><label class="lbl">Descrição</label><textarea id="ep-desc" rows="2" class="inp">${esc(p.descricao || '')}</textarea></div>
+                    
+                    <div><label class="lbl">Qual a dor?</label><textarea id="ep-dor" rows="2" class="inp">${esc(p.dor || '')}</textarea></div>
+                    <div><label class="lbl">O que queremos sanar?</label><textarea id="ep-sanar" rows="2" class="inp">${esc(p.sanar || '')}</textarea></div>
+                    <div><label class="lbl">Qual o KPI a medir?</label><input id="ep-kpi" class="inp" value="${esc(p.kpi || '')}"></div>
+                    
+                    <div><label class="lbl">Cor</label><div class="flex gap-2 flex-wrap">${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="ep-cor" value="${c}" class="peer hidden" ${c === (p.cor || PALETA[0]) ? 'checked' : ''}><span class="block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}</div></div>
+                </div>`, 'form-editar-projeto', 'Salvar Alterações');
         }
 
         function modalCronograma(projetoId) {
@@ -1423,6 +1441,20 @@
                     if (nCron) await addDoc(collection(db, 'cronogramas'), { projetoId: ref.id, nome: nCron, criadoPorEmail: state.user.email, criadoEm: serverTimestamp() });
                     fecharModal(); toast('Projeto criado.'); navegar('projeto', ref.id);
                 }
+                else if (e.target.id === 'form-editar-projeto') {
+                    const id = $('#ep-id').value;
+                    const cor = document.querySelector('input[name=ep-cor]:checked')?.value || PALETA[0];
+                    await updateDoc(doc(db, 'projetos', id), {
+                        nome: $('#ep-nome').value.trim(),
+                        descricao: $('#ep-desc').value.trim(),
+                        dor: $('#ep-dor').value.trim(),
+                        sanar: $('#ep-sanar').value.trim(),
+                        kpi: $('#ep-kpi').value.trim(),
+                        cor: cor,
+                        atualizadoEm: serverTimestamp()
+                    });
+                    fecharModal(); toast('Projeto atualizado com sucesso!');
+                }
                 else if (e.target.id === 'form-cronograma') {
                     await addDoc(collection(db, 'cronogramas'), {
                         projetoId: $('#nc-projeto').value, nome: $('#nc-nome').value.trim(),
@@ -1529,6 +1561,7 @@
                 case 'fechar-drawer': fecharDrawer(); break;
                 case 'fechar-modal': fecharModal(); break;
                 case 'novo-projeto': modalProjeto(); break;
+                case 'editar-projeto': modalEditarProjeto(d.id); break;
                 case 'novo-cronograma': modalCronograma(d.projeto); break;
                 case 'novo-membro': modalMembro(); break;
                 case 'nova-tarefa': modalTarefa(d.projeto || '', d.cron || ''); break;
