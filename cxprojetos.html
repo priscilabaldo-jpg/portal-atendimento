@@ -36,6 +36,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .inp { width: 100%; border: 1px solid #d1d5db; border-radius: .5rem; padding: .5rem .75rem; font-size: .875rem; background: #fff; }
         .inp:focus { outline: none; box-shadow: 0 0 0 2px #4CDDDD; border-color: #4CDDDD; }
+        .inp:disabled { background: #f3f4f6; color: #6b7280; cursor: not-allowed; }
         .lbl { display: block; font-size: .75rem; font-weight: 700; color: #374151; margin-bottom: .25rem; text-transform: uppercase; letter-spacing: .03em; }
     </style>
 </head>
@@ -110,7 +111,7 @@
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import {
             getFirestore, collection, addDoc, setDoc, deleteDoc, doc, updateDoc, onSnapshot,
-            serverTimestamp, query, orderBy, increment, arrayUnion, writeBatch
+            serverTimestamp, query, orderBy, increment, arrayUnion, arrayRemove, writeBatch, getDocs
         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
         // ==========================================================
@@ -161,13 +162,13 @@
         // ==========================================================
         const state = {
             user: null,
-            membros: [], projetos: [], cronogramas: [], tarefas: [],
+            membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [],
             view: 'dashboard',
             projetoAtual: null,
             filtros: { projeto: '', resp: '', q: '', sit: '' },
             minhasMostrarConcluidas: false,
-            loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false },
-            drawerTaskId: null,
+            loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false },
+            drawerTaskId: null, drawerPerm: '',
             unsubs: [], unsubFeed: null,
             diaAtual: ''
         };
@@ -300,7 +301,7 @@
             state.unsubs.forEach(u => u());
             state.unsubs = [];
             if (state.unsubFeed) { state.unsubFeed(); state.unsubFeed = null; }
-            state.loaded = { membros: false, projetos: false, cronogramas: false, tarefas: false };
+            state.loaded = { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false };
             fecharDrawer();
         }
 
@@ -321,6 +322,7 @@
             ouvir('projetos', 'projetos', (p) => p);
             ouvir('cronogramas', 'cronogramas', (c) => c);
             ouvir('tarefas', 'tarefas', (t) => t);
+            ouvir('solicitacoes', 'solicitacoes', (x) => x);
         }
 
         // ==========================================================
@@ -338,10 +340,19 @@
             state.diaAtual = hojeISO();
 
             // Badge "Minhas tarefas" (atrasadas + em breve)
-            const minhas = state.tarefas.filter(t => t.responsavelEmail === state.user.email && t.status !== 'Validado');
-            const urg = minhas.filter(t => ['atrasada', 'breve'].includes(situacao(t).key)).length;
+            const minhas = state.tarefas.filter(t => (ehResponsavel(t) || ehColaborador(t)) && t.status !== 'Validado');
+            const urg = minhas.filter(t => ['atrasada', 'breve'].includes(situacao(t).key)).length + solicitacoesRecebidas().length;
             const badge = $('#badge-minhas');
             badge.textContent = urg; badge.classList.toggle('hidden', urg === 0);
+
+            // Mantém o painel da tarefa aberto sincronizado (colaboradores/solicitações e mudança de permissão)
+            if (state.drawerTaskId) {
+                const dt = getTarefa(state.drawerTaskId);
+                if (dt) {
+                    if (permKey(dt) !== state.drawerPerm) abrirDrawer(dt.id);
+                    else { const el = $('#dr-colab'); if (el) el.innerHTML = colabSectionHTML(dt); }
+                }
+            }
 
             document.querySelectorAll('.nav-btn').forEach(b => {
                 const ativo = b.dataset.view === state.view || (b.dataset.view === 'projetos' && state.view === 'projeto');
@@ -473,7 +484,7 @@
         // VIEW: MINHAS TAREFAS
         // ==========================================================
         function minhasHTML() {
-            const minhas = state.tarefas.filter(t => t.responsavelEmail === state.user.email);
+            const minhas = state.tarefas.filter(t => ehResponsavel(t) || ehColaborador(t));
             const abertas = minhas.filter(t => t.status !== 'Validado').sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
             const concl = minhas.filter(t => t.status === 'Validado').sort((a, b) => tsMillis(b.atualizadoEm) - tsMillis(a.atualizadoEm));
             const grupos = [
@@ -498,6 +509,7 @@
                             ${t.comentariosCount ? `<span class="text-[11px] text-gray-400"><i class="far fa-comment mr-1"></i>${t.comentariosCount}</span>` : ''}
                         </div>
                     </div>
+                    ${ehResponsavel(t) ? '' : '<span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🤝 Colaboração</span>'}
                     ${badgeSituacao(t)}
                     ${acao}
                 </div>`;
@@ -511,8 +523,9 @@
 
             return `<div>
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Minhas Tarefas</h2><p class="text-sm text-gray-500">${abertas.length} aberta${abertas.length === 1 ? '' : 's'} atribuída${abertas.length === 1 ? '' : 's'} a você.</p></div>
+                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Minhas Tarefas</h2><p class="text-sm text-gray-500">${abertas.length} aberta${abertas.length === 1 ? '' : 's'} (atribuídas a você ou em colaboração).</p></div>
                 </div>
+                ${solicitacoesPainelHTML()}
                 ${blocos || '<div class="bg-white rounded-xl p-10 text-center text-gray-400"><i class="fas fa-mug-hot text-4xl mb-3 text-leveros-azul"></i><p>Você não tem tarefas abertas. Aproveite!</p></div>'}
                 ${concl.length ? `<section class="mt-8">
                     <button data-action="toggle-concluidas" class="text-sm font-bold text-gray-500 hover:text-gray-700 mb-2"><i class="fas fa-chevron-${state.minhasMostrarConcluidas ? 'down' : 'right'} mr-1"></i>✅ Concluídas (${concl.length})</button>${state.minhasMostrarConcluidas ? `<div class="flex flex-col gap-2">${concl.map(linha).join('')}</div>` : ''}
@@ -536,14 +549,14 @@
         function cardTarefa(t) {
             const p = getProjeto(t.projetoId);
             const pr = PRIO_META[t.prioridade] || PRIO_META['Média'];
-            return `<div class="task-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col gap-2" draggable="true" data-action="abrir-tarefa" data-id="${esc(t.id)}">
+            return `<div class="task-card bg-white p-3 rounded-lg border border-gray-200 flex flex-col gap-2" draggable="${podeAtuar(t) ? 'true' : 'false'}" style="${podeAtuar(t) ? '' : 'cursor:pointer'}" data-action="abrir-tarefa" data-id="${esc(t.id)}">
                 <div class="flex items-center justify-between gap-2">${chipProjeto(p)}<span class="text-[10px] font-bold px-1.5 py-0.5 rounded ${pr.cls}" title="Prioridade ${esc(t.prioridade || 'Média')}"><i class="fas ${pr.icon}"></i></span></div>
                 <h4 class="font-bold text-sm text-gray-800 leading-snug">${esc(t.titulo)}</h4>
                 ${t.descricao ? `<p class="text-xs text-gray-500 line-clamp-2">${esc(t.descricao.substring(0, 90))}${t.descricao.length > 90 ? '…' : ''}</p>` : ''}
                 <div class="flex items-center justify-between flex-wrap gap-1">${badgeSituacao(t, false)}<span class="text-[11px] text-gray-500"><i class="far fa-calendar mr-1"></i>${fmtBR(t.prazo)}</span></div>
                 <div class="flex items-center justify-between border-t pt-2 mt-1">
                     <div class="flex items-center gap-1.5 text-xs text-leveros-verde2 font-semibold">${avatar(t.responsavelEmail, 'w-6 h-6 text-[10px]')}${esc(primeiroNome(getMembro(t.responsavelEmail).nome))}</div>
-                    <span class="text-[11px] text-gray-400"><i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
+                    <span class="text-[11px] text-gray-400">${(t.colaboradoresEmails || []).length ? `<span title="Colaboradores" class="mr-2"><i class="fas fa-user-group mr-1"></i>${t.colaboradoresEmails.length}</span>` : ''}${podeAtuar(t) ? '' : '<i class="fas fa-lock mr-2" title="Somente leitura/comentário"></i>'}<i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
                 </div>
             </div>`;
         }
@@ -569,7 +582,7 @@
             const f = state.filtros;
             return `<div>
                 <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Arraste os cards para mudar o status.</p></div>
+                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Só o responsável (e colaboradores) altera a tarefa; os demais comentam ou enviam uma solicitação.</p></div>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                     <div><label class="lbl">Buscar</label><input id="f-q" class="inp" placeholder="Título ou descrição..." value="${esc(f.q)}"></div>
@@ -742,6 +755,11 @@
             state.drawerTaskId = id;
             const p = getProjeto(t.projetoId);
             const hist = (t.historicoPrazos || []).length;
+            const tudo = podeEditarTudo(t), atuar = podeAtuar(t);
+            state.drawerPerm = permKey(t);
+            const banner = !atuar
+                ? `<div class="mb-4 bg-blue-50 border border-blue-200 text-blue-800 rounded-lg p-3 text-xs flex items-start gap-2"><i class="fas fa-lock mt-0.5"></i><div>Somente <b>${esc(getMembro(t.responsavelEmail).nome)}</b> (responsável) e colaboradores podem alterar esta tarefa. Você pode comentar ou enviar uma solicitação na seção <b>Colaboração</b>.</div></div>`
+                : (!tudo ? `<div class="mb-4 bg-indigo-50 border border-indigo-200 text-indigo-800 rounded-lg p-3 text-xs flex items-start gap-2"><i class="fas fa-user-group mt-0.5"></i><div>Você é <b>colaborador(a)</b> desta tarefa: pode atualizar status, prazo, prioridade e descrição. Para reatribuir, envie uma solicitação ao responsável.</div></div>` : '');
             $('#drawer-panel').innerHTML = `
                 <div class="px-5 py-3 border-b flex items-center justify-between gap-2 bg-gray-50 shrink-0">
                     <div class="flex items-center gap-2 min-w-0">${chipProjeto(p)}<span id="dr-situacao">${badgeSituacao(t)}</span></div>
@@ -752,21 +770,23 @@
                 </div>
                 <div class="flex-1 overflow-y-auto">
                     <div class="p-5 border-b">
-                        <input id="dt-titulo" class="w-full text-xl font-bold text-leveros-verde1 border-0 border-b border-transparent hover:border-gray-300 focus:border-leveros-azul focus:outline-none pb-1 mb-4" value="${esc(t.titulo)}" maxlength="140">
+                        ${banner}
+                        <input id="dt-titulo" class="w-full text-xl font-bold text-leveros-verde1 border-0 border-b border-transparent hover:border-gray-300 focus:border-leveros-azul focus:outline-none pb-1 mb-4 disabled:bg-transparent" value="${esc(t.titulo)}" maxlength="140" ${atuar ? '' : 'disabled'}>
                         <div class="grid grid-cols-2 gap-3">
-                            <div><label class="lbl">Responsável</label><select id="dt-resp" class="inp">${optionsMembros(t.responsavelEmail)}</select></div>
-                            <div><label class="lbl">Status</label><select id="dt-status" class="inp">${STATUS.map(s => `<option ${s === t.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                            <div><label class="lbl">Prazo</label><input id="dt-prazo" type="date" class="inp" value="${esc(t.prazo || '')}"></div>
-                            <div><label class="lbl">Prioridade</label><select id="dt-prio" class="inp">${PRIORIDADES.map(s => `<option ${s === (t.prioridade || 'Média') ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
-                            <div class="col-span-2"><label class="lbl">Cronograma</label><select id="dt-cron" class="inp">${optionsCron(t.projetoId, t.cronogramaId)}</select></div>
+                            <div><label class="lbl">Responsável</label><select id="dt-resp" class="inp" ${tudo ? '' : 'disabled'}>${optionsMembros(t.responsavelEmail)}</select></div>
+                            <div><label class="lbl">Status</label><select id="dt-status" class="inp" ${atuar ? '' : 'disabled'}>${STATUS.map(s => `<option ${s === t.status ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                            <div><label class="lbl">Prazo</label><input id="dt-prazo" type="date" class="inp" ${atuar ? '' : 'disabled'} value="${esc(t.prazo || '')}"></div>
+                            <div><label class="lbl">Prioridade</label><select id="dt-prio" class="inp" ${atuar ? '' : 'disabled'}>${PRIORIDADES.map(s => `<option ${s === (t.prioridade || 'Média') ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                            <div class="col-span-2"><label class="lbl">Cronograma</label><select id="dt-cron" class="inp" ${tudo ? '' : 'disabled'}>${optionsCron(t.projetoId, t.cronogramaId)}</select></div>
                             <div id="dt-motivo-wrap" class="col-span-2 hidden"><label class="lbl">Motivo da alteração de prazo <span class="font-normal normal-case text-gray-400">(fica registrado no histórico)</span></label><input id="dt-motivo" class="inp bg-yellow-50" placeholder="Ex: aguardando retorno do fornecedor"></div>
-                            <div class="col-span-2"><label class="lbl">Descrição</label><textarea id="dt-desc" rows="3" class="inp">${esc(t.descricao || '')}</textarea></div>
+                            <div class="col-span-2"><label class="lbl">Descrição</label><textarea id="dt-desc" rows="3" class="inp" ${atuar ? '' : 'disabled'}>${esc(t.descricao || '')}</textarea></div>
                         </div>
                         <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                             <span class="text-[11px] text-gray-400">Criada por ${esc(getMembro(t.criadoPorEmail).nome)} em ${t.criadoEm ? fmtDataHora(tsMillis(t.criadoEm)) : '—'}${hist ? ` · prazo alterado ${hist}×` : ''}</span>
-                            <button data-action="salvar-tarefa" data-id="${esc(t.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-medium text-sm"><i class="fas fa-save mr-1"></i> Salvar alterações</button>
+                            ${atuar ? `<button data-action="salvar-tarefa" data-id="${esc(t.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-medium text-sm"><i class="fas fa-save mr-1"></i> Salvar alterações</button>` : ''}
                         </div>
                     </div>
+                    <div class="p-5 border-b" id="dr-colab">${colabSectionHTML(t)}</div>
                     <div class="p-5">
                         <h4 class="font-bold text-gray-700 mb-3 text-sm"><i class="far fa-comments text-leveros-verde2 mr-1"></i> Observações e questionamentos</h4>
                         <div id="feed" class="flex flex-col gap-3 mb-3"><div class="loader" style="width:24px;height:24px;border-width:3px"></div></div>
@@ -812,6 +832,181 @@
         // ==========================================================
         // AÇÕES DE DADOS E ENVIO DE E-MAIL
         // ==========================================================
+
+        // ==========================================================
+        // PERMISSÕES, COLABORAÇÃO E SOLICITAÇÕES
+        // ==========================================================
+        // Responsável (e admin): edita tudo. Colaborador: status, prazo, prioridade, título e descrição.
+        // Demais: apenas comentam e podem enviar solicitações ao responsável.
+        const ehResponsavel = (t) => t.responsavelEmail === state.user?.email;
+        const ehColaborador = (t) => (t.colaboradoresEmails || []).includes(state.user?.email);
+        const podeEditarTudo = (t) => ehResponsavel(t) || isAdmin();
+        const podeAtuar = (t) => podeEditarTudo(t) || ehColaborador(t);
+        const permKey = (t) => `${podeEditarTudo(t) ? 1 : 0}${podeAtuar(t) ? 1 : 0}`;
+        const solicitacoesDa = (tid) => state.solicitacoes.filter(x => x.tarefaId === tid).sort((a, b) => tsMillis(a.criadoEm) - tsMillis(b.criadoEm));
+        const solicitacoesRecebidas = () => state.solicitacoes.filter(x => { if (x.status !== 'pendente') return false; const t = getTarefa(x.tarefaId); return t && ehResponsavel(t); });
+        const SOL_TIPOS = { prazo: 'Alterar o prazo', status: 'Alterar o status', reatribuir: 'Reatribuir a tarefa', colaboracao: 'Colaborar na tarefa' };
+
+        function descSolicitacao(x, t) {
+            if (x.tipo === 'prazo') return `alterar o prazo de ${fmtBR(t?.prazo)} para ${fmtBR(x.novoPrazo)}`;
+            if (x.tipo === 'status') return `mudar o status de "${t?.status}" para "${x.novoStatus}"`;
+            if (x.tipo === 'reatribuir') return `passar a tarefa para ${getMembro(x.novoResponsavelEmail).nome}`;
+            if (x.tipo === 'colaboracao') return 'participar desta tarefa como colaborador(a)';
+            return 'uma alteração';
+        }
+
+        function solicitacaoItemHTML(x, comTarefa = false) {
+            const t = getTarefa(x.tarefaId); if (!t) return '';
+            const minha = x.deEmail === state.user.email;
+            const pode = podeEditarTudo(t);
+            return `<div class="flex items-start gap-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                ${avatar(x.deEmail, 'w-8 h-8 text-xs')}
+                <div class="flex-1 min-w-0 text-sm">
+                    <div><span class="font-semibold">${esc(minha ? 'Você' : getMembro(x.deEmail).nome)}</span> ${minha ? 'pediu' : 'pede'} para ${esc(descSolicitacao(x, t))}</div>
+                    ${comTarefa ? `<button data-action="abrir-tarefa" data-id="${esc(t.id)}" class="text-xs text-leveros-verde2 font-semibold hover:underline text-left">${esc(t.titulo)}</button>` : ''}
+                    ${x.mensagem ? `<div class="text-xs text-gray-600 mt-1 italic">“${esc(x.mensagem)}”</div>` : ''}
+                    ${!pode ? `<div class="text-[11px] text-gray-400 mt-1">Aguardando resposta de ${esc(getMembro(t.responsavelEmail).nome)}</div>` : ''}
+                </div>
+                <div class="flex flex-col sm:flex-row gap-1.5 shrink-0">
+                    ${pode ? `<button data-action="responder-sol" data-id="${esc(x.id)}" data-aceitar="1" class="text-xs px-2.5 py-1 rounded-lg bg-green-600 text-white font-semibold hover:bg-green-700">Aceitar</button>
+                    <button data-action="responder-sol" data-id="${esc(x.id)}" data-aceitar="0" class="text-xs px-2.5 py-1 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-100">Recusar</button>` : ''}
+                    ${minha ? `<button data-action="cancelar-sol" data-id="${esc(x.id)}" class="text-xs px-2.5 py-1 rounded-lg border border-red-200 text-red-500 hover:bg-red-50">Cancelar</button>` : ''}
+                </div>
+            </div>`;
+        }
+
+        function solicitacoesPainelHTML() {
+            const rec = solicitacoesRecebidas().sort((a, b) => tsMillis(a.criadoEm) - tsMillis(b.criadoEm));
+            const env = state.solicitacoes.filter(x => x.status === 'pendente' && x.deEmail === state.user.email && !rec.includes(x));
+            if (!rec.length && !env.length) return '';
+            return `<div class="mb-6 flex flex-col gap-4">
+                ${rec.length ? `<section><h3 class="font-bold text-yellow-700 mb-2 text-sm">📨 Solicitações aguardando sua resposta <span class="text-gray-400 font-normal">(${rec.length})</span></h3><div class="flex flex-col gap-2">${rec.map(x => solicitacaoItemHTML(x, true)).join('')}</div></section>` : ''}
+                ${env.length ? `<section><h3 class="font-bold text-gray-500 mb-2 text-sm">⏳ Suas solicitações pendentes <span class="font-normal">(${env.length})</span></h3><div class="flex flex-col gap-2">${env.map(x => solicitacaoItemHTML(x, true)).join('')}</div></section>` : ''}
+            </div>`;
+        }
+
+        function colabSectionHTML(t) {
+            const tudo = podeEditarTudo(t), atuar = podeAtuar(t);
+            const colabs = t.colaboradoresEmails || [];
+            const todas = solicitacoesDa(t.id);
+            const pend = todas.filter(x => x.status === 'pendente');
+            const hist = todas.filter(x => x.status !== 'pendente').slice(-3).reverse();
+            const candidatos = state.membros.filter(m => m.email !== t.responsavelEmail && !colabs.includes(m.email)).sort((a, b) => a.nome.localeCompare(b.nome));
+            const chip = (email, papel, removivel) => `<span class="inline-flex items-center gap-1.5 bg-gray-100 rounded-full pl-1 pr-2.5 py-1 text-xs">${avatar(email, 'w-5 h-5 text-[9px]')}<span class="font-semibold">${esc(primeiroNome(getMembro(email).nome))}</span><span class="text-gray-400">${papel}</span>${removivel ? `<button data-action="remover-colab" data-id="${esc(t.id)}" data-email="${esc(email)}" class="text-gray-400 hover:text-red-500 ml-1" title="Remover colaborador"><i class="fas fa-times"></i></button>` : ''}</span>`;
+            return `
+                <h4 class="font-bold text-gray-700 mb-3 text-sm"><i class="fas fa-user-group text-leveros-verde2 mr-1"></i> Colaboração</h4>
+                <div class="flex flex-wrap gap-2 mb-3">${chip(t.responsavelEmail, 'responsável', false)}${colabs.map(e => chip(e, 'colaborador', tudo)).join('')}</div>
+                ${tudo ? `<div class="flex gap-2 mb-3"><select id="dt-add-colab" class="inp"><option value="">Incluir colaborador...</option>${candidatos.map(m => `<option value="${esc(m.email)}">${esc(m.nome)}</option>`).join('')}</select><button data-action="add-colab" data-id="${esc(t.id)}" class="px-3 py-2 text-sm font-semibold bg-leveros-verde2 text-white rounded-lg hover:bg-leveros-verde1 shrink-0">Adicionar</button></div>` : ''}
+                ${!tudo ? `<div class="flex gap-2 flex-wrap mb-3">
+                    ${!atuar ? `<button data-action="solicitar" data-id="${esc(t.id)}" data-tipo="colaboracao" class="text-xs px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 font-semibold hover:bg-indigo-50"><i class="fas fa-hand mr-1"></i>Pedir para colaborar</button>` : ''}
+                    <button data-action="solicitar" data-id="${esc(t.id)}" class="text-xs px-3 py-1.5 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50"><i class="fas fa-paper-plane mr-1"></i>Solicitar alteração ao responsável</button>
+                </div>` : ''}
+                ${pend.length ? `<div class="flex flex-col gap-2 mb-2">${pend.map(x => solicitacaoItemHTML(x)).join('')}</div>` : ''}
+                ${hist.length ? `<div class="mt-2 text-[11px] text-gray-400 flex flex-col gap-0.5">${hist.map(x => `<div>${x.status === 'aceita' ? '✅' : '🚫'} ${esc(getMembro(x.deEmail).nome)}: ${esc(descSolicitacao(x, t))} — <b>${x.status === 'aceita' ? 'aceita' : 'recusada'}</b></div>`).join('')}</div>` : ''}`;
+        }
+
+        function modalSolicitacao(tarefaId, tipoInicial = '') {
+            const t = getTarefa(tarefaId); if (!t) return;
+            const atuar = podeAtuar(t);
+            const tipos = atuar ? ['reatribuir'] : ['prazo', 'status', 'reatribuir', 'colaboracao'];
+            const tipo = tipos.includes(tipoInicial) ? tipoInicial : tipos[0];
+            abrirModal('Solicitar ao responsável', `
+                <input type="hidden" id="sl-tarefa" value="${esc(tarefaId)}">
+                <p class="text-sm text-gray-600 mb-4">A tarefa <b>${esc(t.titulo)}</b> está com <b>${esc(getMembro(t.responsavelEmail).nome)}</b>. A mudança só será aplicada se ele(a) aceitar.</p>
+                <div class="grid gap-4">
+                    <div><label class="lbl">O que você precisa?</label><select id="sl-tipo" class="inp">${tipos.map(k => `<option value="${k}" ${k === tipo ? 'selected' : ''}>${SOL_TIPOS[k]}</option>`).join('')}</select></div>
+                    <div id="sl-prazo-wrap"><label class="lbl">Novo prazo</label><input id="sl-prazo" type="date" class="inp" value="${esc(t.prazo || '')}"></div>
+                    <div id="sl-status-wrap"><label class="lbl">Novo status</label><select id="sl-status" class="inp">${STATUS.map(x => `<option ${x === t.status ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+                    <div id="sl-resp-wrap"><label class="lbl">Passar para</label><select id="sl-resp" class="inp">${state.membros.filter(m => m.email !== t.responsavelEmail).sort((a, b) => a.nome.localeCompare(b.nome)).map(m => `<option value="${esc(m.email)}">${esc(m.nome)}</option>`).join('')}</select></div>
+                    <div><label class="lbl">Mensagem / justificativa</label><textarea id="sl-msg" rows="3" class="inp" maxlength="500" placeholder="Explique o motivo para facilitar a decisão..."></textarea></div>
+                </div>`, 'form-solicitacao', 'Enviar solicitação');
+            atualizarCamposSolicitacao();
+        }
+
+        function atualizarCamposSolicitacao() {
+            const tipo = $('#sl-tipo')?.value; if (!tipo) return;
+            $('#sl-prazo-wrap').classList.toggle('hidden', tipo !== 'prazo');
+            $('#sl-status-wrap').classList.toggle('hidden', tipo !== 'status');
+            $('#sl-resp-wrap').classList.toggle('hidden', tipo !== 'reatribuir');
+        }
+
+        async function criarSolicitacao() {
+            const tid = $('#sl-tarefa').value; const t = getTarefa(tid);
+            if (!t) throw new Error('Tarefa não encontrada.');
+            const tipo = $('#sl-tipo').value;
+            const dados = { tarefaId: tid, tipo, deEmail: state.user.email, deNome: state.user.nome, status: 'pendente', mensagem: $('#sl-msg').value.trim(), criadoEm: serverTimestamp() };
+            if (tipo === 'prazo') {
+                dados.novoPrazo = $('#sl-prazo').value;
+                if (!dados.novoPrazo || dados.novoPrazo === t.prazo) throw new Error('Informe um prazo diferente do atual.');
+            } else if (tipo === 'status') {
+                dados.novoStatus = $('#sl-status').value;
+                if (dados.novoStatus === t.status) throw new Error('Escolha um status diferente do atual.');
+            } else if (tipo === 'reatribuir') {
+                dados.novoResponsavelEmail = $('#sl-resp').value;
+                if (!dados.novoResponsavelEmail) throw new Error('Selecione para quem passar a tarefa.');
+            } else if (tipo === 'colaboracao' && ehColaborador(t)) throw new Error('Você já colabora nesta tarefa.');
+            if (state.solicitacoes.some(x => x.tarefaId === tid && x.deEmail === state.user.email && x.tipo === tipo && x.status === 'pendente')) throw new Error('Você já tem uma solicitação desse tipo pendente nesta tarefa.');
+            await addDoc(collection(db, 'solicitacoes'), dados);
+            fecharModal(); toast('Solicitação enviada ao responsável.');
+        }
+
+        async function responderSolicitacao(sid, aceitar) {
+            const x = state.solicitacoes.find(v => v.id === sid); const t = x && getTarefa(x.tarefaId);
+            if (!x || !t) return;
+            if (!podeEditarTudo(t)) return toast('Apenas o responsável pode responder.', 'erro');
+            const nomeDe = getMembro(x.deEmail).nome;
+            let texto = `${aceitar ? 'aceitou' : 'recusou'} a solicitação de ${nomeDe}: ${descSolicitacao(x, t)}`;
+            try {
+                const b = writeBatch(db);
+                b.update(doc(db, 'solicitacoes', sid), { status: aceitar ? 'aceita' : 'recusada', resolvidoPor: state.user.email, resolvidoEm: serverTimestamp() });
+                let novoResp = null;
+                if (aceitar) {
+                    const upd = { atualizadoEm: serverTimestamp() };
+                    if (x.tipo === 'prazo') {
+                        upd.prazo = x.novoPrazo;
+                        upd.historicoPrazos = arrayUnion({ de: t.prazo || '', para: x.novoPrazo, por: x.deEmail, em: Date.now(), motivo: x.mensagem || '' });
+                    } else if (x.tipo === 'status') upd.status = x.novoStatus;
+                    else if (x.tipo === 'reatribuir') {
+                        novoResp = x.novoResponsavelEmail;
+                        upd.responsavelEmail = novoResp; upd.responsavelNome = getMembro(novoResp).nome;
+                        upd.colaboradoresEmails = (t.colaboradoresEmails || []).filter(e => e !== novoResp);
+                    } else if (x.tipo === 'colaboracao') upd.colaboradoresEmails = arrayUnion(x.deEmail);
+                    b.update(doc(db, 'tarefas', t.id), upd);
+                }
+                // comentário de histórico no mesmo batch (evita perder permissão após reatribuir)
+                b.set(doc(collection(db, 'tarefas', t.id, 'comentarios')), { tipo: 'sistema', texto, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
+                await b.commit();
+                toast(aceitar ? 'Solicitação aceita e aplicada.' : 'Solicitação recusada.');
+                if (novoResp) await notificarAtribuicao({ ...t, responsavelEmail: novoResp }, getProjeto(t.projetoId));
+            } catch (e) { console.error(e); toast('Não foi possível responder à solicitação.', 'erro'); }
+        }
+
+        async function cancelarSolicitacao(sid) {
+            try { await deleteDoc(doc(db, 'solicitacoes', sid)); toast('Solicitação cancelada.'); }
+            catch (e) { console.error(e); toast('Não foi possível cancelar.', 'erro'); }
+        }
+
+        async function adicionarColaborador(tid) {
+            const t = getTarefa(tid); const email = $('#dt-add-colab')?.value;
+            if (!t || !email || !podeEditarTudo(t)) return;
+            try {
+                const b = writeBatch(db);
+                b.update(doc(db, 'tarefas', tid), { colaboradoresEmails: arrayUnion(email), atualizadoEm: serverTimestamp() });
+                b.set(doc(collection(db, 'tarefas', tid, 'comentarios')), { tipo: 'sistema', texto: `incluiu ${getMembro(email).nome} como colaborador(a)`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
+                await b.commit(); toast('Colaborador incluído.');
+            } catch (e) { console.error(e); toast('Não foi possível incluir o colaborador.', 'erro'); }
+        }
+
+        async function removerColaborador(tid, email) {
+            const t = getTarefa(tid); if (!t || !podeEditarTudo(t)) return;
+            try {
+                const b = writeBatch(db);
+                b.update(doc(db, 'tarefas', tid), { colaboradoresEmails: arrayRemove(email), atualizadoEm: serverTimestamp() });
+                b.set(doc(collection(db, 'tarefas', tid, 'comentarios')), { tipo: 'sistema', texto: `removeu ${getMembro(email).nome} da colaboração`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
+                await b.commit(); toast('Colaborador removido.');
+            } catch (e) { console.error(e); toast('Não foi possível remover o colaborador.', 'erro'); }
+        }
+
         async function logAtividade(tarefaId, texto, tipo = 'sistema') {
             await addDoc(collection(db, 'tarefas', tarefaId, 'comentarios'), {
                 tipo, texto, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp()
@@ -861,22 +1056,30 @@
         async function moverStatus(id, novo) {
             const t = getTarefa(id);
             if (!t || t.status === novo) return;
+            if (!podeAtuar(t)) return toast(`Somente ${getMembro(t.responsavelEmail).nome} (ou colaboradores) pode mudar o status. Abra a tarefa para enviar uma solicitação.`, 'info');
             try {
-                await updateDoc(doc(db, 'tarefas', id), { status: novo, atualizadoEm: serverTimestamp() });
-                await logAtividade(id, `moveu a tarefa de "${t.status}" para "${novo}"`);
+                const b = writeBatch(db);
+                b.update(doc(db, 'tarefas', id), { status: novo, atualizadoEm: serverTimestamp() });
+                b.set(doc(collection(db, 'tarefas', id, 'comentarios')), { tipo: 'sistema', texto: `moveu a tarefa de "${t.status}" para "${novo}"`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
+                await b.commit();
             } catch (e) { console.error(e); toast('Não foi possível mover a tarefa.', 'erro'); }
         }
 
         async function salvarTarefa(id) {
             const t = getTarefa(id); if (!t) return;
+            const tudo = podeEditarTudo(t);
+            if (!podeAtuar(t)) return toast('Você não tem permissão para alterar esta tarefa.', 'erro');
             const novo = {
                 titulo: $('#dt-titulo').value.trim(), descricao: $('#dt-desc').value.trim(),
-                responsavelEmail: $('#dt-resp').value, prazo: $('#dt-prazo').value,
-                prioridade: $('#dt-prio').value, status: $('#dt-status').value, cronogramaId: $('#dt-cron').value
+                prazo: $('#dt-prazo').value, prioridade: $('#dt-prio').value, status: $('#dt-status').value
             };
+            if (tudo) {
+                novo.responsavelEmail = $('#dt-resp').value;
+                novo.responsavelNome = getMembro(novo.responsavelEmail).nome;
+                novo.cronogramaId = $('#dt-cron').value;
+            }
             if (!novo.titulo) return toast('O título não pode ficar vazio.', 'erro');
             if (!novo.prazo) return toast('Informe o prazo.', 'erro');
-            novo.responsavelNome = getMembro(novo.responsavelEmail).nome;
             const motivo = $('#dt-motivo').value.trim();
             const upd = { ...novo, atualizadoEm: serverTimestamp() };
             const logs = [];
@@ -885,20 +1088,27 @@
                 upd.historicoPrazos = arrayUnion({ de: t.prazo || '', para: novo.prazo, por: state.user.email, em: Date.now(), motivo });
                 logs.push(`alterou o prazo de ${fmtBR(t.prazo)} para ${fmtBR(novo.prazo)}${motivo ? ` — Motivo: ${motivo}` : ''}`);
             }
-            if (novo.responsavelEmail !== t.responsavelEmail) logs.push(`reatribuiu a tarefa de ${getMembro(t.responsavelEmail).nome} para ${novo.responsavelNome}`);
+            const reatribuiu = tudo && novo.responsavelEmail !== t.responsavelEmail;
+            if (reatribuiu) {
+                logs.push(`reatribuiu a tarefa de ${getMembro(t.responsavelEmail).nome} para ${novo.responsavelNome}`);
+                upd.colaboradoresEmails = (t.colaboradoresEmails || []).filter(e => e !== novo.responsavelEmail);
+            }
             if (novo.status !== t.status) logs.push(`alterou o status de "${t.status}" para "${novo.status}"`);
             if (novo.prioridade !== (t.prioridade || 'Média')) logs.push(`alterou a prioridade para ${novo.prioridade}`);
             if (novo.titulo !== t.titulo) logs.push('renomeou a tarefa');
             if (novo.descricao !== (t.descricao || '')) logs.push('atualizou a descrição');
 
             try {
-                await updateDoc(doc(db, 'tarefas', id), upd);
-                for (const l of logs) await logAtividade(id, l);
-                if (novo.responsavelEmail !== t.responsavelEmail) await notificarAtribuicao({ ...t, ...novo }, getProjeto(t.projetoId));
+                // Tarefa + histórico no mesmo batch (evita perder permissão no meio ao reatribuir)
+                const b = writeBatch(db);
+                b.update(doc(db, 'tarefas', id), upd);
+                logs.forEach(l => b.set(doc(collection(db, 'tarefas', id, 'comentarios')), { tipo: 'sistema', texto: l, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() }));
+                await b.commit();
+                if (reatribuiu) await notificarAtribuicao({ ...t, ...novo }, getProjeto(t.projetoId));
                 toast('Tarefa atualizada.');
                 $('#dt-motivo-wrap').classList.add('hidden'); $('#dt-motivo').value = '';
                 $('#dr-situacao').innerHTML = badgeSituacao({ ...t, ...novo });
-            } catch (e) { console.error(e); toast('Erro ao salvar a tarefa.', 'erro'); }
+            } catch (e) { console.error(e); toast('Erro ao salvar a tarefa (verifique suas permissões).', 'erro'); }
         }
 
         async function enviarComentario(id) {
@@ -909,11 +1119,35 @@
             catch (e) { console.error(e); ta.value = texto; toast('Não foi possível enviar a observação.', 'erro'); }
         }
 
+        // Coleta tudo que pertence às tarefas (comentários e solicitações) para apagar junto
+        async function refsFilhosDasTarefas(tarefas) {
+            const refs = [];
+            for (const t of tarefas) {
+                const snap = await getDocs(collection(db, 'tarefas', t.id, 'comentarios'));
+                snap.docs.forEach(d => refs.push(d.ref));
+                state.solicitacoes.filter(x => x.tarefaId === t.id).forEach(x => refs.push(doc(db, 'solicitacoes', x.id)));
+            }
+            return refs;
+        }
+
+        // Apaga em lotes, na ordem recebida (filhos antes dos pais, pois as regras consultam a tarefa-mãe)
+        async function apagarEmLotes(refs) {
+            for (let i = 0; i < refs.length; i += 400) {
+                const b = writeBatch(db);
+                refs.slice(i, i + 400).forEach(r => b.delete(r));
+                await b.commit();
+            }
+        }
+
         async function excluirTarefa(id) {
             const t = getTarefa(id); if (!t) return;
             if (!confirm(`Excluir a tarefa "${t.titulo}"? Essa ação não pode ser desfeita.`)) return;
-            try { await deleteDoc(doc(db, 'tarefas', id)); fecharDrawer(); toast('Tarefa excluída.'); }
-            catch (e) { console.error(e); toast('Sem permissão para excluir esta tarefa.', 'erro'); }
+            try {
+                fecharDrawer();
+                const filhos = await refsFilhosDasTarefas([t]);
+                await apagarEmLotes([...filhos, doc(db, 'tarefas', id)]);
+                toast('Tarefa excluída.');
+            } catch (e) { console.error(e); toast('Sem permissão para excluir esta tarefa.', 'erro'); }
         }
 
         async function excluirCronograma(id) {
@@ -921,10 +1155,10 @@
             const ts = state.tarefas.filter(t => t.cronogramaId === id);
             if (!confirm(`Excluir o cronograma "${cr.nome}" e suas ${ts.length} tarefa(s)?`)) return;
             try {
-                const b = writeBatch(db);
-                ts.forEach(t => b.delete(doc(db, 'tarefas', t.id)));
-                b.delete(doc(db, 'cronogramas', id));
-                await b.commit(); toast('Cronograma excluído.');
+                if (ts.some(t => t.id === state.drawerTaskId)) fecharDrawer();
+                const filhos = await refsFilhosDasTarefas(ts);
+                await apagarEmLotes([...filhos, ...ts.map(t => doc(db, 'tarefas', t.id)), doc(db, 'cronogramas', id)]);
+                toast('Cronograma excluído.');
             } catch (e) { console.error(e); toast('Sem permissão para excluir tudo isso.', 'erro'); }
         }
 
@@ -934,10 +1168,9 @@
             const cs = state.cronogramas.filter(c => c.projetoId === id);
             if (!confirm(`Excluir o projeto "${p.nome}" com ${cs.length} cronograma(s) e ${ts.length} tarefa(s)? Essa ação não pode ser desfeita.`)) return;
             try {
-                const itens = [...ts.map(t => doc(db, 'tarefas', t.id)), ...cs.map(c => doc(db, 'cronogramas', c.id)), doc(db, 'projetos', id)];
-                for (let i = 0; i < itens.length; i += 400) {
-                    const b = writeBatch(db); itens.slice(i, i + 400).forEach(r => b.delete(r)); await b.commit();
-                }
+                if (ts.some(t => t.id === state.drawerTaskId)) fecharDrawer();
+                const filhos = await refsFilhosDasTarefas(ts);
+                await apagarEmLotes([...filhos, ...ts.map(t => doc(db, 'tarefas', t.id)), ...cs.map(c => doc(db, 'cronogramas', c.id)), doc(db, 'projetos', id)]);
                 toast('Projeto excluído.'); navegar('projetos');
             } catch (e) { console.error(e); toast('Sem permissão para excluir o projeto.', 'erro'); }
         }
@@ -975,6 +1208,9 @@
                     await setDoc(doc(db, 'proj_membros', email), { email, nome: $('#nm-nome').value.trim(), foto: '', preCadastro: true }, { merge: true });
                     fecharModal(); toast('Membro adicionado à equipe.');
                 }
+                else if (e.target.id === 'form-solicitacao') {
+                    await criarSolicitacao();
+                }
                 else if (e.target.id === 'form-tarefa') {
                     const projetoId = $('#nt-projeto').value;
                     let cronogramaId = $('#nt-cron').value;
@@ -999,7 +1235,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                toast(err.message?.startsWith('Use um') ? err.message : 'Erro ao salvar. Verifique permissões.', 'erro');
+                toast(err.code ? 'Erro ao salvar. Verifique permissões.' : (err.message || 'Erro ao salvar.'), 'erro');
                 if (btn) { btn.disabled = false; btn.innerHTML = original; }
             }
         });
@@ -1029,6 +1265,11 @@
                 case 'filtrar-quadro': state.filtros = { projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
+                case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
+                case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
+                case 'cancelar-sol': await cancelarSolicitacao(d.id); break;
+                case 'add-colab': await adicionarColaborador(d.id); break;
+                case 'remover-colab': await removerColaborador(d.id, d.email); break;
                 case 'salvar-tarefa': await salvarTarefa(d.id); break;
                 case 'enviar-comentario': await enviarComentario(d.id); break;
                 case 'excluir-tarefa': await excluirTarefa(d.id); break;
@@ -1060,6 +1301,7 @@
             if (id === 'f-projeto') { state.filtros.projeto = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-sit') { state.filtros.sit = e.target.value; $('#board').innerHTML = boardHTML(); }
+            if (id === 'sl-tipo') atualizarCamposSolicitacao();
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
             }
