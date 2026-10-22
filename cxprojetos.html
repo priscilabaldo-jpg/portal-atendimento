@@ -645,7 +645,7 @@
                 <div class="flex items-center justify-between flex-wrap gap-1">${badgeSituacao(t, false)}<span class="text-[11px] text-gray-500"><i class="far fa-calendar mr-1"></i>${fmtBR(t.prazo)}</span></div>
                 <div class="flex items-center justify-between border-t pt-2 mt-1">
                     <div class="flex items-center gap-1.5 text-xs text-leveros-verde2 font-semibold">${avatar(t.responsavelEmail, 'w-6 h-6 text-[10px]')}${esc(primeiroNome(getMembro(t.responsavelEmail).nome))}</div>
-                    <span class="text-[11px] text-gray-400">${(t.colaboradoresEmails || []).length ? `<span title="Colaboradores" class="mr-2"><i class="fas fa-user-group mr-1"></i>${t.colaboradoresEmails.length}</span>` : ''}${podeAtuar(t) ? '' : '<i class="fas fa-lock mr-2" title="Somente leitura/comentário"></i>'}<i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
+                    <span class="text-[11px] text-gray-400">${(t.colaboradoresEmails || []).length ? `<span title="Apoio" class="mr-2"><i class="fas fa-user-group mr-1"></i>${t.colaboradoresEmails.length}</span>` : ''}${podeAtuar(t) ? '' : '<i class="fas fa-lock mr-2" title="Somente leitura/comentário"></i>'}<i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
                 </div>
             </div>`;
         }
@@ -671,7 +671,7 @@
             const f = state.filtros;
             return `<div>
                 <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Só o responsável (e colaboradores) altera a tarefa; os demais comentam ou enviam uma solicitação.</p></div>
+                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Só o responsável (e Apoio) altera a tarefa; os demais comentam ou enviam uma solicitação.</p></div>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                     <div><label class="lbl">Buscar</label><input id="f-q" class="inp" placeholder="Título ou descrição..." value="${esc(f.q)}"></div>
@@ -836,7 +836,7 @@
                         <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
                         ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
                         ${compartilhada ? `<div class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🤝 Compartilhada por ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</div>` : ''}
-                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Colaboradores"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
+                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Apoio"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
                     </td>
                     <td class="p-3 align-top text-[12px] text-gray-500 italic">
                         ${esc(r.observacao || '--')}
@@ -860,7 +860,7 @@
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
                     <div>
                         <h2 class="text-2xl font-bold text-leveros-verde1">Rotina e Atividades Avulsas</h2>
-                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados. Ao adicionar colaboradores, a atividade aparece também na lista deles.</p>
+                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados. Ao adicionar Apoio, a atividade aparece também na lista deles.</p>
                     </div>
                 </div>
 
@@ -935,7 +935,7 @@
                         <div class="md:col-span-2"><label class="lbl">Observação</label><input id="nr-obs" class="inp" placeholder="Anotações para alteração futura..."></div>
 
                         <div class="md:col-span-5">
-                            <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(a atividade também aparecerá na lista deles)</span></label>
+                            <label class="lbl"><i class="fas fa-user-group mr-1"></i>Apoios <span class="font-normal normal-case text-gray-400">(a atividade também aparecerá na lista deles)</span></label>
                             <div class="border border-gray-300 rounded-lg max-h-32 overflow-y-auto divide-y bg-white">${checkboxColabs('nr-colab', [], state.user.email)}</div>
                         </div>
 
@@ -1101,7 +1101,7 @@
                     <div><label class="lbl">Prioridade</label><select id="nt-prio" class="inp">${PRIORIDADES.map(p => `<option ${p === 'Média' ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
                     <div><label class="lbl">Status inicial</label><select id="nt-status" class="inp">${STATUS.map(s => `<option>${s}</option>`).join('')}</select></div>
                     <div class="sm:col-span-2">
-                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
+                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Apoios <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
                         <div id="nt-colabs" class="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y bg-white">${checkboxColabs('nt-colab')}</div>
                     </div>
                 </div>
@@ -1899,7 +1899,7 @@
                 case 'excluir-rotina': {
                     const r = state.rotinas.find(x => x.id === d.id);
                     if (!r || !podeGerirRotina(r)) { toast('Apenas o responsável pode excluir esta atividade.', 'erro'); break; }
-                    if (confirm(rotinaColabs(r).length ? 'Esta atividade é compartilhada e será removida também da lista dos colaboradores. Excluir?' : 'Excluir esta atividade da rotina?')) {
+                    if (confirm(rotinaColabs(r).length ? 'Esta atividade é compartilhada e será removida também da lista dos Apoios. Excluir?' : 'Excluir esta atividade da rotina?')) {
                         try {
                             await deleteDoc(doc(db, 'rotinas', d.id));
                             toast('Atividade avulsa excluída.');
