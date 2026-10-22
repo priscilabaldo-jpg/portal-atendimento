@@ -370,8 +370,24 @@
                 b.classList.toggle('bg-leveros-verde2', ativo);
             });
 
+            // ATUALIZAÇÃO PARCIAL (Impede recarregamento e perda de dados em inputs)
             if (!forcar && state.view === 'quadro' && $('#board')) {
                 $('#board').innerHTML = boardHTML();
+                return;
+            }
+
+            // Evita recriar o formulário das Rotinas para não perder o que foi digitado
+            if (!forcar && state.view === 'rotina' && $('#rotina-view-root')) {
+                const modo = state.filtros.rotinaModo || 'minhas';
+                const isMinhas = modo === 'minhas';
+                const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
+                const rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp).sort((a,b) => b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm));
+                const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
+                const pendentes = rotinasFiltradas.length - concluidas.length;
+
+                $('#kpi-total-rotinas').innerHTML = kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '');
+                $('#kpi-concluidas-rotinas').innerHTML = kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '');
+                $('#tbody-rotinas').innerHTML = linhasTabelaRotina(rotinasFiltradas, isMinhas);
                 return;
             }
 
@@ -397,7 +413,7 @@
         }
 
         function kpi(label, valor, icon, borda, cor, attrs) {
-            return `<div ${attrs} role="button" tabindex="0" title="Clique para ver os detalhes" class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${borda} flex items-center justify-between cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all">
+            return `<div ${attrs} role="button" tabindex="0" title="Clique para ver os detalhes" class="bg-white p-4 rounded-xl shadow-sm border-l-4 ${borda} flex items-center justify-between cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all w-full">
                 <div><p class="text-xs text-gray-500 font-medium uppercase tracking-wide">${label}</p><h3 class="text-3xl font-bold text-leveros-verde1 mt-1">${valor}</h3></div>
                 <i class="fas ${icon} text-2xl ${cor} opacity-70"></i></div>`;
         }
@@ -741,6 +757,36 @@
             return `<a href="${esc(href)}" target="_blank" class="text-leveros-azul hover:text-leveros-verde2 hover:underline text-[11px] font-bold whitespace-nowrap"><i class="fas fa-external-link-alt mr-1"></i>Acessar</a>`;
         }
 
+        function linhasTabelaRotina(rotinasFiltradas, isMinhas) {
+            return rotinasFiltradas.map(r => `
+                <tr class="hover:bg-gray-50 transition-colors border-l-4" style="border-left-color: ${r.cor || '#e5e7eb'}">
+                    <td class="p-3 align-top">
+                        <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
+                        <div class="mt-1">${renderPrazoRotina(r)}</div>
+                    </td>
+                    <td class="p-3 align-top">
+                        <span class="px-2 py-1 rounded text-[11px] font-bold block w-max mb-1 truncate max-w-full border" style="background:${r.cor ? r.cor+'26' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}" title="${esc(r.categoria)}">${esc(r.categoria)}</span>
+                        <span class="px-2 py-1 rounded border text-[10px] font-bold block w-max ${STATUS_ROTINA_META[r.status] || ''}">${esc(r.status)}</span>
+                    </td>
+                    <td class="p-3 align-top">
+                        <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
+                        ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
+                    </td>
+                    <td class="p-3 align-top text-[12px] text-gray-500 italic">
+                        ${esc(r.observacao || '--')}
+                    </td>
+                    <td class="p-3 text-center align-top pt-4">
+                        ${renderAcesso(r.acesso)}
+                    </td>
+                    ${isMinhas || isAdmin() ? `
+                    <td class="p-3 text-center align-top pt-3 whitespace-nowrap">
+                        <button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>
+                        <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
+                    </td>` : ''}
+                </tr>
+            `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada.</td></tr>`;
+        }
+
         function rotinasHTML() {
             const modo = state.filtros.rotinaModo || 'minhas';
             const isMinhas = modo === 'minhas';
@@ -751,7 +797,7 @@
             const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
             const pendentes = rotinasFiltradas.length - concluidas.length;
 
-            return `<div>
+            return `<div id="rotina-view-root">
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
                     <div>
                         <h2 class="text-2xl font-bold text-leveros-verde1">Rotina e Atividades Avulsas</h2>
@@ -778,8 +824,8 @@
 
                 <!-- Dashboard Rotina -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    ${kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}
-                    ${kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}
+                    <div id="kpi-total-rotinas" class="w-full">${kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}</div>
+                    <div id="kpi-concluidas-rotinas" class="w-full">${kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}</div>
                 </div>
 
                 <!-- Formulário de Lançamento Rápido -->
@@ -825,34 +871,8 @@
                                     ${isMinhas || isAdmin() ? '<th class="p-3 font-semibold text-center w-24">Ações</th>' : ''}
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 text-sm">
-                                ${rotinasFiltradas.map(r => `
-                                    <tr class="hover:bg-gray-50 transition-colors border-l-4" style="border-left-color: ${r.cor || '#e5e7eb'}">
-                                        <td class="p-3 align-top">
-                                            <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
-                                            <div class="mt-1">${renderPrazoRotina(r)}</div>
-                                        </td>
-                                        <td class="p-3 align-top">
-                                            <span class="px-2 py-1 rounded text-[11px] font-bold block w-max mb-1 truncate max-w-full border" style="background:${r.cor ? r.cor+'26' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}" title="${esc(r.categoria)}">${esc(r.categoria)}</span>
-                                            <span class="px-2 py-1 rounded border text-[10px] font-bold block w-max ${STATUS_ROTINA_META[r.status] || ''}">${esc(r.status)}</span>
-                                        </td>
-                                        <td class="p-3 align-top">
-                                            <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
-                                            ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
-                                        </td>
-                                        <td class="p-3 align-top text-[12px] text-gray-500 italic">
-                                            ${esc(r.observacao || '--')}
-                                        </td>
-                                        <td class="p-3 text-center align-top pt-4">
-                                            ${renderAcesso(r.acesso)}
-                                        </td>
-                                        ${isMinhas || isAdmin() ? `
-                                        <td class="p-3 text-center align-top pt-3 whitespace-nowrap">
-                                            <button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>
-                                            <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
-                                        </td>` : ''}
-                                    </tr>
-                                `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada.</td></tr>`}
+                            <tbody id="tbody-rotinas" class="divide-y divide-gray-100 text-sm">
+                                ${linhasTabelaRotina(rotinasFiltradas, isMinhas)}
                             </tbody>
                         </table>
                     </div>
