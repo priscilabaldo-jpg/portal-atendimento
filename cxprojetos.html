@@ -178,7 +178,11 @@
             membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [], rotinas: [],
             view: 'dashboard',
             projetoAtual: null,
-            filtros: { projeto: '', resp: '', q: '', sit: '', rotinaModo: 'minhas', rotinaResp: '' },
+            // AQUI FORAM ADICIONADOS OS NOVOS ESTADOS DOS FILTROS DA ROTINA
+            filtros: { 
+                projeto: '', resp: '', q: '', sit: '', 
+                rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc' 
+            },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
             drawerTaskId: null, drawerPerm: '',
@@ -370,18 +374,43 @@
                 b.classList.toggle('bg-leveros-verde2', ativo);
             });
 
-            // ATUALIZAÇÃO PARCIAL (Impede recarregamento e perda de dados em inputs)
+            // ATUALIZAÇÃO PARCIAL PARA O QUADRO
             if (!forcar && state.view === 'quadro' && $('#board')) {
                 $('#board').innerHTML = boardHTML();
                 return;
             }
 
-            // Evita recriar o formulário das Rotinas para não perder o que foi digitado
+            // ATUALIZAÇÃO PARCIAL PARA AS ROTINAS (Mantém formulário seguro e re-aplica filtros/ordenação)
             if (!forcar && state.view === 'rotina' && $('#rotina-view-root')) {
                 const modo = state.filtros.rotinaModo || 'minhas';
                 const isMinhas = modo === 'minhas';
                 const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
-                const rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp).sort((a,b) => b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm));
+                
+                let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
+
+                // Aplicar Filtros Rotina
+                const f = state.filtros;
+                if (f.rotinaBusca) {
+                    const termo = f.rotinaBusca.toLowerCase();
+                    rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
+                }
+                if (f.rotinaCat) {
+                    rotinasFiltradas = rotinasFiltradas.filter(r => r.categoria === f.rotinaCat);
+                }
+                if (f.rotinaStatus) {
+                    rotinasFiltradas = rotinasFiltradas.filter(r => r.status === f.rotinaStatus);
+                }
+
+                // Ordenação Rotina
+                const ordem = f.rotinaOrdem || 'data-desc';
+                rotinasFiltradas.sort((a, b) => {
+                    if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
+                    if (ordem === 'data-asc') return a.data.localeCompare(b.data) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm);
+                    if (ordem === 'prazo-asc') return (a.prazo || '9999-99-99').localeCompare(b.prazo || '9999-99-99');
+                    if (ordem === 'prazo-desc') return (b.prazo || '0000-00-00').localeCompare(a.prazo || '0000-00-00');
+                    return 0;
+                });
+
                 const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
                 const pendentes = rotinasFiltradas.length - concluidas.length;
 
@@ -784,7 +813,7 @@
                         <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
                     </td>` : ''}
                 </tr>
-            `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada.</td></tr>`;
+            `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada com esses filtros.</td></tr>`;
         }
 
         function rotinasHTML() {
@@ -792,7 +821,30 @@
             const isMinhas = modo === 'minhas';
             const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
             
-            const rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp).sort((a,b) => b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm));
+            let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
+
+            // APLICAR FILTROS ROTINA
+            const f = state.filtros;
+            if (f.rotinaBusca) {
+                const termo = f.rotinaBusca.toLowerCase();
+                rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
+            }
+            if (f.rotinaCat) {
+                rotinasFiltradas = rotinasFiltradas.filter(r => r.categoria === f.rotinaCat);
+            }
+            if (f.rotinaStatus) {
+                rotinasFiltradas = rotinasFiltradas.filter(r => r.status === f.rotinaStatus);
+            }
+
+            // ORDENAÇÃO ROTINA
+            const ordem = f.rotinaOrdem || 'data-desc';
+            rotinasFiltradas.sort((a, b) => {
+                if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
+                if (ordem === 'data-asc') return a.data.localeCompare(b.data) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm);
+                if (ordem === 'prazo-asc') return (a.prazo || '9999-99-99').localeCompare(b.prazo || '9999-99-99');
+                if (ordem === 'prazo-desc') return (b.prazo || '0000-00-00').localeCompare(a.prazo || '0000-00-00');
+                return 0;
+            });
 
             const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
             const pendentes = rotinasFiltradas.length - concluidas.length;
@@ -821,6 +873,25 @@
                     <button id="btn-filt-rot" data-action="filtrar-rotina" class="hidden"></button>
                 </div>
                 ` : ''}
+
+                <!-- FILTROS E ORDENAÇÃO ROTINA -->
+                <div class="bg-white rounded-xl shadow-sm p-3 mb-6 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end border border-gray-200">
+                    <div><label class="lbl">Buscar</label><input id="f-rotina-q" class="inp" placeholder="Título, descrição..." value="${esc(state.filtros.rotinaBusca)}"></div>
+                    <div><label class="lbl">Categoria</label><select id="f-rotina-cat" class="inp"><option value="">Todas</option>${CATS_ROTINA.map(c=>`<option ${state.filtros.rotinaCat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                    <div><label class="lbl">Status</label><select id="f-rotina-status" class="inp"><option value="">Todos</option>${STATUS_ROTINA.map(s=>`<option ${state.filtros.rotinaStatus === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div>
+                        <label class="lbl">Ordenar por</label>
+                        <select id="f-rotina-ordem" class="inp">
+                            <option value="data-desc" ${state.filtros.rotinaOrdem === 'data-desc' ? 'selected' : ''}>Data Início (Mais novas)</option>
+                            <option value="data-asc" ${state.filtros.rotinaOrdem === 'data-asc' ? 'selected' : ''}>Data Início (Mais antigas)</option>
+                            <option value="prazo-asc" ${state.filtros.rotinaOrdem === 'prazo-asc' ? 'selected' : ''}>Prazo (Vencendo primeiro)</option>
+                            <option value="prazo-desc" ${state.filtros.rotinaOrdem === 'prazo-desc' ? 'selected' : ''}>Prazo (Mais distantes)</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2">
+                        <button data-action="limpar-filtros-rotina" class="w-full px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 font-semibold"><i class="fas fa-eraser"></i> Limpar Filtros</button>
+                    </div>
+                </div>
 
                 <!-- Dashboard Rotina -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -1598,12 +1669,23 @@
                 case 'filtrar-quadro': state.filtros = { ...state.filtros, projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
+                
+                // EVENTOS ROTINA E FILTROS ROTINA
                 case 'set-rotina-modo':
                     state.filtros.rotinaModo = d.modo;
                     if (d.modo === 'minhas') state.filtros.rotinaResp = state.user.email;
                     render(true);
                     break;
                 case 'filtrar-rotina': state.filtros.rotinaResp = $('#filtro-rotina-resp').value; render(true); break;
+                case 'limpar-filtros-rotina': 
+                    state.filtros.rotinaBusca = ''; 
+                    state.filtros.rotinaCat = ''; 
+                    state.filtros.rotinaStatus = ''; 
+                    state.filtros.rotinaOrdem = 'data-desc'; 
+                    if($('#f-rotina-q')) $('#f-rotina-q').value = '';
+                    render(true); // Força recarregar os selects para o visual padrão
+                    break;
+
                 case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
                 case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
                 case 'cancelar-sol': await cancelarSolicitacao(d.id); break;
@@ -1652,8 +1734,10 @@
             }
         });
 
+        // INPUTS E SELECTS (Agora lida também com os da aba de Rotina)
         document.addEventListener('input', (e) => {
             if (e.target.id === 'f-q') { state.filtros.q = e.target.value; $('#board').innerHTML = boardHTML(); }
+            if (e.target.id === 'f-rotina-q') { state.filtros.rotinaBusca = e.target.value; render(); } // Atualiza rotinas enquanto digita
             if (e.target.id === 'busca-projeto-dash') {
                 const termo = e.target.value.toLowerCase();
                 document.querySelectorAll('.dash-projeto-card').forEach(card => {
@@ -1668,6 +1752,12 @@
             if (id === 'f-projeto') { state.filtros.projeto = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-sit') { state.filtros.sit = e.target.value; $('#board').innerHTML = boardHTML(); }
+            
+            // FILTROS DA ROTINA
+            if (id === 'f-rotina-cat') { state.filtros.rotinaCat = e.target.value; render(); }
+            if (id === 'f-rotina-status') { state.filtros.rotinaStatus = e.target.value; render(); }
+            if (id === 'f-rotina-ordem') { state.filtros.rotinaOrdem = e.target.value; render(); }
+
             if (id === 'sl-tipo') atualizarCamposSolicitacao();
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
