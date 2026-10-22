@@ -6,6 +6,8 @@
     <title>CX FLOW | Leveros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Adicionado o SheetJS para exportação em Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -76,6 +78,11 @@
                 </nav>
 
                 <div class="flex items-center gap-3 shrink-0">
+                    <!-- Botão de exportação adicionado aqui -->
+                    <button data-action="exportar-excel" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
+                        <i class="fas fa-file-excel text-green-600"></i> <span class="hidden sm:inline">Gerar Relatório</span>
+                    </button>
+
                     <button data-action="nova-tarefa" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
                         <i class="fas fa-plus"></i> <span class="hidden sm:inline">Nova Tarefa</span>
                     </button>
@@ -1530,6 +1537,63 @@
         }
 
         // ==========================================================
+        // EXPORTAÇÃO EXCEL
+        // ==========================================================
+        function exportarRelatorioExcel() {
+            if (!state.projetos.length && !state.tarefas.length && !state.rotinas.length) {
+                return toast('Não há dados para exportar.', 'erro');
+            }
+            toast('Gerando relatório Excel...', 'info');
+
+            // 1. Organizar os dados dos Projetos
+            const dadosProjetos = state.projetos.map(p => ({
+                'Nome do Projeto': p.nome,
+                'Status': p.status === 'arquivado' ? 'Arquivado' : 'Ativo',
+                'Data Início': fmtBR(p.inicio),
+                'Qual a dor?': p.dor || '-',
+                'O que queremos sanar?': p.sanar || '-',
+                'KPI a medir': p.kpi || '-',
+                'Criado por': p.criadoPorEmail
+            }));
+
+            // 2. Organizar os dados das Tarefas
+            const dadosTarefas = state.tarefas.map(t => {
+                const p = getProjeto(t.projetoId);
+                return {
+                    'Projeto': p ? p.nome : 'Sem projeto',
+                    'Título da Tarefa': t.titulo,
+                    'Descrição': t.descricao || '',
+                    'Status': t.status,
+                    'Prazo': fmtBR(t.prazo),
+                    'Prioridade': t.prioridade || 'Média',
+                    'Responsável': t.responsavelEmail
+                };
+            });
+
+            // 3. Organizar os dados das Rotinas Diárias
+            const dadosRotinas = state.rotinas.map(r => ({
+                'Data': fmtBR(r.data),
+                'Categoria': r.categoria,
+                'Status': r.status,
+                'Título': r.titulo,
+                'Responsável': r.responsavelEmail,
+                'Observação': r.observacao || ''
+            }));
+
+            // Criar o arquivo (Workbook)
+            const wb = XLSX.utils.book_new();
+
+            // Adicionar as abas (Worksheets)
+            if (dadosProjetos.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosProjetos), "Projetos");
+            if (dadosTarefas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosTarefas), "Tarefas");
+            if (dadosRotinas.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosRotinas), "Rotina Diária");
+
+            // Fazer o download do arquivo
+            XLSX.writeFile(wb, `Relatorio_CX_FLOW_${hojeISO()}.xlsx`);
+            toast('Relatório exportado com sucesso!');
+        }
+
+        // ==========================================================
         // SUBMITS E EVENTOS
         // ==========================================================
         document.addEventListener('submit', async (e) => {
@@ -1709,6 +1773,11 @@
                 case 'filtrar-quadro': state.filtros = { ...state.filtros, projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
+
+                // EXPORTAÇÃO PARA EXCEL
+                case 'exportar-excel':
+                    exportarRelatorioExcel();
+                    break;
 
                 // EVENTOS ROTINA E FILTROS ROTINA
                 case 'set-rotina-modo':
