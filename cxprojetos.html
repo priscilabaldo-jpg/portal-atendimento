@@ -180,7 +180,8 @@
             projetoAtual: null,
             filtros: { 
                 projeto: '', resp: '', q: '', sit: '', 
-                rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc' 
+                rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc',
+                rotinaOcultas: false // NOVO ESTADO: Filtro para ver tarefas ocultas
             },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
@@ -386,6 +387,12 @@
                 let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
 
                 const f = state.filtros;
+                
+                // Aplicar Filtro de Ocultas
+                if (!f.rotinaOcultas) {
+                    rotinasFiltradas = rotinasFiltradas.filter(r => !r.oculta);
+                }
+
                 if (f.rotinaBusca) {
                     const termo = f.rotinaBusca.toLowerCase();
                     rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
@@ -783,7 +790,7 @@
 
         function linhasTabelaRotina(rotinasFiltradas, isMinhas) {
             return rotinasFiltradas.map(r => `
-                <tr class="hover:bg-gray-50 transition-colors border-l-4" style="border-left-color: ${r.cor || '#e5e7eb'}">
+                <tr class="hover:bg-gray-50 transition-colors border-l-4 ${r.oculta ? 'opacity-50 bg-gray-50' : ''}" style="border-left-color: ${r.cor || '#e5e7eb'}">
                     <td class="p-3 align-top">
                         <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
                         <div class="mt-1">${renderPrazoRotina(r)}</div>
@@ -804,6 +811,9 @@
                     </td>
                     ${isMinhas || isAdmin() ? `
                     <td class="p-3 text-center align-top pt-3 whitespace-nowrap">
+                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${r.oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
+                            <i class="fas ${r.oculta ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                        </button>
                         <button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>
                         <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
                     </td>` : ''}
@@ -820,6 +830,11 @@
 
             // APLICAR FILTROS ROTINA
             const f = state.filtros;
+
+            if (!f.rotinaOcultas) {
+                rotinasFiltradas = rotinasFiltradas.filter(r => !r.oculta);
+            }
+
             if (f.rotinaBusca) {
                 const termo = f.rotinaBusca.toLowerCase();
                 rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
@@ -883,8 +898,11 @@
                             <option value="prazo-desc" ${state.filtros.rotinaOrdem === 'prazo-desc' ? 'selected' : ''}>Prazo (Mais distantes)</option>
                         </select>
                     </div>
-                    <div class="flex gap-2">
-                        <button data-action="limpar-filtros-rotina" class="w-full px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 font-semibold"><i class="fas fa-eraser"></i> Limpar Filtros</button>
+                    <div class="flex gap-2 w-full">
+                        <button data-action="toggle-ver-ocultas" class="flex-1 px-3 py-2 text-sm border ${state.filtros.rotinaOcultas ? 'border-orange-400 text-orange-600 bg-orange-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'} rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors" title="Mostrar atividades ocultas">
+                            <i class="fas ${state.filtros.rotinaOcultas ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                        </button>
+                        <button data-action="limpar-filtros-rotina" class="flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 font-semibold" title="Limpar Filtros"><i class="fas fa-eraser"></i></button>
                     </div>
                 </div>
 
@@ -1601,6 +1619,7 @@
                         acesso: $('#nr-acesso').value.trim(),
                         observacao: $('#nr-obs').value.trim(),
                         status: $('#nr-status').value,
+                        oculta: false, // Por defeito as novas tarefas não são ocultas
                         responsavelEmail: state.user.email,
                         criadoPorEmail: state.user.email,
                         criadoEm: serverTimestamp(),
@@ -1675,14 +1694,37 @@
                     render(true);
                     break;
                 case 'filtrar-rotina': state.filtros.rotinaResp = $('#filtro-rotina-resp').value; render(true); break;
+                
+                case 'toggle-ver-ocultas':
+                    state.filtros.rotinaOcultas = !state.filtros.rotinaOcultas;
+                    render(true);
+                    break;
+
+                case 'toggle-ocultar-rotina': {
+                    const r = state.rotinas.find(x => x.id === d.id);
+                    if (r) {
+                        try {
+                            const novoOculto = !r.oculta;
+                            await updateDoc(doc(db, 'rotinas', d.id), { oculta: novoOculto, atualizadoEm: serverTimestamp() });
+                            toast(novoOculto ? 'Atividade oculta da lista.' : 'Atividade visível novamente.');
+                        } catch (err) {
+                            console.error(err);
+                            toast('Erro ao ocultar atividade.', 'erro');
+                        }
+                    }
+                    break;
+                }
+
                 case 'limpar-filtros-rotina': 
                     state.filtros.rotinaBusca = ''; 
                     state.filtros.rotinaCat = ''; 
                     state.filtros.rotinaStatus = ''; 
                     state.filtros.rotinaOrdem = 'data-desc'; 
+                    state.filtros.rotinaOcultas = false; // Reset também o filtro das ocultas
                     if($('#f-rotina-q')) $('#f-rotina-q').value = '';
                     render(true); 
                     break;
+                    
                 case 'toggle-rotina-form': {
                     const form = $('#form-rotina');
                     const icon = $('#icone-toggle-rotina');
