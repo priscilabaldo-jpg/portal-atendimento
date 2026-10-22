@@ -178,7 +178,6 @@
             membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [], rotinas: [],
             view: 'dashboard',
             projetoAtual: null,
-            // AQUI FORAM ADICIONADOS OS NOVOS ESTADOS DOS FILTROS DA ROTINA
             filtros: { 
                 projeto: '', resp: '', q: '', sit: '', 
                 rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc' 
@@ -374,13 +373,11 @@
                 b.classList.toggle('bg-leveros-verde2', ativo);
             });
 
-            // ATUALIZAÇÃO PARCIAL PARA O QUADRO
             if (!forcar && state.view === 'quadro' && $('#board')) {
                 $('#board').innerHTML = boardHTML();
                 return;
             }
 
-            // ATUALIZAÇÃO PARCIAL PARA AS ROTINAS (Mantém formulário seguro e re-aplica filtros/ordenação)
             if (!forcar && state.view === 'rotina' && $('#rotina-view-root')) {
                 const modo = state.filtros.rotinaModo || 'minhas';
                 const isMinhas = modo === 'minhas';
@@ -388,7 +385,6 @@
                 
                 let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
 
-                // Aplicar Filtros Rotina
                 const f = state.filtros;
                 if (f.rotinaBusca) {
                     const termo = f.rotinaBusca.toLowerCase();
@@ -401,7 +397,6 @@
                     rotinasFiltradas = rotinasFiltradas.filter(r => r.status === f.rotinaStatus);
                 }
 
-                // Ordenação Rotina
                 const ordem = f.rotinaOrdem || 'data-desc';
                 rotinasFiltradas.sort((a, b) => {
                     if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
@@ -901,9 +896,12 @@
 
                 <!-- Formulário de Lançamento Rápido -->
                 ${isMinhas ? `
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6">
-                    <h3 class="font-bold text-gray-700 mb-4 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Lançamento Rápido</h3>
-                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6 transition-all">
+                    <div class="flex items-center justify-between mb-4 cursor-pointer group" data-action="toggle-rotina-form" title="Ocultar/Mostrar Formulário">
+                        <h3 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Lançamento Rápido</h3>
+                        <button type="button" class="text-gray-400 group-hover:text-leveros-verde2 transition-colors"><i id="icone-toggle-rotina" class="fas fa-chevron-up"></i></button>
+                    </div>
+                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end transition-all duration-300">
                         <div><label class="lbl">Data Inicial *</label><input id="nr-data" type="date" class="inp" required value="${hojeISO()}"></div>
                         <div><label class="lbl">Prazo <span class="font-normal normal-case text-gray-400">(opcional)</span></label><input id="nr-prazo" type="date" class="inp"></div>
                         <div><label class="lbl">Categoria *</label><select id="nr-cat" class="inp">${CATS_ROTINA.map(c=>`<option>${c}</option>`).join('')}</select></div>
@@ -1683,8 +1681,21 @@
                     state.filtros.rotinaStatus = ''; 
                     state.filtros.rotinaOrdem = 'data-desc'; 
                     if($('#f-rotina-q')) $('#f-rotina-q').value = '';
-                    render(true); // Força recarregar os selects para o visual padrão
+                    render(true); 
                     break;
+                case 'toggle-rotina-form': {
+                    const form = $('#form-rotina');
+                    const icon = $('#icone-toggle-rotina');
+                    if (form && icon) {
+                        form.classList.toggle('hidden');
+                        if (form.classList.contains('hidden')) {
+                            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                        } else {
+                            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                        }
+                    }
+                    break;
+                }
 
                 case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
                 case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
@@ -1734,10 +1745,10 @@
             }
         });
 
-        // INPUTS E SELECTS (Agora lida também com os da aba de Rotina)
+        // INPUTS E SELECTS
         document.addEventListener('input', (e) => {
             if (e.target.id === 'f-q') { state.filtros.q = e.target.value; $('#board').innerHTML = boardHTML(); }
-            if (e.target.id === 'f-rotina-q') { state.filtros.rotinaBusca = e.target.value; render(); } // Atualiza rotinas enquanto digita
+            if (e.target.id === 'f-rotina-q') { state.filtros.rotinaBusca = e.target.value; render(); }
             if (e.target.id === 'busca-projeto-dash') {
                 const termo = e.target.value.toLowerCase();
                 document.querySelectorAll('.dash-projeto-card').forEach(card => {
