@@ -154,7 +154,7 @@
             'Média': { cls: 'bg-blue-100 text-blue-700', icon: 'fa-equals' },
             'Alta':  { cls: 'bg-orange-100 text-orange-700', icon: 'fa-arrow-up' }
         };
-        
+
         // Definições Rotina
         const STATUS_ROTINA_META = {
             'Não iniciado': 'bg-pink-100 text-pink-700 border-pink-200',
@@ -178,10 +178,10 @@
             membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [], rotinas: [],
             view: 'dashboard',
             projetoAtual: null,
-            filtros: { 
-                projeto: '', resp: '', q: '', sit: '', 
+            filtros: {
+                projeto: '', resp: '', q: '', sit: '',
                 rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc',
-                rotinaOcultas: false // NOVO ESTADO: Filtro para ver tarefas ocultas
+                rotinaOcultas: false
             },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
@@ -270,6 +270,19 @@
             .sort((a, b) => tsMillis(a.criadoEm) - tsMillis(b.criadoEm))
             .map(c => `<option value="${esc(c.id)}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
 
+        // Lista de checkboxes de colaboradores (usada em Nova Tarefa, Lançamento Rápido e Editar Rotina)
+        function checkboxColabs(name, selecionados = [], excluirEmail = '', desabilitado = false) {
+            const lista = state.membros.filter(m => m.email !== excluirEmail).sort((a, b) => a.nome.localeCompare(b.nome));
+            if (!lista.length) return '<p class="text-xs text-gray-400 p-2">Nenhum outro membro cadastrado.</p>';
+            return lista.map(m => `
+                <label class="flex items-center gap-2 p-2 text-sm hover:bg-gray-50 ${desabilitado ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}">
+                    <input type="checkbox" name="${name}" value="${esc(m.email)}" class="rounded" ${selecionados.includes(m.email) ? 'checked' : ''} ${desabilitado ? 'disabled' : ''}>
+                    ${avatar(m.email, 'w-6 h-6 text-[10px]')}
+                    <span class="font-semibold truncate">${esc(m.nome)}</span>
+                </label>`).join('');
+        }
+        const colabsMarcados = (name) => [...document.querySelectorAll(`input[name=${name}]:checked`)].map(cb => cb.value);
+
         // ==========================================================
         // AUTENTICAÇÃO
         // ==========================================================
@@ -343,6 +356,43 @@
         }
 
         // ==========================================================
+        // ROTINA: PERMISSÕES E FILTROS
+        // ==========================================================
+        const rotinaColabs = (r) => r.colaboradoresEmails || [];
+        // A atividade pertence à lista de "email" se ele é o dono OU colaborador
+        const rotinaDe = (r, email) => r.responsavelEmail === email || rotinaColabs(r).includes(email);
+        // Ocultar é individual: o dono usa "oculta"; colaboradores usam "ocultaPara"
+        const rotinaOcultaPara = (r, email) => (r.responsavelEmail === email && !!r.oculta) || (r.ocultaPara || []).includes(email);
+        const podeGerirRotina = (r) => r.responsavelEmail === state.user?.email || isAdmin();
+        const podeEditarRotina = (r) => podeGerirRotina(r) || rotinaColabs(r).includes(state.user?.email);
+
+        function rotinasVisiveis() {
+            const f = state.filtros;
+            const isMinhas = (f.rotinaModo || 'minhas') === 'minhas';
+            const fResp = isMinhas ? state.user.email : (f.rotinaResp || state.user.email);
+
+            let lista = state.rotinas.filter(r => rotinaDe(r, fResp));
+            if (!f.rotinaOcultas) lista = lista.filter(r => !rotinaOcultaPara(r, fResp));
+            if (f.rotinaBusca) {
+                const termo = f.rotinaBusca.toLowerCase();
+                lista = lista.filter(r => `${r.titulo || ''} ${r.descricao || ''} ${r.observacao || ''}`.toLowerCase().includes(termo));
+            }
+            if (f.rotinaCat) lista = lista.filter(r => r.categoria === f.rotinaCat);
+            if (f.rotinaStatus) lista = lista.filter(r => r.status === f.rotinaStatus);
+
+            const ordem = f.rotinaOrdem || 'data-desc';
+            lista.sort((a, b) => {
+                if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
+                if (ordem === 'data-asc') return a.data.localeCompare(b.data) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm);
+                if (ordem === 'prazo-asc') return (a.prazo || '9999-99-99').localeCompare(b.prazo || '9999-99-99');
+                if (ordem === 'prazo-desc') return (b.prazo || '0000-00-00').localeCompare(a.prazo || '0000-00-00');
+                return 0;
+            });
+            const concluidas = lista.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial').length;
+            return { lista, isMinhas, fResp, concluidas, pendentes: lista.length - concluidas };
+        }
+
+        // ==========================================================
         // NAVEGAÇÃO / RENDER
         // ==========================================================
         function navegar(view, projetoId = null) {
@@ -380,45 +430,10 @@
             }
 
             if (!forcar && state.view === 'rotina' && $('#rotina-view-root')) {
-                const modo = state.filtros.rotinaModo || 'minhas';
-                const isMinhas = modo === 'minhas';
-                const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
-                
-                let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
-
-                const f = state.filtros;
-                
-                // Aplicar Filtro de Ocultas
-                if (!f.rotinaOcultas) {
-                    rotinasFiltradas = rotinasFiltradas.filter(r => !r.oculta);
-                }
-
-                if (f.rotinaBusca) {
-                    const termo = f.rotinaBusca.toLowerCase();
-                    rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
-                }
-                if (f.rotinaCat) {
-                    rotinasFiltradas = rotinasFiltradas.filter(r => r.categoria === f.rotinaCat);
-                }
-                if (f.rotinaStatus) {
-                    rotinasFiltradas = rotinasFiltradas.filter(r => r.status === f.rotinaStatus);
-                }
-
-                const ordem = f.rotinaOrdem || 'data-desc';
-                rotinasFiltradas.sort((a, b) => {
-                    if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
-                    if (ordem === 'data-asc') return a.data.localeCompare(b.data) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm);
-                    if (ordem === 'prazo-asc') return (a.prazo || '9999-99-99').localeCompare(b.prazo || '9999-99-99');
-                    if (ordem === 'prazo-desc') return (b.prazo || '0000-00-00').localeCompare(a.prazo || '0000-00-00');
-                    return 0;
-                });
-
-                const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
-                const pendentes = rotinasFiltradas.length - concluidas.length;
-
-                $('#kpi-total-rotinas').innerHTML = kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '');
-                $('#kpi-concluidas-rotinas').innerHTML = kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '');
-                $('#tbody-rotinas').innerHTML = linhasTabelaRotina(rotinasFiltradas, isMinhas);
+                const { lista, isMinhas, fResp, concluidas, pendentes } = rotinasVisiveis();
+                $('#kpi-total-rotinas').innerHTML = kpi('Total de Lançamentos', lista.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '');
+                $('#kpi-concluidas-rotinas').innerHTML = kpi('Concluídas vs Pendentes', `${concluidas} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '');
+                $('#tbody-rotinas').innerHTML = linhasTabelaRotina(lista, isMinhas, fResp);
                 return;
             }
 
@@ -740,7 +755,7 @@
                             <button data-action="excluir-projeto" data-id="${esc(p.id)}" class="text-sm px-3 py-2 rounded-lg border border-red-200 text-red-500 hover:bg-red-50" title="Excluir projeto"><i class="fas fa-trash"></i></button>` : ''}
                         </div>
                     </div>
-                    
+
                     <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
                         <div>
                             <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1"><i class="fas fa-heart-crack text-red-400 mr-1"></i> Qual a Dor?</h4>
@@ -755,7 +770,7 @@
                             <p class="text-sm text-gray-700 font-semibold">${esc(p.kpi || 'Não informado')}</p>
                         </div>
                     </div>
-                    
+
                     <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                         <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.pct}%</div><div class="text-[11px] text-gray-500">concluído</div></div>
                         <div data-action="filtrar-quadro" data-projeto="${esc(p.id)}" class="bg-gray-50 rounded-lg p-2 cursor-pointer hover:bg-leveros-verde4/40 transition-colors"><div class="text-xl font-bold text-leveros-verde1">${pr.total}</div><div class="text-[11px] text-gray-500">tarefas</div></div>
@@ -788,9 +803,20 @@
             return `<a href="${esc(href)}" target="_blank" class="text-leveros-azul hover:text-leveros-verde2 hover:underline text-[11px] font-bold whitespace-nowrap"><i class="fas fa-external-link-alt mr-1"></i>Acessar</a>`;
         }
 
-        function linhasTabelaRotina(rotinasFiltradas, isMinhas) {
-            return rotinasFiltradas.map(r => `
-                <tr class="hover:bg-gray-50 transition-colors border-l-4 ${r.oculta ? 'opacity-50 bg-gray-50' : ''}" style="border-left-color: ${r.cor || '#e5e7eb'}">
+        function linhasTabelaRotina(lista, isMinhas, fResp) {
+            const mostrarAcoes = isMinhas || isAdmin();
+            return lista.map(r => {
+                const colabs = rotinaColabs(r);
+                const oculta = rotinaOcultaPara(r, fResp);
+                const compartilhada = r.responsavelEmail !== fResp; // a lista exibida é de um colaborador
+                const btnOcultar = isMinhas ? `
+                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
+                            <i class="fas ${oculta ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                        </button>` : '';
+                const btnEditar = podeEditarRotina(r) ? `<button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>` : '';
+                const btnExcluir = podeGerirRotina(r) ? `<button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>` : '';
+                return `
+                <tr class="hover:bg-gray-50 transition-colors border-l-4 ${oculta ? 'opacity-50 bg-gray-50' : ''}" style="border-left-color: ${r.cor || '#e5e7eb'}">
                     <td class="p-3 align-top">
                         <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
                         <div class="mt-1">${renderPrazoRotina(r)}</div>
@@ -802,6 +828,8 @@
                     <td class="p-3 align-top">
                         <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
                         ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
+                        ${compartilhada ? `<div class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🤝 Compartilhada por ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</div>` : ''}
+                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Colaboradores"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
                     </td>
                     <td class="p-3 align-top text-[12px] text-gray-500 italic">
                         ${esc(r.observacao || '--')}
@@ -809,61 +837,23 @@
                     <td class="p-3 text-center align-top pt-4">
                         ${renderAcesso(r.acesso)}
                     </td>
-                    ${isMinhas || isAdmin() ? `
+                    ${mostrarAcoes ? `
                     <td class="p-3 text-center align-top pt-3 whitespace-nowrap">
-                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${r.oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
-                            <i class="fas ${r.oculta ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                        </button>
-                        <button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>
-                        <button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>
+                        ${btnOcultar}${btnEditar}${btnExcluir}
                     </td>` : ''}
-                </tr>
-            `).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada com esses filtros.</td></tr>`;
+                </tr>`;
+            }).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada com esses filtros.</td></tr>`;
         }
 
         function rotinasHTML() {
-            const modo = state.filtros.rotinaModo || 'minhas';
-            const isMinhas = modo === 'minhas';
-            const fResp = isMinhas ? state.user.email : (state.filtros.rotinaResp || state.user.email);
-            
-            let rotinasFiltradas = state.rotinas.filter(r => r.responsavelEmail === fResp);
-
-            // APLICAR FILTROS ROTINA
+            const { lista, isMinhas, fResp, concluidas, pendentes } = rotinasVisiveis();
             const f = state.filtros;
-
-            if (!f.rotinaOcultas) {
-                rotinasFiltradas = rotinasFiltradas.filter(r => !r.oculta);
-            }
-
-            if (f.rotinaBusca) {
-                const termo = f.rotinaBusca.toLowerCase();
-                rotinasFiltradas = rotinasFiltradas.filter(r => `${r.titulo} ${r.descricao} ${r.observacao}`.toLowerCase().includes(termo));
-            }
-            if (f.rotinaCat) {
-                rotinasFiltradas = rotinasFiltradas.filter(r => r.categoria === f.rotinaCat);
-            }
-            if (f.rotinaStatus) {
-                rotinasFiltradas = rotinasFiltradas.filter(r => r.status === f.rotinaStatus);
-            }
-
-            // ORDENAÇÃO ROTINA
-            const ordem = f.rotinaOrdem || 'data-desc';
-            rotinasFiltradas.sort((a, b) => {
-                if (ordem === 'data-desc') return b.data.localeCompare(a.data) || tsMillis(b.criadoEm) - tsMillis(a.criadoEm);
-                if (ordem === 'data-asc') return a.data.localeCompare(b.data) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm);
-                if (ordem === 'prazo-asc') return (a.prazo || '9999-99-99').localeCompare(b.prazo || '9999-99-99');
-                if (ordem === 'prazo-desc') return (b.prazo || '0000-00-00').localeCompare(a.prazo || '0000-00-00');
-                return 0;
-            });
-
-            const concluidas = rotinasFiltradas.filter(r => r.status === 'Concluído' || r.status === 'Concluído Parcial');
-            const pendentes = rotinasFiltradas.length - concluidas.length;
 
             return `<div id="rotina-view-root">
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
                     <div>
                         <h2 class="text-2xl font-bold text-leveros-verde1">Rotina e Atividades Avulsas</h2>
-                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados.</p>
+                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados. Ao adicionar colaboradores, a atividade aparece também na lista deles.</p>
                     </div>
                 </div>
 
@@ -886,21 +876,21 @@
 
                 <!-- FILTROS E ORDENAÇÃO ROTINA -->
                 <div class="bg-white rounded-xl shadow-sm p-3 mb-6 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end border border-gray-200">
-                    <div><label class="lbl">Buscar</label><input id="f-rotina-q" class="inp" placeholder="Título, descrição..." value="${esc(state.filtros.rotinaBusca)}"></div>
-                    <div><label class="lbl">Categoria</label><select id="f-rotina-cat" class="inp"><option value="">Todas</option>${CATS_ROTINA.map(c=>`<option ${state.filtros.rotinaCat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-                    <div><label class="lbl">Status</label><select id="f-rotina-status" class="inp"><option value="">Todos</option>${STATUS_ROTINA.map(s=>`<option ${state.filtros.rotinaStatus === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+                    <div><label class="lbl">Buscar</label><input id="f-rotina-q" class="inp" placeholder="Título, descrição..." value="${esc(f.rotinaBusca)}"></div>
+                    <div><label class="lbl">Categoria</label><select id="f-rotina-cat" class="inp"><option value="">Todas</option>${CATS_ROTINA.map(c=>`<option ${f.rotinaCat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+                    <div><label class="lbl">Status</label><select id="f-rotina-status" class="inp"><option value="">Todos</option>${STATUS_ROTINA.map(s=>`<option ${f.rotinaStatus === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
                     <div>
                         <label class="lbl">Ordenar por</label>
                         <select id="f-rotina-ordem" class="inp">
-                            <option value="data-desc" ${state.filtros.rotinaOrdem === 'data-desc' ? 'selected' : ''}>Data Início (Mais novas)</option>
-                            <option value="data-asc" ${state.filtros.rotinaOrdem === 'data-asc' ? 'selected' : ''}>Data Início (Mais antigas)</option>
-                            <option value="prazo-asc" ${state.filtros.rotinaOrdem === 'prazo-asc' ? 'selected' : ''}>Prazo (Vencendo primeiro)</option>
-                            <option value="prazo-desc" ${state.filtros.rotinaOrdem === 'prazo-desc' ? 'selected' : ''}>Prazo (Mais distantes)</option>
+                            <option value="data-desc" ${f.rotinaOrdem === 'data-desc' ? 'selected' : ''}>Data Início (Mais novas)</option>
+                            <option value="data-asc" ${f.rotinaOrdem === 'data-asc' ? 'selected' : ''}>Data Início (Mais antigas)</option>
+                            <option value="prazo-asc" ${f.rotinaOrdem === 'prazo-asc' ? 'selected' : ''}>Prazo (Vencendo primeiro)</option>
+                            <option value="prazo-desc" ${f.rotinaOrdem === 'prazo-desc' ? 'selected' : ''}>Prazo (Mais distantes)</option>
                         </select>
                     </div>
                     <div class="flex gap-2 w-full">
-                        <button data-action="toggle-ver-ocultas" class="flex-1 px-3 py-2 text-sm border ${state.filtros.rotinaOcultas ? 'border-orange-400 text-orange-600 bg-orange-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'} rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors" title="Mostrar atividades ocultas">
-                            <i class="fas ${state.filtros.rotinaOcultas ? 'fa-eye' : 'fa-eye-slash'}"></i>
+                        <button data-action="toggle-ver-ocultas" class="flex-1 px-3 py-2 text-sm border ${f.rotinaOcultas ? 'border-orange-400 text-orange-600 bg-orange-50' : 'border-gray-300 text-gray-600 hover:bg-gray-50'} rounded-lg flex items-center justify-center gap-2 font-semibold transition-colors" title="Mostrar atividades ocultas">
+                            <i class="fas ${f.rotinaOcultas ? 'fa-eye' : 'fa-eye-slash'}"></i>
                         </button>
                         <button data-action="limpar-filtros-rotina" class="flex-1 px-3 py-2 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50 flex items-center justify-center gap-2 font-semibold" title="Limpar Filtros"><i class="fas fa-eraser"></i></button>
                     </div>
@@ -908,8 +898,8 @@
 
                 <!-- Dashboard Rotina -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div id="kpi-total-rotinas" class="w-full">${kpi('Total de Lançamentos', rotinasFiltradas.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}</div>
-                    <div id="kpi-concluidas-rotinas" class="w-full">${kpi('Concluídas vs Pendentes', `${concluidas.length} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}</div>
+                    <div id="kpi-total-rotinas" class="w-full">${kpi('Total de Lançamentos', lista.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}</div>
+                    <div id="kpi-concluidas-rotinas" class="w-full">${kpi('Concluídas vs Pendentes', `${concluidas} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}</div>
                 </div>
 
                 <!-- Formulário de Lançamento Rápido -->
@@ -930,13 +920,18 @@
                                 ${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="nr-cor" value="${c}" class="peer hidden" ${i === 0 ? 'checked' : ''}><span class="block w-6 h-6 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}
                             </div>
                         </div>
-                        
+
                         <div class="md:col-span-3"><label class="lbl">Título *</label><input id="nr-titulo" class="inp" required placeholder="Resumo rápido"></div>
                         <div class="md:col-span-2"><label class="lbl">Link de Acesso</label><input id="nr-acesso" class="inp" placeholder="https://..."></div>
-                        
+
                         <div class="md:col-span-3"><label class="lbl">Descrição</label><input id="nr-desc" class="inp" placeholder="Detalhes adicionais (opcional)"></div>
                         <div class="md:col-span-2"><label class="lbl">Observação</label><input id="nr-obs" class="inp" placeholder="Anotações para alteração futura..."></div>
-                        
+
+                        <div class="md:col-span-5">
+                            <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(a atividade também aparecerá na lista deles)</span></label>
+                            <div class="border border-gray-300 rounded-lg max-h-32 overflow-y-auto divide-y bg-white">${checkboxColabs('nr-colab', [], state.user.email)}</div>
+                        </div>
+
                         <div class="md:col-span-5 flex justify-end mt-2">
                             <button type="submit" class="px-6 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-semibold flex items-center justify-center gap-2 shadow-sm"><i class="fas fa-plus"></i> Inserir Atividade</button>
                         </div>
@@ -955,11 +950,11 @@
                                     <th class="p-3 font-semibold min-w-[200px]">Título / Descrição</th>
                                     <th class="p-3 font-semibold min-w-[150px]">Observação</th>
                                     <th class="p-3 font-semibold text-center w-28">Acesso</th>
-                                    ${isMinhas || isAdmin() ? '<th class="p-3 font-semibold text-center w-24">Ações</th>' : ''}
+                                    ${isMinhas || isAdmin() ? '<th class="p-3 font-semibold text-center w-28">Ações</th>' : ''}
                                 </tr>
                             </thead>
                             <tbody id="tbody-rotinas" class="divide-y divide-gray-100 text-sm">
-                                ${linhasTabelaRotina(rotinasFiltradas, isMinhas)}
+                                ${linhasTabelaRotina(lista, isMinhas, fResp)}
                             </tbody>
                         </table>
                     </div>
@@ -991,28 +986,35 @@
         function fecharModal() { const m = $('#modal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
 
         function modalEditarRotina(id) {
-            const r = state.rotinas.find(x => x.id === id); 
+            const r = state.rotinas.find(x => x.id === id);
             if (!r) return;
+            if (!podeEditarRotina(r)) return toast('Você não tem permissão para editar esta atividade.', 'erro');
+            const gerir = podeGerirRotina(r);
             abrirModal('Editar Atividade Avulsa', `
                 <input type="hidden" id="er-id" value="${r.id}">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div><label class="lbl">Data Inicial *</label><input id="er-data" type="date" class="inp" required value="${esc(r.data)}"></div>
                     <div><label class="lbl">Prazo <span class="font-normal normal-case text-gray-400">(opcional)</span></label><input id="er-prazo" type="date" class="inp" value="${esc(r.prazo || '')}"></div>
-                    
+
                     <div><label class="lbl">Categoria *</label><select id="er-cat" class="inp">${CATS_ROTINA.map(c=>`<option ${c===r.categoria?'selected':''}>${c}</option>`).join('')}</select></div>
                     <div><label class="lbl">Status *</label><select id="er-status" class="inp">${STATUS_ROTINA.map(s=>`<option ${s===r.status?'selected':''}>${s}</option>`).join('')}</select></div>
-                    
+
                     <div class="sm:col-span-2">
                         <label class="lbl">Cor</label>
                         <div class="flex gap-2 mt-1 flex-wrap">
                             ${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="er-cor" value="${c}" class="peer hidden" ${c === (r.cor || PALETA[0]) ? 'checked' : ''}><span class="block w-6 h-6 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}
                         </div>
                     </div>
-                    
+
                     <div class="sm:col-span-2"><label class="lbl">Título *</label><input id="er-titulo" class="inp" required value="${esc(r.titulo || r.descricao)}"></div>
                     <div class="sm:col-span-2"><label class="lbl">Descrição</label><input id="er-desc" class="inp" value="${esc(r.descricao || '')}"></div>
                     <div class="sm:col-span-2"><label class="lbl">Link de Acesso</label><input id="er-acesso" class="inp" placeholder="https://..." value="${esc(r.acesso || '')}"></div>
                     <div class="sm:col-span-2"><label class="lbl">Observação</label><textarea id="er-obs" class="inp" rows="2" placeholder="Anotações sobre a atividade...">${esc(r.observacao || '')}</textarea></div>
+
+                    <div class="sm:col-span-2">
+                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores ${gerir ? '' : '<span class="font-normal normal-case text-gray-400">(somente o responsável pode alterar)</span>'}</label>
+                        <div class="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y bg-white">${checkboxColabs('er-colab', rotinaColabs(r), r.responsavelEmail, !gerir)}</div>
+                    </div>
                 </div>
             `, 'form-editar-rotina', 'Salvar Alterações', 'max-w-2xl');
         }
@@ -1023,11 +1025,11 @@
                     <div><label class="lbl">Nome do projeto *</label><input id="np-nome" class="inp" required maxlength="80" placeholder="Ex: Implantação do novo ERP"></div>
                     <div><label class="lbl">Data de Início *</label><input id="np-inicio" type="date" class="inp" required value="${hojeISO()}"></div>
                     <div><label class="lbl">Descrição</label><textarea id="np-desc" rows="2" class="inp" placeholder="Objetivo e escopo..."></textarea></div>
-                    
+
                     <div><label class="lbl">Qual a dor?</label><textarea id="np-dor" rows="2" class="inp" placeholder="Qual problema atual gerou este projeto?"></textarea></div>
                     <div><label class="lbl">O que queremos sanar?</label><textarea id="np-sanar" rows="2" class="inp" placeholder="O que será resolvido ao final do projeto?"></textarea></div>
                     <div><label class="lbl">Qual o KPI a medir?</label><input id="np-kpi" class="inp" placeholder="Ex: Redução de 20% no tempo de atendimento"></div>
-                    
+
                     <div><label class="lbl">Primeiro cronograma</label><input id="np-cron" class="inp" value="Cronograma principal" maxlength="80"></div>
                     <div><label class="lbl">Cor</label><div class="flex gap-2 flex-wrap">${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="np-cor" value="${c}" class="peer hidden" ${i === 0 ? 'checked' : ''}><span class="block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}</div></div>
                 </div>`, 'form-projeto', 'Criar projeto');
@@ -1042,11 +1044,11 @@
                     <div><label class="lbl">Nome do projeto *</label><input id="ep-nome" class="inp" required maxlength="80" value="${esc(p.nome)}"></div>
                     <div><label class="lbl">Data de Início *</label><input id="ep-inicio" type="date" class="inp" required value="${esc(p.inicio || '')}"></div>
                     <div><label class="lbl">Descrição</label><textarea id="ep-desc" rows="2" class="inp">${esc(p.descricao || '')}</textarea></div>
-                    
+
                     <div><label class="lbl">Qual a dor?</label><textarea id="ep-dor" rows="2" class="inp">${esc(p.dor || '')}</textarea></div>
                     <div><label class="lbl">O que queremos sanar?</label><textarea id="ep-sanar" rows="2" class="inp">${esc(p.sanar || '')}</textarea></div>
                     <div><label class="lbl">Qual o KPI a medir?</label><input id="ep-kpi" class="inp" value="${esc(p.kpi || '')}"></div>
-                    
+
                     <div><label class="lbl">Cor</label><div class="flex gap-2 flex-wrap">${PALETA.map((c, i) => `<label class="cursor-pointer"><input type="radio" name="ep-cor" value="${c}" class="peer hidden" ${c === (p.cor || PALETA[0]) ? 'checked' : ''}><span class="block w-8 h-8 rounded-full border-2 border-transparent peer-checked:border-leveros-verde1 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-leveros-azul" style="background:${c}"></span></label>`).join('')}</div></div>
                 </div>`, 'form-editar-projeto', 'Salvar Alterações');
         }
@@ -1061,7 +1063,7 @@
             abrirModal('Equipe', `
                 <p class="text-sm text-gray-500 mb-3">Quem entra no portal é adicionado automaticamente. Para atribuir tarefas a alguém que ainda não acessou, cadastre-o aqui.</p>
                 <div class="mb-4 max-h-40 overflow-y-auto border rounded-lg divide-y">
-                    ${state.membros.sort((a, b) => a.nome.localeCompare(b.nome)).map(m => `
+                    ${state.membros.slice().sort((a, b) => a.nome.localeCompare(b.nome)).map(m => `
                         <div class="flex items-center gap-2 p-2 text-sm">
                             ${avatar(m.email)}
                             <span class="font-semibold flex-1 truncate">${esc(m.nome)}</span>
@@ -1091,6 +1093,10 @@
                     <div><label class="lbl">Prazo *</label><input id="nt-prazo" type="date" class="inp" required value=""></div>
                     <div><label class="lbl">Prioridade</label><select id="nt-prio" class="inp">${PRIORIDADES.map(p => `<option ${p === 'Média' ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
                     <div><label class="lbl">Status inicial</label><select id="nt-status" class="inp">${STATUS.map(s => `<option>${s}</option>`).join('')}</select></div>
+                    <div class="sm:col-span-2">
+                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
+                        <div id="nt-colabs" class="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y bg-white">${checkboxColabs('nt-colab')}</div>
+                    </div>
                 </div>
                 <p class="text-xs text-gray-400 mt-3"><i class="far fa-envelope mr-1"></i>O responsável receberá um e-mail automático ao ser atribuído.</p>`, 'form-tarefa', 'Criar tarefa', 'max-w-2xl');
         }
@@ -1355,7 +1361,7 @@
 
         async function notificarAtribuicao(tarefa, projeto) {
             const para = (tarefa.responsavelEmail || '').trim();
-            if (!para) return; 
+            if (!para) return;
             const membro = getMembro(para);
             const link = window.location.href.split('#')[0];
             const assunto = `[Projetos] Nova tarefa atribuída a você: ${tarefa.titulo}`;
@@ -1368,14 +1374,14 @@
                         body: JSON.stringify({
                             service_id: c.serviceId, template_id: c.templateId, user_id: c.publicKey,
                             template_params: {
-                                to_email: para, 
-                                to_name: membro.nome, 
-                                subject: assunto, 
+                                to_email: para,
+                                to_name: membro.nome,
+                                subject: assunto,
                                 task_title: tarefa.titulo,
-                                project_name: projeto?.nome || 'Projeto Geral', 
-                                due_date: fmtBR(tarefa.prazo), 
+                                project_name: projeto?.nome || 'Projeto Geral',
+                                due_date: fmtBR(tarefa.prazo),
                                 assigned_by: state.user.nome,
-                                description: tarefa.descricao || 'Sem detalhes adicionais.', 
+                                description: tarefa.descricao || 'Sem detalhes adicionais.',
                                 link: link
                             }
                         })
@@ -1480,10 +1486,10 @@
                 await deleteDoc(doc(db, 'proj_membros', email));
                 toast('Membro removido da base.');
                 fecharModal();
-                modalMembro(); 
-            } catch (e) { 
-                console.error(e); 
-                toast('Sem permissão para excluir membro.', 'erro'); 
+                modalMembro();
+            } catch (e) {
+                console.error(e);
+                toast('Sem permissão para excluir membro.', 'erro');
             }
         }
 
@@ -1537,16 +1543,16 @@
                     const inicio = $('#np-inicio').value;
                     const cor = document.querySelector('input[name=np-cor]:checked')?.value || PALETA[0];
                     const ref = await addDoc(collection(db, 'projetos'), {
-                        nome, 
+                        nome,
                         inicio,
-                        descricao: $('#np-desc').value.trim(), 
-                        dor: $('#np-dor').value.trim(), 
-                        sanar: $('#np-sanar').value.trim(), 
-                        kpi: $('#np-kpi').value.trim(), 
-                        cor, 
+                        descricao: $('#np-desc').value.trim(),
+                        dor: $('#np-dor').value.trim(),
+                        sanar: $('#np-sanar').value.trim(),
+                        kpi: $('#np-kpi').value.trim(),
+                        cor,
                         status: 'ativo',
-                        criadoPorEmail: state.user.email, 
-                        criadoPorNome: state.user.nome, 
+                        criadoPorEmail: state.user.email,
+                        criadoPorNome: state.user.nome,
                         criadoEm: serverTimestamp()
                     });
                     const nCron = $('#np-cron').value.trim();
@@ -1593,10 +1599,12 @@
                         cronogramaId = r.id;
                     }
                     const respEmail = $('#nt-resp').value;
+                    const colaboradoresEmails = colabsMarcados('nt-colab').filter(em => em !== respEmail);
                     const dados = {
                         projetoId, cronogramaId,
                         titulo: $('#nt-titulo').value.trim(), descricao: $('#nt-desc').value.trim(),
                         responsavelEmail: respEmail, responsavelNome: getMembro(respEmail).nome,
+                        colaboradoresEmails,
                         prazo: $('#nt-prazo').value, prioridade: $('#nt-prio').value, status: $('#nt-status').value,
                         historicoPrazos: [], comentariosCount: 0,
                         criadoPorEmail: state.user.email, criadoPorNome: state.user.nome,
@@ -1604,11 +1612,15 @@
                     };
                     const ref = await addDoc(collection(db, 'tarefas'), dados);
                     await logAtividade(ref.id, `criou a tarefa e atribuiu a ${dados.responsavelNome} (prazo ${fmtBR(dados.prazo)})`);
+                    if (colaboradoresEmails.length) {
+                        await logAtividade(ref.id, `incluiu como colaborador(es): ${colaboradoresEmails.map(em => getMembro(em).nome).join(', ')}`);
+                    }
                     fecharModal(); toast('Tarefa criada.');
                     await notificarAtribuicao(dados, getProjeto(projetoId));
                 }
                 else if (e.target.id === 'form-rotina') {
                     const corSelecionada = document.querySelector('input[name=nr-cor]:checked')?.value || PALETA[0];
+                    const colaboradoresEmails = colabsMarcados('nr-colab').filter(em => em !== state.user.email);
                     const dados = {
                         data: $('#nr-data').value,
                         prazo: $('#nr-prazo').value || null,
@@ -1619,23 +1631,30 @@
                         acesso: $('#nr-acesso').value.trim(),
                         observacao: $('#nr-obs').value.trim(),
                         status: $('#nr-status').value,
-                        oculta: false, // Por defeito as novas tarefas não são ocultas
+                        oculta: false,
+                        colaboradoresEmails,
+                        ocultaPara: [],
                         responsavelEmail: state.user.email,
                         criadoPorEmail: state.user.email,
                         criadoEm: serverTimestamp(),
                         atualizadoEm: serverTimestamp()
                     };
                     await addDoc(collection(db, 'rotinas'), dados);
-                    toast('Atividade inserida na rotina com sucesso!');
+                    toast(colaboradoresEmails.length
+                        ? `Atividade inserida e compartilhada com ${colaboradoresEmails.map(em => primeiroNome(getMembro(em).nome)).join(', ')}.`
+                        : 'Atividade inserida na rotina com sucesso!');
                     $('#nr-titulo').value = '';
                     $('#nr-desc').value = '';
                     $('#nr-acesso').value = '';
                     $('#nr-obs').value = '';
                     $('#nr-prazo').value = '';
+                    document.querySelectorAll('input[name=nr-colab]').forEach(cb => cb.checked = false);
                     if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Inserir Atividade'; }
                 }
                 else if (e.target.id === 'form-editar-rotina') {
                     const id = $('#er-id').value;
+                    const r = state.rotinas.find(x => x.id === id);
+                    if (!r || !podeEditarRotina(r)) throw new Error('Você não tem permissão para editar esta atividade.');
                     const corSelecionada = document.querySelector('input[name=er-cor]:checked')?.value || PALETA[0];
                     const upd = {
                         data: $('#er-data').value,
@@ -1649,6 +1668,10 @@
                         observacao: $('#er-obs').value.trim(),
                         atualizadoEm: serverTimestamp()
                     };
+                    // Só o responsável (ou admin) altera a lista de colaboradores
+                    if (podeGerirRotina(r)) {
+                        upd.colaboradoresEmails = colabsMarcados('er-colab').filter(em => em !== r.responsavelEmail);
+                    }
                     await updateDoc(doc(db, 'rotinas', id), upd);
                     fecharModal();
                     toast('Atividade atualizada com sucesso!');
@@ -1686,7 +1709,7 @@
                 case 'filtrar-quadro': state.filtros = { ...state.filtros, projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
-                
+
                 // EVENTOS ROTINA E FILTROS ROTINA
                 case 'set-rotina-modo':
                     state.filtros.rotinaModo = d.modo;
@@ -1694,7 +1717,7 @@
                     render(true);
                     break;
                 case 'filtrar-rotina': state.filtros.rotinaResp = $('#filtro-rotina-resp').value; render(true); break;
-                
+
                 case 'toggle-ver-ocultas':
                     state.filtros.rotinaOcultas = !state.filtros.rotinaOcultas;
                     render(true);
@@ -1704,9 +1727,14 @@
                     const r = state.rotinas.find(x => x.id === d.id);
                     if (r) {
                         try {
-                            const novoOculto = !r.oculta;
-                            await updateDoc(doc(db, 'rotinas', d.id), { oculta: novoOculto, atualizadoEm: serverTimestamp() });
-                            toast(novoOculto ? 'Atividade oculta da lista.' : 'Atividade visível novamente.');
+                            const me = state.user.email;
+                            const ocultaAgora = rotinaOcultaPara(r, me);
+                            // Dono usa o campo "oculta"; colaborador oculta só para si em "ocultaPara"
+                            const upd = r.responsavelEmail === me
+                                ? { oculta: !ocultaAgora, atualizadoEm: serverTimestamp() }
+                                : { ocultaPara: ocultaAgora ? arrayRemove(me) : arrayUnion(me) };
+                            await updateDoc(doc(db, 'rotinas', d.id), upd);
+                            toast(ocultaAgora ? 'Atividade visível novamente.' : 'Atividade oculta da lista.');
                         } catch (err) {
                             console.error(err);
                             toast('Erro ao ocultar atividade.', 'erro');
@@ -1715,16 +1743,16 @@
                     break;
                 }
 
-                case 'limpar-filtros-rotina': 
-                    state.filtros.rotinaBusca = ''; 
-                    state.filtros.rotinaCat = ''; 
-                    state.filtros.rotinaStatus = ''; 
-                    state.filtros.rotinaOrdem = 'data-desc'; 
-                    state.filtros.rotinaOcultas = false; // Reset também o filtro das ocultas
+                case 'limpar-filtros-rotina':
+                    state.filtros.rotinaBusca = '';
+                    state.filtros.rotinaCat = '';
+                    state.filtros.rotinaStatus = '';
+                    state.filtros.rotinaOrdem = 'data-desc';
+                    state.filtros.rotinaOcultas = false;
                     if($('#f-rotina-q')) $('#f-rotina-q').value = '';
-                    render(true); 
+                    render(true);
                     break;
-                    
+
                 case 'toggle-rotina-form': {
                     const form = $('#form-rotina');
                     const icon = $('#icone-toggle-rotina');
@@ -1752,7 +1780,9 @@
                 case 'excluir-membro': await excluirMembro(d.email); break;
                 case 'editar-rotina': modalEditarRotina(d.id); break;
                 case 'excluir-rotina': {
-                    if(confirm('Excluir esta atividade da rotina?')) {
+                    const r = state.rotinas.find(x => x.id === d.id);
+                    if (!r || !podeGerirRotina(r)) { toast('Apenas o responsável pode excluir esta atividade.', 'erro'); break; }
+                    if (confirm(rotinaColabs(r).length ? 'Esta atividade é compartilhada e será removida também da lista dos colaboradores. Excluir?' : 'Excluir esta atividade da rotina?')) {
                         try {
                             await deleteDoc(doc(db, 'rotinas', d.id));
                             toast('Atividade avulsa excluída.');
@@ -1805,7 +1835,7 @@
             if (id === 'f-projeto') { state.filtros.projeto = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-sit') { state.filtros.sit = e.target.value; $('#board').innerHTML = boardHTML(); }
-            
+
             // FILTROS DA ROTINA
             if (id === 'f-rotina-cat') { state.filtros.rotinaCat = e.target.value; render(); }
             if (id === 'f-rotina-status') { state.filtros.rotinaStatus = e.target.value; render(); }
@@ -1814,6 +1844,15 @@
             if (id === 'sl-tipo') atualizarCamposSolicitacao();
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
+            }
+            // O responsável escolhido não pode ser também colaborador
+            if (id === 'nt-resp') {
+                document.querySelectorAll('input[name=nt-colab]').forEach(cb => {
+                    const igual = cb.value === e.target.value;
+                    if (igual) cb.checked = false;
+                    cb.disabled = igual;
+                    cb.closest('label').classList.toggle('opacity-40', igual);
+                });
             }
             if (id === 'dt-prazo') {
                 const t = getTarefa(state.drawerTaskId);
