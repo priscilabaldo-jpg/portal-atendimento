@@ -6,6 +6,7 @@
     <title>CX FLOW | Leveros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Adicionado o SheetJS para exportação em Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script>
         tailwind.config = {
@@ -62,43 +63,43 @@
     <!-- APP -->
     <div id="app-screen" class="hidden flex-1 flex-col min-h-0">
         <header class="bg-leveros-verde1 text-white shadow-md z-20 shrink-0">
-            <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-                <div class="flex items-center gap-3 shrink-0">
-                    <i class="fas fa-layer-group text-leveros-azul text-2xl"></i>
-                    <h1 class="text-lg font-bold hidden sm:block">CX FLOW</h1>
+            <div class="max-w-[1600px] mx-auto px-3 sm:px-4 py-2 flex items-center justify-between gap-3 flex-wrap lg:flex-nowrap">
+                <div class="flex items-center gap-2 shrink-0">
+                    <i class="fas fa-layer-group text-leveros-azul text-xl"></i>
+                    <h1 class="text-base font-bold hidden sm:block">CX FLOW</h1>
                 </div>
 
-                <nav id="nav" class="flex items-center gap-1 overflow-x-auto text-sm">
-                    <button data-action="nav" data-view="dashboard" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-chart-pie mr-1"></i> Dashboard</button>
-                    <button data-action="nav" data-view="minhas" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-user-check mr-1"></i> Minhas Tarefas <span id="badge-minhas" class="hidden ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span></button>
-                    <button data-action="nav" data-view="quadro" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-columns mr-1"></i> Quadro</button>
-                    <button data-action="nav" data-view="projetos" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-folder-open mr-1"></i> Projetos</button>
-                    <button data-action="nav" data-view="rotina" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-clipboard-list mr-1"></i> Rotina Diária</button>
-                    <!-- NOVA ABA ADICIONADA -->
-                    <button data-action="nav" data-view="dores" class="nav-btn px-3 py-2 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors border border-leveros-azul/30 bg-leveros-verde2/50"><i class="fas fa-heart-crack mr-1 text-leveros-azul"></i> Dores Operacionais</button>
+                <nav id="nav" class="flex items-center gap-1 flex-wrap flex-1 text-sm order-3 lg:order-2 basis-full lg:basis-auto">
+                    <button data-action="nav" data-view="dashboard" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-chart-pie mr-1"></i> <span class="hidden sm:inline">Dashboard</span></button>
+                    <button data-action="nav" data-view="minhas" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-user-check mr-1"></i> <span class="hidden sm:inline">Minhas Tarefas</span> <span id="badge-minhas" class="hidden ml-1 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span></button>
+                    <button data-action="nav" data-view="quadro" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-columns mr-1"></i> <span class="hidden sm:inline">Quadro</span></button>
+                    <button data-action="nav" data-view="projetos" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-folder-open mr-1"></i> <span class="hidden sm:inline">Projetos</span></button>
+                    <button data-action="nav" data-view="rotina" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-clipboard-list mr-1"></i> <span class="hidden sm:inline">Rotina Diária</span></button>
+                    <button data-action="nav" data-view="dores" class="nav-btn px-2.5 py-1.5 rounded-lg whitespace-nowrap hover:bg-leveros-verde2 transition-colors"><i class="fas fa-heart-crack mr-1"></i> <span class="hidden sm:inline">Dores Operacionais</span></button>
                 </nav>
 
-                <div class="flex items-center gap-3 shrink-0">
-                    <button data-action="exportar-excel" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
-                        <i class="fas fa-file-excel text-green-600"></i> <span class="hidden sm:inline">Gerar Relatório</span>
+                <div class="flex items-center gap-2 shrink-0 order-2 lg:order-3">
+                    <!-- Botão de exportação adicionado aqui -->
+                    <button data-action="exportar-excel" title="Gerar Relatório" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
+                        <i class="fas fa-file-excel text-green-600"></i> <span class="hidden xl:inline">Gerar Relatório</span>
                     </button>
 
-                    <button data-action="nova-tarefa" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
-                        <i class="fas fa-plus"></i> <span class="hidden sm:inline">Nova Tarefa</span>
+                    <button data-action="nova-tarefa" title="Nova Tarefa" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-2.5 py-1.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
+                        <i class="fas fa-plus"></i> <span class="hidden xl:inline">Nova Tarefa</span>
                     </button>
-                    <div class="flex items-center gap-2 border-l border-leveros-verde2 pl-3">
+                    <div class="flex items-center gap-2 border-l border-leveros-verde2 pl-2">
                         <div class="text-right hidden lg:block">
-                            <div id="user-name" class="text-sm font-semibold text-leveros-verde4"></div>
-                            <button data-action="logout" class="text-xs text-gray-300 hover:text-white">Sair</button>
+                            <div id="user-name" class="text-xs font-semibold text-leveros-verde4 leading-tight"></div>
+                            <button data-action="logout" class="text-[11px] text-gray-300 hover:text-white">Sair</button>
                         </div>
-                        <div id="user-avatar" class="w-9 h-9 rounded-full bg-leveros-verde2 overflow-hidden flex items-center justify-center border-2 border-leveros-azul cursor-pointer" data-action="logout" title="Sair"></div>
+                        <div id="user-avatar" class="w-8 h-8 rounded-full bg-leveros-verde2 overflow-hidden flex items-center justify-center border-2 border-leveros-azul cursor-pointer" data-action="logout" title="Sair"></div>
                     </div>
                 </div>
             </div>
         </header>
 
         <main class="flex-1 overflow-y-auto">
-            <div id="view" class="max-w-7xl mx-auto p-4 sm:p-6"></div>
+            <div id="view" class="max-w-[1600px] mx-auto p-3 sm:p-5"></div>
         </main>
     </div>
 
@@ -178,27 +179,19 @@
         const AV_CORES = ['bg-teal-600', 'bg-sky-600', 'bg-violet-600', 'bg-pink-600', 'bg-orange-500', 'bg-emerald-600', 'bg-indigo-600', 'bg-rose-600'];
 
         // ==========================================================
-        // DADOS FAKE PARA A ABA DORES OPERACIONAIS
-        // ==========================================================
-        const doresFake = [
-            { id: 'A1', setor: 'Atendimento', direcional: 'Rastreio', dor: 'Dificuldade de logar no ambiente da BoxLink, principalmente com clientes em linha.', acao: 'Validar com o TI alternativas para facilitar o acesso à BoxLink.\nGustavo da TI atuando para melhorar a disponibilização no Intergrall das informações do Rastreio.', resultado: 'Menor ganho: login mais rápido. Maior ganho: redução do tempo médio de atendimento (TMA) em chamadas ao vivo.', kpi: 'Reduzir tempo médio de autenticação e TMA', prioridade: 'Alta', squad: 'Q4/2026 · Squad Atendimento/TI', alinhamento: 'Pilar Eficiência Operacional', inicio: '15/10/2026', fim: '15/11/2026', status: 'Em aprofundamento', obs: 'Base real — Dores Operacionais CX' },
-            { id: 'CX7', setor: 'CX', direcional: 'Rastreio', dor: 'Falta de atualização dos e-mails transacionais disparados ao cliente', acao: 'Melhoria do disparo dos e-mails transacionais ao cliente', resultado: 'Menor ganho: E-mails existentes com texto e prazo coerentes. Maior ganho: Cliente informado nos marcos relevantes, com próximo passo claro.', kpi: 'Cobertura de comunicação nos eventos elegíveis.', prioridade: 'Alta', squad: 'Q4/2026 · Squad CX', alinhamento: 'Pilar Eficiência Operacional', inicio: '05/01/2026', fim: '31/10/2026', status: 'Em aprofundamento', obs: 'Base real — Dores Operacionais CX' },
-            { id: 'L1.3', setor: 'Logística', direcional: 'Entrega - Ocorrências', dor: 'Alta incidência de contatos reativos por atraso na entrega.', acao: 'Incluir disparo via WhatsApp no status "Atraso na Entrega", integrado ao CRM — testar com 2 regiões/2 transportadoras.', resultado: 'Menor ganho: cliente informado proativamente. Maior ganho: redução de contatos reativos e custo de atendimento.', kpi: 'Reduzir contatos relacionados a atraso em X%', prioridade: 'Alta', squad: 'Q4/2026 · Squad Logística', alinhamento: 'Pilar Eficiência Operacional / Redução de Custo', inicio: '22/10/2026', fim: '31/12/2026', status: 'Em aprofundamento', obs: 'Custo por disparo: R$ 0,56 - agenda marcada para o dia 22/10' },
-            { id: 'L2.1', setor: 'Logística', direcional: 'Entrega - Ocorrências', dor: 'Experiência de entrega prejudicada em prédios sem elevador/acesso (subir andares).', acao: 'Entrega Conforto. Alinhar com transportadoras volume/carga limite para entrega com subida de andares, por região.', resultado: 'Menor ganho: alinhamento formal com transportadoras. Maior ganho: aumento do CSAT de entrega em regiões verticais.', kpi: 'Aumentar CSAT de entrega em regiões com prédios/apartamentos', prioridade: 'Baixa', squad: 'Q1/2027 · Squad Logística', alinhamento: 'Pilar Experiência do Cliente', inicio: '04/01/2027', fim: '28/02/2027', status: 'Não iniciado', obs: 'Base real — Dores Operacionais CX' }
-        ];
-
-        // ==========================================================
         // ESTADO
         // ==========================================================
         const state = {
             user: null,
             membros: [], projetos: [], cronogramas: [], tarefas: [], solicitacoes: [], rotinas: [],
+            dores: [], doresLoaded: false, doresErro: false, importDores: null,
             view: 'dashboard',
             projetoAtual: null,
             filtros: {
                 projeto: '', resp: '', q: '', sit: '',
                 rotinaModo: 'minhas', rotinaResp: '', rotinaBusca: '', rotinaCat: '', rotinaStatus: '', rotinaOrdem: 'data-desc',
-                rotinaOcultas: false
+                rotinaOcultas: false,
+                dores: { q: '', setor: '', prio: '', status: '', quarter: '', grupo: 'setor', modo: 'cards' }
             },
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
@@ -287,6 +280,7 @@
             .sort((a, b) => tsMillis(a.criadoEm) - tsMillis(b.criadoEm))
             .map(c => `<option value="${esc(c.id)}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
 
+        // Lista de checkboxes de colaboradores (usada em Nova Tarefa, Lançamento Rápido e Editar Rotina)
         function checkboxColabs(name, selecionados = [], excluirEmail = '', desabilitado = false) {
             const lista = state.membros.filter(m => m.email !== excluirEmail).sort((a, b) => a.nome.localeCompare(b.nome));
             if (!lista.length) return '<p class="text-xs text-gray-400 p-2">Nenhum outro membro cadastrado.</p>';
@@ -369,13 +363,16 @@
             ouvir('tarefas', 'tarefas', (t) => t);
             ouvir('solicitacoes', 'solicitacoes', (x) => x);
             ouvir('rotinas', 'rotinas', (r) => r);
+            ouvirDores();
         }
 
         // ==========================================================
         // ROTINA: PERMISSÕES E FILTROS
         // ==========================================================
         const rotinaColabs = (r) => r.colaboradoresEmails || [];
+        // A atividade pertence à lista de "email" se ele é o dono OU colaborador
         const rotinaDe = (r, email) => r.responsavelEmail === email || rotinaColabs(r).includes(email);
+        // Ocultar é individual: o dono usa "oculta"; colaboradores usam "ocultaPara"
         const rotinaOcultaPara = (r, email) => (r.responsavelEmail === email && !!r.oculta) || (r.ocultaPara || []).includes(email);
         const podeGerirRotina = (r) => r.responsavelEmail === state.user?.email || isAdmin();
         const podeEditarRotina = (r) => podeGerirRotina(r) || rotinaColabs(r).includes(state.user?.email);
@@ -406,6 +403,548 @@
             return { lista, isMinhas, fResp, concluidas, pendentes: lista.length - concluidas };
         }
 
+// ==========================================================
+        // DORES OPERACIONAIS — dados, constantes e helpers
+        // ==========================================================
+        // Colunas = exatamente as 15 colunas da planilha "CRONOGRAMA DE PRIORIZAÇÃO DE PROJETOS".
+        // (k = campo salvo no Firestore · h = cabeçalho da planilha)
+        const DORES_COLUNAS = [
+            { k: 'codigo',       h: 'ID' },
+            { k: 'setor',        h: 'Setor' },
+            { k: 'direcional',   h: 'DIRECIONAL' },
+            { k: 'dor',          h: 'DOR' },
+            { k: 'acao',         h: 'AÇÃO' },
+            { k: 'resultado',    h: 'Resultado Esperado (menor → maior ganho)' },
+            { k: 'metricaAtual', h: 'Métrica Atual (do problema)' },
+            { k: 'kpi',          h: 'KPI de Sucesso' },
+            { k: 'prioridade',   h: 'Prioridade' },
+            { k: 'squad',        h: 'Quarter & Squad de Destino' },
+            { k: 'alinhamento',  h: 'Alinhamento "4 por 100"' },
+            { k: 'inicio',       h: 'Início' },
+            { k: 'fim',          h: 'Fim Estimado' },
+            { k: 'status',       h: 'Status' },
+            { k: 'obs',          h: 'Observações' }
+        ];
+        const DORES_PRIO = ['Crítica', 'Alta', 'Média', 'Baixa'];
+        const DORES_STATUS = ['Em aprofundamento', 'Não iniciado', 'Concluído'];
+        const DORES_NEUTRO = 'bg-gray-100 text-gray-600 border-gray-200';
+        const DORES_PRIO_META = {
+            'Crítica': { badge: 'bg-red-600 text-white border-red-700', bar: 'bg-red-600', ord: 0 },
+            'Alta':    { badge: 'bg-orange-100 text-orange-800 border-orange-200', bar: 'bg-orange-400', ord: 1 },
+            'Média':   { badge: 'bg-blue-100 text-blue-700 border-blue-200', bar: 'bg-blue-400', ord: 2 },
+            'Baixa':   { badge: DORES_NEUTRO, bar: 'bg-gray-300', ord: 3 }
+        };
+        const DORES_STATUS_META = {
+            'Em aprofundamento': { badge: 'bg-yellow-100 text-yellow-800 border-yellow-200', icon: 'fa-spinner', ord: 0 },
+            'Não iniciado':      { badge: DORES_NEUTRO, icon: 'fa-pause-circle', ord: 1 },
+            'Concluído':         { badge: 'bg-green-100 text-green-700 border-green-200', icon: 'fa-check-double', ord: 2 }
+        };
+        const SETORES_PADRAO = ['Atendimento', 'CX', 'Logística', 'Logística Reversa', 'T&D', 'Garantia'];
+
+        // Carga inicial: as 24 linhas da planilha DORES_OPERACIONAIS.xlsx, copiadas sem alteração.
+        const DORES_BASE = [{"codigo": "A1", "setor": "Atendimento", "direcional": "Rastreio", "dor": "Dificuldade de logar no ambiente da BoxLink, principalmente com clientes em linha.", "acao": "Validar com o TI alternativas para facilitar o acesso à BoxLink.\nGustavo da TI atuando para melhorar a disponibilização no Intergrall das informações do Rastreio - Ariany abrir chamado para TI", "resultado": "Menor ganho: login mais rápido. Maior ganho: redução do tempo médio de atendimento (TMA) em chamadas ao vivo.", "metricaAtual": "", "kpi": "Reduzir tempo médio de autenticação e TMA", "prioridade": "Alta", "squad": "Q4/2026 · Squad Atendimento/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-10-15", "fim": "2026-11-15", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "", "setor": "Atendimento", "direcional": "Rastreio", "dor": "Atendimento sem informações complementares do rastreio do pedido, somente o que temos na BoxLink é insuficiente e sabemos que na Fup tem mais detalhes", "acao": "Dar acesso a visibilidade por sistema integrado ao time (exemplo BoxLink inicialmente, e posterior subir no CRM)", "resultado": "", "metricaAtual": "", "kpi": "", "prioridade": "", "squad": "", "alinhamento": "", "inicio": "", "fim": "", "status": "", "obs": ""}, {"codigo": "CX7", "setor": "CX", "direcional": "Rastreio", "dor": "Falta de atualização dos e-mails transacionais disparados ao cliente", "acao": "Melhoria do disparo dos e-mails transacionais ao cliente", "resultado": "Menor ganho: E-mails existentes com texto, prazo e orientação coerentes com o processo vigente, reduzindo dúvidas causadas por informação desatualizada. Maior ganho: Cliente informado nos marcos relevantes, com próximo passo claro — especialmente quando o pedido estiver disponível para retirada e quando houver prazo a cumprir.", "metricaAtual": "", "kpi": "Cobertura de comunicação nos eventos elegíveis: (eventos prioritários com comunicação enviada corretamente ÷ total de eventos prioritários elegíveis) × 100. Separar por tipo de evento; “enviado” deve ser conferido nos logs, não presumido pelo status do pedido.", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-01-05", "fim": "2026-10-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L1.3", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Alta incidência de contatos reativos por atraso na entrega.", "acao": "Incluir disparo via WhatsApp no status 'Atraso na Entrega', integrado ao CRM — testar com 2 regiões/2 transportadoras.\nRégua de Comunicação de Atrasos: Fluxo configurado na ferramenta de mensageria com gatilhos automáticos. Teste com 2 Transportadoras em 2 Regiões. \n1- Região Campinas - Transportadora Rodonaves", "resultado": "Menor ganho: cliente informado proativamente. Maior ganho: redução de contatos reativos e custo de atendimento.", "metricaAtual": "", "kpi": "Reduzir contatos relacionados a atraso em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad Logística", "alinhamento": "Pilar Eficiência Operacional / Redução de Custo", "inicio": "2026-10-22", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Custo por disparo: R$ 0,56 (taxa de contato/NPS: Não mensurado) - agenda marcada para o dia 22/10"}, {"codigo": "L2.1", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Experiência de entrega prejudicada em prédios sem elevador/acesso (subir andares).", "acao": "Entrega Conforto. Alinhar com transportadoras volume/carga limite para entrega com subida de andares, por região.", "resultado": "Menor ganho: alinhamento formal com transportadoras. Maior ganho: aumento do CSAT de entrega em regiões verticais.", "metricaAtual": "", "kpi": "Aumentar CSAT de entrega em regiões com prédios/apartamentos", "prioridade": "Baixa", "squad": "Q1/2027 · Squad Logística", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2027-01-04", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L3.1", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Incidência de recebimento de produtos com avaria.", "acao": "Levantar custos de folder, e-mail transacional e disparo WhatsApp de rastreio orientando conferência do produto na entrega.\nTrazer quais as transportadoras que tem mais reclamações para tratr pontualmente com time de Logistica\nVErificar maior incidencia de transportadora e produto", "resultado": "Menor ganho: cliente orientado a conferir produto. Maior ganho: redução de avarias reportadas pós-entrega e custo de reversas.", "metricaAtual": "", "kpi": "Reduzir % de pedidos com avaria reportada", "prioridade": "Média", "squad": "Q1/2027 · Squad CX", "alinhamento": "Pilar Redução de Custo (trocas/reversas)", "inicio": "2027-01-04", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L5.2", "setor": "Logística Reversa", "direcional": "Rastreio T&D", "dor": "Cliente sem informações do tracking da sua troca/devolução solicitada.", "acao": "Incluir rastreio de coleta no fluxo de troca/devolução.", "resultado": "Menor ganho: visibilidade básica do status. Maior ganho: redução de contatos 'cadê minha coleta' e aumento da confiança no processo.", "metricaAtual": "", "kpi": "Reduzir contatos sobre status de coleta em X%", "prioridade": "Média", "squad": "Q4/2026 · Squad Logística Reversa", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-11-02", "fim": "2026-12-15", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T1", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Tracking de trocas e devoluções é manual, sem visibilidade ao cliente e sobrecarregando a operação.", "acao": "Criar notificações automáticas por etapa do T&D, com templates padronizados (Novo CRM + Troque Fácil).", "resultado": "Menor ganho: redução de trabalho manual. Maior ganho: cliente autoatendido sobre status, liberando capacidade operacional.", "metricaAtual": "", "kpi": "Reduzir handling manual (h/mês) e contatos de status em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-11-02", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T2", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Emissão da NFD manualmente e envio do vale crédito SAP para o solicitante interno", "acao": "Emitir NFD no CRM/Troque Fácil e emissão do vale crédito automático através da Uappi ao cliente, dispararando comunicação automática após as emissões com NFD, valor e nº do vale", "resultado": "Menor ganho: elimina a etapa manual isolada de emissão → Maior ganho: automação fiscal ponta a ponta, reduzindo SLA, erro humano e exposição regulatória.", "metricaAtual": "", "kpi": "Reduzir tempo de emissão de NFD + vale para < 24h; zerar erros de cadastro fiscal na emissão", "prioridade": "Crítica", "squad": "A definir · Taskforce Fiscal/TI/T&D (ainda em aprofundamento, não entra em cronograma fechado)", "alinhamento": "Pilar Compliance Fiscal & Eficiência Operacional", "inicio": "A definir", "fim": "A definir", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T3", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de visão dos vales (créditos) pendentes do cliente.", "acao": "Cliente acompanha vales pendentes via área logada; time interno visualiza na Uappi.", "resultado": "Menor ganho: consulta disponível ao cliente. Maior ganho: redução de chamados sobre status do vale.", "metricaAtual": "", "kpi": "Reduzir chamados 'status do meu vale' em X%", "prioridade": "Média", "squad": "Q1/2027 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2027-01-04", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T4", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Emissão manual de NFD para casos de exceção (sinistro).", "acao": "Automatizar emissão de NFD em massa para exceções (sinistro).", "resultado": "Menor ganho: menos digitação manual. Maior ganho: redução do tempo operacional no tratamento de sinistros.", "metricaAtual": "", "kpi": "Reduzir tempo de processamento de sinistros em X%", "prioridade": "Média", "squad": "Q1/2027 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2027-02-01", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T5", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de visibilidade do cadastro fiscal (contribuinte) do cliente no momento da emissão.", "acao": "Integrar validação de cadastro fiscal (contribuinte) via Uappi ao Novo CRM/Troque Fácil.", "resultado": "Menor ganho: alerta de cadastro incompleto. Maior ganho: redução de erros/risco fiscal na emissão de NFD.", "metricaAtual": "", "kpi": "Reduzir % de NFDs emitidas com erro de cadastro fiscal", "prioridade": "Alta", "squad": "Q4/2026 · Squad T&D/TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal", "inicio": "2026-11-02", "fim": "2026-12-15", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T6", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de trava na emissão de CSDEVOL no SAP quando o pedido já foi faturado.", "acao": "Travar a emissão de CSDEVOL no momento em que ela não está habilitada.", "resultado": "Menor ganho: alerta ao usuário. Maior ganho: eliminação de erro operacional e exposição fiscal.", "metricaAtual": "", "kpi": "Zerar incidentes de CSDEVOL emitido indevidamente", "prioridade": "Crítica", "squad": "Q4/2026 · Squad TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal / Redução de Risco", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T7", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de trava na emissão de NFD já cancelada no SAP.", "acao": "Travar a emissão de NFD no momento em que a nota não está habilitada.", "resultado": "Menor ganho: alerta ao usuário. Maior ganho: eliminação de erro operacional e exposição fiscal.", "metricaAtual": "", "kpi": "Zerar incidentes de NFD emitida sobre nota cancelada", "prioridade": "Crítica", "squad": "Q4/2026 · Squad TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal / Redução de Risco", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T8", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de plataforma de auto atendimento para solicitações de trocas e devoluções", "acao": "Testar POC da Troque Fácil", "resultado": "Menor ganho: validação técnica isolada da ferramenta → Maior ganho: viabiliza com segurança todo o cluster de automações de T&D (notificações, NFD, vale crédito), reduzindo risco de retrabalho e falha em produção.", "metricaAtual": "", "kpi": "Taxa de sucesso do POC ≥ 90% das transações testadas sem erro; aprovação formal da plataforma para rollout", "prioridade": "Crítica", "squad": "Q4/2026 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional / Compliance Fiscal", "inicio": "A definir", "fim": "A definir", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "P3", "setor": "T&D Ciclo", "direcional": "Jornada T&D", "dor": "Time de pós-vendas fica responsável pelo bloqueio e desbloqueio de pedidos sem critério formal.", "acao": "Definir matriz de risco e alçadas para bloqueio/desbloqueio pelo time de vendas assistidas.", "resultado": "Menor ganho: critério formalizado. Maior ganho: redução do tempo médio de liberação de pedidos bloqueados.", "metricaAtual": "", "kpi": "Reduzir tempo médio de liberação de pedidos bloqueados", "prioridade": "Média", "squad": "Q4/2026 · Squad Comercial/Pós-vendas", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "D3", "setor": "Garantia", "direcional": "Jornada Garantia", "dor": "Ausência de visão do motivo da solicitação de assistência técnica ou envio de peça.", "acao": "Incluir TAG no protocolo para descrição do defeito (gás, sensor etc.).", "resultado": "Menor ganho: categorização do protocolo. Maior ganho: análise de causa raiz e redução de reincidência.", "metricaAtual": "", "kpi": "Aumentar % de protocolos com causa raiz identificada", "prioridade": "Baixa", "squad": "Q1/2027 · Squad Garantia", "alinhamento": "Pilar Qualidade / Eficiência Operacional", "inicio": "2027-02-01", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "C1", "setor": "CD / Reversa & Garantia", "direcional": "Jornada T&D + DOA + Garantia", "dor": "Ausência de controle dos pedidos recebidos por número de série nos casos de DOA fabricante.", "acao": "Validar com o CD a automação de verificação do número de série na entrada (bipagem).", "resultado": "Menor ganho: rastreabilidade do item. Maior ganho: redução de divergências no controle de garantia fabricante.", "metricaAtual": "", "kpi": "Reduzir % de divergência de nº de série em recebimentos DOA", "prioridade": "Média", "squad": "Q1/2027 · Squad CD", "alinhamento": "Pilar Eficiência Operacional / Redução de Custo", "inicio": "2027-01-04", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX1", "setor": "CX", "direcional": "Jornada cliente", "dor": "Falta de prioridade nos atendimentos do patrão", "acao": "Criação do fluxo exclusivo para os patrões vips selecionados", "resultado": "Menor ganho: atendimento diferenciado identificado. Maior ganho: aumento da retenção e satisfação dos patrões VIP.", "metricaAtual": "", "kpi": "Aumentar CSAT/NPS dos patrões VIP em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-21", "fim": "2026-11-02", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX2", "setor": "CX", "direcional": "NPS", "dor": "Ausência de análise das avaliações de NPS", "acao": "Análise diária do NPS e ação de melhoria com base na avaliação apresentada", "resultado": "Menor ganho: visibilidade diária dos resultados. Maior ganho: ações corretivas rápidas e aumento do NPS geral.", "metricaAtual": "", "kpi": "Aumentar NPS geral em X% / reduzir tempo de resposta a avaliações negativas", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-13", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX3", "setor": "CX", "direcional": "NPS", "dor": "Ausência de NPS Relacional do Patrão", "acao": "Criação de NPS relacional do patrão para medirmos a qualidade dos nossos fluxos internos", "resultado": "Menor ganho: nova métrica implementada. Maior ganho: visão contínua da satisfação do patrão com os fluxos internos.", "metricaAtual": "", "kpi": "Implantar NPS relacional do patrão e atingir meta X pontos", "prioridade": "Média", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-10", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX4", "setor": "CX", "direcional": "Garantia - Cortina de Ar", "dor": "Ausência de fluxo especial para cortina de ar marca própria Leveros", "acao": "Criação de um fluxo para cortina de ar", "resultado": "Menor ganho: processo formalizado. Maior ganho: redução de erros e padronização no atendimento de cortina de ar.", "metricaAtual": "", "kpi": "Reduzir % de protocolos tratados fora do padrão", "prioridade": "Média", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-09-18", "fim": "2026-11-02", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX6", "setor": "CX", "direcional": "Atendimento", "dor": "Ausência de IA para facilitar as dúvidas do atendimento", "acao": "Criação da IA conversacional para auxiliar no atendimento do canal online e offline", "resultado": "Menor ganho: suporte imediato ao atendente. Maior ganho: redução do TMA e aumento da qualidade das respostas.", "metricaAtual": "", "kpi": "Reduzir TMA em X% / aumentar % de respostas corretas na 1ª tentativa", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-09-25", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX6", "setor": "CX", "direcional": "Jornada de Loja (HUB)", "dor": "", "acao": "Ponto focal adm para assuntos Operacionais e P´ós vendas", "resultado": "", "metricaAtual": "", "kpi": "", "prioridade": "", "squad": "", "alinhamento": "", "inicio": "", "fim": "", "status": "", "obs": ""}];
+
+        const dorPrioMeta = (p) => DORES_PRIO_META[p] || { badge: DORES_NEUTRO, bar: 'bg-gray-300', ord: 9 };
+        const dorStatusMeta = (s) => DORES_STATUS_META[s] || { badge: DORES_NEUTRO, icon: 'fa-circle', ord: 9 };
+        const normTxt = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+        const ehISO = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
+        const fmtDor = (v) => ehISO(v) ? fmtBR(v) : (v || '—');
+        const dorQuarter = (d) => (String(d.squad || '').match(/^\s*(Q\d\/\d{4})/) || [])[1] || 'A definir';
+        const qOrd = (q) => { const m = /^Q(\d)\/(\d{4})$/.exec(q); return m ? (+m[2]) * 10 + (+m[1]) : 99999; };
+        const dorChave = (d) => {
+            const s = normTxt([d.codigo, d.setor, d.dor, d.acao].join('|'));
+            let h2 = 7; for (const c of s) h2 = (h2 * 33 + c.charCodeAt(0)) >>> 0;
+            return `${hash(s).toString(36)}${h2.toString(36)}`;
+        };
+        const dorDocId = (d) => 'imp_' + dorChave(d);
+        const camposDor = (d) => { const o = {}; DORES_COLUNAS.forEach(c => { o[c.k] = String(d[c.k] ?? ''); }); return o; };
+        function dorCorSetor(setor) {
+            const c = PALETA[hash(normTxt(setor)) % PALETA.length];
+            const claro = ['#FFCE00', '#6FFFAF', '#4CDDDD'].includes(c);
+            return { bg: c, fg: claro ? '#002D32' : '#ffffff' };
+        }
+        const podeExcluirDor = (d) => isAdmin() || !d.criadoPorEmail || d.criadoPorEmail === state.user?.email;
+
+        // ==========================================================
+        // DORES OPERACIONAIS — tempo real (Firestore: coleção "dores")
+        // ==========================================================
+        function ouvirDores() {
+            const u = onSnapshot(collection(db, 'dores'), (snap) => {
+                state.dores = snap.docs.map(x => ({ ...x.data(), id: x.id }))
+                    .sort((a, b) => (a.ordem ?? 1e9) - (b.ordem ?? 1e9) || tsMillis(a.criadoEm) - tsMillis(b.criadoEm));
+                state.doresLoaded = true; state.doresErro = false;
+                if (state.view === 'dores') render();
+            }, (err) => {
+                console.error('Erro em dores:', err);
+                state.doresLoaded = true; state.doresErro = true;
+                if (state.view === 'dores') render();
+            });
+            state.unsubs.push(u);
+        }
+
+        // ==========================================================
+        // DORES OPERACIONAIS — filtros e agrupamento
+        // ==========================================================
+        function doresFiltradas() {
+            const f = state.filtros.dores, q = normTxt(f.q);
+            return state.dores.filter(d =>
+                (!f.setor || d.setor === f.setor) && (!f.prio || d.prioridade === f.prio) &&
+                (!f.status || d.status === f.status) && (!f.quarter || dorQuarter(d) === f.quarter) &&
+                (!q || normTxt(DORES_COLUNAS.map(c => d[c.k]).join(' ')).includes(q)));
+        }
+
+        function agruparDores(lista) {
+            const g = state.filtros.dores.grupo;
+            if (g === 'nenhum') return [{ titulo: '', itens: lista }];
+            const chave = (d) => g === 'setor' ? (d.setor || 'Sem setor') : g === 'prioridade' ? (d.prioridade || 'Sem prioridade')
+                : g === 'status' ? (d.status || 'Sem status') : dorQuarter(d);
+            const mapa = new Map();
+            lista.forEach(d => { const k = chave(d); if (!mapa.has(k)) mapa.set(k, []); mapa.get(k).push(d); });
+            const grupos = [...mapa].map(([titulo, itens]) => ({ titulo, itens }));
+            if (g === 'prioridade') grupos.sort((a, b) => dorPrioMeta(a.titulo).ord - dorPrioMeta(b.titulo).ord);
+            if (g === 'status') grupos.sort((a, b) => dorStatusMeta(a.titulo).ord - dorStatusMeta(b.titulo).ord);
+            if (g === 'quarter') grupos.sort((a, b) => qOrd(a.titulo) - qOrd(b.titulo));
+            return grupos;
+        }
+
+        const opcoesDe = (fn) => [...new Set(state.dores.map(fn).filter(Boolean))];
+        const optsFiltro = (lista, sel) => lista.map(v => `<option value="${esc(v)}" ${v === sel ? 'selected' : ''}>${esc(v)}</option>`).join('');
+
+        // ==========================================================
+        // DORES OPERACIONAIS — views
+        // ==========================================================
+        function doresKpisHTML() {
+            const n = (fn) => state.dores.filter(fn).length;
+            const tile = (rotulo, valor, icon, cor, campo, val) => `
+                <button data-action="dor-filtro-rapido" data-campo="${campo}" data-valor="${esc(val)}" class="text-left bg-white border border-gray-200 border-l-4 ${cor} rounded-lg px-3 py-2 hover:shadow-sm transition-shadow">
+                    <div class="flex items-center justify-between gap-2"><span class="text-[11px] font-semibold text-gray-500 leading-tight">${rotulo}</span><i class="fas ${icon} text-gray-300 text-xs"></i></div>
+                    <div class="text-xl font-bold text-leveros-verde1 leading-tight">${valor}</div>
+                </button>`;
+            return `
+                ${tile('Total de dores', state.dores.length, 'fa-list-ol', 'border-l-leveros-verde2', 'limpar', '')}
+                ${tile('Em aprofundamento', n(d => d.status === 'Em aprofundamento'), 'fa-spinner', 'border-l-yellow-400', 'status', 'Em aprofundamento')}
+                ${tile('Não iniciado', n(d => d.status === 'Não iniciado'), 'fa-pause-circle', 'border-l-gray-400', 'status', 'Não iniciado')}
+                ${tile('Concluído', n(d => d.status === 'Concluído'), 'fa-check-double', 'border-l-green-500', 'status', 'Concluído')}
+                ${tile('Prioridade crítica', n(d => d.prioridade === 'Crítica'), 'fa-triangle-exclamation', 'border-l-red-600', 'prio', 'Crítica')}
+                ${tile('Prioridade alta', n(d => d.prioridade === 'Alta'), 'fa-arrow-up', 'border-l-orange-400', 'prio', 'Alta')}`;
+        }
+
+        function cardDorHTML(d) {
+            const pm = dorPrioMeta(d.prioridade), sm = dorStatusMeta(d.status);
+            return `
+            <div role="button" tabindex="0" data-action="dor-ver" data-id="${esc(d.id)}" class="bg-white rounded-lg border border-gray-200 hover:border-leveros-verde2 hover:shadow-md transition cursor-pointer relative pl-4 pr-3 py-3 flex flex-col gap-1.5">
+                <span class="absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${pm.bar}"></span>
+                <div class="flex items-center gap-1.5 flex-wrap text-[11px]">
+                    <span class="font-bold text-gray-500">#${esc(d.codigo || '—')}</span>
+                    <span class="px-1.5 py-0.5 rounded-full border font-bold ${pm.badge}">${esc(d.prioridade || '—')}</span>
+                    <span class="ml-auto px-1.5 py-0.5 rounded-full border font-semibold ${sm.badge}"><i class="fas ${sm.icon} mr-1"></i>${esc(d.status || '—')}</span>
+                </div>
+                <div class="text-[10px] uppercase font-bold tracking-wide text-leveros-verde2 truncate">${esc(d.setor)}${d.direcional ? ' · ' + esc(d.direcional) : ''}</div>
+                <h4 class="text-sm font-semibold text-gray-800 leading-snug line-clamp-3">${d.dor ? esc(d.dor) : '<span class="text-gray-400 font-normal">(sem descrição da dor)</span>'}</h4>
+                <p class="text-xs text-gray-600 line-clamp-3 whitespace-pre-line"><i class="fas fa-hammer text-blue-400 mr-1"></i>${esc(d.acao)}</p>
+                <div class="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between gap-x-3 gap-y-1 text-[11px] text-gray-500 flex-wrap">
+                    <span class="truncate max-w-full"><i class="fas fa-users mr-1 text-gray-400"></i>${esc(d.squad || '—')}</span>
+                    <span class="whitespace-nowrap"><i class="far fa-calendar-alt mr-1 text-gray-400"></i>${fmtDor(d.inicio)} → ${fmtDor(d.fim)}</span>
+                </div>
+            </div>`;
+        }
+
+        const DORES_LARGURAS = { codigo: 'min-w-[64px]', setor: 'min-w-[120px]', direcional: 'min-w-[140px]', dor: 'min-w-[280px]', acao: 'min-w-[300px]', resultado: 'min-w-[300px]', metricaAtual: 'min-w-[160px]', kpi: 'min-w-[240px]', prioridade: 'min-w-[90px]', squad: 'min-w-[180px]', alinhamento: 'min-w-[170px]', inicio: 'min-w-[96px]', fim: 'min-w-[96px]', status: 'min-w-[160px]', obs: 'min-w-[220px]' };
+
+        function tabelaDoresHTML(grupos) {
+            const linha = (d) => `
+                <tr data-action="dor-ver" data-id="${esc(d.id)}" class="border-t border-gray-100 hover:bg-leveros-verde4/30 cursor-pointer align-top">
+                    ${DORES_COLUNAS.map(c => {
+                        const v = d[c.k];
+                        if (c.k === 'prioridade') return `<td class="px-2 py-2"><span class="px-1.5 py-0.5 rounded-full border font-bold text-[11px] whitespace-nowrap ${dorPrioMeta(v).badge}">${esc(v || '—')}</span></td>`;
+                        if (c.k === 'status') {
+                            const lista = DORES_STATUS.includes(v) || !v ? DORES_STATUS : [v, ...DORES_STATUS];
+                            return `<td class="px-2 py-2"><select data-action="noop" data-id="${esc(d.id)}" class="dor-status-sel inp !py-1 !px-1.5 !text-xs ${dorStatusMeta(v).badge}">${v ? '' : '<option value="" selected>—</option>'}${lista.map(s => `<option ${s === v ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></td>`;
+                        }
+                        if (c.k === 'inicio' || c.k === 'fim') return `<td class="px-2 py-2 whitespace-nowrap">${fmtDor(v)}</td>`;
+                        if (c.k === 'codigo') return `<td class="px-2 py-2 font-bold text-gray-600 whitespace-nowrap">${esc(v || '—')}</td>`;
+                        return `<td class="px-2 py-2 whitespace-pre-line break-words">${esc(v)}</td>`;
+                    }).join('')}
+                </tr>`;
+            return `
+            <div class="bg-white border border-gray-200 rounded-lg overflow-auto" style="max-height: calc(100vh - 16.5rem)">
+                <table class="w-full text-xs text-gray-700 border-collapse">
+                    <thead><tr>${DORES_COLUNAS.map(c => `<th class="sticky top-0 z-10 bg-leveros-verde1 text-white text-left font-semibold px-2 py-2 ${DORES_LARGURAS[c.k]}">${esc(c.h)}</th>`).join('')}</tr></thead>
+                    <tbody>
+                        ${grupos.map(g => (g.titulo ? `<tr><td colspan="${DORES_COLUNAS.length}" class="bg-leveros-verde4/60 text-leveros-verde1 font-bold px-3 py-1.5 text-xs">${esc(g.titulo)} <span class="font-normal text-gray-500">· ${g.itens.length}</span></td></tr>` : '') + g.itens.map(linha).join('')).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        function doresResultadoHTML() {
+            if (state.doresErro) return `
+                <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 text-sm">
+                    <b><i class="fas fa-triangle-exclamation mr-1"></i> Não foi possível ler a coleção "dores" no Firestore.</b>
+                    <p class="mt-1">Provavelmente falta liberar a coleção nas regras do Firestore. Adicione em <i>Firestore → Regras</i>:</p>
+                    <pre class="mt-2 bg-white border border-red-100 rounded p-2 text-xs overflow-auto">match /dores/{id} {
+  allow read, write: if request.auth != null
+    &amp;&amp; request.auth.token.email.matches('.*@leveros.com.br');
+}</pre>
+                </div>`;
+            if (!state.doresLoaded) return '<div class="text-center py-16"><div class="loader"></div></div>';
+            if (!state.dores.length) return `
+                <div class="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
+                    <i class="fas fa-heart-crack text-4xl text-leveros-azul mb-3"></i>
+                    <h3 class="font-bold text-leveros-verde1 text-lg">Nenhuma dor cadastrada ainda</h3>
+                    <p class="text-sm text-gray-500 mt-1 mb-5">Carregue a planilha base (${DORES_BASE.length} dores) ou comece cadastrando uma nova.</p>
+                    <div class="flex justify-center gap-2 flex-wrap">
+                        <button data-action="dor-carregar-base" class="bg-leveros-verde1 text-white hover:bg-leveros-verde2 px-4 py-2 rounded-lg font-semibold text-sm"><i class="fas fa-file-import mr-1"></i> Carregar planilha base (${DORES_BASE.length} dores)</button>
+                        <button data-action="dor-nova" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-4 py-2 rounded-lg font-semibold text-sm"><i class="fas fa-plus mr-1"></i> Nova dor</button>
+                    </div>
+                </div>`;
+            const lista = doresFiltradas();
+            if (!lista.length) return '<div class="bg-white border border-gray-200 rounded-lg p-8 text-center text-sm text-gray-500">Nenhuma dor encontrada com esses filtros. <button data-action="dor-limpar" class="text-leveros-verde2 font-semibold underline">Limpar filtros</button></div>';
+            const grupos = agruparDores(lista);
+            if (state.filtros.dores.modo === 'tabela') return tabelaDoresHTML(grupos);
+            return grupos.map(g => {
+                const cor = state.filtros.dores.grupo === 'setor' ? dorCorSetor(g.titulo) : { bg: '#005A64', fg: '#ffffff' };
+                return `
+                <section class="mb-4">
+                    ${g.titulo ? `<div class="flex items-center gap-2 mb-2">
+                        <span class="px-2.5 py-1 rounded-md text-sm font-bold" style="background:${cor.bg};color:${cor.fg}">${esc(g.titulo)}</span>
+                        <span class="text-xs text-gray-500">${g.itens.length} ${g.itens.length === 1 ? 'dor' : 'dores'}</span>
+                        <div class="flex-1 border-t border-gray-200"></div>
+                    </div>` : ''}
+                    <div class="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">${g.itens.map(cardDorHTML).join('')}</div>
+                </section>`;
+            }).join('');
+        }
+
+        function doresContagemHTML() {
+            const filtrando = Object.entries(state.filtros.dores).some(([k, v]) => ['q', 'setor', 'prio', 'status', 'quarter'].includes(k) && v);
+            return `Mostrando <b>${doresFiltradas().length}</b> de ${state.dores.length}${filtrando ? ' · <button data-action="dor-limpar" class="text-leveros-verde2 font-semibold underline">limpar filtros</button>' : ''}`;
+        }
+
+        // Atualiza só KPIs/lista/filtros (não perde o foco da busca nem a posição da página)
+        function atualizarDores() {
+            if (!$('#dores-root')) return;
+            const f = state.filtros.dores;
+            $('#dores-kpis').innerHTML = doresKpisHTML();
+            $('#dores-resultado').innerHTML = doresResultadoHTML();
+            $('#dores-contagem').innerHTML = doresContagemHTML();
+            const setSel = (id, html, val) => { const s = $(id); if (s) { s.innerHTML = html; s.value = val; } };
+            setSel('#dr-setor', '<option value="">Todos os setores</option>' + optsFiltro(opcoesDe(d => d.setor), f.setor), f.setor);
+            setSel('#dr-quarter', '<option value="">Todos os quarters</option>' + optsFiltro(opcoesDe(dorQuarter).sort((a, b) => qOrd(a) - qOrd(b)), f.quarter), f.quarter);
+            const q = $('#dr-q'); if (q && document.activeElement !== q) q.value = f.q;
+            ['prio', 'status', 'grupo'].forEach(k => { const s = $('#dr-' + k); if (s) s.value = f[k]; });
+            document.querySelectorAll('[data-action=dor-modo]').forEach(b => {
+                const ativo = b.dataset.modo === f.modo;
+                b.classList.toggle('bg-leveros-verde1', ativo); b.classList.toggle('text-white', ativo);
+                b.classList.toggle('text-gray-600', !ativo);
+            });
+        }
+
+        function doresOperacionaisHTML() {
+            const f = state.filtros.dores;
+            const btnModo = (modo, icon, rot) => `<button data-action="dor-modo" data-modo="${modo}" class="px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 ${f.modo === modo ? 'bg-leveros-verde1 text-white' : 'text-gray-600'}"><i class="fas ${icon}"></i> ${rot}</button>`;
+            return `
+            <div id="dores-root">
+                <div class="flex items-center justify-between gap-3 flex-wrap mb-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-leveros-verde1 leading-tight">Dores Operacionais</h2>
+                        <p class="text-xs text-gray-500">Cronograma de priorização de projetos · atualizado em tempo real para todo o time</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button data-action="dor-nova" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"><i class="fas fa-plus"></i> Nova dor</button>
+                        <button data-action="dor-importar" title="Importar novas dores de uma planilha Excel" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 px-3 py-2 rounded-lg font-semibold text-sm flex items-center gap-2"><i class="fas fa-file-import text-leveros-verde2"></i> Importar Excel</button>
+                        <button data-action="dor-exportar" title="Exportar tudo para Excel" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 w-9 h-9 rounded-lg flex items-center justify-center"><i class="fas fa-file-excel text-green-600"></i></button>
+                        <button data-action="dor-modelo" title="Baixar planilha modelo (para preencher várias dores de uma vez)" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 w-9 h-9 rounded-lg flex items-center justify-center"><i class="fas fa-table-list text-gray-500"></i></button>
+                        <input type="file" id="dor-file" accept=".xlsx,.xls,.csv" class="hidden">
+                    </div>
+                </div>
+
+                <div id="dores-kpis" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-3">${doresKpisHTML()}</div>
+
+                <div class="bg-white border border-gray-200 rounded-lg p-2 mb-3 flex flex-wrap items-center gap-2">
+                    <div class="relative flex-1 min-w-[200px]"><i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i><input id="dr-q" class="inp !pl-8 !py-1.5" placeholder="Buscar em qualquer campo (dor, ação, KPI, observações...)" value="${esc(f.q)}"></div>
+                    <select id="dr-setor" class="inp !w-auto !py-1.5"><option value="">Todos os setores</option>${optsFiltro(opcoesDe(d => d.setor), f.setor)}</select>
+                    <select id="dr-prio" class="inp !w-auto !py-1.5"><option value="">Toda prioridade</option>${optsFiltro(DORES_PRIO, f.prio)}</select>
+                    <select id="dr-status" class="inp !w-auto !py-1.5"><option value="">Todo status</option>${optsFiltro(DORES_STATUS, f.status)}</select>
+                    <select id="dr-quarter" class="inp !w-auto !py-1.5"><option value="">Todos os quarters</option>${optsFiltro(opcoesDe(dorQuarter).sort((a, b) => qOrd(a) - qOrd(b)), f.quarter)}</select>
+                    <select id="dr-grupo" title="Agrupar por" class="inp !w-auto !py-1.5">
+                        ${[['setor', 'Agrupar: Setor'], ['prioridade', 'Agrupar: Prioridade'], ['status', 'Agrupar: Status'], ['quarter', 'Agrupar: Quarter'], ['nenhum', 'Sem agrupamento']].map(([v, r]) => `<option value="${v}" ${f.grupo === v ? 'selected' : ''}>${r}</option>`).join('')}
+                    </select>
+                    <div class="flex border border-gray-300 rounded-lg overflow-hidden shrink-0">${btnModo('cards', 'fa-table-cells-large', 'Cards')}${btnModo('tabela', 'fa-table', 'Tabela')}</div>
+                </div>
+                <div id="dores-contagem" class="text-xs text-gray-500 mb-2 px-1">${doresContagemHTML()}</div>
+
+                <div id="dores-resultado">${doresResultadoHTML()}</div>
+            </div>`;
+        }
+
+        // ==========================================================
+        // DORES OPERACIONAIS — detalhe (100% dos campos), formulário, exclusão
+        // ==========================================================
+        function abrirDetalheDor(id) {
+            const d = state.dores.find(x => x.id === id); if (!d) return;
+            const pm = dorPrioMeta(d.prioridade), sm = dorStatusMeta(d.status);
+            const h = (k) => DORES_COLUNAS.find(c => c.k === k).h;
+            const bloco = (k, icon, extra = '', cor = '') => `
+                <div class="${extra}">
+                    <div class="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1"><i class="fas ${icon} mr-1"></i>${esc(h(k))}</div>
+                    <div class="text-sm whitespace-pre-line break-words rounded-lg ${cor || 'text-gray-800'} ${cor ? 'p-3' : ''} ${d[k] ? '' : 'text-gray-400'}">${d[k] ? esc(d[k]) : '—'}</div>
+                </div>`;
+            const m = $('#modal');
+            m.innerHTML = `
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-4xl overflow-hidden fade-in max-h-[92vh] flex flex-col">
+                <div class="bg-leveros-verde2 px-5 py-3 flex items-center justify-between gap-3 shrink-0">
+                    <div class="flex items-center gap-2 flex-wrap text-white min-w-0">
+                        <span class="font-bold text-lg">Dor #${esc(d.codigo || '—')}</span>
+                        <span class="px-2 py-0.5 rounded-full border text-[11px] font-bold ${pm.badge}">${esc(d.prioridade || '—')}</span>
+                        <span class="px-2 py-0.5 rounded-full border text-[11px] font-semibold ${sm.badge}"><i class="fas ${sm.icon} mr-1"></i>${esc(d.status || '—')}</span>
+                    </div>
+                    <button data-action="fechar-modal" class="text-gray-300 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+                </div>
+                <div class="p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
+                    ${bloco('setor', 'fa-layer-group')}${bloco('direcional', 'fa-compass')}${bloco('squad', 'fa-users')}
+                    ${bloco('dor', 'fa-circle-exclamation', 'md:col-span-3', 'bg-red-50 border border-red-100 text-red-900')}
+                    ${bloco('acao', 'fa-hammer', 'md:col-span-3', 'bg-blue-50 border border-blue-100 text-blue-900')}
+                    ${bloco('resultado', 'fa-trophy', 'md:col-span-3')}
+                    ${bloco('metricaAtual', 'fa-gauge')}${bloco('kpi', 'fa-bullseye', 'md:col-span-2')}
+                    ${bloco('alinhamento', 'fa-flag', 'md:col-span-1')}${bloco('inicio', 'fa-play')}${bloco('fim', 'fa-flag-checkered')}
+                    ${bloco('obs', 'fa-note-sticky', 'md:col-span-3')}
+                </div>
+                <div class="px-5 py-3 border-t flex items-center justify-between gap-3 shrink-0 bg-gray-50">
+                    <span class="text-[11px] text-gray-400">${d.atualizadoPorEmail ? `Última edição: ${esc(getMembro(d.atualizadoPorEmail).nome)}` : (d.criadoPorEmail ? `Cadastrada por ${esc(getMembro(d.criadoPorEmail).nome)}` : '')}</span>
+                    <div class="flex gap-2">
+                        ${podeExcluirDor(d) ? `<button data-action="dor-excluir" data-id="${esc(d.id)}" class="px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 text-sm font-medium"><i class="fas fa-trash mr-1"></i> Excluir</button>` : ''}
+                        <button data-action="dor-editar" data-id="${esc(d.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 text-sm font-medium"><i class="fas fa-pen mr-1"></i> Editar</button>
+                    </div>
+                </div>
+            </div>`;
+            m.classList.remove('hidden'); m.classList.add('flex');
+        }
+
+        const parseSquad = (s) => {
+            const m = /^\s*(Q\d\/\d{4}|A definir)\s*·\s*([\s\S]*)$/.exec(s || '');
+            if (m) return { quarter: m[1], squad: m[2] };
+            const q = /^\s*(Q\d\/\d{4})\s*$/.exec(s || '');
+            return q ? { quarter: q[1], squad: '' } : { quarter: '', squad: s || '' };
+        };
+
+        function opcoesQuarter(atual) {
+            const hoje = new Date(), set = new Set(opcoesDe(dorQuarter).filter(q => q !== 'A definir'));
+            let ano = hoje.getFullYear(), tri = Math.floor(hoje.getMonth() / 3) + 1;
+            for (let i = 0; i < 6; i++) { set.add(`Q${tri}/${ano}`); if (++tri > 4) { tri = 1; ano++; } }
+            if (/^Q\d\/\d{4}$/.test(atual || '')) set.add(atual);
+            return [...set].sort((a, b) => qOrd(a) - qOrd(b));
+        }
+
+        function modalDor(id = '') {
+            const d = id ? state.dores.find(x => x.id === id) : null;
+            if (id && !d) return;
+            const v = (k) => esc(d ? (d[k] ?? '') : '');
+            const sq = parseSquad(d?.squad);
+            const dl = (nome, lista) => `<datalist id="${nome}">${lista.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+            const campoData = (nome, rotulo, valor) => {
+                const adef = valor === 'A definir', iso = ehISO(valor) ? valor : '';
+                return `<div><label class="lbl">${rotulo}</label><div class="flex items-center gap-2">
+                    <input id="dr-${nome}" type="date" class="inp" value="${iso}" ${adef ? 'disabled' : ''}>
+                    <label class="flex items-center gap-1 text-xs whitespace-nowrap text-gray-600 cursor-pointer"><input type="checkbox" id="dr-${nome}-adef" class="rounded" ${adef ? 'checked' : ''}> A definir</label></div></div>`;
+            };
+            const area = (k, rotulo, rows = 2, dica = '', extra = '') => `<div class="${extra}"><label class="lbl">${rotulo}${dica ? ` <span class="font-normal normal-case text-gray-400">${dica}</span>` : ''}</label><textarea id="dr-${k}" rows="${rows}" class="inp">${v(k)}</textarea></div>`;
+            const statusAtual = d?.status || 'Não iniciado', prioAtual = d?.prioridade || 'Média';
+            const lista = (arr, atual) => (arr.includes(atual) || !atual ? arr : [atual, ...arr]);
+            abrirModal(d ? `Editar dor ${esc(d.codigo || '')}` : 'Nova dor operacional', `
+                <input type="hidden" id="dr-id" value="${esc(id)}">
+                ${dl('dl-setor', [...new Set([...SETORES_PADRAO, ...opcoesDe(x => x.setor)])])}
+                ${dl('dl-direcional', opcoesDe(x => x.direcional))}
+                ${dl('dl-squad', opcoesDe(x => parseSquad(x.squad).squad))}
+                ${dl('dl-alinh', opcoesDe(x => x.alinhamento))}
+                <div class="grid grid-cols-1 sm:grid-cols-6 gap-4">
+                    <div class="sm:col-span-1"><label class="lbl">ID</label><input id="dr-codigo" class="inp" placeholder="ex.: T9" value="${v('codigo')}"></div>
+                    <div class="sm:col-span-2"><label class="lbl">Setor *</label><input id="dr-setor-f" list="dl-setor" class="inp" required value="${v('setor')}" placeholder="ex.: T&D"></div>
+                    <div class="sm:col-span-3"><label class="lbl">Direcional</label><input id="dr-direcional" list="dl-direcional" class="inp" value="${v('direcional')}" placeholder="ex.: Jornada T&D"></div>
+
+                    ${area('dor', 'Dor *', 2, '(o problema que o time enfrenta)', 'sm:col-span-6')}
+                    ${area('acao', 'Ação', 3, '(o que será feito)', 'sm:col-span-6')}
+                    ${area('resultado', 'Resultado esperado', 2, '(Menor ganho: … Maior ganho: …)', 'sm:col-span-6')}
+                    ${area('metricaAtual', 'Métrica atual', 2, '(do problema)', 'sm:col-span-3')}
+                    ${area('kpi', 'KPI de sucesso', 2, '', 'sm:col-span-3')}
+
+                    <div class="sm:col-span-2"><label class="lbl">Prioridade</label><select id="dr-prioridade" class="inp">${lista(DORES_PRIO, prioAtual).map(p => `<option ${p === prioAtual ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select></div>
+                    <div class="sm:col-span-2"><label class="lbl">Status</label><select id="dr-status-f" class="inp">${lista(DORES_STATUS, statusAtual).map(s => `<option ${s === statusAtual ? 'selected' : ''}>${esc(s)}</option>`).join('')}</select></div>
+                    <div class="sm:col-span-2"><label class="lbl">Quarter</label><select id="dr-quarter-f" class="inp"><option value="">—</option><option ${sq.quarter === 'A definir' ? 'selected' : ''}>A definir</option>${opcoesQuarter(sq.quarter).map(q => `<option ${q === sq.quarter ? 'selected' : ''}>${esc(q)}</option>`).join('')}</select></div>
+                    <div class="sm:col-span-3"><label class="lbl">Squad de destino</label><input id="dr-squad-f" list="dl-squad" class="inp" value="${esc(sq.squad)}" placeholder="ex.: Squad T&D/TI"></div>
+                    <div class="sm:col-span-3"><label class="lbl">Alinhamento "4 por 100"</label><input id="dr-alinhamento" list="dl-alinh" class="inp" value="${v('alinhamento')}" placeholder="ex.: Pilar Eficiência Operacional"></div>
+                    <div class="sm:col-span-3">${campoData('inicio', 'Início', d?.inicio)}</div>
+                    <div class="sm:col-span-3">${campoData('fim', 'Fim estimado', d?.fim)}</div>
+                    ${area('obs', 'Observações', 2, '', 'sm:col-span-6')}
+                </div>`, 'form-dor', d ? 'Salvar alterações' : 'Cadastrar dor', 'max-w-3xl');
+        }
+
+        async function salvarDor() {
+            const id = $('#dr-id').value;
+            const val = (k) => $('#dr-' + k).value.trim();
+            const dataVal = (n) => $(`#dr-${n}-adef`).checked ? 'A definir' : $('#dr-' + n).value;
+            const quarter = $('#dr-quarter-f').value, squadNome = val('squad-f');
+            const dados = {
+                codigo: val('codigo'), setor: val('setor-f'), direcional: val('direcional'), dor: val('dor'), acao: val('acao'),
+                resultado: val('resultado'), metricaAtual: val('metricaAtual'), kpi: val('kpi'), prioridade: $('#dr-prioridade').value,
+                squad: quarter && squadNome ? `${quarter} · ${squadNome}` : (quarter || squadNome),
+                alinhamento: val('alinhamento'), inicio: dataVal('inicio'), fim: dataVal('fim'), status: $('#dr-status-f').value, obs: val('obs')
+            };
+            if (!dados.setor) throw new Error('Informe o setor.');
+            if (!dados.dor && !dados.acao) throw new Error('Preencha ao menos a dor ou a ação.');
+            if (ehISO(dados.inicio) && ehISO(dados.fim) && dados.fim < dados.inicio) throw new Error('O fim estimado não pode ser antes do início.');
+            const dup = dados.codigo && state.dores.some(x => x.id !== id && normTxt(x.codigo) === normTxt(dados.codigo));
+            if (dup && !confirm(`Já existe uma dor com o ID "${dados.codigo}". Salvar mesmo assim?`)) throw new Error('Cadastro cancelado.');
+            if (id) {
+                await updateDoc(doc(db, 'dores', id), { ...dados, atualizadoEm: serverTimestamp(), atualizadoPorEmail: state.user.email });
+                toast('Dor atualizada!');
+            } else {
+                const ordem = Math.max(0, ...state.dores.map(x => x.ordem || 0)) + 1;
+                await addDoc(collection(db, 'dores'), { ...dados, ordem, origem: 'manual', criadoPorEmail: state.user.email, criadoEm: serverTimestamp() });
+                toast('Dor cadastrada!');
+            }
+            fecharModal();
+        }
+
+        async function excluirDor(id) {
+            const d = state.dores.find(x => x.id === id); if (!d) return;
+            if (!podeExcluirDor(d)) return toast('Somente quem cadastrou a dor ou um administrador pode excluir.', 'erro');
+            if (!confirm(`Excluir a dor "${d.codigo || ''} ${(d.dor || d.acao || '').slice(0, 60)}"? Essa ação não pode ser desfeita.`)) return;
+            await deleteDoc(doc(db, 'dores', id));
+            fecharModal(); toast('Dor excluída.');
+        }
+
+        async function mudarStatusDor(id, status) {
+            try { await updateDoc(doc(db, 'dores', id), { status, atualizadoEm: serverTimestamp(), atualizadoPorEmail: state.user.email }); toast('Status atualizado.'); }
+            catch (err) { console.error(err); toast('Erro ao atualizar o status.', 'erro'); }
+        }
+
+        // ==========================================================
+        // DORES OPERACIONAIS — importar / exportar Excel
+        // ==========================================================
+        async function gravarDoresEmLote(lista, origem) {
+            const base = Math.max(0, ...state.dores.map(x => x.ordem || 0));
+            for (let i = 0; i < lista.length; i += 400) {
+                const b = writeBatch(db);
+                lista.slice(i, i + 400).forEach((d, j) => b.set(doc(db, 'dores', dorDocId(d)), {
+                    ...camposDor(d), ordem: base + i + j + 1, origem, criadoPorEmail: state.user.email, criadoEm: serverTimestamp()
+                }));
+                await b.commit();
+            }
+        }
+
+        // separa o que já existe (mesmo ID + setor + dor + ação) do que é novo
+        function separarNovas(lista) {
+            const existentes = new Set(state.dores.map(dorChave)), vistos = new Set(), novas = [];
+            let repetidas = 0;
+            lista.forEach(d => { const k = dorChave(d); if (existentes.has(k) || vistos.has(k)) repetidas++; else { vistos.add(k); novas.push(d); } });
+            return { novas, repetidas };
+        }
+
+        function dataParaISO(v) {
+            if (v instanceof Date && !isNaN(v)) {
+                const z = new Date(v.getTime() + 12 * 3600e3); // evita virar o dia por fuso horário
+                return `${z.getUTCFullYear()}-${pad(z.getUTCMonth() + 1)}-${pad(z.getUTCDate())}`;
+            }
+            const s = String(v ?? '').trim();
+            const br = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+            if (br) return `${br[3]}-${pad(+br[2])}-${pad(+br[1])}`;
+            return s;
+        }
+
+        function lerLinhasDores(rows) {
+            const ncel = (c) => normTxt(c).replace(/[^a-z0-9 ]/g, ' ').replace(/\s+/g, ' ').trim();
+            const hi = rows.findIndex(r => { const n = r.map(ncel); return n.includes('setor') && n.includes('dor'); });
+            if (hi < 0) throw new Error('Não encontrei o cabeçalho (colunas "Setor" e "DOR"). Use o botão "Baixar modelo".');
+            const mapa = {};
+            rows[hi].forEach((c, i) => {
+                const n = ncel(c); let k = null;
+                if (n === 'id') k = 'codigo'; else if (n === 'setor') k = 'setor'; else if (n === 'direcional') k = 'direcional';
+                else if (n === 'dor') k = 'dor'; else if (n === 'acao') k = 'acao'; else if (n.startsWith('resultado')) k = 'resultado';
+                else if (n.startsWith('metrica')) k = 'metricaAtual'; else if (n.startsWith('kpi')) k = 'kpi'; else if (n === 'prioridade') k = 'prioridade';
+                else if (n.startsWith('quarter')) k = 'squad'; else if (n.startsWith('alinhamento')) k = 'alinhamento'; else if (n === 'inicio') k = 'inicio';
+                else if (n.startsWith('fim')) k = 'fim'; else if (n === 'status') k = 'status'; else if (n.startsWith('observ')) k = 'obs';
+                if (k && !(k in mapa)) mapa[k] = i;
+            });
+            const out = [];
+            rows.slice(hi + 1).forEach(r => {
+                const d = {};
+                DORES_COLUNAS.forEach(c => {
+                    let v = c.k in mapa ? r[mapa[c.k]] : '';
+                    d[c.k] = (c.k === 'inicio' || c.k === 'fim') ? dataParaISO(v) : String(v ?? '');
+                });
+                if (DORES_COLUNAS.some(c => d[c.k].trim() !== '')) out.push(d);
+            });
+            return out;
+        }
+
+        async function lerPlanilhaDores(file) {
+            try {
+                const wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const dados = lerLinhasDores(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' }));
+                if (!dados.length) return toast('A planilha não tem nenhuma dor para importar.', 'erro');
+                mostrarPreviaImportacao(dados, `Arquivo: ${file.name}`, 'planilha');
+            } catch (err) { console.error(err); toast(err.message || 'Não foi possível ler a planilha.', 'erro'); }
+        }
+
+        function mostrarPreviaImportacao(dados, fonte, origem) {
+            const { novas, repetidas } = separarNovas(dados);
+            state.importDores = { novas, origem };
+            const m = $('#modal');
+            m.innerHTML = `
+            <div class="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden fade-in max-h-[92vh] flex flex-col">
+                <div class="bg-leveros-verde2 px-5 py-3 flex items-center justify-between shrink-0"><h3 class="text-lg font-bold text-white">Importar dores</h3><button data-action="fechar-modal" class="text-gray-300 hover:text-white"><i class="fas fa-times text-xl"></i></button></div>
+                <div class="p-5 overflow-y-auto">
+                    <p class="text-xs text-gray-500 mb-3">${esc(fonte)}</p>
+                    <div class="grid grid-cols-3 gap-2 mb-4 text-center">
+                        <div class="border rounded-lg p-2"><div class="text-xl font-bold text-leveros-verde1">${dados.length}</div><div class="text-[11px] text-gray-500">linhas lidas</div></div>
+                        <div class="border border-green-200 bg-green-50 rounded-lg p-2"><div class="text-xl font-bold text-green-700">${novas.length}</div><div class="text-[11px] text-green-700">novas (serão incluídas)</div></div>
+                        <div class="border rounded-lg p-2"><div class="text-xl font-bold text-gray-500">${repetidas}</div><div class="text-[11px] text-gray-500">já existem (ignoradas)</div></div>
+                    </div>
+                    ${novas.length ? `<div class="border rounded-lg overflow-auto max-h-64"><table class="w-full text-xs"><thead class="bg-gray-50 text-gray-500"><tr><th class="text-left p-2">ID</th><th class="text-left p-2">Setor</th><th class="text-left p-2">Dor / Ação</th><th class="text-left p-2">Prioridade</th></tr></thead><tbody>
+                        ${novas.map(d => `<tr class="border-t"><td class="p-2 font-bold">${esc(d.codigo || '—')}</td><td class="p-2">${esc(d.setor)}</td><td class="p-2">${esc((d.dor || d.acao).slice(0, 110))}</td><td class="p-2">${esc(d.prioridade || '—')}</td></tr>`).join('')}</tbody></table></div>`
+                        : '<p class="text-sm text-gray-500">Tudo isso já está cadastrado. Nada a importar.</p>'}
+                </div>
+                <div class="px-5 py-3 border-t flex justify-end gap-2 bg-gray-50 shrink-0">
+                    <button data-action="fechar-modal" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-white text-sm font-medium">Cancelar</button>
+                    ${novas.length ? `<button data-action="dor-confirmar-import" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 text-sm font-medium"><i class="fas fa-file-import mr-1"></i> Importar ${novas.length} ${novas.length === 1 ? 'dor' : 'dores'}</button>` : ''}
+                </div>
+            </div>`;
+            m.classList.remove('hidden'); m.classList.add('flex');
+        }
+
+        async function confirmarImportacaoDores(btn) {
+            const imp = state.importDores; if (!imp?.novas.length) return;
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
+            try { await gravarDoresEmLote(imp.novas, imp.origem); fecharModal(); toast(`${imp.novas.length} dores importadas!`); state.importDores = null; }
+            catch (err) { console.error(err); toast('Erro ao importar. Verifique as permissões do Firestore.', 'erro'); btn.disabled = false; btn.innerHTML = 'Tentar novamente'; }
+        }
+
+        function baixarPlanilhaDores(lista, nomeArquivo, titulo = 'CRONOGRAMA DE PRIORIZAÇÃO DE PROJETOS') {
+            const celula = (c, d) => {
+                const v = d[c.k] ?? '';
+                if ((c.k === 'inicio' || c.k === 'fim') && ehISO(v)) { const [y, m, dd] = v.split('-').map(Number); return new Date(y, m - 1, dd, 12); }
+                return v;
+            };
+            const ws = XLSX.utils.aoa_to_sheet([[titulo], DORES_COLUNAS.map(c => c.h), ...lista.map(d => DORES_COLUNAS.map(c => celula(c, d)))], { cellDates: true });
+            ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: DORES_COLUNAS.length - 1 } }];
+            ws['!cols'] = [8, 18, 22, 50, 55, 55, 28, 40, 12, 32, 28, 12, 14, 18, 40].map(w => ({ wch: w }));
+            Object.keys(ws).forEach(a => { if (ws[a] && ws[a].t === 'd') ws[a].z = 'dd/mm/yyyy'; });
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Página1');
+            XLSX.writeFile(wb, nomeArquivo);
+        }
+
+        const exportarDores = () => { baixarPlanilhaDores(state.dores, `DORES_OPERACIONAIS_${hojeISO()}.xlsx`); toast('Planilha exportada!'); };
+        const baixarModeloDores = () => {
+            baixarPlanilhaDores([{ codigo: 'X1', setor: 'CX', direcional: 'Jornada cliente', dor: 'Descreva a dor aqui', acao: 'O que será feito', resultado: 'Menor ganho: … Maior ganho: …', kpi: 'Reduzir X em Y%', prioridade: 'Média', squad: 'Q1/2027 · Squad CX', alinhamento: 'Pilar Eficiência Operacional', inicio: '2027-01-04', fim: '2027-02-28', status: 'Não iniciado', obs: '' }], 'MODELO_DORES_OPERACIONAIS.xlsx');
+            toast('Modelo baixado. Preencha e use "Importar Excel".', 'info');
+        };
+
+        // ==========================================================
+
+
         // ==========================================================
         // NAVEGAÇÃO / RENDER
         // ==========================================================
@@ -435,12 +974,7 @@
 
             document.querySelectorAll('.nav-btn').forEach(b => {
                 const ativo = b.dataset.view === state.view || (b.dataset.view === 'projetos' && state.view === 'projeto');
-                if (b.dataset.view === 'dores') {
-                    b.classList.toggle('bg-leveros-verde2', ativo);
-                    b.classList.toggle('text-white', ativo);
-                } else {
-                    b.classList.toggle('bg-leveros-verde2', ativo);
-                }
+                b.classList.toggle('bg-leveros-verde2', ativo);
             });
 
             if (!forcar && state.view === 'quadro' && $('#board')) {
@@ -456,6 +990,11 @@
                 return;
             }
 
+            if (!forcar && state.view === 'dores' && $('#dores-root')) {
+                atualizarDores();
+                return;
+            }
+
             const v = $('#view');
             if (state.view === 'dashboard') v.innerHTML = dashboardHTML();
             else if (state.view === 'minhas') v.innerHTML = minhasHTML();
@@ -463,8 +1002,7 @@
             else if (state.view === 'projetos') v.innerHTML = projetosHTML();
             else if (state.view === 'projeto') v.innerHTML = projetoDetalheHTML();
             else if (state.view === 'rotina') v.innerHTML = rotinasHTML();
-            else if (state.view === 'dores') v.innerHTML = doresOperacionaisHTML(); // VIEW NOVA AQUI
-            
+            else if (state.view === 'dores') v.innerHTML = doresOperacionaisHTML();
             v.firstElementChild?.classList.add('fade-in');
         }
 
@@ -659,7 +1197,7 @@
                 <div class="flex items-center justify-between flex-wrap gap-1">${badgeSituacao(t, false)}<span class="text-[11px] text-gray-500"><i class="far fa-calendar mr-1"></i>${fmtBR(t.prazo)}</span></div>
                 <div class="flex items-center justify-between border-t pt-2 mt-1">
                     <div class="flex items-center gap-1.5 text-xs text-leveros-verde2 font-semibold">${avatar(t.responsavelEmail, 'w-6 h-6 text-[10px]')}${esc(primeiroNome(getMembro(t.responsavelEmail).nome))}</div>
-                    <span class="text-[11px] text-gray-400">${(t.colaboradoresEmails || []).length ? `<span title="Colaboradores" class="mr-2"><i class="fas fa-user-group mr-1"></i>${t.colaboradoresEmails.length}</span>` : ''}${podeAtuar(t) ? '' : '<i class="fas fa-lock mr-2" title="Somente leitura/comentário"></i>'}<i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
+                    <span class="text-[11px] text-gray-400">${(t.colaboradoresEmails || []).length ? `<span title="Apoio" class="mr-2"><i class="fas fa-user-group mr-1"></i>${t.colaboradoresEmails.length}</span>` : ''}${podeAtuar(t) ? '' : '<i class="fas fa-lock mr-2" title="Somente leitura/comentário"></i>'}<i class="far fa-comment mr-1"></i>${t.comentariosCount || 0}</span>
                 </div>
             </div>`;
         }
@@ -685,7 +1223,7 @@
             const f = state.filtros;
             return `<div>
                 <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
-                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Só o responsável (e colaboradores) altera a tarefa; os demais comentam ou enviam uma solicitação.</p></div>
+                    <div><h2 class="text-2xl font-bold text-leveros-verde1">Quadro de Atividades</h2><p class="text-sm text-gray-500">Visão compartilhada: todos acompanham o andamento de todos. Só o responsável (e Apoio) altera a tarefa; os demais comentam ou enviam uma solicitação.</p></div>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
                     <div><label class="lbl">Buscar</label><input id="f-q" class="inp" placeholder="Título ou descrição..." value="${esc(f.q)}"></div>
@@ -850,7 +1388,7 @@
                         <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
                         ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
                         ${compartilhada ? `<div class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🤝 Compartilhada por ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</div>` : ''}
-                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Colaboradores"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
+                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Apoio"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
                     </td>
                     <td class="p-3 align-top text-[12px] text-gray-500 italic">
                         ${esc(r.observacao || '--')}
@@ -874,7 +1412,7 @@
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
                     <div>
                         <h2 class="text-2xl font-bold text-leveros-verde1">Rotina e Atividades Avulsas</h2>
-                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados. Ao adicionar colaboradores, a atividade aparece também na lista deles.</p>
+                        <p class="text-sm text-gray-500">Registre atividades diárias rápidas que não pertencem a projetos estruturados. Ao adicionar Apoio, a atividade aparece também na lista deles.</p>
                     </div>
                 </div>
 
@@ -949,7 +1487,7 @@
                         <div class="md:col-span-2"><label class="lbl">Observação</label><input id="nr-obs" class="inp" placeholder="Anotações para alteração futura..."></div>
 
                         <div class="md:col-span-5">
-                            <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(a atividade também aparecerá na lista deles)</span></label>
+                            <label class="lbl"><i class="fas fa-user-group mr-1"></i>Apoios <span class="font-normal normal-case text-gray-400">(a atividade também aparecerá na lista deles)</span></label>
                             <div class="border border-gray-300 rounded-lg max-h-32 overflow-y-auto divide-y bg-white">${checkboxColabs('nr-colab', [], state.user.email)}</div>
                         </div>
 
@@ -979,111 +1517,6 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>`;
-        }
-
-        // ==========================================================
-        // VIEW NOVA: DORES OPERACIONAIS
-        // ==========================================================
-        function doresOperacionaisHTML() {
-            // Conta os status baseados na coluna "Status" da planilha para o KPI
-            const aprofundamento = doresFake.filter(d => d.status.toLowerCase().includes('aprofundamento')).length;
-            const pendente = doresFake.filter(d => d.status.toLowerCase().includes('não iniciado')).length;
-            const total = doresFake.length;
-
-            const agruparPorSetor = () => {
-                const grupos = {};
-                doresFake.forEach(dor => {
-                    if (!grupos[dor.setor]) grupos[dor.setor] = [];
-                    grupos[dor.setor].push(dor);
-                });
-                return grupos;
-            };
-
-            const grupos = agruparPorSetor();
-
-            // Montar os blocos de HTML por setor
-            let conteudoGrupos = '';
-            for (const setor in grupos) {
-                // Cores dinâmicas para a tarja do setor
-                const corSetor = setor === 'Atendimento' ? 'bg-leveros-azul text-leveros-verde1' : (setor === 'CX' ? 'bg-leveros-verde2 text-white' : 'bg-leveros-amarelo text-leveros-verde1');
-                
-                conteudoGrupos += `
-                <div class="mb-8">
-                    <h3 class="font-bold text-lg mb-4 px-3 py-1.5 inline-block rounded-lg shadow-sm ${corSetor}"><i class="fas fa-layer-group mr-2"></i> Setor: ${esc(setor)}</h3>
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        ${grupos[setor].map(dor => {
-                            // Badge de Prioridade
-                            const prioCls = dor.prioridade === 'Alta' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-blue-100 text-blue-700 border-blue-200';
-                            
-                            // Badge de Status
-                            const statCls = dor.status === 'Em aprofundamento' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600';
-
-                            return `
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow relative overflow-hidden flex flex-col">
-                                <!-- Tarja lateral decorativa -->
-                                <div class="absolute left-0 top-0 bottom-0 w-1 ${dor.prioridade === 'Alta' ? 'bg-red-400' : 'bg-blue-400'}"></div>
-                                
-                                <div class="flex justify-between items-start mb-3 gap-2 flex-wrap">
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-xs font-bold px-2 py-0.5 rounded-full border ${prioCls}">Prioridade: ${esc(dor.prioridade)}</span>
-                                        <span class="text-[11px] font-semibold text-gray-500"><i class="fas fa-hashtag text-gray-300"></i> ${esc(dor.id)}</span>
-                                    </div>
-                                    <span class="text-[11px] font-bold px-2 py-1 rounded ${statCls}">${esc(dor.status)}</span>
-                                </div>
-
-                                <div class="mb-3">
-                                    <span class="text-[10px] uppercase font-bold text-leveros-verde2 tracking-wide block mb-1">Direcional: ${esc(dor.direcional)}</span>
-                                    <h4 class="font-bold text-gray-800 text-sm leading-snug">🚨 A Dor: <span class="font-medium text-gray-600">${esc(dor.dor)}</span></h4>
-                                </div>
-
-                                <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-3 text-sm text-blue-900 flex-1">
-                                    <span class="font-bold block mb-1"><i class="fas fa-hammer mr-1 text-blue-400"></i> Ação Necessária:</span>
-                                    <p class="whitespace-pre-line">${esc(dor.acao)}</p>
-                                </div>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 text-xs">
-                                    <div class="border border-gray-100 bg-gray-50 p-2 rounded">
-                                        <span class="font-bold text-gray-600 block mb-1"><i class="fas fa-bullseye text-leveros-verde2"></i> KPI / Métrica</span>
-                                        <p class="text-gray-700">${esc(dor.kpi)}</p>
-                                    </div>
-                                    <div class="border border-gray-100 bg-gray-50 p-2 rounded">
-                                        <span class="font-bold text-gray-600 block mb-1"><i class="fas fa-trophy text-leveros-amarelo"></i> Resultado Esperado</span>
-                                        <p class="text-gray-700">${esc(dor.resultado)}</p>
-                                    </div>
-                                </div>
-
-                                <div class="border-t pt-3 mt-auto flex items-center justify-between flex-wrap gap-2 text-[11px] text-gray-500">
-                                    <div class="flex items-center gap-1.5"><i class="fas fa-users text-gray-400"></i> ${esc(dor.squad)}</div>
-                                    <div class="flex items-center gap-1.5"><i class="far fa-calendar-alt text-gray-400"></i> Estimativa: ${esc(dor.inicio)} a ${esc(dor.fim)}</div>
-                                </div>
-                            </div>
-                            `;
-                        }).join('')}
-                    </div>
-                </div>
-                `;
-            }
-
-            return `<div>
-                <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
-                    <div>
-                        <h2 class="text-2xl font-bold text-leveros-verde1">Mapeamento de Dores Operacionais</h2>
-                        <p class="text-sm text-gray-500">Acompanhamento do "Cronograma de Priorização de Projetos" importado do Excel.</p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-3 gap-4 mb-6">
-                    ${kpi('Total de Dores Mapeadas', total, 'fa-list-ol', 'border-blue-400', 'text-blue-500', '')}
-                    ${kpi('Em Aprofundamento / Atuação', aprofundamento, 'fa-spinner', 'border-yellow-400', 'text-yellow-500', '')}
-                    ${kpi('Aguardando Início', pendente, 'fa-pause-circle', 'border-gray-400', 'text-gray-400', '')}
-                </div>
-
-                ${conteudoGrupos}
-                
-                <div class="mt-8 text-center text-xs text-gray-400 border-t pt-4">
-                    <p><i class="fas fa-info-circle"></i> Esses dados estão refletindo a matriz "CRONOGRAMA DE PRIORIZAÇÃO DE PROJETOS". Esta página foi gerada para facilitar a leitura visual das demandas.</p>
                 </div>
             </div>`;
         }
@@ -1220,7 +1653,7 @@
                     <div><label class="lbl">Prioridade</label><select id="nt-prio" class="inp">${PRIORIDADES.map(p => `<option ${p === 'Média' ? 'selected' : ''}>${p}</option>`).join('')}</select></div>
                     <div><label class="lbl">Status inicial</label><select id="nt-status" class="inp">${STATUS.map(s => `<option>${s}</option>`).join('')}</select></div>
                     <div class="sm:col-span-2">
-                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Colaboradores <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
+                        <label class="lbl"><i class="fas fa-user-group mr-1"></i>Apoios <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
                         <div id="nt-colabs" class="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y bg-white">${checkboxColabs('nt-colab')}</div>
                     </div>
                 </div>
@@ -1656,6 +2089,9 @@
         }
 
         // ==========================================================
+        // EXPORTAÇÃO EXCEL
+        // ==========================================================
+      // ==========================================================
         // EXPORTAÇÃO EXCEL (VERSÃO COMPLETA)
         // ==========================================================
         function exportarRelatorioExcel() {
@@ -1664,6 +2100,7 @@
             }
             toast('Gerando relatório Excel completo...', 'info');
 
+            // Funções auxiliares para o relatório
             const calcProgresso = (pId) => {
                 const ts = state.tarefas.filter(t => t.projetoId === pId);
                 const feitas = ts.filter(t => t.status === 'Validado').length;
@@ -1675,6 +2112,7 @@
             const getNome = (email) => getMembro(email).nome;
             const nomesColabs = (emails) => (emails || []).map(getNome).join(', ');
 
+            // 1. DADOS DE PROJETOS (Visão Executiva)
             const dadosProjetos = state.projetos.map(p => {
                 const pr = calcProgresso(p.id);
                 return {
@@ -1692,10 +2130,11 @@
                 };
             });
 
+            // 2. DADOS DE TAREFAS (Visão Operacional / Quadro)
             const dadosTarefas = state.tarefas.map(t => {
                 const p = getProjeto(t.projetoId);
                 const c = state.cronogramas.find(x => x.id === t.cronogramaId);
-                const sit = situacao(t);
+                const sit = situacao(t); // Pega se está atrasado, no prazo, etc.
                 return {
                     'Projeto': p ? p.nome : 'Sem projeto',
                     'Cronograma / Fase': c ? c.nome : 'Geral',
@@ -1712,6 +2151,7 @@
                 };
             });
 
+            // 3. DADOS DE ROTINAS E AVULSAS (Visão Diária da Equipe)
             const dadosRotinas = state.rotinas.map(r => {
                 return {
                     'Data de Execução': fmtBR(r.data),
@@ -1727,8 +2167,10 @@
                 };
             });
 
+            // Criar o arquivo (Workbook)
             const wb = XLSX.utils.book_new();
 
+            // Adicionar as abas ajustando a largura (width) das colunas para ficar elegante
             if (dadosProjetos.length) {
                 const wsProj = XLSX.utils.json_to_sheet(dadosProjetos);
                 wsProj['!cols'] = [{wch: 35}, {wch: 12}, {wch: 15}, {wch: 20}, {wch: 18}, {wch: 15}, {wch: 40}, {wch: 40}, {wch: 20}, {wch: 25}, {wch: 50}];
@@ -1747,10 +2189,10 @@
                 XLSX.utils.book_append_sheet(wb, wsRot, "Rotina Diária");
             }
 
+            // Fazer o download do arquivo
             XLSX.writeFile(wb, `Relatorio_Gerencial_CX_FLOW_${hojeISO()}.xlsx`);
             toast('Relatório exportado com sucesso!');
         }
-
         // ==========================================================
         // SUBMITS E EVENTOS
         // ==========================================================
@@ -1898,6 +2340,9 @@
                     fecharModal();
                     toast('Atividade atualizada com sucesso!');
                 }
+                else if (e.target.id === 'form-dor') {
+                    await salvarDor();
+                }
             } catch (err) {
                 console.error(err);
                 toast(err.code ? 'Erro ao salvar. Verifique permissões.' : (err.message || 'Erro ao salvar.'), 'erro');
@@ -1932,6 +2377,7 @@
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
 
+                // EXPORTAÇÃO PARA EXCEL
                 case 'exportar-excel':
                     exportarRelatorioExcel();
                     break;
@@ -2008,7 +2454,7 @@
                 case 'excluir-rotina': {
                     const r = state.rotinas.find(x => x.id === d.id);
                     if (!r || !podeGerirRotina(r)) { toast('Apenas o responsável pode excluir esta atividade.', 'erro'); break; }
-                    if (confirm(rotinaColabs(r).length ? 'Esta atividade é compartilhada e será removida também da lista dos colaboradores. Excluir?' : 'Excluir esta atividade da rotina?')) {
+                    if (confirm(rotinaColabs(r).length ? 'Esta atividade é compartilhada e será removida também da lista dos Apoios. Excluir?' : 'Excluir esta atividade da rotina?')) {
                         try {
                             await deleteDoc(doc(db, 'rotinas', d.id));
                             toast('Atividade avulsa excluída.');
@@ -2032,6 +2478,34 @@
                     toast(p.status === 'arquivado' ? 'Projeto reativado.' : 'Projeto arquivado.');
                     break;
                 }
+
+                // ================= DORES OPERACIONAIS =================
+                case 'dor-nova': modalDor(); break;
+                case 'dor-ver': abrirDetalheDor(d.id); break;
+                case 'dor-editar': modalDor(d.id); break;
+                case 'dor-excluir': await excluirDor(d.id); break;
+                case 'dor-exportar': exportarDores(); break;
+                case 'dor-modelo': baixarModeloDores(); break;
+                case 'dor-importar': $('#dor-file')?.click(); break;
+                case 'dor-carregar-base':
+                    mostrarPreviaImportacao(DORES_BASE, `Planilha base (${DORES_BASE.length} dores)`, 'base');
+                    break;
+                case 'dor-confirmar-import': await confirmarImportacaoDores(el); break;
+                case 'dor-modo':
+                    state.filtros.dores.modo = d.modo;
+                    atualizarDores();
+                    break;
+                case 'dor-limpar':
+                    state.filtros.dores = { ...state.filtros.dores, q: '', setor: '', prio: '', status: '', quarter: '' };
+                    atualizarDores();
+                    break;
+                case 'dor-filtro-rapido': {
+                    const f = state.filtros.dores;
+                    if (d.campo === 'limpar') { f.q = ''; f.setor = ''; f.prio = ''; f.status = ''; f.quarter = ''; }
+                    else f[d.campo === 'status' ? 'status' : 'prio'] = d.valor;
+                    atualizarDores();
+                    break;
+                }
             }
         });
 
@@ -2047,6 +2521,7 @@
         document.addEventListener('input', (e) => {
             if (e.target.id === 'f-q') { state.filtros.q = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (e.target.id === 'f-rotina-q') { state.filtros.rotinaBusca = e.target.value; render(); }
+            if (e.target.id === 'dr-q') { state.filtros.dores.q = e.target.value; atualizarDores(); }
             if (e.target.id === 'busca-projeto-dash') {
                 const termo = e.target.value.toLowerCase();
                 document.querySelectorAll('.dash-projeto-card').forEach(card => {
@@ -2056,7 +2531,7 @@
             }
         });
 
-        document.addEventListener('change', (e) => {
+        document.addEventListener('change', async (e) => {
             const id = e.target.id;
             if (id === 'f-projeto') { state.filtros.projeto = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
@@ -2067,10 +2542,27 @@
             if (id === 'f-rotina-status') { state.filtros.rotinaStatus = e.target.value; render(); }
             if (id === 'f-rotina-ordem') { state.filtros.rotinaOrdem = e.target.value; render(); }
 
+            // FILTROS DAS DORES OPERACIONAIS
+            if (id === 'dr-setor') { state.filtros.dores.setor = e.target.value; atualizarDores(); }
+            if (id === 'dr-prio') { state.filtros.dores.prio = e.target.value; atualizarDores(); }
+            if (id === 'dr-status') { state.filtros.dores.status = e.target.value; atualizarDores(); }
+            if (id === 'dr-quarter') { state.filtros.dores.quarter = e.target.value; atualizarDores(); }
+            if (id === 'dr-grupo') { state.filtros.dores.grupo = e.target.value; atualizarDores(); }
+            if (e.target.classList.contains('dor-status-sel')) {
+                await mudarStatusDor(e.target.dataset.id, e.target.value);
+            }
+
+            // IMPORTAÇÃO DE PLANILHA DE DORES
+            if (id === 'dor-file' && e.target.files?.length) {
+                await lerPlanilhaDores(e.target.files[0]);
+                e.target.value = '';
+            }
+
             if (id === 'sl-tipo') atualizarCamposSolicitacao();
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
             }
+            // O responsável escolhido não pode ser também colaborador
             if (id === 'nt-resp') {
                 document.querySelectorAll('input[name=nt-colab]').forEach(cb => {
                     const igual = cb.value === e.target.value;
