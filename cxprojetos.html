@@ -199,7 +199,7 @@
             minhasMostrarConcluidas: false,
             loaded: { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false },
             drawerTaskId: null, drawerPerm: '',
-            unsubs: [], unsubFeed: null,
+            unsubs: [], unsubFeed: null, unsubChecklist: null,
             diaAtual: ''
         };
 
@@ -698,6 +698,14 @@
                     ${bloco('metricaAtual', 'fa-gauge')}${bloco('kpi', 'fa-bullseye', 'md:col-span-2')}
                     ${bloco('alinhamento', 'fa-flag', 'md:col-span-1')}${bloco('inicio', 'fa-play')}${bloco('fim', 'fa-flag-checkered')}
                     ${bloco('obs', 'fa-note-sticky', 'md:col-span-3')}
+                    <div class="md:col-span-3">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-2"><i class="fas fa-list-check mr-1"></i>Checklist</div>
+                        <div id="checklist-list" class="space-y-1 mb-2 border border-gray-100 rounded-lg p-2 bg-gray-50"><p class="text-xs text-gray-400 py-1">Carregando...</p></div>
+                        <form id="form-checklist-add" data-id="${esc(d.id)}" class="flex gap-2">
+                            <input id="checklist-novo" name="checklist-novo" type="text" class="inp" placeholder="Adicionar item ao checklist..." maxlength="200" autocomplete="off">
+                            <button type="submit" class="px-3 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 text-sm font-medium shrink-0"><i class="fas fa-plus"></i></button>
+                        </form>
+                    </div>
                 </div>
                 <div class="px-5 py-3 border-t flex items-center justify-between gap-3 shrink-0 bg-gray-50">
                     <span class="text-[11px] text-gray-400">${d.atualizadoPorEmail ? `Última edição: ${esc(getMembro(d.atualizadoPorEmail).nome)}` : (d.criadoPorEmail ? `Cadastrada por ${esc(getMembro(d.criadoPorEmail).nome)}` : '')}</span>
@@ -708,6 +716,7 @@
                 </div>
             </div>`;
             m.classList.remove('hidden'); m.classList.add('flex');
+            escutarChecklist(d.id);
         }
 
         const parseSquad = (s) => {
@@ -806,6 +815,44 @@
         async function mudarStatusDor(id, status) {
             try { await updateDoc(doc(db, 'dores', id), { status, atualizadoEm: serverTimestamp(), atualizadoPorEmail: state.user.email }); toast('Status atualizado.'); }
             catch (err) { toast('Erro ao atualizar o status.', 'erro'); }
+        }
+
+        // ─── CHECKLIST SIMPLES DA DOR (subcoleção dores/{id}/checklist) ───
+        function checklistItemHTML(dorId, it) {
+            const podeExcluir = isAdmin() || it.criadoPorEmail === state.user?.email;
+            return `<div class="flex items-center gap-2 p-1.5 rounded hover:bg-white group">
+                <input type="checkbox" data-action="checklist-toggle" data-id="${esc(dorId)}" data-item="${esc(it.id)}" data-concluido="${it.concluido ? 'true' : 'false'}" class="rounded shrink-0" ${it.concluido ? 'checked' : ''}>
+                <span class="text-sm flex-1 break-words ${it.concluido ? 'line-through text-gray-400' : 'text-gray-700'}">${esc(it.texto)}</span>
+                ${podeExcluir ? `<button type="button" data-action="checklist-excluir" data-id="${esc(dorId)}" data-item="${esc(it.id)}" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" title="Excluir item"><i class="fas fa-times"></i></button>` : ''}
+            </div>`;
+        }
+
+        function escutarChecklist(dorId) {
+            if (state.unsubChecklist) { state.unsubChecklist(); state.unsubChecklist = null; }
+            state.unsubChecklist = onSnapshot(query(collection(db, 'dores', dorId, 'checklist'), orderBy('criadoEm', 'asc')), (snap) => {
+                const cont = $('#checklist-list'); if (!cont) return;
+                const itens = snap.docs.map(x => ({ id: x.id, ...x.data() }));
+                cont.innerHTML = itens.length ? itens.map(it => checklistItemHTML(dorId, it)).join('') : '<p class="text-xs text-gray-400 py-1">Nenhum item ainda.</p>';
+            }, (err) => { const cont = $('#checklist-list'); if (cont) cont.innerHTML = '<p class="text-xs text-red-500 py-1">Erro ao carregar checklist (verifique as regras do Firestore).</p>'; });
+        }
+
+        async function adicionarItemChecklist(dorId, texto) {
+            const limpo = (texto || '').trim();
+            if (!limpo) return;
+            try {
+                await addDoc(collection(db, 'dores', dorId, 'checklist'), { texto: limpo, concluido: false, criadoPorEmail: state.user.email, criadoEm: serverTimestamp() });
+            } catch (err) { toast('Erro ao adicionar item do checklist.', 'erro'); }
+        }
+
+        async function toggleItemChecklist(dorId, itemId, concluidoAtual) {
+            try { await updateDoc(doc(db, 'dores', dorId, 'checklist', itemId), { concluido: !concluidoAtual }); }
+            catch (err) { toast('Erro ao atualizar item do checklist.', 'erro'); }
+        }
+
+        async function excluirItemChecklist(dorId, itemId) {
+            if (!confirm('Excluir este item do checklist?')) return;
+            try { await deleteDoc(doc(db, 'dores', dorId, 'checklist', itemId)); }
+            catch (err) { toast('Erro ao excluir item do checklist.', 'erro'); }
         }
 
         // ==========================================================
@@ -1605,7 +1652,7 @@
             m.classList.remove('hidden'); m.classList.add('flex');
             m.querySelector('input,select,textarea')?.focus();
         }
-        function fecharModal() { const m = $('#modal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; }
+        function fecharModal() { const m = $('#modal'); m.classList.add('hidden'); m.classList.remove('flex'); m.innerHTML = ''; if (state.unsubChecklist) { state.unsubChecklist(); state.unsubChecklist = null; } }
 
         function modalEditarRotina(id) {
             const r = state.rotinas.find(x => x.id === id);
@@ -2402,6 +2449,11 @@
                 else if (e.target.id === 'form-dor') {
                     await salvarDor();
                 }
+                else if (e.target.id === 'form-checklist-add') {
+                    const inp = $('#checklist-novo');
+                    await adicionarItemChecklist(e.target.dataset.id, inp.value);
+                    inp.value = ''; inp.focus();
+                }
             } catch (err) {
                 
                 toast(err.code ? 'Erro ao salvar. Verifique permissões.' : (err.message || 'Erro ao salvar.'), 'erro');
@@ -2525,6 +2577,8 @@
                 case 'dor-ver': abrirDetalheDor(d.id); break;
                 case 'dor-editar': modalDor(d.id); break;
                 case 'dor-excluir': await excluirDor(d.id); break;
+                case 'checklist-toggle': await toggleItemChecklist(d.id, d.item, d.concluido === 'true'); break;
+                case 'checklist-excluir': await excluirItemChecklist(d.id, d.item); break;
                 case 'dor-exportar': exportarDores(); break;
                 case 'dor-modelo': baixarModeloDores(); break;
                 case 'dor-importar': $('#dor-file')?.click(); break;
