@@ -1756,8 +1756,42 @@
                         <label class="lbl"><i class="fas fa-user-group mr-1"></i>Apoios <span class="font-normal normal-case text-gray-400">(opcional)</span></label>
                         <div id="nt-colabs" class="border border-gray-300 rounded-lg max-h-36 overflow-y-auto divide-y bg-white">${checkboxColabs('nt-colab')}</div>
                     </div>
+                    <div class="sm:col-span-2 border border-dashed border-leveros-azul rounded-lg p-3 bg-cyan-50/40">
+                        <label class="lbl"><i class="fas fa-user-plus mr-1"></i>Incluir pessoa manualmente <span class="font-normal normal-case text-gray-400">(se não estiver na lista)</span></label>
+                        <div class="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-2">
+                            <input id="np-nome" class="inp" placeholder="Nome Sobrenome">
+                            <input id="np-email" type="email" class="inp" placeholder="nome${DOMINIO}">
+                            <button type="button" data-action="add-pessoa-rapida" class="bg-leveros-verde2 text-white px-3 py-2 rounded-lg text-sm font-semibold hover:bg-leveros-verde1 whitespace-nowrap"><i class="fas fa-plus mr-1"></i>Adicionar</button>
+                        </div>
+                        <div class="flex gap-4 mt-2 text-xs text-gray-600">
+                            <label class="flex items-center gap-1"><input type="radio" name="np-papel" value="resp"> Definir como responsável</label>
+                            <label class="flex items-center gap-1"><input type="radio" name="np-papel" value="apoio" checked> Incluir como apoio</label>
+                        </div>
+                    </div>
                 </div>
                 <p class="text-xs text-gray-400 mt-3"><i class="far fa-envelope mr-1"></i>O responsável receberá um e-mail automático ao ser atribuído.</p>`, 'form-tarefa', 'Criar tarefa', 'max-w-2xl');
+        }
+
+        async function adicionarPessoaRapida() {
+            const nome = $('#np-nome').value.trim();
+            const email = $('#np-email').value.trim().toLowerCase();
+            if (!nome || !email) return toast('Informe nome e e-mail.', 'erro');
+            if (!email.endsWith(DOMINIO)) return toast(`Use um e-mail ${DOMINIO}`, 'erro');
+            const papel = document.querySelector('input[name=np-papel]:checked')?.value || 'apoio';
+            try {
+                if (!state.membros.some(m => m.email === email)) {
+                    await setDoc(doc(db, 'proj_membros', email), { email, nome, foto: '', preCadastro: true }, { merge: true });
+                    state.membros.push({ id: email, email, nome, foto: '', preCadastro: true });
+                }
+                let resp = $('#nt-resp').value;
+                const marcados = colabsMarcados('nt-colab');
+                if (papel === 'resp') resp = email; else if (!marcados.includes(email) && email !== resp) marcados.push(email);
+                $('#nt-resp').innerHTML = '<option value="">Selecione...</option>' + optionsMembros(resp);
+                $('#nt-colabs').innerHTML = checkboxColabs('nt-colab', marcados.filter(em => em !== resp));
+                document.querySelectorAll('input[name=nt-colab]').forEach(cb => { if (cb.value === resp) { cb.disabled = true; cb.closest('label').classList.add('opacity-40'); } });
+                $('#np-nome').value = ''; $('#np-email').value = '';
+                toast(`${nome} incluído(a) ${papel === 'resp' ? 'como responsável' : 'como apoio'}.`);
+            } catch (e) { toast('Não foi possível adicionar a pessoa.', 'erro'); }
         }
 
         function abrirDrawer(id) {
@@ -2467,6 +2501,7 @@
                 case 'editar-projeto': modalEditarProjeto(d.id); break;
                 case 'novo-cronograma': modalCronograma(d.projeto); break;
                 case 'novo-membro': modalMembro(); break;
+                case 'add-pessoa-rapida': await adicionarPessoaRapida(); break;
                 case 'nova-tarefa': modalTarefa(d.projeto || '', d.cron || '', d.dor || ''); break;
                 case 'mudar-status': await moverStatus(d.id, d.status); break;
                 case 'toggle-concluidas': state.minhasMostrarConcluidas = !state.minhasMostrarConcluidas; render(true); break;
