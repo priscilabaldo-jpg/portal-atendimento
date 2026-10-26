@@ -79,7 +79,6 @@
                 </nav>
 
                 <div class="flex items-center gap-2 shrink-0 order-2 lg:order-3">
-                    <!-- Botão de exportação adicionado aqui -->
                     <button data-action="exportar-excel" title="Gerar Relatório" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
                         <i class="fas fa-file-excel text-green-600"></i> <span class="hidden xl:inline">Gerar Relatório</span>
                     </button>
@@ -280,7 +279,6 @@
             .sort((a, b) => tsMillis(a.criadoEm) - tsMillis(b.criadoEm))
             .map(c => `<option value="${esc(c.id)}" ${c.id === sel ? 'selected' : ''}>${esc(c.nome)}</option>`).join('');
 
-        // Lista de checkboxes de colaboradores (usada em Nova Tarefa, Lançamento Rápido e Editar Rotina)
         function checkboxColabs(name, selecionados = [], excluirEmail = '', desabilitado = false) {
             const lista = state.membros.filter(m => m.email !== excluirEmail).sort((a, b) => a.nome.localeCompare(b.nome));
             if (!lista.length) return '<p class="text-xs text-gray-400 p-2">Nenhum outro membro cadastrado.</p>';
@@ -370,9 +368,7 @@
         // ROTINA: PERMISSÕES E FILTROS
         // ==========================================================
         const rotinaColabs = (r) => r.colaboradoresEmails || [];
-        // A atividade pertence à lista de "email" se ele é o dono OU colaborador
         const rotinaDe = (r, email) => r.responsavelEmail === email || rotinaColabs(r).includes(email);
-        // Ocultar é individual: o dono usa "oculta"; colaboradores usam "ocultaPara"
         const rotinaOcultaPara = (r, email) => (r.responsavelEmail === email && !!r.oculta) || (r.ocultaPara || []).includes(email);
         const podeGerirRotina = (r) => r.responsavelEmail === state.user?.email || isAdmin();
         const podeEditarRotina = (r) => podeGerirRotina(r) || rotinaColabs(r).includes(state.user?.email);
@@ -403,11 +399,9 @@
             return { lista, isMinhas, fResp, concluidas, pendentes: lista.length - concluidas };
         }
 
-// ==========================================================
+        // ==========================================================
         // DORES OPERACIONAIS — dados, constantes e helpers
         // ==========================================================
-        // Colunas = exatamente as 15 colunas da planilha "CRONOGRAMA DE PRIORIZAÇÃO DE PROJETOS".
-        // (k = campo salvo no Firestore · h = cabeçalho da planilha)
         const DORES_COLUNAS = [
             { k: 'codigo',       h: 'ID' },
             { k: 'setor',        h: 'Setor' },
@@ -440,9 +434,7 @@
             'Concluído':         { badge: 'bg-green-100 text-green-700 border-green-200', icon: 'fa-check-double', ord: 2 }
         };
         const SETORES_PADRAO = ['Atendimento', 'CX', 'Logística', 'Logística Reversa', 'T&D', 'Garantia'];
-
-        // Carga inicial: as 24 linhas da planilha DORES_OPERACIONAIS.xlsx, copiadas sem alteração.
-        const DORES_BASE = [{"codigo": "A1", "setor": "Atendimento", "direcional": "Rastreio", "dor": "Dificuldade de logar no ambiente da BoxLink, principalmente com clientes em linha.", "acao": "Validar com o TI alternativas para facilitar o acesso à BoxLink.\nGustavo da TI atuando para melhorar a disponibilização no Intergrall das informações do Rastreio - Ariany abrir chamado para TI", "resultado": "Menor ganho: login mais rápido. Maior ganho: redução do tempo médio de atendimento (TMA) em chamadas ao vivo.", "metricaAtual": "", "kpi": "Reduzir tempo médio de autenticação e TMA", "prioridade": "Alta", "squad": "Q4/2026 · Squad Atendimento/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-10-15", "fim": "2026-11-15", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "", "setor": "Atendimento", "direcional": "Rastreio", "dor": "Atendimento sem informações complementares do rastreio do pedido, somente o que temos na BoxLink é insuficiente e sabemos que na Fup tem mais detalhes", "acao": "Dar acesso a visibilidade por sistema integrado ao time (exemplo BoxLink inicialmente, e posterior subir no CRM)", "resultado": "", "metricaAtual": "", "kpi": "", "prioridade": "", "squad": "", "alinhamento": "", "inicio": "", "fim": "", "status": "", "obs": ""}, {"codigo": "CX7", "setor": "CX", "direcional": "Rastreio", "dor": "Falta de atualização dos e-mails transacionais disparados ao cliente", "acao": "Melhoria do disparo dos e-mails transacionais ao cliente", "resultado": "Menor ganho: E-mails existentes com texto, prazo e orientação coerentes com o processo vigente, reduzindo dúvidas causadas por informação desatualizada. Maior ganho: Cliente informado nos marcos relevantes, com próximo passo claro — especialmente quando o pedido estiver disponível para retirada e quando houver prazo a cumprir.", "metricaAtual": "", "kpi": "Cobertura de comunicação nos eventos elegíveis: (eventos prioritários com comunicação enviada corretamente ÷ total de eventos prioritários elegíveis) × 100. Separar por tipo de evento; “enviado” deve ser conferido nos logs, não presumido pelo status do pedido.", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-01-05", "fim": "2026-10-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L1.3", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Alta incidência de contatos reativos por atraso na entrega.", "acao": "Incluir disparo via WhatsApp no status 'Atraso na Entrega', integrado ao CRM — testar com 2 regiões/2 transportadoras.\nRégua de Comunicação de Atrasos: Fluxo configurado na ferramenta de mensageria com gatilhos automáticos. Teste com 2 Transportadoras em 2 Regiões. \n1- Região Campinas - Transportadora Rodonaves", "resultado": "Menor ganho: cliente informado proativamente. Maior ganho: redução de contatos reativos e custo de atendimento.", "metricaAtual": "", "kpi": "Reduzir contatos relacionados a atraso em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad Logística", "alinhamento": "Pilar Eficiência Operacional / Redução de Custo", "inicio": "2026-10-22", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Custo por disparo: R$ 0,56 (taxa de contato/NPS: Não mensurado) - agenda marcada para o dia 22/10"}, {"codigo": "L2.1", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Experiência de entrega prejudicada em prédios sem elevador/acesso (subir andares).", "acao": "Entrega Conforto. Alinhar com transportadoras volume/carga limite para entrega com subida de andares, por região.", "resultado": "Menor ganho: alinhamento formal com transportadoras. Maior ganho: aumento do CSAT de entrega em regiões verticais.", "metricaAtual": "", "kpi": "Aumentar CSAT de entrega em regiões com prédios/apartamentos", "prioridade": "Baixa", "squad": "Q1/2027 · Squad Logística", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2027-01-04", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L3.1", "setor": "Logística", "direcional": "Entrega - Ocorrências", "dor": "Incidência de recebimento de produtos com avaria.", "acao": "Levantar custos de folder, e-mail transacional e disparo WhatsApp de rastreio orientando conferência do produto na entrega.\nTrazer quais as transportadoras que tem mais reclamações para tratr pontualmente com time de Logistica\nVErificar maior incidencia de transportadora e produto", "resultado": "Menor ganho: cliente orientado a conferir produto. Maior ganho: redução de avarias reportadas pós-entrega e custo de reversas.", "metricaAtual": "", "kpi": "Reduzir % de pedidos com avaria reportada", "prioridade": "Média", "squad": "Q1/2027 · Squad CX", "alinhamento": "Pilar Redução de Custo (trocas/reversas)", "inicio": "2027-01-04", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "L5.2", "setor": "Logística Reversa", "direcional": "Rastreio T&D", "dor": "Cliente sem informações do tracking da sua troca/devolução solicitada.", "acao": "Incluir rastreio de coleta no fluxo de troca/devolução.", "resultado": "Menor ganho: visibilidade básica do status. Maior ganho: redução de contatos 'cadê minha coleta' e aumento da confiança no processo.", "metricaAtual": "", "kpi": "Reduzir contatos sobre status de coleta em X%", "prioridade": "Média", "squad": "Q4/2026 · Squad Logística Reversa", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-11-02", "fim": "2026-12-15", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T1", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Tracking de trocas e devoluções é manual, sem visibilidade ao cliente e sobrecarregando a operação.", "acao": "Criar notificações automáticas por etapa do T&D, com templates padronizados (Novo CRM + Troque Fácil).", "resultado": "Menor ganho: redução de trabalho manual. Maior ganho: cliente autoatendido sobre status, liberando capacidade operacional.", "metricaAtual": "", "kpi": "Reduzir handling manual (h/mês) e contatos de status em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-11-02", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T2", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Emissão da NFD manualmente e envio do vale crédito SAP para o solicitante interno", "acao": "Emitir NFD no CRM/Troque Fácil e emissão do vale crédito automático através da Uappi ao cliente, dispararando comunicação automática após as emissões com NFD, valor e nº do vale", "resultado": "Menor ganho: elimina a etapa manual isolada de emissão → Maior ganho: automação fiscal ponta a ponta, reduzindo SLA, erro humano e exposição regulatória.", "metricaAtual": "", "kpi": "Reduzir tempo de emissão de NFD + vale para < 24h; zerar erros de cadastro fiscal na emissão", "prioridade": "Crítica", "squad": "A definir · Taskforce Fiscal/TI/T&D (ainda em aprofundamento, não entra em cronograma fechado)", "alinhamento": "Pilar Compliance Fiscal & Eficiência Operacional", "inicio": "A definir", "fim": "A definir", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T3", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de visão dos vales (créditos) pendentes do cliente.", "acao": "Cliente acompanha vales pendentes via área logada; time interno visualiza na Uappi.", "resultado": "Menor ganho: consulta disponível ao cliente. Maior ganho: redução de chamados sobre status do vale.", "metricaAtual": "", "kpi": "Reduzir chamados 'status do meu vale' em X%", "prioridade": "Média", "squad": "Q1/2027 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2027-01-04", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T4", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Emissão manual de NFD para casos de exceção (sinistro).", "acao": "Automatizar emissão de NFD em massa para exceções (sinistro).", "resultado": "Menor ganho: menos digitação manual. Maior ganho: redução do tempo operacional no tratamento de sinistros.", "metricaAtual": "", "kpi": "Reduzir tempo de processamento de sinistros em X%", "prioridade": "Média", "squad": "Q1/2027 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2027-02-01", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T5", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de visibilidade do cadastro fiscal (contribuinte) do cliente no momento da emissão.", "acao": "Integrar validação de cadastro fiscal (contribuinte) via Uappi ao Novo CRM/Troque Fácil.", "resultado": "Menor ganho: alerta de cadastro incompleto. Maior ganho: redução de erros/risco fiscal na emissão de NFD.", "metricaAtual": "", "kpi": "Reduzir % de NFDs emitidas com erro de cadastro fiscal", "prioridade": "Alta", "squad": "Q4/2026 · Squad T&D/TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal", "inicio": "2026-11-02", "fim": "2026-12-15", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T6", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de trava na emissão de CSDEVOL no SAP quando o pedido já foi faturado.", "acao": "Travar a emissão de CSDEVOL no momento em que ela não está habilitada.", "resultado": "Menor ganho: alerta ao usuário. Maior ganho: eliminação de erro operacional e exposição fiscal.", "metricaAtual": "", "kpi": "Zerar incidentes de CSDEVOL emitido indevidamente", "prioridade": "Crítica", "squad": "Q4/2026 · Squad TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal / Redução de Risco", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T7", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de trava na emissão de NFD já cancelada no SAP.", "acao": "Travar a emissão de NFD no momento em que a nota não está habilitada.", "resultado": "Menor ganho: alerta ao usuário. Maior ganho: eliminação de erro operacional e exposição fiscal.", "metricaAtual": "", "kpi": "Zerar incidentes de NFD emitida sobre nota cancelada", "prioridade": "Crítica", "squad": "Q4/2026 · Squad TI/Fiscal", "alinhamento": "Pilar Compliance Fiscal / Redução de Risco", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "T8", "setor": "T&D", "direcional": "Jornada T&D", "dor": "Ausência de plataforma de auto atendimento para solicitações de trocas e devoluções", "acao": "Testar POC da Troque Fácil", "resultado": "Menor ganho: validação técnica isolada da ferramenta → Maior ganho: viabiliza com segurança todo o cluster de automações de T&D (notificações, NFD, vale crédito), reduzindo risco de retrabalho e falha em produção.", "metricaAtual": "", "kpi": "Taxa de sucesso do POC ≥ 90% das transações testadas sem erro; aprovação formal da plataforma para rollout", "prioridade": "Crítica", "squad": "Q4/2026 · Squad T&D/TI", "alinhamento": "Pilar Eficiência Operacional / Compliance Fiscal", "inicio": "A definir", "fim": "A definir", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "P3", "setor": "T&D Ciclo", "direcional": "Jornada T&D", "dor": "Time de pós-vendas fica responsável pelo bloqueio e desbloqueio de pedidos sem critério formal.", "acao": "Definir matriz de risco e alçadas para bloqueio/desbloqueio pelo time de vendas assistidas.", "resultado": "Menor ganho: critério formalizado. Maior ganho: redução do tempo médio de liberação de pedidos bloqueados.", "metricaAtual": "", "kpi": "Reduzir tempo médio de liberação de pedidos bloqueados", "prioridade": "Média", "squad": "Q4/2026 · Squad Comercial/Pós-vendas", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-11-02", "fim": "2026-11-30", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "D3", "setor": "Garantia", "direcional": "Jornada Garantia", "dor": "Ausência de visão do motivo da solicitação de assistência técnica ou envio de peça.", "acao": "Incluir TAG no protocolo para descrição do defeito (gás, sensor etc.).", "resultado": "Menor ganho: categorização do protocolo. Maior ganho: análise de causa raiz e redução de reincidência.", "metricaAtual": "", "kpi": "Aumentar % de protocolos com causa raiz identificada", "prioridade": "Baixa", "squad": "Q1/2027 · Squad Garantia", "alinhamento": "Pilar Qualidade / Eficiência Operacional", "inicio": "2027-02-01", "fim": "2027-02-28", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "C1", "setor": "CD / Reversa & Garantia", "direcional": "Jornada T&D + DOA + Garantia", "dor": "Ausência de controle dos pedidos recebidos por número de série nos casos de DOA fabricante.", "acao": "Validar com o CD a automação de verificação do número de série na entrada (bipagem).", "resultado": "Menor ganho: rastreabilidade do item. Maior ganho: redução de divergências no controle de garantia fabricante.", "metricaAtual": "", "kpi": "Reduzir % de divergência de nº de série em recebimentos DOA", "prioridade": "Média", "squad": "Q1/2027 · Squad CD", "alinhamento": "Pilar Eficiência Operacional / Redução de Custo", "inicio": "2027-01-04", "fim": "2027-01-31", "status": "Não iniciado", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX1", "setor": "CX", "direcional": "Jornada cliente", "dor": "Falta de prioridade nos atendimentos do patrão", "acao": "Criação do fluxo exclusivo para os patrões vips selecionados", "resultado": "Menor ganho: atendimento diferenciado identificado. Maior ganho: aumento da retenção e satisfação dos patrões VIP.", "metricaAtual": "", "kpi": "Aumentar CSAT/NPS dos patrões VIP em X%", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-21", "fim": "2026-11-02", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX2", "setor": "CX", "direcional": "NPS", "dor": "Ausência de análise das avaliações de NPS", "acao": "Análise diária do NPS e ação de melhoria com base na avaliação apresentada", "resultado": "Menor ganho: visibilidade diária dos resultados. Maior ganho: ações corretivas rápidas e aumento do NPS geral.", "metricaAtual": "", "kpi": "Aumentar NPS geral em X% / reduzir tempo de resposta a avaliações negativas", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-13", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX3", "setor": "CX", "direcional": "NPS", "dor": "Ausência de NPS Relacional do Patrão", "acao": "Criação de NPS relacional do patrão para medirmos a qualidade dos nossos fluxos internos", "resultado": "Menor ganho: nova métrica implementada. Maior ganho: visão contínua da satisfação do patrão com os fluxos internos.", "metricaAtual": "", "kpi": "Implantar NPS relacional do patrão e atingir meta X pontos", "prioridade": "Média", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Experiência do Cliente", "inicio": "2026-08-10", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX4", "setor": "CX", "direcional": "Garantia - Cortina de Ar", "dor": "Ausência de fluxo especial para cortina de ar marca própria Leveros", "acao": "Criação de um fluxo para cortina de ar", "resultado": "Menor ganho: processo formalizado. Maior ganho: redução de erros e padronização no atendimento de cortina de ar.", "metricaAtual": "", "kpi": "Reduzir % de protocolos tratados fora do padrão", "prioridade": "Média", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-09-18", "fim": "2026-11-02", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX6", "setor": "CX", "direcional": "Atendimento", "dor": "Ausência de IA para facilitar as dúvidas do atendimento", "acao": "Criação da IA conversacional para auxiliar no atendimento do canal online e offline", "resultado": "Menor ganho: suporte imediato ao atendente. Maior ganho: redução do TMA e aumento da qualidade das respostas.", "metricaAtual": "", "kpi": "Reduzir TMA em X% / aumentar % de respostas corretas na 1ª tentativa", "prioridade": "Alta", "squad": "Q4/2026 · Squad CX", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-09-25", "fim": "2026-12-31", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}, {"codigo": "CX6", "setor": "CX", "direcional": "Jornada de Loja (HUB)", "dor": "", "acao": "Ponto focal adm para assuntos Operacionais e P´ós vendas", "resultado": "", "metricaAtual": "", "kpi": "", "prioridade": "", "squad": "", "alinhamento": "", "inicio": "", "fim": "", "status": "", "obs": ""}];
+        const DORES_BASE = [{"codigo": "A1", "setor": "Atendimento", "direcional": "Rastreio", "dor": "Dificuldade de logar no ambiente da BoxLink, principalmente com clientes em linha.", "acao": "Validar com o TI alternativas para facilitar o acesso à BoxLink.", "resultado": "Menor ganho: login mais rápido. Maior ganho: redução do tempo médio de atendimento (TMA) em chamadas ao vivo.", "metricaAtual": "", "kpi": "Reduzir tempo médio de autenticação e TMA", "prioridade": "Alta", "squad": "Q4/2026 · Squad Atendimento/TI", "alinhamento": "Pilar Eficiência Operacional", "inicio": "2026-10-15", "fim": "2026-11-15", "status": "Em aprofundamento", "obs": "Base real — Dores Operacionais CX"}];
 
         const dorPrioMeta = (p) => DORES_PRIO_META[p] || { badge: DORES_NEUTRO, bar: 'bg-gray-300', ord: 9 };
         const dorStatusMeta = (s) => DORES_STATUS_META[s] || { badge: DORES_NEUTRO, icon: 'fa-circle', ord: 9 };
@@ -581,20 +573,14 @@
             if (state.doresErro) return `
                 <div class="bg-red-50 border border-red-200 text-red-800 rounded-lg p-4 text-sm">
                     <b><i class="fas fa-triangle-exclamation mr-1"></i> Não foi possível ler a coleção "dores" no Firestore.</b>
-                    <p class="mt-1">Provavelmente falta liberar a coleção nas regras do Firestore. Adicione em <i>Firestore → Regras</i>:</p>
-                    <pre class="mt-2 bg-white border border-red-100 rounded p-2 text-xs overflow-auto">match /dores/{id} {
-  allow read, write: if request.auth != null
-    &amp;&amp; request.auth.token.email.matches('.*@leveros.com.br');
-}</pre>
                 </div>`;
             if (!state.doresLoaded) return '<div class="text-center py-16"><div class="loader"></div></div>';
             if (!state.dores.length) return `
                 <div class="bg-white border border-dashed border-gray-300 rounded-xl p-10 text-center">
                     <i class="fas fa-heart-crack text-4xl text-leveros-azul mb-3"></i>
                     <h3 class="font-bold text-leveros-verde1 text-lg">Nenhuma dor cadastrada ainda</h3>
-                    <p class="text-sm text-gray-500 mt-1 mb-5">Carregue a planilha base (${DORES_BASE.length} dores) ou comece cadastrando uma nova.</p>
+                    <p class="text-sm text-gray-500 mt-1 mb-5">Comece cadastrando uma nova.</p>
                     <div class="flex justify-center gap-2 flex-wrap">
-                        <button data-action="dor-carregar-base" class="bg-leveros-verde1 text-white hover:bg-leveros-verde2 px-4 py-2 rounded-lg font-semibold text-sm"><i class="fas fa-file-import mr-1"></i> Carregar planilha base (${DORES_BASE.length} dores)</button>
                         <button data-action="dor-nova" class="bg-leveros-amarelo text-leveros-verde1 hover:bg-yellow-400 px-4 py-2 rounded-lg font-semibold text-sm"><i class="fas fa-plus mr-1"></i> Nova dor</button>
                     </div>
                 </div>`;
@@ -621,7 +607,6 @@
             return `Mostrando <b>${doresFiltradas().length}</b> de ${state.dores.length}${filtrando ? ' · <button data-action="dor-limpar" class="text-leveros-verde2 font-semibold underline">limpar filtros</button>' : ''}`;
         }
 
-        // Atualiza só KPIs/lista/filtros (não perde o foco da busca nem a posição da página)
         function atualizarDores() {
             if (!$('#dores-root')) return;
             const f = state.filtros.dores;
@@ -679,7 +664,7 @@
         }
 
         // ==========================================================
-        // DORES OPERACIONAIS — detalhe (100% dos campos), formulário, exclusão
+        // DORES OPERACIONAIS — detalhe, formulário, exclusão
         // ==========================================================
         function abrirDetalheDor(id) {
             const d = state.dores.find(x => x.id === id); if (!d) return;
@@ -833,7 +818,6 @@
             }
         }
 
-        // separa o que já existe (mesmo ID + setor + dor + ação) do que é novo
         function separarNovas(lista) {
             const existentes = new Set(state.dores.map(dorChave)), vistos = new Set(), novas = [];
             let repetidas = 0;
@@ -843,7 +827,7 @@
 
         function dataParaISO(v) {
             if (v instanceof Date && !isNaN(v)) {
-                const z = new Date(v.getTime() + 12 * 3600e3); // evita virar o dia por fuso horário
+                const z = new Date(v.getTime() + 12 * 3600e3);
                 return `${z.getUTCFullYear()}-${pad(z.getUTCMonth() + 1)}-${pad(z.getUTCDate())}`;
             }
             const s = String(v ?? '').trim();
@@ -943,9 +927,6 @@
         };
 
         // ==========================================================
-
-
-        // ==========================================================
         // NAVEGAÇÃO / RENDER
         // ==========================================================
         function navegar(view, projetoId = null) {
@@ -982,11 +963,9 @@
                 return;
             }
 
+            // Se for atualizar a visão de rotina sem recarregar a tela inteira, reconstruimos a tela inteira de rotina para atualizar Dashboard e Lista
             if (!forcar && state.view === 'rotina' && $('#rotina-view-root')) {
-                const { lista, isMinhas, fResp, concluidas, pendentes } = rotinasVisiveis();
-                $('#kpi-total-rotinas').innerHTML = kpi('Total de Lançamentos', lista.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '');
-                $('#kpi-concluidas-rotinas').innerHTML = kpi('Concluídas vs Pendentes', `${concluidas} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '');
-                $('#tbody-rotinas').innerHTML = linhasTabelaRotina(lista, isMinhas, fResp);
+                $('#view').innerHTML = rotinasHTML();
                 return;
             }
 
@@ -1274,7 +1253,7 @@
             const donos = ehDonoProjeto(p);
 
             const cronHTML = crons.map(cr => {
-                const ts = state.tarefas.filter(t => t.cronogramaId === cr.id).sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
+                const ts = state.tarefas.filter(t => t.cronogramaId === p.id).sort((a, b) => (a.prazo || '9999').localeCompare(b.prazo || '9999'));
                 const feitas = ts.filter(t => t.status === 'Validado').length;
                 const pct = ts.length ? Math.round(feitas / ts.length * 100) : 0;
                 return `<section class="bg-white rounded-xl shadow-sm mb-4 overflow-hidden">
@@ -1343,7 +1322,7 @@
         }
 
         // ==========================================================
-        // VIEW: ROTINA / AVULSAS
+        // VIEW: ROTINA / AVULSAS (CARD LIST VIEW)
         // ==========================================================
         function renderPrazoRotina(r) {
             if (r.status === 'Continua') return '<span class="text-teal-600 font-semibold text-[11px]"><i class="fas fa-sync-alt mr-1"></i> Contínua</span>';
@@ -1355,58 +1334,72 @@
             return `<span class="text-green-600 font-semibold text-[11px]"><i class="far fa-calendar mr-1"></i>${fmtBR(r.prazo)}</span>`;
         }
 
-        function renderAcesso(url) {
-            if (!url) return '<span class="text-gray-300">-</span>';
-            let href = url;
-            if (!url.startsWith('http://') && !url.startsWith('https://')) href = 'https://' + url;
-            return `<a href="${esc(href)}" target="_blank" class="text-leveros-azul hover:text-leveros-verde2 hover:underline text-[11px] font-bold whitespace-nowrap"><i class="fas fa-external-link-alt mr-1"></i>Acessar</a>`;
-        }
-
         function linhasTabelaRotina(lista, isMinhas, fResp) {
-            const mostrarAcoes = isMinhas || isAdmin();
+            if(!lista.length) return `<div class="p-10 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-300 mt-2"><i class="fas fa-clipboard-check text-4xl mb-3 text-gray-300 block"></i>Nenhuma rotina pendente com estes filtros. Tudo limpo!</div>`;
+
             return lista.map(r => {
                 const colabs = rotinaColabs(r);
                 const oculta = rotinaOcultaPara(r, fResp);
-                const compartilhada = r.responsavelEmail !== fResp; // a lista exibida é de um colaborador
+                const compartilhada = r.responsavelEmail !== fResp;
+                
                 const btnOcultar = isMinhas ? `
-                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
+                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
                             <i class="fas ${oculta ? 'fa-eye' : 'fa-eye-slash'}"></i>
                         </button>` : '';
-                const btnEditar = podeEditarRotina(r) ? `<button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-500 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>` : '';
-                const btnExcluir = podeGerirRotina(r) ? `<button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>` : '';
+                const btnEditar = podeEditarRotina(r) ? `<button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>` : '';
+                const btnExcluir = podeGerirRotina(r) ? `<button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>` : '';
+                
+                // Estilo de conclusão
+                const isConcluido = r.status === 'Concluído' || r.status === 'Concluído Parcial';
+                const opacity = (oculta || isConcluido) ? 'opacity-60 bg-gray-50' : 'bg-white';
+                const textStyle = isConcluido ? 'line-through text-gray-400' : 'text-gray-800';
+
                 return `
-                <tr class="hover:bg-gray-50 transition-colors border-l-4 ${oculta ? 'opacity-50 bg-gray-50' : ''}" style="border-left-color: ${r.cor || '#e5e7eb'}">
-                    <td class="p-3 align-top">
-                        <div class="text-gray-600 font-semibold">${fmtBR(r.data)}</div>
-                        <div class="mt-1">${renderPrazoRotina(r)}</div>
-                    </td>
-                    <td class="p-3 align-top">
-                        <span class="px-2 py-1 rounded text-[11px] font-bold block w-max mb-1 truncate max-w-full border" style="background:${r.cor ? r.cor+'26' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}" title="${esc(r.categoria)}">${esc(r.categoria)}</span>
-                        <span class="px-2 py-1 rounded border text-[10px] font-bold block w-max ${STATUS_ROTINA_META[r.status] || ''}">${esc(r.status)}</span>
-                    </td>
-                    <td class="p-3 align-top">
-                        <div class="font-bold text-gray-800">${esc(r.titulo || r.descricao)}</div>
-                        ${r.titulo && r.descricao ? `<div class="text-gray-600 text-[12px] mt-0.5 line-clamp-2" title="${esc(r.descricao)}">${esc(r.descricao)}</div>` : ''}
-                        ${compartilhada ? `<div class="mt-1.5 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">🤝 Compartilhada por ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</div>` : ''}
-                        ${colabs.length ? `<div class="flex items-center gap-1 mt-1.5" title="Apoio"><i class="fas fa-user-group text-[10px] text-gray-400 mr-1"></i>${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px]')).join('')}</div>` : ''}
-                    </td>
-                    <td class="p-3 align-top text-[12px] text-gray-500 italic">
-                        ${esc(r.observacao || '--')}
-                    </td>
-                    <td class="p-3 text-center align-top pt-4">
-                        ${renderAcesso(r.acesso)}
-                    </td>
-                    ${mostrarAcoes ? `
-                    <td class="p-3 text-center align-top pt-3 whitespace-nowrap">
-                        ${btnOcultar}${btnEditar}${btnExcluir}
-                    </td>` : ''}
-                </tr>`;
-            }).join('') || `<tr><td colspan="${isMinhas || isAdmin() ? '6' : '5'}" class="p-10 text-center text-gray-400"><i class="fas fa-inbox text-3xl mb-2 text-gray-300 block"></i>Nenhuma atividade avulsa encontrada com esses filtros.</td></tr>`;
+                <div class="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 mb-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all border-l-4 ${opacity}" style="border-left-color: ${r.cor || '#e5e7eb'}">
+                    <!-- ESQUERDA: Checkbox (Status) e Título -->
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <button data-action="rotina-toggle-status" data-id="${esc(r.id)}" class="mt-0.5 shrink-0 text-xl ${isConcluido ? 'text-green-500' : 'text-gray-300 hover:text-green-400'}">
+                            <i class="fas ${isConcluido ? 'fa-check-circle' : 'fa-circle'}"></i>
+                        </button>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">${fmtBR(r.data)}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border" style="background:${r.cor ? r.cor+'1A' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}">${esc(r.categoria)}</span>
+                                ${r.status !== 'Não iniciado' && r.status !== 'Concluído' ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${STATUS_ROTINA_META[r.status]}">${esc(r.status)}</span>` : ''}
+                                ${compartilhada ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">🤝 De: ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</span>` : ''}
+                            </div>
+                            <h4 class="font-bold text-sm ${textStyle} truncate" title="${esc(r.titulo || r.descricao)}">${esc(r.titulo || r.descricao)}</h4>
+                            ${r.observacao ? `<p class="text-xs text-gray-500 mt-1 line-clamp-1 italic"><i class="fas fa-info-circle mr-1"></i>${esc(r.observacao)}</p>` : ''}
+                        </div>
+                    </div>
+
+                    <!-- DIREITA: Prazos, Colaboradores, Ações -->
+                    <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                        <div class="flex flex-col items-end">
+                            ${renderPrazoRotina(r)}
+                            ${colabs.length ? `<div class="flex mt-1 -space-x-1" title="Apoios">${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px] border border-white')).join('')}</div>` : ''}
+                        </div>
+                        
+                        <div class="flex items-center gap-1 border-l border-gray-200 pl-3">
+                            ${r.acesso ? `<a href="${esc(!r.acesso.startsWith('http') ? 'https://' + r.acesso : r.acesso)}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg text-leveros-azul hover:bg-blue-50" title="Acessar Link"><i class="fas fa-external-link-alt"></i></a>` : ''}
+                            ${btnOcultar}
+                            ${btnEditar}
+                            ${btnExcluir}
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         function rotinasHTML() {
             const { lista, isMinhas, fResp, concluidas, pendentes } = rotinasVisiveis();
             const f = state.filtros;
+            
+            // Cálculos para o Dashboard
+            const pendentesLista = lista.filter(r => r.status !== 'Concluído' && r.status !== 'Concluído Parcial');
+            const atrasadas = pendentesLista.filter(r => r.prazo && diasPara(r.prazo) < 0).length;
+            const praHoje = pendentesLista.filter(r => r.prazo && diasPara(r.prazo) === 0).length;
+            const taxaConclusao = lista.length ? Math.round((concluidas / lista.length) * 100) : 0;
 
             return `<div id="rotina-view-root">
                 <div class="flex items-center justify-between mb-5 flex-wrap gap-2">
@@ -1456,19 +1449,55 @@
                 </div>
 
                 <!-- Dashboard Rotina -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                    <div id="kpi-total-rotinas" class="w-full">${kpi('Total de Lançamentos', lista.length, 'fa-clipboard-list', 'border-leveros-verde2', 'text-leveros-verde2', '')}</div>
-                    <div id="kpi-concluidas-rotinas" class="w-full">${kpi('Concluídas vs Pendentes', `${concluidas} / ${pendentes}`, 'fa-check-double', 'border-leveros-verde3', 'text-green-600', '')}</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Card de Progresso -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-200 flex flex-col justify-center hover:shadow-md transition-shadow">
+                        <div class="flex justify-between text-xs text-gray-500 font-bold uppercase mb-2">
+                            <span>Progresso</span>
+                            <span class="text-leveros-verde2">${taxaConclusao}%</span>
+                        </div>
+                        <div class="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                            <div class="h-full bg-leveros-verde2 transition-all duration-500" style="width: ${taxaConclusao}%"></div>
+                        </div>
+                        <div class="text-[11px] text-gray-400 mt-2 text-center">${concluidas} de ${lista.length} concluídas</div>
+                    </div>
+
+                    <!-- Card Atrasadas -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-red-500 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Atrasadas</p>
+                            <h3 class="text-2xl font-bold text-red-600 leading-none mt-1">${atrasadas}</h3>
+                        </div>
+                        <i class="fas fa-triangle-exclamation text-3xl text-red-100"></i>
+                    </div>
+
+                    <!-- Card Pra Hoje -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-yellow-400 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Vencem Hoje</p>
+                            <h3 class="text-2xl font-bold text-yellow-600 leading-none mt-1">${praHoje}</h3>
+                        </div>
+                        <i class="fas fa-clock text-3xl text-yellow-100"></i>
+                    </div>
+
+                    <!-- Card Abertas -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-blue-400 flex items-center justify-between hover:shadow-md transition-shadow">
+                        <div>
+                            <p class="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Pendentes</p>
+                            <h3 class="text-2xl font-bold text-blue-600 leading-none mt-1">${pendentes}</h3>
+                        </div>
+                        <i class="fas fa-inbox text-3xl text-blue-100"></i>
+                    </div>
                 </div>
 
-                <!-- Formulário de Lançamento Rápido -->
+                <!-- Formulário de Lançamento Rápido (Oculto por padrão) -->
                 ${isMinhas ? `
                 <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-6 transition-all">
-                    <div class="flex items-center justify-between mb-4 cursor-pointer group" data-action="toggle-rotina-form" title="Ocultar/Mostrar Formulário">
-                        <h3 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Lançamento Rápido</h3>
-                        <button type="button" class="text-gray-400 group-hover:text-leveros-verde2 transition-colors"><i id="icone-toggle-rotina" class="fas fa-chevron-up"></i></button>
+                    <div class="flex items-center justify-between cursor-pointer group" data-action="toggle-rotina-form" title="Ocultar/Mostrar Formulário">
+                        <h3 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fas fa-bolt text-leveros-amarelo"></i> Novo Lançamento Rápido</h3>
+                        <button type="button" class="text-gray-400 group-hover:text-leveros-verde2 transition-colors"><i id="icone-toggle-rotina" class="fas fa-chevron-down"></i></button>
                     </div>
-                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end transition-all duration-300">
+                    <form id="form-rotina" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end transition-all duration-300 mt-4 hidden">
                         <div><label class="lbl">Data Inicial *</label><input id="nr-data" type="date" class="inp" required value="${hojeISO()}"></div>
                         <div><label class="lbl">Prazo <span class="font-normal normal-case text-gray-400">(opcional)</span></label><input id="nr-prazo" type="date" class="inp"></div>
                         <div><label class="lbl">Categoria *</label><select id="nr-cat" class="inp">${CATS_ROTINA.map(c=>`<option>${c}</option>`).join('')}</select></div>
@@ -1498,25 +1527,9 @@
                 </div>
                 ` : ''}
 
-                <!-- Planilha / Tabela de Atividades -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse min-w-[1000px]">
-                            <thead>
-                                <tr class="bg-gray-50 border-b border-gray-200 text-xs text-gray-500 uppercase tracking-wider">
-                                    <th class="p-3 font-semibold w-32">Data / Prazo</th>
-                                    <th class="p-3 font-semibold w-40">Categoria / Status</th>
-                                    <th class="p-3 font-semibold min-w-[200px]">Título / Descrição</th>
-                                    <th class="p-3 font-semibold min-w-[150px]">Observação</th>
-                                    <th class="p-3 font-semibold text-center w-28">Acesso</th>
-                                    ${isMinhas || isAdmin() ? '<th class="p-3 font-semibold text-center w-28">Ações</th>' : ''}
-                                </tr>
-                            </thead>
-                            <tbody id="tbody-rotinas" class="divide-y divide-gray-100 text-sm">
-                                ${linhasTabelaRotina(lista, isMinhas, fResp)}
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Cards de Atividades -->
+                <div id="tbody-rotinas" class="flex flex-col">
+                    ${linhasTabelaRotina(lista, isMinhas, fResp)}
                 </div>
             </div>`;
         }
@@ -2089,9 +2102,6 @@
         }
 
         // ==========================================================
-        // EXPORTAÇÃO EXCEL
-        // ==========================================================
-      // ==========================================================
         // EXPORTAÇÃO EXCEL (VERSÃO COMPLETA)
         // ==========================================================
         function exportarRelatorioExcel() {
@@ -2100,7 +2110,6 @@
             }
             toast('Gerando relatório Excel completo...', 'info');
 
-            // Funções auxiliares para o relatório
             const calcProgresso = (pId) => {
                 const ts = state.tarefas.filter(t => t.projetoId === pId);
                 const feitas = ts.filter(t => t.status === 'Validado').length;
@@ -2112,7 +2121,7 @@
             const getNome = (email) => getMembro(email).nome;
             const nomesColabs = (emails) => (emails || []).map(getNome).join(', ');
 
-            // 1. DADOS DE PROJETOS (Visão Executiva)
+            // 1. DADOS DE PROJETOS
             const dadosProjetos = state.projetos.map(p => {
                 const pr = calcProgresso(p.id);
                 return {
@@ -2130,11 +2139,11 @@
                 };
             });
 
-            // 2. DADOS DE TAREFAS (Visão Operacional / Quadro)
+            // 2. DADOS DE TAREFAS
             const dadosTarefas = state.tarefas.map(t => {
                 const p = getProjeto(t.projetoId);
                 const c = state.cronogramas.find(x => x.id === t.cronogramaId);
-                const sit = situacao(t); // Pega se está atrasado, no prazo, etc.
+                const sit = situacao(t);
                 return {
                     'Projeto': p ? p.nome : 'Sem projeto',
                     'Cronograma / Fase': c ? c.nome : 'Geral',
@@ -2151,7 +2160,7 @@
                 };
             });
 
-            // 3. DADOS DE ROTINAS E AVULSAS (Visão Diária da Equipe)
+            // 3. DADOS DE ROTINAS E AVULSAS
             const dadosRotinas = state.rotinas.map(r => {
                 return {
                     'Data de Execução': fmtBR(r.data),
@@ -2167,10 +2176,8 @@
                 };
             });
 
-            // Criar o arquivo (Workbook)
             const wb = XLSX.utils.book_new();
 
-            // Adicionar as abas ajustando a largura (width) das colunas para ficar elegante
             if (dadosProjetos.length) {
                 const wsProj = XLSX.utils.json_to_sheet(dadosProjetos);
                 wsProj['!cols'] = [{wch: 35}, {wch: 12}, {wch: 15}, {wch: 20}, {wch: 18}, {wch: 15}, {wch: 40}, {wch: 40}, {wch: 20}, {wch: 25}, {wch: 50}];
@@ -2189,10 +2196,10 @@
                 XLSX.utils.book_append_sheet(wb, wsRot, "Rotina Diária");
             }
 
-            // Fazer o download do arquivo
             XLSX.writeFile(wb, `Relatorio_Gerencial_CX_FLOW_${hojeISO()}.xlsx`);
             toast('Relatório exportado com sucesso!');
         }
+
         // ==========================================================
         // SUBMITS E EVENTOS
         // ==========================================================
@@ -2332,7 +2339,6 @@
                         observacao: $('#er-obs').value.trim(),
                         atualizadoEm: serverTimestamp()
                     };
-                    // Só o responsável (ou admin) altera a lista de colaboradores
                     if (podeGerirRotina(r)) {
                         upd.colaboradoresEmails = colabsMarcados('er-colab').filter(em => em !== r.responsavelEmail);
                     }
@@ -2376,80 +2382,48 @@
                 case 'filtrar-quadro': state.filtros = { ...state.filtros, projeto: d.projeto || '', resp: d.resp || '', q: '', sit: d.sit || '' }; navegar('quadro'); break;
                 case 'filtro-minhas': state.filtros.resp = state.user.email; navegar('quadro'); break;
                 case 'limpar-filtros': state.filtros = { ...state.filtros, projeto: '', resp: '', q: '', sit: '' }; navegar('quadro'); break;
+                case 'exportar-excel': exportarRelatorioExcel(); break;
 
-                // EXPORTAÇÃO PARA EXCEL
-                case 'exportar-excel':
-                    exportarRelatorioExcel();
-                    break;
-
-                // EVENTOS ROTINA E FILTROS ROTINA
+                // ================= ROTINA DIÁRIA =================
                 case 'set-rotina-modo':
                     state.filtros.rotinaModo = d.modo;
                     if (d.modo === 'minhas') state.filtros.rotinaResp = state.user.email;
                     render(true);
                     break;
                 case 'filtrar-rotina': state.filtros.rotinaResp = $('#filtro-rotina-resp').value; render(true); break;
-
-                case 'toggle-ver-ocultas':
-                    state.filtros.rotinaOcultas = !state.filtros.rotinaOcultas;
-                    render(true);
-                    break;
-
+                case 'toggle-ver-ocultas': state.filtros.rotinaOcultas = !state.filtros.rotinaOcultas; render(true); break;
                 case 'toggle-ocultar-rotina': {
                     const r = state.rotinas.find(x => x.id === d.id);
                     if (r) {
                         try {
                             const me = state.user.email;
                             const ocultaAgora = rotinaOcultaPara(r, me);
-                            // Dono usa o campo "oculta"; colaborador oculta só para si em "ocultaPara"
                             const upd = r.responsavelEmail === me
                                 ? { oculta: !ocultaAgora, atualizadoEm: serverTimestamp() }
                                 : { ocultaPara: ocultaAgora ? arrayRemove(me) : arrayUnion(me) };
                             await updateDoc(doc(db, 'rotinas', d.id), upd);
                             toast(ocultaAgora ? 'Atividade visível novamente.' : 'Atividade oculta da lista.');
-                        } catch (err) {
-                            console.error(err);
-                            toast('Erro ao ocultar atividade.', 'erro');
-                        }
+                        } catch (err) { console.error(err); toast('Erro ao ocultar atividade.', 'erro'); }
                     }
                     break;
                 }
-
                 case 'limpar-filtros-rotina':
-                    state.filtros.rotinaBusca = '';
-                    state.filtros.rotinaCat = '';
-                    state.filtros.rotinaStatus = '';
-                    state.filtros.rotinaOrdem = 'data-desc';
+                    state.filtros.rotinaBusca = ''; state.filtros.rotinaCat = '';
+                    state.filtros.rotinaStatus = ''; state.filtros.rotinaOrdem = 'data-desc';
                     state.filtros.rotinaOcultas = false;
                     if($('#f-rotina-q')) $('#f-rotina-q').value = '';
                     render(true);
                     break;
-
                 case 'toggle-rotina-form': {
                     const form = $('#form-rotina');
                     const icon = $('#icone-toggle-rotina');
                     if (form && icon) {
                         form.classList.toggle('hidden');
-                        if (form.classList.contains('hidden')) {
-                            icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
-                        } else {
-                            icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
-                        }
+                        if (form.classList.contains('hidden')) icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                        else icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
                     }
                     break;
                 }
-
-                case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
-                case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
-                case 'cancelar-sol': await cancelarSolicitacao(d.id); break;
-                case 'add-colab': await adicionarColaborador(d.id); break;
-                case 'remover-colab': await removerColaborador(d.id, d.email); break;
-                case 'salvar-tarefa': await salvarTarefa(d.id); break;
-                case 'enviar-comentario': await enviarComentario(d.id); break;
-                case 'excluir-tarefa': await excluirTarefa(d.id); break;
-                case 'excluir-cronograma': await excluirCronograma(d.id); break;
-                case 'excluir-projeto': await excluirProjeto(d.id); break;
-                case 'excluir-membro': await excluirMembro(d.email); break;
                 case 'editar-rotina': modalEditarRotina(d.id); break;
                 case 'excluir-rotina': {
                     const r = state.rotinas.find(x => x.id === d.id);
@@ -2466,12 +2440,26 @@
                     const r = state.rotinas.find(x => x.id === d.id);
                     if(r) {
                         try {
-                            const nv = r.status === 'Concluído' ? 'Pendente' : 'Concluído';
-                            await updateDoc(doc(db, 'rotinas', d.id), { status: nv });
+                            const nv = (r.status === 'Concluído' || r.status === 'Concluído Parcial') ? 'Não iniciado' : 'Concluído';
+                            await updateDoc(doc(db, 'rotinas', d.id), { status: nv, atualizadoEm: serverTimestamp() });
+                            toast(nv === 'Concluído' ? 'Atividade concluída!' : 'Atividade reaberta.');
                         } catch(err) { console.error(err); toast('Erro ao alterar status', 'erro'); }
                     }
                     break;
                 }
+
+                // ================= SOLICITAÇÕES E TAREFAS =================
+                case 'solicitar': modalSolicitacao(d.id, d.tipo || ''); break;
+                case 'responder-sol': await responderSolicitacao(d.id, d.aceitar === '1'); break;
+                case 'cancelar-sol': await cancelarSolicitacao(d.id); break;
+                case 'add-colab': await adicionarColaborador(d.id); break;
+                case 'remover-colab': await removerColaborador(d.id, d.email); break;
+                case 'salvar-tarefa': await salvarTarefa(d.id); break;
+                case 'enviar-comentario': await enviarComentario(d.id); break;
+                case 'excluir-tarefa': await excluirTarefa(d.id); break;
+                case 'excluir-cronograma': await excluirCronograma(d.id); break;
+                case 'excluir-projeto': await excluirProjeto(d.id); break;
+                case 'excluir-membro': await excluirMembro(d.email); break;
                 case 'arquivar-projeto': {
                     const p = getProjeto(d.id);
                     await updateDoc(doc(db, 'projetos', d.id), { status: p.status === 'arquivado' ? 'ativo' : 'arquivado' });
@@ -2487,14 +2475,9 @@
                 case 'dor-exportar': exportarDores(); break;
                 case 'dor-modelo': baixarModeloDores(); break;
                 case 'dor-importar': $('#dor-file')?.click(); break;
-                case 'dor-carregar-base':
-                    mostrarPreviaImportacao(DORES_BASE, `Planilha base (${DORES_BASE.length} dores)`, 'base');
-                    break;
+                case 'dor-carregar-base': mostrarPreviaImportacao(DORES_BASE, `Planilha base (${DORES_BASE.length} dores)`, 'base'); break;
                 case 'dor-confirmar-import': await confirmarImportacaoDores(el); break;
-                case 'dor-modo':
-                    state.filtros.dores.modo = d.modo;
-                    atualizarDores();
-                    break;
+                case 'dor-modo': state.filtros.dores.modo = d.modo; atualizarDores(); break;
                 case 'dor-limpar':
                     state.filtros.dores = { ...state.filtros.dores, q: '', setor: '', prio: '', status: '', quarter: '' };
                     atualizarDores();
@@ -2517,7 +2500,6 @@
             }
         });
 
-        // INPUTS E SELECTS
         document.addEventListener('input', (e) => {
             if (e.target.id === 'f-q') { state.filtros.q = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (e.target.id === 'f-rotina-q') { state.filtros.rotinaBusca = e.target.value; render(); }
@@ -2537,12 +2519,10 @@
             if (id === 'f-resp') { state.filtros.resp = e.target.value; $('#board').innerHTML = boardHTML(); }
             if (id === 'f-sit') { state.filtros.sit = e.target.value; $('#board').innerHTML = boardHTML(); }
 
-            // FILTROS DA ROTINA
             if (id === 'f-rotina-cat') { state.filtros.rotinaCat = e.target.value; render(); }
             if (id === 'f-rotina-status') { state.filtros.rotinaStatus = e.target.value; render(); }
             if (id === 'f-rotina-ordem') { state.filtros.rotinaOrdem = e.target.value; render(); }
 
-            // FILTROS DAS DORES OPERACIONAIS
             if (id === 'dr-setor') { state.filtros.dores.setor = e.target.value; atualizarDores(); }
             if (id === 'dr-prio') { state.filtros.dores.prio = e.target.value; atualizarDores(); }
             if (id === 'dr-status') { state.filtros.dores.status = e.target.value; atualizarDores(); }
@@ -2552,7 +2532,6 @@
                 await mudarStatusDor(e.target.dataset.id, e.target.value);
             }
 
-            // IMPORTAÇÃO DE PLANILHA DE DORES
             if (id === 'dor-file' && e.target.files?.length) {
                 await lerPlanilhaDores(e.target.files[0]);
                 e.target.value = '';
@@ -2562,7 +2541,6 @@
             if (id === 'nt-projeto') {
                 $('#nt-cron').innerHTML = optionsCron(e.target.value) || '<option value="">Geral (será criado)</option>';
             }
-            // O responsável escolhido não pode ser também colaborador
             if (id === 'nt-resp') {
                 document.querySelectorAll('input[name=nt-colab]').forEach(cb => {
                     const igual = cb.value === e.target.value;
