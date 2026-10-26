@@ -1797,6 +1797,7 @@
         function abrirDrawer(id) {
             const t = getTarefa(id);
             if (!t) return;
+            fecharModal();
             state.drawerTaskId = id;
             const p = getOrigemTarefa(t);
             const hist = (t.historicoPrazos || []).length;
@@ -2062,6 +2063,10 @@
             try {
                 if (EMAIL_CONFIG.provider === 'emailjs') {
                     const c = EMAIL_CONFIG.emailjs;
+                    if (!c.serviceId || !c.templateId || !c.publicKey) {
+                        toast('E-mail não enviado: configure serviceId, templateId e publicKey do EmailJS em EMAIL_CONFIG.', 'erro');
+                        return;
+                    }
                     const resp = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
