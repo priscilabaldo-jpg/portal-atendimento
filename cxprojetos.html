@@ -174,6 +174,9 @@
         const STATUS_ROTINA = Object.keys(STATUS_ROTINA_META);
         const CATS_ROTINA = ['Rotina Operacional', 'Suporte e Dúvidas', 'Reuniões', 'Melhoria Contínua', 'Planejamento', 'Outros'];
 
+        const MESES_CURTOS = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
+        const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
         const PALETA = ['#005A64', '#4CDDDD', '#6FFFAF', '#FFCE00', '#F97316', '#8B5CF6', '#EC4899', '#3B82F6'];
         const AV_CORES = ['bg-teal-600', 'bg-sky-600', 'bg-violet-600', 'bg-pink-600', 'bg-orange-500', 'bg-emerald-600', 'bg-indigo-600', 'bg-rose-600'];
 
@@ -438,7 +441,7 @@
 
         const dorPrioMeta = (p) => DORES_PRIO_META[p] || { badge: DORES_NEUTRO, bar: 'bg-gray-300', ord: 9 };
         const dorStatusMeta = (s) => DORES_STATUS_META[s] || { badge: DORES_NEUTRO, icon: 'fa-circle', ord: 9 };
-        const normTxt = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+        const normTxt = (s) => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
         const ehISO = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || '');
         const fmtDor = (v) => ehISO(v) ? fmtBR(v) : (v || '—');
         const dorQuarter = (d) => (String(d.squad || '').match(/^\s*(Q\d\/\d{4})/) || [])[1] || 'A definir';
@@ -1322,69 +1325,115 @@
         }
 
         // ==========================================================
-        // VIEW: ROTINA / AVULSAS (CARD LIST VIEW)
+        // VIEW: ROTINA / AVULSAS (CARD LIST VIEW) — VISUAL ATUALIZADO
         // ==========================================================
+
+        // Bloco de calendário (data inicial) — em destaque à esquerda do card
+        function blocoDataRotina(r, concluido) {
+            if (!r.data) return '';
+            const dt = parseISO(r.data);
+            const ehHoje = r.data === hojeISO();
+            const base = concluido
+                ? 'bg-gray-100 text-gray-400 border-gray-200'
+                : ehHoje
+                    ? 'bg-leveros-verde1 text-white border-leveros-verde1 shadow-md'
+                    : 'bg-white text-leveros-verde1 border-gray-300';
+            return `
+            <div class="shrink-0 w-[62px] rounded-xl border-2 ${base} overflow-hidden text-center leading-none select-none" title="Data inicial: ${fmtBR(r.data)}">
+                <div class="text-[9px] font-extrabold tracking-widest py-1 ${concluido ? 'bg-gray-200 text-gray-500' : ehHoje ? 'bg-leveros-amarelo text-leveros-verde1' : 'bg-leveros-verde2 text-white'}">${MESES_CURTOS[dt.getMonth()]}</div>
+                <div class="text-2xl font-extrabold pt-1.5">${pad(dt.getDate())}</div>
+                <div class="text-[10px] font-semibold uppercase pb-1.5 pt-0.5 ${concluido ? '' : ehHoje ? 'text-leveros-verde4' : 'text-gray-500'}">${ehHoje ? 'Hoje' : DIAS_SEMANA[dt.getDay()]}</div>
+            </div>`;
+        }
+
+        // Caixa de PRAZO — destaque colorido conforme a urgência
         function renderPrazoRotina(r) {
-            if (r.status === 'Continua') return '<span class="text-teal-600 font-semibold text-[11px]"><i class="fas fa-sync-alt mr-1"></i> Contínua</span>';
-            if (!r.prazo) return '<span class="text-gray-400 text-[11px]">Sem prazo</span>';
-            if (r.status === 'Concluído' || r.status === 'Concluído Parcial') return `<span class="text-gray-500 text-[11px] line-through"><i class="far fa-calendar mr-1"></i>${fmtBR(r.prazo)}</span>`;
+            const caixa = (cls, icon, rotulo, linha1, linha2 = '') => `
+                <div class="rounded-xl border px-3 py-2 min-w-[132px] text-left ${cls}" title="Prazo final">
+                    <div class="text-[9px] font-extrabold uppercase tracking-widest opacity-70"><i class="fas ${icon} mr-1"></i>${rotulo}</div>
+                    <div class="text-sm font-extrabold leading-tight">${linha1}</div>
+                    ${linha2 ? `<div class="text-[11px] font-semibold leading-tight mt-0.5">${linha2}</div>` : ''}
+                </div>`;
+
+            if (r.status === 'Continua')
+                return caixa('bg-teal-50 border-teal-200 text-teal-800', 'fa-sync-alt', 'Prazo', 'Contínua', 'sem data final');
+            if (!r.prazo)
+                return caixa('bg-gray-50 border-dashed border-gray-300 text-gray-400', 'fa-calendar', 'Prazo', 'Sem prazo');
+
+            const dt = parseISO(r.prazo);
+            const data = `${pad(dt.getDate())}/${pad(dt.getMonth() + 1)}/${dt.getFullYear()} <span class="font-semibold opacity-70">· ${DIAS_SEMANA[dt.getDay()]}</span>`;
+
+            if (r.status === 'Concluído' || r.status === 'Concluído Parcial')
+                return caixa('bg-gray-50 border-gray-200 text-gray-400', 'fa-check', 'Prazo', `<span class="line-through">${fmtBR(r.prazo)}</span>`, 'finalizada');
+
             const d = diasPara(r.prazo);
-            if (d < 0) return `<span class="text-red-600 font-bold text-[11px]"><i class="fas fa-exclamation-circle mr-1"></i>Vencido (${fmtBR(r.prazo)})</span>`;
-            if (d <= 2) return `<span class="text-yellow-600 font-semibold text-[11px]"><i class="fas fa-clock mr-1"></i>${fmtBR(r.prazo)}</span>`;
-            return `<span class="text-green-600 font-semibold text-[11px]"><i class="far fa-calendar mr-1"></i>${fmtBR(r.prazo)}</span>`;
+            if (d < 0)   return caixa('bg-red-600 border-red-700 text-white shadow-md', 'fa-exclamation-triangle', 'Prazo vencido', data, `Atrasada há ${-d} dia${-d > 1 ? 's' : ''}`);
+            if (d === 0) return caixa('bg-leveros-amarelo border-yellow-500 text-leveros-verde1 shadow-md', 'fa-bolt', 'Prazo', data, 'VENCE HOJE');
+            if (d === 1) return caixa('bg-yellow-100 border-yellow-400 text-yellow-900', 'fa-clock', 'Prazo', data, 'Vence amanhã');
+            if (d <= 2)  return caixa('bg-yellow-50 border-yellow-300 text-yellow-800', 'fa-clock', 'Prazo', data, `Em ${d} dias`);
+            return caixa('bg-green-50 border-green-200 text-green-800', 'fa-calendar-check', 'Prazo', data, `Em ${d} dias`);
         }
 
         function linhasTabelaRotina(lista, isMinhas, fResp) {
-            if(!lista.length) return `<div class="p-10 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-300 mt-2"><i class="fas fa-clipboard-check text-4xl mb-3 text-gray-300 block"></i>Nenhuma rotina pendente com estes filtros. Tudo limpo!</div>`;
+            if (!lista.length) return `<div class="p-10 text-center text-gray-400 bg-white rounded-xl border border-dashed border-gray-300 mt-2"><i class="fas fa-clipboard-check text-4xl mb-3 text-gray-300 block"></i>Nenhuma rotina pendente com estes filtros. Tudo limpo!</div>`;
 
             return lista.map(r => {
                 const colabs = rotinaColabs(r);
                 const oculta = rotinaOcultaPara(r, fResp);
                 const compartilhada = r.responsavelEmail !== fResp;
-                
-                const btnOcultar = isMinhas ? `
-                        <button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="${oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}">
-                            <i class="fas ${oculta ? 'fa-eye' : 'fa-eye-slash'}"></i>
-                        </button>` : '';
-                const btnEditar = podeEditarRotina(r) ? `<button data-action="editar-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-leveros-verde2 hover:bg-leveros-verde4/40 transition-colors" title="Editar Atividade"><i class="fas fa-edit"></i></button>` : '';
-                const btnExcluir = podeGerirRotina(r) ? `<button data-action="excluir-rotina" data-id="${esc(r.id)}" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors" title="Excluir da rotina"><i class="fas fa-trash"></i></button>` : '';
-                
-                // Estilo de conclusão
-                const isConcluido = r.status === 'Concluído' || r.status === 'Concluído Parcial';
-                const opacity = (oculta || isConcluido) ? 'opacity-60 bg-gray-50' : 'bg-white';
-                const textStyle = isConcluido ? 'line-through text-gray-400' : 'text-gray-800';
+                const concluido = r.status === 'Concluído' || r.status === 'Concluído Parcial';
+                const cor = r.cor || '#9ca3af';
+
+                // Faixa lateral = urgência (concluído = cinza, atrasado = vermelho, etc.)
+                let faixa = cor;
+                if (concluido) faixa = '#d1d5db';
+                else if (r.status !== 'Continua' && r.prazo) {
+                    const d = diasPara(r.prazo);
+                    faixa = d < 0 ? '#dc2626' : d === 0 ? '#FFCE00' : d <= 2 ? '#facc15' : '#22c55e';
+                }
+
+                const fundo = (oculta || concluido) ? 'bg-gray-50 opacity-75' : 'bg-white';
+                const titulo = concluido ? 'line-through text-gray-400' : 'text-gray-800';
+                const btn = 'w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 transition-colors';
+
+                const btnOcultar = isMinhas ? `<button data-action="toggle-ocultar-rotina" data-id="${esc(r.id)}" class="${btn} hover:text-orange-500 hover:bg-orange-50" title="${oculta ? 'Mostrar Atividade' : 'Ocultar Atividade'}"><i class="fas ${oculta ? 'fa-eye' : 'fa-eye-slash'}"></i></button>` : '';
+                const btnEditar = podeEditarRotina(r) ? `<button data-action="editar-rotina" data-id="${esc(r.id)}" class="${btn} hover:text-leveros-verde2 hover:bg-leveros-verde4/40" title="Editar Atividade"><i class="fas fa-edit"></i></button>` : '';
+                const btnExcluir = podeGerirRotina(r) ? `<button data-action="excluir-rotina" data-id="${esc(r.id)}" class="${btn} hover:text-red-500 hover:bg-red-50" title="Excluir da rotina"><i class="fas fa-trash"></i></button>` : '';
+                const btnLink = r.acesso ? `<a href="${esc(!r.acesso.startsWith('http') ? 'https://' + r.acesso : r.acesso)}" target="_blank" rel="noopener" class="${btn} !text-leveros-verde2 hover:bg-leveros-verde4/40" title="Acessar Link"><i class="fas fa-external-link-alt"></i></a>` : '';
+
+                const statusBadge = (r.status !== 'Não iniciado' && r.status !== 'Concluído')
+                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${STATUS_ROTINA_META[r.status]}">${esc(r.status)}</span>` : '';
 
                 return `
-                <div class="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 mb-2 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all border-l-4 ${opacity}" style="border-left-color: ${r.cor || '#e5e7eb'}">
-                    <!-- ESQUERDA: Checkbox (Status) e Título -->
+                <div class="group relative flex flex-col lg:flex-row lg:items-center gap-4 p-4 mb-3 rounded-2xl border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all ${fundo}" style="border-left:6px solid ${faixa}">
+
+                    <!-- DATA INICIAL (calendário) -->
+                    ${blocoDataRotina(r, concluido)}
+
+                    <!-- CHECK + CONTEÚDO -->
                     <div class="flex items-start gap-3 flex-1 min-w-0">
-                        <button data-action="rotina-toggle-status" data-id="${esc(r.id)}" class="mt-0.5 shrink-0 text-xl ${isConcluido ? 'text-green-500' : 'text-gray-300 hover:text-green-400'}">
-                            <i class="fas ${isConcluido ? 'fa-check-circle' : 'fa-circle'}"></i>
+                        <button data-action="rotina-toggle-status" data-id="${esc(r.id)}" class="mt-0.5 shrink-0 text-2xl transition-transform hover:scale-110 ${concluido ? 'text-green-500' : 'text-gray-300 hover:text-green-400'}" title="${concluido ? 'Reabrir' : 'Marcar como concluída'}">
+                            <i class="fas ${concluido ? 'fa-check-circle' : 'fa-circle'}"></i>
                         </button>
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap mb-1">
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">${fmtBR(r.data)}</span>
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border" style="background:${r.cor ? r.cor+'1A' : '#f3f4f6'}; color:${r.cor || '#6b7280'}; border-color:${r.cor || '#d1d5db'}">${esc(r.categoria)}</span>
-                                ${r.status !== 'Não iniciado' && r.status !== 'Concluído' ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${STATUS_ROTINA_META[r.status]}">${esc(r.status)}</span>` : ''}
+                            <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
+                                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide border" style="background:${cor}1A;color:${cor === '#FFCE00' || cor === '#6FFFAF' || cor === '#4CDDDD' ? '#002D32' : cor};border-color:${cor}66">${esc(r.categoria)}</span>
+                                ${statusBadge}
                                 ${compartilhada ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-100 text-indigo-700">🤝 De: ${esc(primeiroNome(getMembro(r.responsavelEmail).nome))}</span>` : ''}
+                                ${oculta ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 text-orange-700"><i class="fas fa-eye-slash mr-1"></i>Oculta</span>' : ''}
                             </div>
-                            <h4 class="font-bold text-sm ${textStyle} truncate" title="${esc(r.titulo || r.descricao)}">${esc(r.titulo || r.descricao)}</h4>
-                            ${r.observacao ? `<p class="text-xs text-gray-500 mt-1 line-clamp-1 italic"><i class="fas fa-info-circle mr-1"></i>${esc(r.observacao)}</p>` : ''}
+                            <h4 class="font-bold text-[15px] leading-snug ${titulo}" title="${esc(r.titulo || r.descricao)}">${esc(r.titulo || r.descricao)}</h4>
+                            ${r.descricao && r.titulo ? `<p class="text-xs text-gray-500 mt-0.5 line-clamp-1">${esc(r.descricao)}</p>` : ''}
+                            ${r.observacao ? `<p class="text-xs text-gray-500 mt-1 line-clamp-1 italic"><i class="fas fa-info-circle mr-1 text-gray-400"></i>${esc(r.observacao)}</p>` : ''}
+                            ${colabs.length ? `<div class="flex items-center gap-1.5 mt-2"><span class="text-[10px] uppercase font-bold text-gray-400">Apoio</span><div class="flex -space-x-1.5">${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px] ring-2 ring-white')).join('')}</div></div>` : ''}
                         </div>
                     </div>
 
-                    <!-- DIREITA: Prazos, Colaboradores, Ações -->
-                    <div class="flex items-center justify-between sm:justify-end gap-4 shrink-0 mt-3 sm:mt-0 border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
-                        <div class="flex flex-col items-end">
-                            ${renderPrazoRotina(r)}
-                            ${colabs.length ? `<div class="flex mt-1 -space-x-1" title="Apoios">${colabs.map(e => avatar(e, 'w-5 h-5 text-[9px] border border-white')).join('')}</div>` : ''}
-                        </div>
-                        
-                        <div class="flex items-center gap-1 border-l border-gray-200 pl-3">
-                            ${r.acesso ? `<a href="${esc(!r.acesso.startsWith('http') ? 'https://' + r.acesso : r.acesso)}" target="_blank" class="w-8 h-8 flex items-center justify-center rounded-lg text-leveros-azul hover:bg-blue-50" title="Acessar Link"><i class="fas fa-external-link-alt"></i></a>` : ''}
-                            ${btnOcultar}
-                            ${btnEditar}
-                            ${btnExcluir}
+                    <!-- PRAZO EM DESTAQUE + AÇÕES -->
+                    <div class="flex items-center justify-between lg:justify-end gap-3 shrink-0 border-t lg:border-t-0 pt-3 lg:pt-0 border-gray-100">
+                        ${renderPrazoRotina(r)}
+                        <div class="flex items-center gap-0.5 border-l border-gray-200 pl-2">
+                            ${btnLink}${btnOcultar}${btnEditar}${btnExcluir}
                         </div>
                     </div>
                 </div>`;
