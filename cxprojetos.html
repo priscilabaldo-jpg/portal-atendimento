@@ -6,8 +6,9 @@
     <title>CX FLOW | Leveros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- Adicionado o SheetJS para exportação em Excel -->
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS removido do carregamento inicial: agora é carregado via lazy-load só quando necessário -->
+
+
     <script>
         tailwind.config = {
             theme: {
@@ -323,7 +324,7 @@
                     await setDoc(doc(db, 'proj_membros', email), {
                         email, nome: state.user.nome, foto: state.user.foto, ultimoAcesso: serverTimestamp()
                     }, { merge: true });
-                } catch (e) { console.warn('Não foi possível registrar o membro:', e); }
+                } catch (e) { /* log removido em produção */ }
                 iniciarListeners();
             } else {
                 pararListeners();
@@ -353,7 +354,7 @@
                     state.loaded[nome] = true;
                     if (Object.values(state.loaded).every(Boolean)) render();
                 }, (err) => {
-                    console.error(`Erro em ${colecao}:`, err);
+                    
                     toast(`Erro ao carregar "${colecao}". Verifique as regras do Firestore.`, 'erro');
                 });
                 state.unsubs.push(u);
@@ -470,7 +471,7 @@
                 state.doresLoaded = true; state.doresErro = false;
                 if (state.view === 'dores') render();
             }, (err) => {
-                console.error('Erro em dores:', err);
+                
                 state.doresLoaded = true; state.doresErro = true;
                 if (state.view === 'dores') render();
             });
@@ -804,7 +805,7 @@
 
         async function mudarStatusDor(id, status) {
             try { await updateDoc(doc(db, 'dores', id), { status, atualizadoEm: serverTimestamp(), atualizadoPorEmail: state.user.email }); toast('Status atualizado.'); }
-            catch (err) { console.error(err); toast('Erro ao atualizar o status.', 'erro'); }
+            catch (err) { toast('Erro ao atualizar o status.', 'erro'); }
         }
 
         // ==========================================================
@@ -872,7 +873,7 @@
                 const dados = lerLinhasDores(XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' }));
                 if (!dados.length) return toast('A planilha não tem nenhuma dor para importar.', 'erro');
                 mostrarPreviaImportacao(dados, `Arquivo: ${file.name}`, 'planilha');
-            } catch (err) { console.error(err); toast(err.message || 'Não foi possível ler a planilha.', 'erro'); }
+            } catch (err) { toast(err.message || 'Não foi possível ler a planilha.', 'erro'); }
         }
 
         function mostrarPreviaImportacao(dados, fonte, origem) {
@@ -905,7 +906,7 @@
             const imp = state.importDores; if (!imp?.novas.length) return;
             btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importando...';
             try { await gravarDoresEmLote(imp.novas, imp.origem); fecharModal(); toast(`${imp.novas.length} dores importadas!`); state.importDores = null; }
-            catch (err) { console.error(err); toast('Erro ao importar. Verifique as permissões do Firestore.', 'erro'); btn.disabled = false; btn.innerHTML = 'Tentar novamente'; }
+            catch (err) { toast('Erro ao importar. Verifique as permissões do Firestore.', 'erro'); btn.disabled = false; btn.innerHTML = 'Tentar novamente'; }
         }
 
         function baixarPlanilhaDores(lista, nomeArquivo, titulo = 'CRONOGRAMA DE PRIORIZAÇÃO DE PROJETOS') {
@@ -1779,7 +1780,7 @@
                 const itens = snap.docs.map(x => ({ id: x.id, ...x.data() }));
                 feed.innerHTML = itens.length ? itens.map(feedItemHTML).join('') : '<p class="text-xs text-gray-400 text-center py-4">Nenhuma observação ainda. Use este espaço no lugar das threads de e-mail.</p>';
                 const cont = feed.closest('.overflow-y-auto'); if (cont) cont.scrollTop = cont.scrollHeight;
-            }, (err) => { console.error(err); $('#feed').innerHTML = '<p class="text-xs text-red-500">Não foi possível carregar o histórico (verifique as regras do Firestore).</p>'; });
+            }, (err) => { $('#feed').innerHTML = '<p class="text-xs text-red-500">Não foi possível carregar o histórico (verifique as regras do Firestore).</p>'; });
         }
 
         function feedItemHTML(c) {
@@ -1944,12 +1945,12 @@
                 await b.commit();
                 toast(aceitar ? 'Solicitação aceita e aplicada.' : 'Solicitação recusada.');
                 if (novoResp) await notificarAtribuicao({ ...t, responsavelEmail: novoResp }, getProjeto(t.projetoId));
-            } catch (e) { console.error(e); toast('Não foi possível responder à solicitação.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Não foi possível responder à solicitação.', 'erro'); }
         }
 
         async function cancelarSolicitacao(sid) {
             try { await deleteDoc(doc(db, 'solicitacoes', sid)); toast('Solicitação cancelada.'); }
-            catch (e) { console.error(e); toast('Não foi possível cancelar.', 'erro'); }
+            catch (e) { /* erro tratado silenciosamente */ toast('Não foi possível cancelar.', 'erro'); }
         }
 
         async function adicionarColaborador(tid) {
@@ -1960,7 +1961,7 @@
                 b.update(doc(db, 'tarefas', tid), { colaboradoresEmails: arrayUnion(email), atualizadoEm: serverTimestamp() });
                 b.set(doc(collection(db, 'tarefas', tid, 'comentarios')), { tipo: 'sistema', texto: `incluiu ${getMembro(email).nome} como colaborador(a)`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
                 await b.commit(); toast('Colaborador incluído.');
-            } catch (e) { console.error(e); toast('Não foi possível incluir o colaborador.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Não foi possível incluir o colaborador.', 'erro'); }
         }
 
         async function removerColaborador(tid, email) {
@@ -1970,7 +1971,7 @@
                 b.update(doc(db, 'tarefas', tid), { colaboradoresEmails: arrayRemove(email), atualizadoEm: serverTimestamp() });
                 b.set(doc(collection(db, 'tarefas', tid, 'comentarios')), { tipo: 'sistema', texto: `removeu ${getMembro(email).nome} da colaboração`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
                 await b.commit(); toast('Colaborador removido.');
-            } catch (e) { console.error(e); toast('Não foi possível remover o colaborador.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Não foi possível remover o colaborador.', 'erro'); }
         }
 
         async function logAtividade(tarefaId, texto, tipo = 'sistema') {
@@ -2011,7 +2012,7 @@
                     toast(`E-mail de atribuição enviado para ${membro.nome}`);
                 }
             } catch (e) {
-                console.error('Falha ao enviar e-mail via EmailJS:', e);
+                
                 toast('Tarefa salva, mas o e-mail de notificação falhou. Verifique o console (F12).', 'erro');
             }
         }
@@ -2025,7 +2026,7 @@
                 b.update(doc(db, 'tarefas', id), { status: novo, atualizadoEm: serverTimestamp() });
                 b.set(doc(collection(db, 'tarefas', id, 'comentarios')), { tipo: 'sistema', texto: `moveu a tarefa de "${t.status}" para "${novo}"`, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
                 await b.commit();
-            } catch (e) { console.error(e); toast('Não foi possível mover a tarefa.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Não foi possível mover a tarefa.', 'erro'); }
         }
 
         async function salvarTarefa(id) {
@@ -2070,7 +2071,7 @@
                 toast('Tarefa atualizada.');
                 $('#dt-motivo-wrap').classList.add('hidden'); $('#dt-motivo').value = '';
                 $('#dr-situacao').innerHTML = badgeSituacao({ ...t, ...novo });
-            } catch (e) { console.error(e); toast('Erro ao salvar a tarefa (verifique suas permissões).', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Erro ao salvar a tarefa (verifique suas permissões).', 'erro'); }
         }
 
         async function enviarComentario(id) {
@@ -2078,7 +2079,7 @@
             if (!texto) return;
             ta.value = ''; ta.focus();
             try { await logAtividade(id, texto, 'comentario'); }
-            catch (e) { console.error(e); ta.value = texto; toast('Não foi possível enviar a observação.', 'erro'); }
+            catch (e) { /* erro tratado silenciosamente */ ta.value = texto; toast('Não foi possível enviar a observação.', 'erro'); }
         }
 
         async function refsFilhosDasTarefas(tarefas) {
@@ -2109,7 +2110,7 @@
                 fecharModal();
                 modalMembro();
             } catch (e) {
-                console.error(e);
+                
                 toast('Sem permissão para excluir membro.', 'erro');
             }
         }
@@ -2122,7 +2123,7 @@
                 const filhos = await refsFilhosDasTarefas([t]);
                 await apagarEmLotes([...filhos, doc(db, 'tarefas', id)]);
                 toast('Tarefa excluída.');
-            } catch (e) { console.error(e); toast('Sem permissão para excluir esta tarefa.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Sem permissão para excluir esta tarefa.', 'erro'); }
         }
 
         async function excluirCronograma(id) {
@@ -2134,7 +2135,7 @@
                 const filhos = await refsFilhosDasTarefas(ts);
                 await apagarEmLotes([...filhos, ...ts.map(t => doc(db, 'tarefas', t.id)), doc(db, 'cronogramas', id)]);
                 toast('Cronograma excluído.');
-            } catch (e) { console.error(e); toast('Sem permissão para excluir tudo isso.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Sem permissão para excluir tudo isso.', 'erro'); }
         }
 
         async function excluirProjeto(id) {
@@ -2147,17 +2148,20 @@
                 const filhos = await refsFilhosDasTarefas(ts);
                 await apagarEmLotes([...filhos, ...ts.map(t => doc(db, 'tarefas', t.id)), ...cs.map(c => doc(db, 'cronogramas', c.id)), doc(db, 'projetos', id)]);
                 toast('Projeto excluído.'); navegar('projetos');
-            } catch (e) { console.error(e); toast('Sem permissão para excluir o projeto.', 'erro'); }
+            } catch (e) { /* erro tratado silenciosamente */ toast('Sem permissão para excluir o projeto.', 'erro'); }
         }
 
         // ==========================================================
         // EXPORTAÇÃO EXCEL (VERSÃO COMPLETA)
         // ==========================================================
-        function exportarRelatorioExcel() {
+        let _xlsxCarregado = false;
+        function carregarXLSX() { if (_xlsxCarregado && window.XLSX) return Promise.resolve(); return new Promise((resolve, reject) => { const s = document.createElement('script'); s.src = 'https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js'; s.onload = () => { _xlsxCarregado = true; resolve(); }; s.onerror = () => reject(new Error('Falha ao carregar biblioteca de planilhas.')); document.head.appendChild(s); }); }
+
+        async function exportarRelatorioExcel() {
             if (!state.projetos.length && !state.tarefas.length && !state.rotinas.length) {
                 return toast('Não há dados para exportar.', 'erro');
             }
-            toast('Gerando relatório Excel completo...', 'info');
+            toast('Gerando relatório Excel completo...', 'info'); try { await carregarXLSX(); } catch (e) { return toast('Não foi possível carregar o módulo de Excel. Verifique sua conexão.', 'erro'); }
 
             const calcProgresso = (pId) => {
                 const ts = state.tarefas.filter(t => t.projetoId === pId);
@@ -2399,7 +2403,7 @@
                     await salvarDor();
                 }
             } catch (err) {
-                console.error(err);
+                
                 toast(err.code ? 'Erro ao salvar. Verifique permissões.' : (err.message || 'Erro ao salvar.'), 'erro');
                 if (btn) { btn.disabled = false; btn.innerHTML = original; }
             }
@@ -2412,7 +2416,7 @@
             switch (a) {
                 case 'login':
                     $('#login-error').classList.add('hidden');
-                    signInWithPopup(auth, provider).catch((err) => { console.error(err); mostrarErroLogin('Não foi possível entrar.'); });
+                    signInWithPopup(auth, provider).catch((err) => { mostrarErroLogin('Não foi possível entrar.'); });
                     break;
                 case 'logout': if (confirm('Deseja sair?')) signOut(auth); break;
                 case 'nav': navegar(d.view); break;
@@ -2452,7 +2456,7 @@
                                 : { ocultaPara: ocultaAgora ? arrayRemove(me) : arrayUnion(me) };
                             await updateDoc(doc(db, 'rotinas', d.id), upd);
                             toast(ocultaAgora ? 'Atividade visível novamente.' : 'Atividade oculta da lista.');
-                        } catch (err) { console.error(err); toast('Erro ao ocultar atividade.', 'erro'); }
+                        } catch (err) { toast('Erro ao ocultar atividade.', 'erro'); }
                     }
                     break;
                 }
@@ -2481,7 +2485,7 @@
                         try {
                             await deleteDoc(doc(db, 'rotinas', d.id));
                             toast('Atividade avulsa excluída.');
-                        } catch(err) { console.error(err); toast('Erro ao excluir rotina', 'erro'); }
+                        } catch(err) { toast('Erro ao excluir rotina', 'erro'); }
                     }
                     break;
                 }
@@ -2492,7 +2496,7 @@
                             const nv = (r.status === 'Concluído' || r.status === 'Concluído Parcial') ? 'Não iniciado' : 'Concluído';
                             await updateDoc(doc(db, 'rotinas', d.id), { status: nv, atualizadoEm: serverTimestamp() });
                             toast(nv === 'Concluído' ? 'Atividade concluída!' : 'Atividade reaberta.');
-                        } catch(err) { console.error(err); toast('Erro ao alterar status', 'erro'); }
+                        } catch(err) { toast('Erro ao alterar status', 'erro'); }
                     }
                     break;
                 }
