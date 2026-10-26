@@ -6,8 +6,7 @@
     <title>CX FLOW | Leveros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <!-- SheetJS removido do carregamento inicial: agora é carregado via lazy-load só quando necessário -->
-
+    
     <script>
         tailwind.config = {
             theme: {
@@ -162,7 +161,6 @@
             'Alta':  { cls: 'bg-orange-100 text-orange-700', icon: 'fa-arrow-up' }
         };
 
-        // Definições Rotina
         const STATUS_ROTINA_META = {
             'Não iniciado': 'bg-pink-100 text-pink-700 border-pink-200',
             'Iniciado': 'bg-blue-100 text-blue-700 border-blue-200',
@@ -375,6 +373,7 @@
             ouvir('rotinas', 'rotinas', (r) => r);
             ouvirDores();
         }
+
 
         // ==========================================================
         // ROTINA: PERMISSÕES E FILTROS
@@ -727,7 +726,6 @@
             renderizarTarefasDaDor(id);
         }
 
-        // Função auxiliar para renderizar a lista
         function renderizarTarefasDaDor(dorId) {
             const cont = $('#dor-tarefas-list');
             if (!cont) return;
@@ -1796,7 +1794,7 @@
                         </div>
                         <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
                             <span class="text-[11px] text-gray-400">Criada por ${esc(getMembro(t.criadoPorEmail).nome)} em ${t.criadoEm ? fmtDataHora(tsMillis(t.criadoEm)) : '—'}${hist ? ` · prazo alterado ${hist}×` : ''}</span>
-                            ${atuar ? `<button data-action="salvar-tarefa" data-id="${esc(t.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:bg-leveros-verde2 font-medium text-sm"><i class="fas fa-save mr-1"></i> Salvar alterações</button>` : ''}
+                            ${atuar ? `<button data-action="salvar-tarefa" data-id="${esc(t.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:leveros-verde2 font-medium text-sm"><i class="fas fa-save mr-1"></i> Salvar alterações</button>` : ''}
                         </div>
                     </div>
                     <div class="p-5 border-b" id="dr-colab">${colabSectionHTML(t)}</div>
