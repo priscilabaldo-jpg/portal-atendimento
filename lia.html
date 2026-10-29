@@ -21,6 +21,13 @@
 body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text-main);height:100vh;overflow:hidden}
 .app{display:flex;flex-direction:column;height:100vh}
 
+/* Correção para o menu global não sobrepor a aplicação */
+.top-header {
+  position: relative !important;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
 /* Modificado: Isolamos o sub-header da LIA para não conflitar com o top-header global */
 .lia-header{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;background:var(--panel);border-bottom:1px solid var(--border); z-index: 10;}
 .brand{display:flex;align-items:center;gap:12px}
@@ -780,5 +787,3 @@ welcome();
 </script>
 </body>
 </html>
-
-```
