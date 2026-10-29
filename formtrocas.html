@@ -3,259 +3,237 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image" href="LogoLeveros.png">
-    <title>Triagem T&D | Atendimento ON</title>
+    <title>Triagem T&D | Análise de Pós-Recebimento</title>
     <style>
-        :root { --azul: #0056b3; --glass-border: #e0e0e0; }
-        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
-        .top-header { background: #fff; border-bottom: 1px solid #ccc; padding: 10px 20px; }
-        .header-inner { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; }
-        .header-logo { height: 40px; }
-        nav ul { list-style: none; display: flex; gap: 15px; margin: 0; padding: 0; }
-        nav a { text-decoration: none; color: #333; font-weight: bold; }
-        nav a.active { color: var(--azul); }
-        .ticker-wrapper { background: #002b5e; color: #fff; padding: 8px; font-size: 12px; overflow: hidden; white-space: nowrap; }
-        .ticker-content { display: inline-block; animation: ticker 20s linear infinite; }
-        .ticker-item { margin-right: 30px; }
-        @keyframes ticker { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-        .container { max-width: 800px; margin: 20px auto; padding: 0 15px; }
-        .card-panel { background: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
-        select, input[type="date"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        :root { --azul: #004b87; --vermelho: #d9534f; --verde: #28a745; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        h2 { color: #333; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
+        h3 { color: #002b5e; margin-top: 25px; font-size: 16px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px; }
+        select, input[type="date"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
         .hidden { display: none !important; }
-        .status-box { padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid transparent; }
-        .status-ok { background: #d4edda; color: #155724; border-color: #c3e6cb; }
-        .status-nok { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        .status-warn { background: #fff3cd; color: #856404; border-color: #ffeeba; }
+        .alert-box { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; }
+        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .result-section p { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 10px; }
+        .crm-text { color: var(--vermelho); font-weight: 600; }
+        .acao-text { color: var(--azul); font-weight: 600; }
+        textarea { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; resize: vertical; background: #fafafa; font-family: monospace; font-size: 13px; margin-bottom: 15px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--azul); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { background: #003a6b; }
     </style>
 </head>
 <body>
 
-    <header class="top-header">
-        <div class="header-inner">
-            <img src="LogoLeveros.png" class="header-logo" alt="Leveros">
-            <nav>
-                <ul>
-                    <li><a href="index.html">INÍCIO</a></li>
-                    <li><a href="formn1.html">TRIAGEM N1</a></li>
-                    <li><a href="formTeD.html" class="active">TROCAS E DEVOLUÇÕES</a></li>
-                    <li><a href="timeline.html">TIMELINE</a></li>
-                </ul>
-            </nav>
-        </div>
-        <div class="ticker-wrapper">
-            <div class="ticker-content">
-                <span class="ticker-item">💡 O prazo base é de 7 dias após o recebimento, mas compras na Amazon e Mercado Livre possuem prazo de 30 dias!</span>
-                <span class="ticker-item">⚙️ Produtos já instalados com defeito: Direcionar para Assistência Técnica Autorizada.</span>
-            </div>
-        </div>
-    </header>
-
     <div class="container">
         <h2>Triagem T&D | Análise de Pós-Recebimento</h2>
         
-        <div class="card-panel">
-            <div class="form-group">
-                <label for="canalCompra">1. Qual o Canal de Compra?</label>
-                <select id="canalCompra" onchange="avaliarFluxo()">
-                    <option value="">Selecione...</option>
-                    <option value="amazon_meli">Amazon ou Mercado Livre (Prazo 30 dias)</option>
-                    <option value="site_outros">Site, Vendas Assistidas e demais plataformas (Prazo 7 dias)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="produtoInstalado">2. O produto já foi instalado?</label>
-                <select id="produtoInstalado" onchange="avaliarFluxo()">
-                    <option value="">Selecione...</option>
-                    <option value="SIM">Sim</option>
-                    <option value="NAO">Não</option>
-                </select>
-            </div>
-
-            <div class="garantia-section hidden" id="divCamposTeD">
-                
-                <div class="form-group">
-                    <label for="dataRecebimento" style="color: var(--azul);">3. Data de Recebimento da Mercadoria:</label>
-                    <input type="date" id="dataRecebimento" onchange="avaliarFluxo()">
-                </div>
-
-                <div class="form-group">
-                    <label for="possuiFotos">4. O cliente possui as fotos necessárias (produto, caixa, etiquetas)?</label>
-                    <select id="possuiFotos" onchange="avaliarFluxo()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim</option>
-                        <option value="NAO">Não</option>
-                    </select>
-                </div>
-
-                <div class="form-group hidden" id="divAceiteNegativa">
-                    <label for="aceitouNegativa" style="color: #721c24;">⚠️ O prazo excedeu. O cliente ACEITOU a negativa informada pelo atendimento?</label>
-                    <select id="aceitouNegativa" onchange="avaliarFluxo()">
-                        <option value="">Selecione...</option>
-                        <option value="SIM">Sim, aceitou a negativa</option>
-                        <option value="NAO">Não, não aceitou e solicitou análise</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="result-box hidden" id="resultadoFinal" style="margin-top: 25px;">
-                
-                <div id="statusTeDBox" class="status-box hidden"></div>
-
-                <h3>🗣️ O que informar ao cliente</h3>
-                <p id="textoAcao" style="white-space: pre-wrap; line-height: 1.5; font-weight: bold; color: #002b5e;"></p>
-                
-                <h3 style="margin-top:20px;">🖥️ Como abrir no CRM (Ação do Operador)</h3>
-                <p id="textoCRM" style="margin-bottom: 15px; white-space: pre-wrap; line-height: 1.5; font-weight: bold; color: #d9534f;"></p>
-
-                <div style="border-top: 1px solid #ccc; padding-top: 20px;">
-                    <h3>📝 Script de Resumo para o CRM</h3>
-                    <textarea id="textoResumoCRM" readonly rows="10" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
-                    
-                    <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
-                        📋 Copiar Script
-                    </button>
-                </div>
-            </div>
+        <div class="form-group">
+            <label>1. Qual o Canal de Compra?</label>
+            <select id="canalCompra" onchange="avaliarFluxo()">
+                <option value="">Selecione...</option>
+                <option value="amazon_meli">Amazon e Mercado Livre</option>
+                <option value="site_outros">Site, Vendas Assistidas e demais plataformas</option>
+            </select>
         </div>
+
+        <div class="form-group">
+            <label>2. O produto já foi instalado?</label>
+            <select id="produtoInstalado" onchange="avaliarFluxo()">
+                <option value="">Selecione...</option>
+                <option value="SIM">Sim</option>
+                <option value="NAO">Não</option>
+            </select>
+        </div>
+
+        <div class="form-group hidden" id="divData">
+            <label style="color: var(--azul);">3. Data de Recebimento da Mercadoria:</label>
+            <input type="date" id="dataRecebimento" onchange="avaliarFluxo()">
+        </div>
+
+        <div class="form-group hidden" id="divAceite">
+            <label style="color: #721c24;">⚠️ O prazo excedeu. Cliente aceitou a negativa?</label>
+            <select id="aceitouNegativa" onchange="avaliarFluxo()">
+                <option value="">Selecione...</option>
+                <option value="SIM">Sim</option>
+                <option value="NAO">Não</option>
+            </select>
+        </div>
+
+        <div class="form-group hidden" id="divFotos">
+            <label>4. Cliente possui as fotos necessárias (produto, caixa, etiquetas)?</label>
+            <select id="possuiFotos" onchange="avaliarFluxo()">
+                <option value="">Selecione...</option>
+                <option value="SIM">Sim</option>
+                <option value="NAO">Não</option>
+            </select>
+        </div>
+
+        <div id="resultadoFinal" class="hidden result-section">
+            
+            <div id="statusBox" class="alert-box hidden"></div>
+
+            <h3>🗣️ O que informar ao cliente</h3>
+            <p id="textoAcao" class="acao-text"></p>
+            
+            <h3>🖥️ Como abrir no CRM (Ação do Operador)</h3>
+            <p id="textoCRM" class="crm-text"></p>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 25px 0;">
+
+            <h3>📝 Script de Resumo para o CRM</h3>
+            <textarea id="textoResumoCRM" readonly rows="8"></textarea>
+            <button id="btnCopiar" onclick="copiarResumo()">📋 Copiar Script</button>
+        </div>
+
     </div>
 
     <script>
-        function calcularDiferencaDias(dataInicio, dataFim) {
-            const msPorDia = 24 * 60 * 60 * 1000;
-            const inicio = new Date(dataInicio.getFullYear(), dataInicio.getMonth(), dataInicio.getDate());
-            const fim = new Date(dataFim.getFullYear(), dataFim.getMonth(), dataFim.getDate());
-            return Math.floor((fim - inicio) / msPorDia);
+        function calcularDias(dataInicio) {
+            const inicio = new Date(dataInicio + "T00:00:00");
+            const fim = new Date();
+            fim.setHours(0,0,0,0);
+            return Math.floor((fim - inicio) / (24 * 60 * 60 * 1000));
         }
 
         function avaliarFluxo() {
             const canal = document.getElementById("canalCompra").value;
             const instalado = document.getElementById("produtoInstalado").value;
             const dataRecVal = document.getElementById("dataRecebimento").value;
-            const fotos = document.getElementById("possuiFotos").value;
             const aceitouNeg = document.getElementById("aceitouNegativa").value;
-            
-            const divCampos = document.getElementById("divCamposTeD");
-            const divAceite = document.getElementById("divAceiteNegativa");
+            const fotos = document.getElementById("possuiFotos").value;
+
+            // Elementos de UI
+            const divData = document.getElementById("divData");
+            const divAceite = document.getElementById("divAceite");
+            const divFotos = document.getElementById("divFotos");
             const resBox = document.getElementById("resultadoFinal");
-            const statBox = document.getElementById("statusTeDBox");
-            
-            statBox.classList.add("hidden");
+            const statBox = document.getElementById("statusBox");
+
+            // Reset UI
             resBox.classList.add("hidden");
+            statBox.classList.add("hidden");
             divAceite.classList.add("hidden");
+            divFotos.classList.add("hidden");
 
             if (!canal || !instalado) {
-                divCampos.classList.add("hidden");
+                divData.classList.add("hidden");
                 return;
             }
 
-            // Mostra os campos subsequentes
-            divCampos.classList.remove("hidden");
-            
+            // PRODUTO INSTALADO (Fim de fluxo)
             if (instalado === "SIM") {
-                statBox.className = "status-box status-nok";
+                divData.classList.add("hidden");
+                statBox.className = "alert-box alert-danger";
                 statBox.innerHTML = `<strong>🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO</strong><br>A devolução ou troca logística não atende produtos já instalados.`;
                 statBox.classList.remove("hidden");
                 
                 document.getElementById("textoAcao").textContent = "Informar ao cliente que a solicitação não pode prosseguir por esta via pois o produto já foi instalado. Casos de defeito devem seguir para a Assistência Técnica Autorizada.";
                 document.getElementById("textoCRM").textContent = "Registrar protocolo informando negativa por produto instalado.";
-                resBox.classList.remove("hidden");
+                gerarResumo("Recusado - Produto Instalado", canal, null, null, null, document.getElementById("textoAcao").textContent, document.getElementById("textoCRM").textContent);
                 return;
             }
 
-            if (!dataRecVal || !fotos) return;
+            // PRODUTO NÃO INSTALADO
+            divData.classList.remove("hidden");
+            if (!dataRecVal) return;
 
-            const hoje = new Date();
-            const dataRec = new Date(dataRecVal + "T00:00:00");
-            const diasDecorridos = calcularDiferencaDias(dataRec, hoje);
-            
-            const prazoMaximo = canal === "amazon_meli" ? 30 : 7;
-            const isDentroPrazo = diasDecorridos <= prazoMaximo;
+            const dias = calcularDias(dataRecVal);
+            const prazoMax = canal === "amazon_meli" ? 30 : 7;
             const nomeCanal = canal === "amazon_meli" ? "Amazon/Meli" : "Site e demais plataformas";
+            const isDentro = dias <= prazoMax;
 
-            let status = "";
             let acao = "";
             let crm = "";
+            let status = "";
 
-            if (isDentroPrazo) {
-                // DENTRO DO PRAZO
-                statBox.className = "status-box status-ok";
-                statBox.innerHTML = `<strong>✅ DENTRO DO PRAZO DE ${prazoMaximo} DIAS</strong><br><small>Dias Decorridos: ${diasDecorridos} dias</small>`;
-                statBox.classList.remove("hidden");
-
-                if (fotos === "SIM") {
-                    status = "Aprovado para Análise";
-                    acao = "1. Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n2. Orientar o cliente que o protocolo passará por análise e iremos retornar o contato.";
-                    crm = `Abrir protocolo\nMotivo: Troca - Dentro dos ${prazoMaximo} dias ${nomeCanal}.\n\n📌 AÇÃO OBRIGATÓRIA: Direcionar o protocolo para o bkoffice (Backoffice).`;
-                } else {
-                    status = "Pendente de Evidências";
-                    acao = "Orientar o cliente que sem as fotos necessárias não é possível seguir com a análise de troca.";
-                    crm = "Registrar o protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
-                }
-            } else {
-                // FORA DO PRAZO
-                statBox.className = "status-box status-warn";
-                statBox.innerHTML = `<strong>⚠️ FORA DO PRAZO DE ${prazoMaximo} DIAS</strong><br><small>Dias Decorridos: ${diasDecorridos} dias</small>`;
+            if (isDentro) {
+                // FLUXO: DENTRO DO PRAZO
+                statBox.className = "alert-box alert-success";
+                statBox.innerHTML = `<strong>✅ DENTRO DO PRAZO (${dias} de ${prazoMax} dias)</strong>`;
                 statBox.classList.remove("hidden");
                 
+                divFotos.classList.remove("hidden");
+                if (!fotos) return;
+
+                if (fotos === "SIM") {
+                    status = "Aprovado para Análise (Dentro do Prazo)";
+                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n• Orientar o cliente que o protocolo passará por análise e dentro de até 3 dias úteis iremos retornar o contato.";
+                    crm = `Abrir protocolo\nMotivo: Troca - Dentro dos ${prazoMax} dias ${canal === 'amazon_meli' ? 'Amazon/Meli' : ''}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
+                } else {
+                    status = "Retido - Faltam Fotos";
+                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
+                    crm = "Registrar o protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
+                }
+
+            } else {
+                // FLUXO: FORA DO PRAZO
+                statBox.className = "alert-box alert-warning";
+                statBox.innerHTML = `<strong>⚠️ FORA DO PRAZO (${dias} dias decorridos. O limite era ${prazoMax})</strong>`;
+                statBox.classList.remove("hidden");
+
                 divAceite.classList.remove("hidden");
-                if (!aceitouNeg) return; // Aguarda seleção do aceite da negativa
+                if (!aceitouNeg) return;
 
                 if (aceitouNeg === "SIM") {
-                    status = "Recusado - Retido em Contato";
-                    acao = `Informar o cliente que o prazo de ${prazoMaximo} dias se encerrou e que desse modo não é possível prosseguirmos com a troca.`;
-                    crm = "Abrir protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato.";
+                    status = "Finalizado - Cliente Aceitou Negativa";
+                    acao = `Informar o cliente que o prazo de ${prazoMax} dias se encerrou e que desse modo não é possível prosseguirmos com a troca.`;
+                    crm = "Abrir protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato.";
                 } else {
-                    // NÃO ACEITOU A NEGATIVA
+                    // Não aceitou a negativa, exige as fotos para tentar exceção
+                    divFotos.classList.remove("hidden");
+                    if (!fotos) return;
+
                     if (fotos === "SIM") {
-                        status = "Encaminhado para Exceção (Fora do Prazo)";
-                        acao = `1. Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n2. Orientar que retornaremos o contato em até 3 dias úteis.`;
-                        crm = `Abrir protocolo.\nMotivo: Troca - Fora dos ${prazoMaximo} dias ${nomeCanal}.\n\n📌 AÇÃO OBRIGATÓRIA: Direcionar o protocolo para o bkoffice (Backoffice).`;
+                        status = "Encaminhado p/ Análise Exceção (Fora do Prazo)";
+                        acao = "• Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n• Orientar o cliente que o protocolo passará por análise e dentro de até 3 dias úteis iremos retornar o contato.";
+                        crm = `Abrir protocolo\nMotivo: Troca - Fora dos ${prazoMax} dias ${canal === 'amazon_meli' ? 'Amazon/Meli' : ''}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
                     } else {
-                        status = "Tentativa de Exceção sem Fotos";
-                        acao = `1. Informar que o caso seria encaminhado para análise com chance de negativa, MAS:\n2. Orientar o cliente que sem as fotos não é possível seguir com a análise.`;
-                        crm = "Registrar o protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
+                        status = "Retido na Exceção - Faltam Fotos";
+                        acao = "• Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
+                        crm = "Registrar o protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
                     }
                 }
             }
 
             document.getElementById("textoAcao").textContent = acao;
             document.getElementById("textoCRM").textContent = crm;
-            
-            // Monta o resumo
-            let scriptCrm = `[TRIAGEM DE TROCA - PRODUTO NÃO INSTALADO]\n`;
-            scriptCrm += `Canal: ${nomeCanal}\n`;
-            scriptCrm += `Data de Recebimento: ${dataRecVal.split('-').reverse().join('/')}\n`;
-            scriptCrm += `Prazo: ${diasDecorridos} dias de ${prazoMaximo} permitidos.\n`;
-            scriptCrm += `Fotos Enviadas: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
-            if (!isDentroPrazo) {
-                scriptCrm += `Aceitou Negativa (Fora do Prazo): ${aceitouNeg === 'SIM' ? 'Sim' : 'Não'}\n`;
-            }
-            scriptCrm += `\n[CONCLUSÃO]\n`;
-            scriptCrm += `Status: ${status}\n`;
-            scriptCrm += `\n>> AÇÃO CRM: \n${crm.replace('📌 AÇÃO OBRIGATÓRIA: ', '')}\n`;
+            gerarResumo(status, nomeCanal, dataRecVal, dias, prazoMax, acao, crm);
+        }
 
-            document.getElementById("textoResumoCRM").value = scriptCrm;
-            resBox.classList.remove("hidden");
+        function gerarResumo(status, canal, dataRec, dias, prazoMax, acao, crm) {
+            let script = `[ANÁLISE PÓS-RECEBIMENTO T&D]\n`;
+            script += `Canal: ${canal}\n`;
+            if (dataRec) {
+                script += `Data Recebimento: ${dataRec.split('-').reverse().join('/')} (${dias} dias decorridos)\n`;
+                script += `Prazo Permitido: ${prazoMax} dias\n`;
+                const fotos = document.getElementById("possuiFotos").value;
+                if (fotos) script += `Possui Fotos: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
+            }
+            script += `\n[DIRECIONAMENTO]\n`;
+            script += `Status: ${status}\n`;
+            script += `Ação Aplicada no CRM: \n${crm.replace('-> Ação: ', '')}`;
+            
+            document.getElementById("textoResumoCRM").value = script;
+            document.getElementById("resultadoFinal").classList.remove("hidden");
         }
 
         function copiarResumo() {
-            const textarea = document.getElementById("textoResumoCRM");
-            textarea.select();
-            navigator.clipboard.writeText(textarea.value).then(() => {
-                const btn = document.getElementById("btnCopiar");  
-                btn.textContent = "✅ Copiado com sucesso!";
-                btn.style.backgroundColor = "#28a745"; 
+            const txt = document.getElementById("textoResumoCRM");
+            txt.select();
+            navigator.clipboard.writeText(txt.value).then(() => {
+                const btn = document.getElementById("btnCopiar");
+                btn.textContent = "✅ Copiado!";
+                btn.style.background = "var(--verde)";
                 setTimeout(() => {
                     btn.textContent = "📋 Copiar Script";
-                    btn.style.backgroundColor = "#0056b3"; 
-                }, 3000);
+                    btn.style.background = "var(--azul)";
+                }, 2500);
             });
         }
     </script>
 </body>
 </html>
-
-```
