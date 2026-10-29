@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Triagem T&D | Análise de Pós-Recebimento</title>
+    <title>Triagem T&D | Atendimento ON</title>
     <style>
-        :root { --azul: #004b87; --vermelho: #d9534f; --verde: #28a745; }
+        :root { --azul: #004b87; --vermelho: #d9534f; --verde: #28a745; --cinza: #f8f9fa; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 850px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
         h2 { color: #333; margin-bottom: 25px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; }
         h3 { color: #002b5e; margin-top: 25px; font-size: 16px; }
-        .form-group { margin-bottom: 18px; }
+        .form-group { margin-bottom: 18px; padding: 15px; background: var(--cinza); border-radius: 6px; border: 1px solid #e9ecef; }
+        .form-group.highlight { background: #eef5fa; border-color: #b8d4eb; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 14px; }
         select, input[type="date"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
         .hidden { display: none !important; }
-        .alert-box { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; }
+        .alert-box { padding: 15px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; line-height: 1.5; }
         .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
         .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .alert-warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .alert-info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
         .result-section p { font-size: 14px; line-height: 1.6; white-space: pre-wrap; margin-bottom: 10px; }
         .crm-text { color: var(--vermelho); font-weight: 600; }
         .acao-text { color: var(--azul); font-weight: 600; }
@@ -29,51 +31,78 @@
 <body>
 
     <div class="container">
-        <h2>Triagem T&D | Análise de Pós-Recebimento</h2>
+        <h2>Triagem T&D | Atendimento Geral</h2>
         
-        <div class="form-group">
-            <label>1. Qual o Canal de Compra?</label>
-            <select id="canalCompra" onchange="avaliarFluxo()">
-                <option value="">Selecione...</option>
-                <option value="amazon_meli">Amazon e Mercado Livre</option>
-                <option value="site_outros">Site, Vendas Assistidas e demais plataformas</option>
+        <!-- PASSO 1: MOTIVO PRINCIPAL -->
+        <div class="form-group highlight">
+            <label>1. Qual o principal motivo do contacto do cliente?</label>
+            <select id="motivoGeral" onchange="iniciarTriagem()">
+                <option value="">Selecione o motivo...</option>
+                <option value="atraso">⏰ Atraso na Entrega</option>
+                <option value="cancelamento_antes">🚚 Desistência / Cancelamento ANTES da entrega</option>
+                <option value="recusa_ato">📦 Avaria ou Divergência recusada no ATO da entrega</option>
+                <option value="pos_recebimento">🔄 Arrependimento / Comprei Errado (Já Recebeu)</option>
+                <option value="avaria_recebida">⚠️ Avaria ou Divergência (Já Recebeu)</option>
+                <option value="defeito">⚙️ Produto apresentou Defeito Funcional</option>
             </select>
         </div>
 
-        <div class="form-group">
-            <label>2. O produto já foi instalado?</label>
-            <select id="produtoInstalado" onchange="avaliarFluxo()">
+        <!-- FLUXOS ESPECÍFICOS (Fora do Pós-Recebimento padrão) -->
+        <div id="fluxoCancelamento" class="form-group hidden">
+            <label>O pedido já está em rota com a transportadora?</label>
+            <select id="statusRota" onchange="avaliarSimples()">
                 <option value="">Selecione...</option>
-                <option value="SIM">Sim</option>
-                <option value="NAO">Não</option>
+                <option value="SIM">Sim, já está com a transportadora / em rota</option>
+                <option value="NAO">Não, ainda não foi faturado / despachado</option>
             </select>
         </div>
 
-        <div class="form-group hidden" id="divData">
-            <label style="color: var(--azul);">3. Data de Recebimento da Mercadoria:</label>
-            <input type="date" id="dataRecebimento" onchange="avaliarFluxo()">
+        <!-- FLUXO PÓS-RECEBIMENTO (Abre para Arrependimento, Avaria Recebida e Defeito) -->
+        <div id="fluxoPosRecebimento" class="hidden">
+            <div class="form-group">
+                <label>2. Qual o Canal de Compra?</label>
+                <select id="canalCompra" onchange="avaliarPosRecebimento()">
+                    <option value="">Selecione...</option>
+                    <option value="amazon_meli">Amazon e Mercado Livre (30 dias)</option>
+                    <option value="site_outros">Site, Vendas Assistidas e demais plataformas (7 dias)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>3. O produto já foi instalado?</label>
+                <select id="produtoInstalado" onchange="avaliarPosRecebimento()">
+                    <option value="">Selecione...</option>
+                    <option value="SIM">Sim</option>
+                    <option value="NAO">Não</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="divData">
+                <label style="color: var(--azul);">4. Data de Recebimento da Mercadoria:</label>
+                <input type="date" id="dataRecebimento" onchange="avaliarPosRecebimento()">
+            </div>
+
+            <div class="form-group hidden" id="divAceite">
+                <label style="color: #721c24;">⚠️ O prazo excedeu. Cliente aceitou a negativa?</label>
+                <select id="aceitouNegativa" onchange="avaliarPosRecebimento()">
+                    <option value="">Selecione...</option>
+                    <option value="SIM">Sim</option>
+                    <option value="NAO">Não, exigiu análise</option>
+                </select>
+            </div>
+
+            <div class="form-group hidden" id="divFotos">
+                <label>5. Cliente possui as fotos necessárias (produto, caixa, etiquetas)?</label>
+                <select id="possuiFotos" onchange="avaliarPosRecebimento()">
+                    <option value="">Selecione...</option>
+                    <option value="SIM">Sim</option>
+                    <option value="NAO">Não</option>
+                </select>
+            </div>
         </div>
 
-        <div class="form-group hidden" id="divAceite">
-            <label style="color: #721c24;">⚠️ O prazo excedeu. Cliente aceitou a negativa?</label>
-            <select id="aceitouNegativa" onchange="avaliarFluxo()">
-                <option value="">Selecione...</option>
-                <option value="SIM">Sim</option>
-                <option value="NAO">Não</option>
-            </select>
-        </div>
-
-        <div class="form-group hidden" id="divFotos">
-            <label>4. Cliente possui as fotos necessárias (produto, caixa, etiquetas)?</label>
-            <select id="possuiFotos" onchange="avaliarFluxo()">
-                <option value="">Selecione...</option>
-                <option value="SIM">Sim</option>
-                <option value="NAO">Não</option>
-            </select>
-        </div>
-
+        <!-- CAIXA DE RESULTADO FINAL -->
         <div id="resultadoFinal" class="hidden result-section">
-            
             <div id="statusBox" class="alert-box hidden"></div>
 
             <h3>🗣️ O que informar ao cliente</h3>
@@ -92,6 +121,7 @@
     </div>
 
     <script>
+        // Funções Utilitárias
         function calcularDias(dataInicio) {
             const inicio = new Date(dataInicio + "T00:00:00");
             const fim = new Date();
@@ -99,23 +129,82 @@
             return Math.floor((fim - inicio) / (24 * 60 * 60 * 1000));
         }
 
-        function avaliarFluxo() {
+        function resetarUI() {
+            document.getElementById("fluxoCancelamento").classList.add("hidden");
+            document.getElementById("fluxoPosRecebimento").classList.add("hidden");
+            document.getElementById("resultadoFinal").classList.add("hidden");
+            
+            // Reseta campos do Pós-Recebimento
+            document.getElementById("divData").classList.add("hidden");
+            document.getElementById("divAceite").classList.add("hidden");
+            document.getElementById("divFotos").classList.add("hidden");
+        }
+
+        // Roteador Principal
+        function iniciarTriagem() {
+            const motivo = document.getElementById("motivoGeral").value;
+            resetarUI();
+
+            if (!motivo) return;
+
+            if (motivo === "atraso" || motivo === "recusa_ato") {
+                avaliarSimples();
+            } else if (motivo === "cancelamento_antes") {
+                document.getElementById("fluxoCancelamento").classList.remove("hidden");
+            } else {
+                // pos_recebimento, avaria_recebida, defeito
+                document.getElementById("fluxoPosRecebimento").classList.remove("hidden");
+            }
+        }
+
+        // Fluxos Simples (Sem necessidade de cálculo de dias)
+        function avaliarSimples() {
+            const motivo = document.getElementById("motivoGeral").value;
+            let statusHTML = "", acao = "", crm = "";
+
+            if (motivo === "atraso") {
+                statusHTML = `<div class="alert-box alert-info"><strong>⏰ ATRASO NA ENTREGA</strong><br>Opções disponíveis: Aguardar novo prazo, trocar por outro produto, ou cancelar (barramento).</div>`;
+                acao = "• Verificar com a transportadora o novo prazo.\n• Se o cliente desejar cancelar, informar que faremos a tentativa de barramento da entrega. Caso não dê tempo e a entrega chegue, orientar a RECUSAR no ato.";
+                crm = "Abrir protocolo de Atraso na Entrega.\nSubmotivo: Solicitação de Barramento (se aplicável) ou Reagendamento.";
+            } 
+            else if (motivo === "recusa_ato") {
+                statusHTML = `<div class="alert-box alert-success"><strong>📦 RECUSA NO ATO DA ENTREGA</strong><br>Avaria ou divergência identificada na hora.</div>`;
+                acao = "• Confirmar se a recusa de TODOS os volumes foi registada no comprovante da transportadora.\n• Informar que, assim que a posse da transportadora for confirmada, seguiremos com o envio de um novo ou estorno.";
+                crm = "Abrir protocolo de Troca/Devolução.\nMotivo: Recusa no ato da entrega (Avaria/Divergência).";
+            }
+            else if (motivo === "cancelamento_antes") {
+                const statusRota = document.getElementById("statusRota").value;
+                if (!statusRota) return;
+
+                if (statusRota === "SIM") {
+                    statusHTML = `<div class="alert-box alert-warning"><strong>🚚 PEDIDO EM ROTA</strong><br>O cancelamento exige recusa no ato da entrega.</div>`;
+                    acao = "• Orientar o cliente a RECUSAR O RECEBIMENTO de todos os volumes quando a transportadora chegar.\n• Informar que o estorno só prossegue após confirmação de retorno da mercadoria ao CD.";
+                    crm = "Abrir protocolo de Cancelamento.\nSubmotivo: Mercadoria em rota (Orientado recusa).";
+                } else {
+                    statusHTML = `<div class="alert-box alert-success"><strong>✅ CANCELAMENTO - ANTES DO ENVIO</strong><br>O pedido não saiu do CD.</div>`;
+                    acao = "• Informar ao cliente que o cancelamento será efetuado e o processo de estorno do valor será iniciado conforme a forma de pagamento original.";
+                    crm = "Abrir protocolo de Cancelamento.\nSubmotivo: Antes da emissão/despacho.";
+                }
+            }
+
+            mostrarResultado(statusHTML, acao, crm, motivo);
+        }
+
+        // Fluxo Complexo (Pós-Recebimento)
+        function avaliarPosRecebimento() {
+            const motivo = document.getElementById("motivoGeral").value;
             const canal = document.getElementById("canalCompra").value;
             const instalado = document.getElementById("produtoInstalado").value;
             const dataRecVal = document.getElementById("dataRecebimento").value;
             const aceitouNeg = document.getElementById("aceitouNegativa").value;
             const fotos = document.getElementById("possuiFotos").value;
 
-            // Elementos de UI
             const divData = document.getElementById("divData");
             const divAceite = document.getElementById("divAceite");
             const divFotos = document.getElementById("divFotos");
             const resBox = document.getElementById("resultadoFinal");
-            const statBox = document.getElementById("statusBox");
 
-            // Reset UI
             resBox.classList.add("hidden");
-            statBox.classList.add("hidden");
             divAceite.classList.add("hidden");
             divFotos.classList.add("hidden");
 
@@ -124,99 +213,97 @@
                 return;
             }
 
-            // PRODUTO INSTALADO (Fim de fluxo)
+            // Regra de Instalação vs Defeito
             if (instalado === "SIM") {
                 divData.classList.add("hidden");
-                statBox.className = "alert-box alert-danger";
-                statBox.innerHTML = `<strong>🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO</strong><br>A devolução ou troca logística não atende produtos já instalados.`;
-                statBox.classList.remove("hidden");
-                
-                document.getElementById("textoAcao").textContent = "Informar ao cliente que a solicitação não pode prosseguir por esta via pois o produto já foi instalado. Casos de defeito devem seguir para a Assistência Técnica Autorizada.";
-                document.getElementById("textoCRM").textContent = "Registrar protocolo informando negativa por produto instalado.";
-                gerarResumo("Recusado - Produto Instalado", canal, null, null, null, document.getElementById("textoAcao").textContent, document.getElementById("textoCRM").textContent);
+                if (motivo === "defeito") {
+                    mostrarResultado(
+                        `<div class="alert-box alert-warning"><strong>🔄 DIRECIONAMENTO PARA GARANTIA</strong><br>Produtos instalados com defeito (mesmo no prazo) devem ser avaliados pela Assistência Técnica do Fabricante.</div>`,
+                        "Orientar o cliente a acionar a Assistência Técnica Autorizada da marca do produto. \n\n⚠️ Valores pagos por serviços de instalação e/ou desinstalação não são passíveis de reembolso.",
+                        "Registrar protocolo.\nMotivo: Informações sobre troca e devolução.\nSubmotivo: Direcionado para Garantia (Produto Instalado)."
+                    , motivo);
+                } else {
+                    mostrarResultado(
+                        `<div class="alert-box alert-danger"><strong>🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO</strong><br>Não aceitamos devolução logística de arrependimento/avaria para produtos instalados.</div>`,
+                        "Informar ao cliente que a solicitação não pode prosseguir, pois o produto já foi instalado e perdeu a característica de novo.",
+                        "Registrar protocolo informando negativa por produto instalado."
+                    , motivo);
+                }
                 return;
             }
 
-            // PRODUTO NÃO INSTALADO
             divData.classList.remove("hidden");
             if (!dataRecVal) return;
 
             const dias = calcularDias(dataRecVal);
             const prazoMax = canal === "amazon_meli" ? 30 : 7;
-            const nomeCanal = canal === "amazon_meli" ? "Amazon/Meli" : "Site e demais plataformas";
             const isDentro = dias <= prazoMax;
 
-            let acao = "";
-            let crm = "";
-            let status = "";
+            let acao = "", crm = "", statusHTML = "";
+            const nomeCanal = canal === "amazon_meli" ? "Amazon/Meli" : "Site e demais plataformas";
 
             if (isDentro) {
-                // FLUXO: DENTRO DO PRAZO
-                statBox.className = "alert-box alert-success";
-                statBox.innerHTML = `<strong>✅ DENTRO DO PRAZO (${dias} de ${prazoMax} dias)</strong>`;
-                statBox.classList.remove("hidden");
-                
+                // DENTRO DO PRAZO
+                statusHTML = `<div class="alert-box alert-success"><strong>✅ DENTRO DO PRAZO (${dias} de ${prazoMax} dias)</strong></div>`;
                 divFotos.classList.remove("hidden");
                 if (!fotos) return;
 
                 if (fotos === "SIM") {
-                    status = "Aprovado para Análise (Dentro do Prazo)";
-                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n• Orientar o cliente que o protocolo passará por análise e dentro de até 3 dias úteis iremos retornar o contato.";
-                    crm = `Abrir protocolo\nMotivo: Troca - Dentro dos ${prazoMax} dias ${canal === 'amazon_meli' ? 'Amazon/Meli' : ''}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
+                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n• Orientar o cliente que o protocolo passará por análise e iremos retornar o contato.";
+                    crm = `Abrir protocolo\nMotivo: Troca - Dentro dos ${prazoMax} dias ${nomeCanal}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
                 } else {
-                    status = "Retido - Faltam Fotos";
-                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
+                    acao = "• Informar o cliente que está dentro do prazo e seguiremos com análise de troca, MAS:\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
                     crm = "Registrar o protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
                 }
-
             } else {
-                // FLUXO: FORA DO PRAZO
-                statBox.className = "alert-box alert-warning";
-                statBox.innerHTML = `<strong>⚠️ FORA DO PRAZO (${dias} dias decorridos. O limite era ${prazoMax})</strong>`;
-                statBox.classList.remove("hidden");
-
+                // FORA DO PRAZO
+                statusHTML = `<div class="alert-box alert-warning"><strong>⚠️ FORA DO PRAZO (${dias} dias decorridos de ${prazoMax})</strong></div>`;
                 divAceite.classList.remove("hidden");
                 if (!aceitouNeg) return;
 
                 if (aceitouNeg === "SIM") {
-                    status = "Finalizado - Cliente Aceitou Negativa";
-                    acao = `Informar o cliente que o prazo de ${prazoMax} dias se encerrou e que desse modo não é possível prosseguirmos com a troca.`;
+                    acao = `Informar o cliente que o prazo de ${prazoMax} dias se encerrou e que desse modo não é possível prosseguirmos com a troca/devolução.`;
                     crm = "Abrir protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato.";
                 } else {
-                    // Não aceitou a negativa, exige as fotos para tentar exceção
                     divFotos.classList.remove("hidden");
                     if (!fotos) return;
 
                     if (fotos === "SIM") {
-                        status = "Encaminhado p/ Análise Exceção (Fora do Prazo)";
-                        acao = "• Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n• Orientar o cliente que o protocolo passará por análise e dentro de até 3 dias úteis iremos retornar o contato.";
-                        crm = `Abrir protocolo\nMotivo: Troca - Fora dos ${prazoMax} dias ${canal === 'amazon_meli' ? 'Amazon/Meli' : ''}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
+                        acao = "• Informar que será encaminhado para análise (exceção), mas que há a chance de negativa devido estar fora do prazo.\n• Orientar o cliente que o protocolo passará por análise de até 3 dias úteis.";
+                        crm = `Abrir protocolo\nMotivo: Troca - Fora dos ${prazoMax} dias ${nomeCanal}\n\n-> Ação: Direcionar o protocolo para o bkoffice.`;
                     } else {
-                        status = "Retido na Exceção - Faltam Fotos";
-                        acao = "• Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
+                        acao = "• Informar que seria encaminhado para análise (exceção), MAS:\n• Orientar o cliente que sem as fotos não é possível seguir com a análise.";
                         crm = "Registrar o protocolo\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
                     }
                 }
             }
 
-            document.getElementById("textoAcao").textContent = acao;
-            document.getElementById("textoCRM").textContent = crm;
-            gerarResumo(status, nomeCanal, dataRecVal, dias, prazoMax, acao, crm);
+            mostrarResultado(statusHTML, acao, crm, motivo, dataRecVal, dias, prazoMax);
         }
 
-        function gerarResumo(status, canal, dataRec, dias, prazoMax, acao, crm) {
-            let script = `[ANÁLISE PÓS-RECEBIMENTO T&D]\n`;
-            script += `Canal: ${canal}\n`;
+        // Renderizador e Gerador de CRM
+        function mostrarResultado(statusHTML, acao, crm, motivo, dataRec = null, dias = null, prazoMax = null) {
+            document.getElementById("statusBox").innerHTML = statusHTML;
+            document.getElementById("statusBox").classList.remove("hidden");
+            document.getElementById("textoAcao").textContent = acao;
+            document.getElementById("textoCRM").textContent = crm;
+
+            const comboMotivo = document.getElementById("motivoGeral");
+            let script = `[TRIAGEM T&D / ATENDIMENTO]\nMotivo: ${comboMotivo.options[comboMotivo.selectedIndex].text}\n`;
+
             if (dataRec) {
-                script += `Data Recebimento: ${dataRec.split('-').reverse().join('/')} (${dias} dias decorridos)\n`;
-                script += `Prazo Permitido: ${prazoMax} dias\n`;
+                script += `\n[DADOS LOGÍSTICOS]\n`;
+                script += `Canal: ${document.getElementById("canalCompra").options[document.getElementById("canalCompra").selectedIndex].text}\n`;
+                script += `Instalado: ${document.getElementById("produtoInstalado").value}\n`;
+                script += `Recebido em: ${dataRec.split('-').reverse().join('/')} (${dias} dias de ${prazoMax})\n`;
+                
                 const fotos = document.getElementById("possuiFotos").value;
                 if (fotos) script += `Possui Fotos: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
             }
-            script += `\n[DIRECIONAMENTO]\n`;
-            script += `Status: ${status}\n`;
-            script += `Ação Aplicada no CRM: \n${crm.replace('-> Ação: ', '')}`;
-            
+
+            script += `\n[CONCLUSÃO / AÇÃO CRM]\n`;
+            script += `${crm.replace('-> Ação: ', '')}`;
+
             document.getElementById("textoResumoCRM").value = script;
             document.getElementById("resultadoFinal").classList.remove("hidden");
         }
