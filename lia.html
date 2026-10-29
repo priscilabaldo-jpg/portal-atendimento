@@ -1,3 +1,6 @@
+Aqui tens o código completo e já atualizado com todas as correções para o recurso "Explorar por Seção" funcionar perfeitamente com a IA:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -153,7 +156,7 @@ body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg
             <div class="brand-logo">LIA</div>
             <div class="brand-text">
                 <span class="t">CX LIA - Versão Baby LIA<span id="mode-badge" class="badge off">Carregando base...</span></span>
-                <span class="s">Leveros CX &middot; Base de Conhecimento (kb_entries.json)</span>
+                <span class="s">Leveros CX · Base de Conhecimento (kb_entries.json)</span>
             </div>
         </div>
         
@@ -260,7 +263,7 @@ const MODEL_FALLBACKS = [
   'gemini-2.5-pro'
 ];
 
-function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function escapeHtml(x){return (x||'').replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'"'}[c]));}
 function stripAccents(s){return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
 function norm(s){return stripAccents((s||'').toLowerCase()).replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();}
 function tokenize(s){return norm(s).split(' ').filter(w=>w.length>1);}
@@ -302,9 +305,8 @@ function buildIndex(){
   });
 }
 
-// Stopwords: termos genéricos que não devem pesar na busca (evita que
-// "como"/"fazer" eclipsem termos técnicos raros como "csdevol")
-const STOPWORDS = new Set('como fazer de a o que para com em no na os as do da dos das um uma e ou se eu tu ele nos vos eles por qual quais quando onde porque quero preciso gostaria pode poderia favor obrigado ola oi bom dia tarde noite'.split(' '));
+// Stopwords atualizados com os termos do modo exploração para melhorar a busca
+const STOPWORDS = new Set('como fazer de a o que para com em no na os as do da dos das um uma e ou se eu tu ele nos vos eles por qual quais quando onde porque quero preciso gostaria pode poderia favor obrigado ola oi bom dia tarde noite me explique sobre resuma principais regras informacoes'.split(' '));
 
 function tokenWeight(qt){
   if(STOPWORDS.has(qt)) return 0.15; // quase ignora termos genéricos
@@ -333,8 +335,7 @@ function searchKB(query, topN=5){
       if(qt.length < 2) continue; 
       const tScore = bestTokenMatch(qt, entry._titleTokens) * 1.6;
       const cScore = bestTokenMatch(qt, entry._tokens);
-      // CORREÇÃO: pondera pelo peso do termo (stopwords quase não contam,
-      // termos técnicos raros/longos contam mais) em vez de peso fixo por tamanho
+      // Pondera pelo peso do termo
       score += Math.max(tScore, cScore) * tokenWeight(qt);
     }
     const normContent = norm((entry.titulo||'')+' '+(entry.conteudo||''));
@@ -360,7 +361,7 @@ function renderSidebar(){
     const btn=document.createElement('button');
     btn.className='chip';
     btn.textContent=s;
-    btn.onclick=()=>{ document.getElementById('input').value = 'Me explique sobre: ' + s.replace(/^\d+\.\s*/,''); window.sendMessage(); };
+    btn.onclick=()=>{ document.getElementById('input').value = '[MODO EXPLORAÇÃO] Resuma os principais processos e regras da seção: ' + s.replace(/^\d+\.\s*/,''); window.sendMessage(); };
     box.appendChild(btn);
   });
 }
@@ -511,6 +512,7 @@ function buildPrompt(userQuestion, contextEntries){
   3. Se a base não tiver a resposta, diga claramente que não encontrou essa informação na base e peça para acionar a liderança.
   4. Mantenha o contexto das mensagens anteriores listadas no "HISTÓRICO RECENTE" para responder perguntas de continuação.
   5. Se o trecho da base de conhecimento contiver uma imagem no formato ![...](url), VOCÊ DEVE exibi-la na sua resposta exatamente como está.
+  6. ⚠️ EXCEÇÃO DE TRIAGEM: Se a pergunta do usuário iniciar com a tag "[MODO EXPLORAÇÃO]", ISSO É UMA EXCEÇÃO À REGRA DE OURO. Você está autorizada a ignorar o bloqueio de respostas genéricas e DEVE fornecer um resumo completo, educativo e estruturado em tópicos sobre a seção solicitada, sem fazer perguntas de volta para o operador.
   
   HISTÓRICO RECENTE DA CONVERSA (Contexto):
   ${recentHistory || "Nenhuma mensagem anterior neste turno."}
@@ -781,3 +783,5 @@ welcome();
 </script>
 </body>
 </html>
+
+```
