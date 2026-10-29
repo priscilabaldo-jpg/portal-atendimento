@@ -1,3 +1,10 @@
+Com base no fluxo de processo fornecido para "Troca dentro e fora do prazo - produto NÃO INSTALADO", o código foi atualizado para incluir as novas variáveis e decisões estratégicas.
+
+Foram adicionados os campos para verificar o **Canal de Compra** (que define se o prazo é de 30 dias para Amazon/Meli ou 7 dias para as restantes), se o **Cliente possui fotos**, e se **Aceitou a negativa** (caso o pedido esteja fora do prazo).
+
+Abaixo está o código HTML completo atualizado com a inteligência do fluxo incluída, fornecendo ao operador o direcionamento exato do que dizer ao cliente e como tipificar o atendimento no CRM:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +13,6 @@
     <link rel="icon" type="image" href="LogoLeveros.png">
     <title>Triagem T&D | Atendimento ON</title>
     <style>
-        /* Estilos base (mantidos do original e simplificados para o exemplo) */
         :root { --azul: #0056b3; --glass-border: #e0e0e0; }
         body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 0; }
         .top-header { background: #fff; border-bottom: 1px solid #ccc; padding: 10px 20px; }
@@ -28,7 +34,7 @@
         .status-box { padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid transparent; }
         .status-ok { background: #d4edda; color: #155724; border-color: #c3e6cb; }
         .status-nok { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
-        .uappi-box { padding: 15px; border-radius: 6px; margin-bottom: 15px; }
+        .status-warn { background: #fff3cd; color: #856404; border-color: #ffeeba; }
     </style>
 </head>
 <body>
@@ -47,52 +53,56 @@
         </div>
         <div class="ticker-wrapper">
             <div class="ticker-content">
-                <span class="ticker-item">💡 Prazo de 7 dias: conta a partir da DATA DE RECEBIMENTO.</span>
-                <span class="ticker-item">📦 Avaria na Entrega: O cliente deve recusar todos os volumes, não apenas a parte danificada!</span>
-                <span class="ticker-item">⚙️ Produtos já instalados com defeito: Direcionar para Assistência Técnica Autorizada (Garantia).</span>
+                <span class="ticker-item">💡 O prazo base é de 7 dias após o recebimento, mas compras na Amazon e Mercado Livre possuem prazo de 30 dias!</span>
+                <span class="ticker-item">⚙️ Produtos já instalados com defeito: Direcionar para Assistência Técnica Autorizada.</span>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <h2>Triagem Atendimento ON | Trocas e Devoluções (T&D)</h2>
+        <h2>Triagem T&D | Análise de Pós-Recebimento</h2>
         
         <div class="card-panel">
             <div class="form-group">
-                <label for="motivoTeD">1. Qual o motivo da solicitação?</label>
-                <select id="motivoTeD" onchange="avaliarFluxo()">
-                    <option value="">Selecione o motivo...</option>
-                    <option value="arrependimento">Arrependimento / Desistência</option>
-                    <option value="comprei_errado">Comprei Errado (Modelo, Capacidade, Voltagem)</option>
-                    <option value="avaria">Avaria no Transporte (Amassado/Quebrado)</option>
-                    <option value="divergente">Produto Divergente do Comprado</option>
-                    <option value="defeito7dias">Defeito Funcional (Até 7 dias)</option>
+                <label for="canalCompra">1. Qual o Canal de Compra?</label>
+                <select id="canalCompra" onchange="avaliarFluxo()">
+                    <option value="">Selecione...</option>
+                    <option value="amazon_meli">Amazon ou Mercado Livre (Prazo 30 dias)</option>
+                    <option value="site_outros">Site, Vendas Assistidas e demais plataformas (Prazo 7 dias)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="produtoInstalado">2. O produto já foi instalado?</label>
+                <select id="produtoInstalado" onchange="avaliarFluxo()">
+                    <option value="">Selecione...</option>
+                    <option value="SIM">Sim</option>
+                    <option value="NAO">Não</option>
                 </select>
             </div>
 
             <div class="garantia-section hidden" id="divCamposTeD">
-                <h3 style="margin-top: 20px; font-size: 16px;">Validação de Prazos e Condições</h3>
                 
                 <div class="form-group">
-                    <label for="dataRecebimento" style="color: var(--azul);">Data de Recebimento do Produto pelo Cliente:</label>
+                    <label for="dataRecebimento" style="color: var(--azul);">3. Data de Recebimento da Mercadoria:</label>
                     <input type="date" id="dataRecebimento" onchange="avaliarFluxo()">
                 </div>
 
                 <div class="form-group">
-                    <label for="produtoInstalado">O produto já foi instalado?</label>
-                    <select id="produtoInstalado" onchange="avaliarFluxo()">
+                    <label for="possuiFotos">4. O cliente possui as fotos necessárias (produto, caixa, etiquetas)?</label>
+                    <select id="possuiFotos" onchange="avaliarFluxo()">
                         <option value="">Selecione...</option>
                         <option value="SIM">Sim</option>
                         <option value="NAO">Não</option>
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="embalagemIntacta">A embalagem original e os manuais/acessórios estão completos?</label>
-                    <select id="embalagemIntacta" onchange="avaliarFluxo()">
+                <div class="form-group hidden" id="divAceiteNegativa">
+                    <label for="aceitouNegativa" style="color: #721c24;">⚠️ O prazo excedeu. O cliente ACEITOU a negativa informada pelo atendimento?</label>
+                    <select id="aceitouNegativa" onchange="avaliarFluxo()">
                         <option value="">Selecione...</option>
-                        <option value="SIM">Sim, tudo em bom estado e completo</option>
-                        <option value="NAO">Não (Falta caixa/isopor/manuais/acessórios)</option>
+                        <option value="SIM">Sim, aceitou a negativa</option>
+                        <option value="NAO">Não, não aceitou e solicitou análise</option>
                     </select>
                 </div>
             </div>
@@ -100,31 +110,16 @@
             <div class="result-box hidden" id="resultadoFinal" style="margin-top: 25px;">
                 
                 <div id="statusTeDBox" class="status-box hidden"></div>
-                
-                <div id="avisoGarantia" class="uappi-box hidden" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
-                    <strong style="display:block; margin-bottom: 6px;">🔄 REDIRECIONAMENTO PARA GARANTIA (ASSISTÊNCIA TÉCNICA)</strong>
-                    <span id="motivoGarantiaTexto"></span>
-                </div>
 
-                <div id="avisoRecusaInstalado" class="status-nok hidden" style="padding: 14px 18px; margin-bottom: 20px; border-radius: 8px;">
-                    <strong style="display:block; margin-bottom: 6px;">🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO/USADO</strong>
-                    <span id="motivoRecusaTexto"></span>
-                </div>
-
-                <h3>Ação Recomendada (Atendimento Leveros)</h3>
-                <p id="textoAcao" style="white-space: pre-wrap; line-height: 1.5;"></p>
+                <h3>🗣️ O que informar ao cliente</h3>
+                <p id="textoAcao" style="white-space: pre-wrap; line-height: 1.5; font-weight: bold; color: #002b5e;"></p>
                 
-                <h3 style="margin-top:20px;">Direcionamento CRM</h3>
-                <p id="textoCRM" style="margin-bottom: 15px; white-space: pre-wrap; line-height: 1.5;"></p>
-                
-                <div style="background: #f1f8ff; border-left: 4px solid #0056b3; padding: 12px; margin-bottom: 20px;">
-                    <strong style="color: #0056b3;">📌 Política Leveros / CDC:</strong>
-                    <span id="textoRegra" style="display: block; margin-top: 5px;"></span>
-                </div>
+                <h3 style="margin-top:20px;">🖥️ Como abrir no CRM (Ação do Operador)</h3>
+                <p id="textoCRM" style="margin-bottom: 15px; white-space: pre-wrap; line-height: 1.5; font-weight: bold; color: #d9534f;"></p>
 
                 <div style="border-top: 1px solid #ccc; padding-top: 20px;">
-                    <h3>📝 Script para o CRM</h3>
-                    <textarea id="textoResumoCRM" readonly rows="12" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
+                    <h3>📝 Script de Resumo para o CRM</h3>
+                    <textarea id="textoResumoCRM" readonly rows="10" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; font-family: monospace; font-size: 13px; margin-bottom: 15px;"></textarea>
                     
                     <button id="btnCopiar" onclick="copiarResumo()" style="width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">
                         📋 Copiar Script
@@ -143,123 +138,111 @@
         }
 
         function avaliarFluxo() {
-            const motivo = document.getElementById("motivoTeD").value;
+            const canal = document.getElementById("canalCompra").value;
+            const instalado = document.getElementById("produtoInstalado").value;
+            const dataRecVal = document.getElementById("dataRecebimento").value;
+            const fotos = document.getElementById("possuiFotos").value;
+            const aceitouNeg = document.getElementById("aceitouNegativa").value;
+            
             const divCampos = document.getElementById("divCamposTeD");
+            const divAceite = document.getElementById("divAceiteNegativa");
             const resBox = document.getElementById("resultadoFinal");
             const statBox = document.getElementById("statusTeDBox");
             
-            const dataRecVal = document.getElementById("dataRecebimento").value;
-            const instalado = document.getElementById("produtoInstalado").value;
-            const embalagem = document.getElementById("embalagemIntacta").value;
-
-            const avisoGarantia = document.getElementById("avisoGarantia");
-            const avisoRecusa = document.getElementById("avisoRecusaInstalado");
-            
-            avisoGarantia.classList.add("hidden");
-            avisoRecusa.classList.add("hidden");
             statBox.classList.add("hidden");
             resBox.classList.add("hidden");
+            divAceite.classList.add("hidden");
 
-            if (motivo === "") {
+            if (!canal || !instalado) {
                 divCampos.classList.add("hidden");
                 return;
             }
 
+            // Mostra os campos subsequentes
             divCampos.classList.remove("hidden");
-            if (!dataRecVal || !instalado || !embalagem) return;
+            
+            if (instalado === "SIM") {
+                statBox.className = "status-box status-nok";
+                statBox.innerHTML = `<strong>🚫 DEVOLUÇÃO RECUSADA - PRODUTO INSTALADO</strong><br>A devolução ou troca logística não atende produtos já instalados.`;
+                statBox.classList.remove("hidden");
+                
+                document.getElementById("textoAcao").textContent = "Informar ao cliente que a solicitação não pode prosseguir por esta via pois o produto já foi instalado. Casos de defeito devem seguir para a Assistência Técnica Autorizada.";
+                document.getElementById("textoCRM").textContent = "Registrar protocolo informando negativa por produto instalado.";
+                resBox.classList.remove("hidden");
+                return;
+            }
+
+            if (!dataRecVal || !fotos) return;
 
             const hoje = new Date();
             const dataRec = new Date(dataRecVal + "T00:00:00");
             const diasDecorridos = calcularDiferencaDias(dataRec, hoje);
-            const isDentro7Dias = diasDecorridos <= 7;
+            
+            const prazoMaximo = canal === "amazon_meli" ? 30 : 7;
+            const isDentroPrazo = diasDecorridos <= prazoMaximo;
+            const nomeCanal = canal === "amazon_meli" ? "Amazon/Meli" : "Site e demais plataformas";
 
             let status = "";
             let acao = "";
             let crm = "";
-            let regra = "";
 
-            if (!isDentro7Dias) {
-                statBox.className = "status-box status-nok";
-                statBox.innerHTML = `<strong>❌ FORA DO PRAZO DE T&D (7 DIAS)</strong><br><small>Dias Decorridos: ${diasDecorridos} dias</small>`;
-                statBox.classList.remove("hidden");
-
-                if (motivo === "defeito7dias") {
-                    status = "Bloqueio T&D - Direcionar Garantia";
-                    document.getElementById("motivoGarantiaTexto").textContent = "O prazo de 7 dias expirou. O equipamento deve ser atendido pela Assistência Técnica Autorizada da marca.";
-                    avisoGarantia.classList.remove("hidden");
-                    acao = "Indicar a assistência autorizada do fabricante para análise e solução técnica (prazo legal de até 30 dias para solução).";
-                    crm = "Orientar cliente sobre o fim do prazo de loja (7 dias) e transferir/orientar acionamento da Garantia do Fabricante.";
-                    regra = "A Leveros atua em trocas por defeito até 7 dias corridos. Após isso, o fabricante possui prazo legal de até 30 dias para solução via Assistência Técnica.";
-                } else {
-                    status = "Devolução Recusada - Prazo Expirado";
-                    acao = "Informar que o prazo para devolução por arrependimento, avaria ou divergência expirou.";
-                    crm = "Informar o cliente que o prazo de 7 dias previsto no Art. 49 do CDC já foi ultrapassado. Finalizar protocolo.";
-                    regra = "O Art. 49 do CDC garante o arrependimento e trocas logísticas apenas dentro do prazo improrrogável de 7 dias corridos após o recebimento.";
-                }
-
-            } else {
+            if (isDentroPrazo) {
+                // DENTRO DO PRAZO
                 statBox.className = "status-box status-ok";
-                statBox.innerHTML = `<strong>✅ DENTRO DO PRAZO DE T&D</strong><br><small>Dias Decorridos: ${diasDecorridos} dias de 7</small>`;
+                statBox.innerHTML = `<strong>✅ DENTRO DO PRAZO DE ${prazoMaximo} DIAS</strong><br><small>Dias Decorridos: ${diasDecorridos} dias</small>`;
                 statBox.classList.remove("hidden");
 
-                if (motivo === "defeito7dias" && instalado === "SIM") {
-                    status = "Bloqueio T&D - Produto Instalado (Defeito)";
-                    document.getElementById("motivoGarantiaTexto").textContent = "Os produtos instalados que apresentam defeito devem ser avaliados pela Assistência Técnica Autorizada do fabricante, mesmo dentro de 7 dias.";
-                    avisoGarantia.classList.remove("hidden");
-                    acao = "Indicar a assistência técnica autorizada para avaliação do defeito no equipamento já instalado.\n\n⚠️ Reforçar: Valores pagos por serviços de instalação e desinstalação não são passíveis de reembolso.";
-                    crm = "Orientar o acionamento da rede autorizada para laudo técnico do produto instalado. Informar política de não reembolso de instalação.";
-                    regra = "Conforme política, produtos instalados devem ser avaliados pela Assistência Técnica Autorizada do fabricante, pois a instalação caracteriza serviço independente.";
+                if (fotos === "SIM") {
+                    status = "Aprovado para Análise";
+                    acao = "1. Informar o cliente que está dentro do prazo e seguiremos com análise de troca dentro de até 3 dias úteis.\n2. Orientar o cliente que o protocolo passará por análise e iremos retornar o contato.";
+                    crm = `Abrir protocolo\nMotivo: Troca - Dentro dos ${prazoMaximo} dias ${nomeCanal}.\n\n📌 AÇÃO OBRIGATÓRIA: Direcionar o protocolo para o bkoffice (Backoffice).`;
+                } else {
+                    status = "Pendente de Evidências";
+                    acao = "Orientar o cliente que sem as fotos necessárias não é possível seguir com a análise de troca.";
+                    crm = "Registrar o protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
                 }
-                else if (instalado === "SIM" && (motivo === "arrependimento" || motivo === "divergente" || motivo === "comprei_errado")) {
-                    status = "Bloqueio T&D - Produto Instalado";
-                    document.getElementById("motivoRecusaTexto").textContent = "Para devolução ou troca logística, o produto não pode ter indícios de uso ou ter sido instalado.";
-                    avisoRecusa.classList.remove("hidden");
-                    acao = "Solicitação recusada. O produto não se qualifica para devolução comercial por já ter sido instalado.";
-                    crm = "Informar recusa com base na perda da característica de 'produto novo' (instalação realizada). Finalizar chamado.";
-                    regra = "Condição obrigatória para devolução/troca: Produto sem indícios de uso ou instalado, mantendo a integridade para retorno ao estoque comercial.";
-                } 
-                else if (embalagem === "NAO" && (motivo === "arrependimento" || motivo === "comprei_errado")) {
-                    status = "Alerta - Produto sem Embalagem/Acessórios";
-                    acao = "O cliente descartou a embalagem original ou acessórios. É necessário escalonar para avaliação da equipe de Backoffice antes de seguir.";
-                    crm = "Coletar fotos do estado atual do equipamento e abrir chamado para o setor avaliar autorização excepcional.";
-                    regra = "Condição obrigatória Leveros: Embalagem original em bom estado, manuais e acessórios completos.";
-                }
-                else {
-                    status = "Aprovado para Análise T&D";
-                    if (motivo === "avaria" || motivo === "divergente") {
-                        acao = "Solicitar OBRIGATORIAMENTE o envio de:\n1. Fotos do produto\n2. Fotos da embalagem\n3. Fotos das etiquetas\n\nPrazo de análise: até 3 dias úteis após envio das evidências.";
-                        crm = `Abrir protocolo de T&D - Motivo: ${motivo === 'avaria' ? 'Avaria' : 'Divergência'}. Aguardando envio de evidências fotográficas.`;
-                        regra = motivo === "avaria" ? "Avarias identificadas após o recebimento exigem registro fotográfico completo em até 7 dias corridos." : "Produtos diferentes do comprado exigem validação fotográfica de etiquetas e volumes em até 7 dias.";
-                    } else if (motivo === "comprei_errado") {
-                        acao = "Solicitar fotos do equipamento na caixa para garantir integridade.\n⚠️ Avisar o cliente que trocas decorrentes de erro na escolha poderão implicar cobrança de frete para coleta e novo envio.";
-                        crm = "Abrir protocolo de T&D - Motivo: Troca por escolha errada. Informada possível cobrança de frete.";
-                        regra = "A troca por equívoco do cliente (modelo/voltagem) é permitida se intacto, porém, os custos logísticos de reversa e reenvio podem ser repassados.";
-                    } else if (motivo === "arrependimento") {
-                        acao = "Confirmar dados de coleta e informar que o cliente poderá optar por troca ou reembolso (Cartão, Pix ou Boleto/Transferência) após a devolução e conferência.";
-                        crm = "Abrir protocolo para T&D - Motivo: Arrependimento. Seguir com emissão de nota de devolução e ordem de coleta.";
-                        regra = "Direito de arrependimento (Art. 49 CDC) validado. Após coleta e aprovação, segue estorno de acordo com o meio de pagamento original.";
+            } else {
+                // FORA DO PRAZO
+                statBox.className = "status-box status-warn";
+                statBox.innerHTML = `<strong>⚠️ FORA DO PRAZO DE ${prazoMaximo} DIAS</strong><br><small>Dias Decorridos: ${diasDecorridos} dias</small>`;
+                statBox.classList.remove("hidden");
+                
+                divAceite.classList.remove("hidden");
+                if (!aceitouNeg) return; // Aguarda seleção do aceite da negativa
+
+                if (aceitouNeg === "SIM") {
+                    status = "Recusado - Retido em Contato";
+                    acao = `Informar o cliente que o prazo de ${prazoMaximo} dias se encerrou e que desse modo não é possível prosseguirmos com a troca.`;
+                    crm = "Abrir protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato.";
+                } else {
+                    // NÃO ACEITOU A NEGATIVA
+                    if (fotos === "SIM") {
+                        status = "Encaminhado para Exceção (Fora do Prazo)";
+                        acao = `1. Informar que será encaminhado para análise, mas que há a chance de negativa devido estar fora do prazo.\n2. Orientar que retornaremos o contato em até 3 dias úteis.`;
+                        crm = `Abrir protocolo.\nMotivo: Troca - Fora dos ${prazoMaximo} dias ${nomeCanal}.\n\n📌 AÇÃO OBRIGATÓRIA: Direcionar o protocolo para o bkoffice (Backoffice).`;
                     } else {
-                        acao = "Avançar com a troca do equipamento (Dead on Arrival).";
-                        crm = "Abrir protocolo T&D - Defeito Funcional s/ Instalação.";
-                        regra = "Produto defeituoso reportado em 7 dias sem instalação prévia. Seguir fluxo de troca de balcão.";
+                        status = "Tentativa de Exceção sem Fotos";
+                        acao = `1. Informar que o caso seria encaminhado para análise com chance de negativa, MAS:\n2. Orientar o cliente que sem as fotos não é possível seguir com a análise.`;
+                        crm = "Registrar o protocolo.\nMotivo: Informações sobre troca e devolução\nSubmotivo: evidências faltantes.";
                     }
                 }
             }
 
             document.getElementById("textoAcao").textContent = acao;
             document.getElementById("textoCRM").textContent = crm;
-            document.getElementById("textoRegra").textContent = regra;
             
-            const selMotivo = document.getElementById("motivoTeD");
-            let scriptCrm = `[TRIAGEM N1 - TROCAS E DEVOLUÇÕES]\n`;
-            scriptCrm += `Motivo: ${selMotivo.options[selMotivo.selectedIndex]?.text}\n`;
+            // Monta o resumo
+            let scriptCrm = `[TRIAGEM DE TROCA - PRODUTO NÃO INSTALADO]\n`;
+            scriptCrm += `Canal: ${nomeCanal}\n`;
             scriptCrm += `Data de Recebimento: ${dataRecVal.split('-').reverse().join('/')}\n`;
-            scriptCrm += `Dias Decorridos: ${diasDecorridos} dias\n`;
-            scriptCrm += `Produto Instalado: ${instalado === 'SIM' ? 'Sim' : 'Não'}\n`;
-            scriptCrm += `Embalagem Intacta: ${embalagem === 'SIM' ? 'Sim' : 'Não'}\n`;
-            scriptCrm += `\n[CONCLUSÃO / AÇÃO]\n`;
+            scriptCrm += `Prazo: ${diasDecorridos} dias de ${prazoMaximo} permitidos.\n`;
+            scriptCrm += `Fotos Enviadas: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
+            if (!isDentroPrazo) {
+                scriptCrm += `Aceitou Negativa (Fora do Prazo): ${aceitouNeg === 'SIM' ? 'Sim' : 'Não'}\n`;
+            }
+            scriptCrm += `\n[CONCLUSÃO]\n`;
             scriptCrm += `Status: ${status}\n`;
-            scriptCrm += `Procedimento: ${crm}\n`;
+            scriptCrm += `\n>> AÇÃO CRM: \n${crm.replace('📌 AÇÃO OBRIGATÓRIA: ', '')}\n`;
 
             document.getElementById("textoResumoCRM").value = scriptCrm;
             resBox.classList.remove("hidden");
@@ -281,3 +264,5 @@
     </script>
 </body>
 </html>
+
+```
