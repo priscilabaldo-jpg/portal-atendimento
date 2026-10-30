@@ -5,7 +5,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
     getFirestore, collection, addDoc, setDoc, deleteDoc, doc, updateDoc, onSnapshot,
-    serverTimestamp, query, orderBy, increment, arrayUnion, arrayRemove, writeBatch, getDocs
+    serverTimestamp, query, orderBy, increment, arrayUnion, arrayRemove, writeBatch, getDocs, where
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 export const app = initializeApp(firebaseConfig);
@@ -17,5 +17,5 @@ provider.setCustomParameters({ hd: 'leveros.com.br', prompt: 'select_account' })
 export {
     signInWithPopup, onAuthStateChanged, signOut,
     collection, addDoc, setDoc, deleteDoc, doc, updateDoc, onSnapshot,
-    serverTimestamp, query, orderBy, increment, arrayUnion, arrayRemove, writeBatch, getDocs
+    serverTimestamp, query, orderBy, increment, arrayUnion, arrayRemove, writeBatch, getDocs, where
 };
