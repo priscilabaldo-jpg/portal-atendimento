@@ -1,4 +1,6 @@
 // Relatório gerencial em Excel.
+
+//teste
 import { getMembro, getOrigemTarefa, situacao, toast } from './helpers.js';
 import { state } from './state.js';
 import { diasPara, fmtBR, hojeISO } from './utils.js';
