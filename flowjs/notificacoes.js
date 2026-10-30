@@ -1,105 +1,91 @@
-import { collection, db, doc, onSnapshot, query, updateDoc, where } from './firebase.js';
+import { doc, updateDoc, db } from './firebase.js';
 import { state } from './state.js';
 import { $ } from './utils.js';
-// Importe as funções de abrir drawer dos seus módulos, se já existirem:
 import { abrirRotinaDrawer } from './rotina-drawer.js';
-// import { abrirTarefaDrawer } from './tarefas-drawer.js';
-// import { abrirDorDrawer } from './dores-drawer.js';
+import { abrirDrawer as abrirTarefaDrawer } from './tarefas-drawer.js'; // <- Descomentado para as tarefas funcionarem!
 
-let unsubNotificacoes = null;
-
-export function iniciarNotificacoes() {
-    if (unsubNotificacoes) unsubNotificacoes();
-
+// Desenha a interface do sino (chamada pelo listeners.js sempre que há novidades no Firestore)
+export function renderizarSinoNotificacoes() {
     const badge = $('#badge-notificacoes');
     const lista = $('#lista-notificacoes');
     if (!badge || !lista) return;
 
-    // Escuta em tempo real apenas notificações não lidas destinadas ao utilizador logado
-    const q = query(
-        collection(db, 'notificacoes'),
-        where('usuario_destino', '==', state.user.email),
-        where('lida', '==', false)
-    );
+    // Se as notificações ainda não foram carregadas, sai silenciosamente
+    if (!state.notificacoes) return;
 
-    unsubNotificacoes = onSnapshot(q, (snap) => {
-        const notificacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-        
-        // Ordenar localmente da mais recente para a mais antiga (caso o orderBy exija índice no Firestore, evitamos erro)
-        notificacoes.sort((a, b) => (b.data_criacao?.toMillis() || 0) - (a.data_criacao?.toMillis() || 0));
+    // Filtra apenas as não lidas e ordena da mais recente para a mais antiga
+    const naoLidas = state.notificacoes
+        .filter(n => !n.lida)
+        .sort((a, b) => (b.data_criacao?.toMillis() || 0) - (a.data_criacao?.toMillis() || 0));
 
-        // Atualiza o Badge (contador)
-        if (notificacoes.length > 0) {
-            badge.textContent = notificacoes.length > 99 ? '99+' : notificacoes.length;
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-
-        // Renderiza a lista
-        if (notificacoes.length === 0) {
-            lista.innerHTML = '<p class="text-xs text-gray-500 text-center py-6">Nenhuma notificação nova.</p>';
-            return;
-        }
-
-        lista.innerHTML = notificacoes.map(n => `
-            <div class="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors"
-                 data-action="abrir-notificacao" 
-                 data-id="${n.id}" 
-                 data-modulo="${n.rota.modulo}" 
-                 data-item="${n.rota.item_id}" 
-                 data-comentario="${n.rota.comentario_id}">
-                <p class="text-[13px] text-gray-700 leading-snug">${n.mensagem}</p>
-            </div>
-        `).join('');
-    });
-}
-
-export async function marcarNotificacaoLida(id) {
-    try {
-        await updateDoc(doc(db, 'notificacoes', id), { lida: true });
-    } catch (e) {
-        console.error('Erro ao marcar notificação como lida', e);
+    // Atualiza Badge
+    if (naoLidas.length > 0) {
+        badge.textContent = naoLidas.length > 99 ? '99+' : naoLidas.length;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
     }
+
+    // Renderiza Lista
+    if (naoLidas.length === 0) {
+        lista.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Nenhuma notificação nova.</p>`;
+        return;
+    }
+
+    lista.innerHTML = naoLidas.map(notif => `
+        <div class="p-3 hover:bg-blue-50 rounded-md cursor-pointer transition-colors border-b border-gray-50 last:border-0" 
+             data-action="abrir-notificacao" 
+             data-id="${notif.id}" 
+             data-modulo="${notif.rota?.modulo}" 
+             data-item="${notif.rota?.item_id}"
+             data-comentario="${notif.rota?.comentario_id}">
+            <p class="text-sm text-gray-700">${notif.mensagem}</p>
+        </div>
+    `).join('');
 }
 
-export async function marcarTodasComoLidas() {
-    const itens = document.querySelectorAll('[data-action="abrir-notificacao"]');
-    itens.forEach(item => marcarNotificacaoLida(item.dataset.id));
-}
+// Ações exportadas para o seu arquivo events.js (ou main.js)
+export const acoesNotificacoes = {
+    'toggle-notificacoes': () => {
+        $('#dropdown-notificacoes')?.classList.toggle('hidden');
+    },
 
-// Lógica de roteamento: para qual ecrã e painel ir quando clica na notificação
-export function processarCliqueNotificacao(dataset) {
-    const { id, modulo, item, comentario } = dataset;
-    
-    // 1. Marca como lida
-    marcarNotificacaoLida(id);
-    
-    // 2. Oculta o dropdown do sino
-    $('#dropdown-notificacoes')?.classList.add('hidden');
+    'marcar-todas-lidas': () => {
+        if (!state.notificacoes) return;
+        const naoLidas = state.notificacoes.filter(n => !n.lida);
+        naoLidas.forEach(n => updateDoc(doc(db, 'notificacoes', n.id), { lida: true }));
+        $('#dropdown-notificacoes')?.classList.add('hidden');
+    },
 
-    // 3. Navega para a view correta simulando um clique no menu principal
-    const btnNavegacao = document.querySelector(`[data-view="${modulo === 'rotina' ? 'rotina' : modulo === 'tarefa' ? 'quadro' : 'dores'}"]`);
-    if (btnNavegacao) btnNavegacao.click();
+    'abrir-notificacao': async (dataset) => {
+        const { id, modulo, item, comentario } = dataset;
 
-    // 4. Aguarda a view renderizar e abre o Drawer/Modal do item
-    setTimeout(() => {
-        if (modulo === 'rotina') abrirRotinaDrawer(item);
-        // if (modulo === 'tarefa') abrirTarefaDrawer(item);
-        // if (modulo === 'dores') abrirDorDrawer(item);
+        // Oculta dropdown e marca lida no banco
+        $('#dropdown-notificacoes')?.classList.add('hidden');
+        updateDoc(doc(db, 'notificacoes', id), { lida: true }).catch(()=>{});
 
-        // 5. Scroll suave até o comentário (aguarda o drawer animar)
-        if (comentario && comentario !== 'null') {
-            setTimeout(() => {
-                // Presume-se que o id do elemento HTML do comentário tenha esta estrutura. 
-                // Se o seu feedItemHTML cria divs sem ID, teremos de colocar id="comentario-${item.id}" na geração do HTML do comentário.
-                const comentEl = document.getElementById(comentario); 
-                if (comentEl) {
-                    comentEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    comentEl.classList.add('bg-yellow-100', 'transition-colors', 'duration-500');
-                    setTimeout(() => comentEl.classList.remove('bg-yellow-100'), 2000);
-                }
-            }, 600);
-        }
-    }, 200);
-}
+        // 1. Navega para a view do menu principal simulando um clique
+        const viewDeDestino = modulo === 'rotina' ? 'rotina' : modulo === 'tarefas' ? 'quadro' : 'dores';
+        const navButton = document.querySelector(`[data-view="${viewDeDestino}"]`);
+        if (navButton) navButton.click();
+
+        // 2. Aguarda a view carregar e abre o painel lateral correspondente
+        setTimeout(() => {
+            if (modulo === 'rotina') abrirRotinaDrawer(item);
+            if (modulo === 'tarefas') abrirTarefaDrawer(item); // O nome da importação é 'abrirDrawer' mas apelidamos de 'abrirTarefaDrawer'
+            // if (modulo === 'dores') abrirDorDrawer(item); // Descomente quando implementar nas dores
+
+            // 3. Destaca o comentário específico com scroll e fundo amarelo temporário
+            if (comentario && comentario !== 'undefined') {
+                setTimeout(() => {
+                    const commentElement = document.getElementById(comentario);
+                    if (commentElement) {
+                        commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        commentElement.classList.add('bg-yellow-100'); 
+                        setTimeout(() => commentElement.classList.remove('bg-yellow-100'), 2500);
+                    }
+                }, 600); // Aguarda o drawer finalizar a animação de abertura
+            }
+        }, 300); // Tempo da transição de views do menu lateral
+    }
+};
