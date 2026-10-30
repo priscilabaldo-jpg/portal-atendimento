@@ -1,12 +1,12 @@
 // Tarefas — painel lateral de detalhe + comentários.
-import { collection, db, onSnapshot, orderBy, query } from './firebase.js';
+import { addDoc, collection, db, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc, doc } from './firebase.js'; // <-- Adicionado imports necessários
 import { PRIORIDADES, STATUS } from './constants.js';
-import { avatar, badgeSituacao, chipProjeto, getMembro, getOrigemTarefa, getTarefa, optionsCron, optionsMembros, podeExcluirTarefa } from './helpers.js';
+import { avatar, badgeSituacao, chipProjeto, getMembro, getOrigemTarefa, getTarefa, optionsCron, optionsMembros, podeExcluirTarefa, toast } from './helpers.js';
 import { fecharModal } from './modals.js';
 import { state } from './state.js';
 import { permKey, podeAtuar, podeEditarTudo } from './tarefas-permissoes.js';
 import { colabSectionHTML } from './tarefas-solicitacoes.js';
-import { $, esc, fmtDataHora, tsMillis } from './utils.js';
+import { $, esc, fmtDataHora, primeiroNome, tsMillis } from './utils.js';
 
 export function abrirDrawer(id) {
     const t = getTarefa(id);
@@ -73,10 +73,12 @@ export function abrirDrawer(id) {
 export function feedItemHTML(c) {
     const quando = fmtDataHora(tsMillis(c.criadoEm));
     if (c.tipo === 'sistema') {
-        return `<div class="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2"><i class="fas fa-clock-rotate-left mt-0.5 text-gray-400"></i><div><span class="font-semibold">${esc(getMembro(c.autorEmail).nome)}</span> ${esc(c.texto)} <span class="text-gray-400">· ${quando}</span></div></div>`;
+        // ─── INSERIDO id="${c.id}" NA DIV ───
+        return `<div id="${c.id}" class="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2"><i class="fas fa-clock-rotate-left mt-0.5 text-gray-400"></i><div><span class="font-semibold">${esc(getMembro(c.autorEmail).nome)}</span> ${esc(c.texto)} <span class="text-gray-400">· ${quando}</span></div></div>`;
     }
     const minha = c.autorEmail === state.user.email;
-    return `<div class="flex gap-2.5 ${minha ? 'flex-row-reverse' : ''}">
+    // ─── INSERIDO id="${c.id}" NA DIV ───
+    return `<div id="${c.id}" class="flex gap-2.5 ${minha ? 'flex-row-reverse' : ''}">
         ${avatar(c.autorEmail, 'w-8 h-8 text-xs')}
         <div class="max-w-[80%] ${minha ? 'bg-leveros-verde4/60' : 'bg-gray-100'} rounded-xl px-3 py-2">
             <div class="text-[11px] font-bold text-leveros-verde2">${esc(getMembro(c.autorEmail).nome)} <span class="text-gray-400 font-normal">· ${quando}</span></div>
@@ -89,4 +91,55 @@ export function fecharDrawer() {
     state.drawerRotinaId = null;
     if (state.unsubFeed) { state.unsubFeed(); state.unsubFeed = null; }
     const d = $('#drawer'); if (d) d.classList.add('hidden');
+}
+
+
+// Se você já tem a função de comentar e disparar o log no tarefas-eventos, não precisa usar esta.
+// Caso contrário, adicione a chamada no seu events para `data-action="enviar-comentario"`
+export async function comentarTarefa(id) {
+    const ta = $('#dt-comentario'), texto = ta?.value.trim();
+    if (!texto) return;
+    ta.value = ''; ta.focus();
+
+    let comentarioRef;
+    try {
+        comentarioRef = await addDoc(collection(db, 'tarefas', id, 'comentarios'), {
+            tipo: 'comentario',
+            texto: texto,
+            autorEmail: state.user.email,
+            autorNome: state.user.nome,
+            criadoEm: serverTimestamp()
+        });
+        await updateDoc(doc(db, 'tarefas', id), { comentariosCount: increment(1) });
+    } catch (e) {
+        ta.value = texto;
+        return toast('Não foi possível enviar o comentário.', 'erro');
+    }
+
+    // ─── DISPARO DE NOTIFICAÇÕES (SINO) ───
+    const t = getTarefa(id);
+    if (t) {
+        // Envia para o responsável + colaboradoresEmails + criador (se diferente)
+        const pessoasNotificadas = new Set([t.responsavelEmail, ...(t.colaboradoresEmails || []), t.criadoPorEmail]);
+        
+        // Retira a própria pessoa que comentou
+        pessoasNotificadas.delete(state.user.email);
+
+        if (pessoasNotificadas.size > 0) {
+            const disparos = Array.from(pessoasNotificadas).map(email => 
+                addDoc(collection(db, 'notificacoes'), {
+                    usuario_destino: email,
+                    mensagem: `Nova observação de ${primeiroNome(state.user.nome || state.user.email)} na tarefa "${t.titulo}"`,
+                    lida: false,
+                    data_criacao: serverTimestamp(),
+                    rota: {
+                        modulo: 'tarefas',
+                        item_id: id,
+                        comentario_id: comentarioRef.id // Permite o scroll direto
+                    }
+                })
+            );
+            Promise.all(disparos).catch(err => console.error('Erro ao enviar notificações:', err));
+        }
+    }
 }
