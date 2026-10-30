@@ -29,6 +29,7 @@ const acoesCore = {
 };
 
 export function initEvents() {
+    // ─── AQUI ESTÁ A LIGAÇÃO: ...acoesNotificacoes adicionado ───
     const acoes = { ...acoesCore, ...acoesViews, ...acoesTarefas, ...acoesRotina, ...acoesDores, ...acoesNotificacoes };
     const submits = { ...submitsViews, ...submitsTarefas, ...submitsRotina, ...submitsDores };
 
@@ -51,7 +52,7 @@ export function initEvents() {
         const el = e.target.closest('[data-action]');
         if (el) await acoes[el.dataset.action]?.(el.dataset, el);
 
-        // ─── NOVO: FECHAR SINO AO CLICAR FORA ───
+        // ─── LÓGICA PARA FECHAR O MENU DO SINO AO CLICAR FORA ───
         const drop = document.getElementById('dropdown-notificacoes');
         if (drop && !drop.classList.contains('hidden')) {
             const clicouNoSino = e.target.closest('[data-action="toggle-notificacoes"]');
@@ -59,6 +60,15 @@ export function initEvents() {
             if (!clicouNoSino && !clicouNoMenu) {
                 drop.classList.add('hidden');
             }
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[role=button][data-action]')) { e.preventDefault(); e.target.click(); return; }
+        if (e.key === 'Escape') { if (!$('#modal').classList.contains('hidden')) fecharModal(); else fecharDrawer(); }
+        if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.target.id === 'dt-comentario' && state.drawerTaskId) { e.preventDefault(); enviarComentario(state.drawerTaskId); }
+            if (e.target.id === 'rt-comentario' && state.drawerRotinaId) { e.preventDefault(); comentarRotina(state.drawerRotinaId); }
         }
     });
 
