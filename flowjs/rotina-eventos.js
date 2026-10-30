@@ -73,12 +73,15 @@ export const acoesRotina = {
 export const submitsRotina = {
     'form-rotina': async (btn) => {
         const emails = colabsMarcados('nr-colab').filter(em => em !== state.user.email);
-        await addDoc(collection(db, 'rotinas'), {
+        const tituloAtividade = $('#nr-titulo').value.trim();
+        
+        // 1. Cria a rotina e guarda a referência (docRef) para pegar o ID gerado
+        const docRef = await addDoc(collection(db, 'rotinas'), {
             data: $('#nr-data').value,
             prazo: $('#nr-prazo').value || null,
             categoria: $('#nr-cat').value,
             cor: document.querySelector('input[name=nr-cor]:checked')?.value || PALETA[0],
-            titulo: $('#nr-titulo').value.trim(),
+            titulo: tituloAtividade,
             descricao: $('#nr-desc').value.trim(),
             acesso: $('#nr-acesso').value.trim(),
             observacao: $('#nr-obs').value.trim(),
@@ -92,6 +95,25 @@ export const submitsRotina = {
             criadoEm: serverTimestamp(),
             atualizadoEm: serverTimestamp()
         });
+
+        // 2. Dispara notificação para cada colaborador marcado
+        if (emails.length > 0) {
+            const promessasNotificacoes = emails.map(email => 
+                addDoc(collection(db, 'notificacoes'), {
+                    usuario_destino: email,
+                    mensagem: `Você foi adicionado à atividade: "${tituloAtividade}"`,
+                    lida: false,
+                    data_criacao: serverTimestamp(),
+                    rota: {
+                        modulo: 'rotina',
+                        item_id: docRef.id,
+                        comentario_id: null // Não há comentário específico para focar
+                    }
+                })
+            );
+            await Promise.all(promessasNotificacoes);
+        }
+
         toast(emails.length ? `Atividade inserida e compartilhada com ${emails.map(em => primeiroNome(getMembro(em).nome)).join(', ')}.` : 'Atividade inserida na rotina com sucesso!');
         ['#nr-titulo', '#nr-desc', '#nr-acesso', '#nr-obs', '#nr-prazo'].forEach(s => { $(s).value = ''; });
         document.querySelectorAll('input[name=nr-colab]').forEach(cb => { cb.checked = false; });
