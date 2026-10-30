@@ -46,6 +46,24 @@
                 </nav>
 
                 <div class="flex items-center gap-2 shrink-0 order-2 lg:order-3">
+                    
+                    <!-- ─── NOVO: SINO DE NOTIFICAÇÕES ─── -->
+                    <div class="relative flex items-center">
+                        <button data-action="toggle-notificacoes" class="relative p-2 text-gray-200 hover:text-white transition-colors mr-1" title="Notificações">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span id="badge-notificacoes" class="absolute top-0 right-0 hidden bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-leveros-verde1">0</span>
+                        </button>
+
+                        <div id="dropdown-notificacoes" class="hidden absolute right-0 top-12 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden flex-col max-h-96">
+                            <div class="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-gray-700 text-sm">Notificações</h3>
+                                <button data-action="marcar-todas-lidas" class="text-xs text-leveros-azul hover:underline">Marcar como lidas</button>
+                            </div>
+                            <div id="lista-notificacoes" class="overflow-y-auto flex-1 p-2 space-y-1"></div>
+                        </div>
+                    </div>
+                    <!-- ───────────────────────────────── -->
+
                     <button data-action="exportar-excel" title="Gerar Relatório" class="bg-gray-100 border border-gray-300 text-gray-700 hover:bg-gray-200 px-2.5 py-1.5 rounded-lg font-semibold text-sm flex items-center gap-2 transition-colors">
                         <i class="fas fa-file-excel text-green-600"></i> <span class="hidden xl:inline">Gerar Relatório</span>
                     </button>
