@@ -1,4 +1,5 @@
 // Eventos globais: um único ponto de entrada que despacha para os mapas de cada módulo.
+import { acoesNotificacoes } from './notificacoes.js';
 import { auth, provider, signInWithPopup, signOut } from './firebase.js';
 import { mostrarErroLogin } from './auth.js';
 import { acoesDores, changeDores, inputDores, submitsDores } from './dores-eventos.js';
@@ -28,7 +29,7 @@ const acoesCore = {
 };
 
 export function initEvents() {
-    const acoes = { ...acoesCore, ...acoesViews, ...acoesTarefas, ...acoesRotina, ...acoesDores };
+    const acoes = { ...acoesCore, ...acoesViews, ...acoesTarefas, ...acoesRotina, ...acoesDores, ...acoesNotificacoes };
     const submits = { ...submitsViews, ...submitsTarefas, ...submitsRotina, ...submitsDores };
 
     document.addEventListener('submit', async (e) => {
@@ -49,14 +50,15 @@ export function initEvents() {
     document.addEventListener('click', async (e) => {
         const el = e.target.closest('[data-action]');
         if (el) await acoes[el.dataset.action]?.(el.dataset, el);
-    });
 
-    document.addEventListener('keydown', (e) => {
-        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('[role=button][data-action]')) { e.preventDefault(); e.target.click(); return; }
-        if (e.key === 'Escape') { if (!$('#modal').classList.contains('hidden')) fecharModal(); else fecharDrawer(); }
-        if (e.key === 'Enter' && !e.shiftKey) {
-            if (e.target.id === 'dt-comentario' && state.drawerTaskId) { e.preventDefault(); enviarComentario(state.drawerTaskId); }
-            if (e.target.id === 'rt-comentario' && state.drawerRotinaId) { e.preventDefault(); comentarRotina(state.drawerRotinaId); }
+        // ─── NOVO: FECHAR SINO AO CLICAR FORA ───
+        const drop = document.getElementById('dropdown-notificacoes');
+        if (drop && !drop.classList.contains('hidden')) {
+            const clicouNoSino = e.target.closest('[data-action="toggle-notificacoes"]');
+            const clicouNoMenu = e.target.closest('#dropdown-notificacoes');
+            if (!clicouNoSino && !clicouNoMenu) {
+                drop.classList.add('hidden');
+            }
         }
     });
 
