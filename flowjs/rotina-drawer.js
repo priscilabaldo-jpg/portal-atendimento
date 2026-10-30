@@ -15,7 +15,8 @@ import { $, esc, fmtBR, fmtDataHora, primeiroNome, tsMillis } from './utils.js';
 const comentariosRef = (id) => collection(db, 'rotinas', id, 'comentarios');
 
 async function logRotina(id, texto, tipo = 'sistema') {
-    await addDoc(comentariosRef(id), { tipo, texto, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
+    // MODIFICADO: Retornar a Promise para termos acesso ao ID do comentário gerado
+    return await addDoc(comentariosRef(id), { tipo, texto, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp() });
 }
 
 function cabecalhoRotinaHTML(r) {
@@ -116,9 +117,45 @@ export async function comentarRotina(id) {
     const ta = $('#rt-comentario'), texto = ta?.value.trim();
     if (!texto) return;
     ta.value = ''; ta.focus();
-    try { await logRotina(id, texto, 'comentario'); }
-    catch (e) { ta.value = texto; return toast('Não foi possível enviar o comentário (verifique as regras do Firestore).', 'erro'); }
+
+    let comentarioRef;
+    try { 
+        comentarioRef = await logRotina(id, texto, 'comentario'); 
+    } catch (e) { 
+        ta.value = texto; 
+        return toast('Não foi possível enviar o comentário (verifique as regras do Firestore).', 'erro'); 
+    }
+    
     try { await updateDoc(doc(db, 'rotinas', id), { comentariosCount: increment(1) }); } catch (e) { /* contador é opcional */ }
+
+    // MODIFICADO: Disparo de notificações para o sino
+    const r = state.rotinas.find(x => x.id === id);
+    if (r) {
+        // Envia para o responsável + colaboradoresEmails
+        const pessoasNotificadas = new Set([r.responsavelEmail, ...(r.colaboradoresEmails || [])]);
+        
+        // Retira a própria pessoa que comentou para ela não receber notificação dela mesma
+        pessoasNotificadas.delete(state.user.email);
+
+        if (pessoasNotificadas.size > 0) {
+            const disparos = Array.from(pessoasNotificadas).map(email => 
+                addDoc(collection(db, 'notificacoes'), {
+                    usuario_destino: email,
+                    mensagem: `Novo comentário de ${primeiroNome(state.user.nome || state.user.email)} na atividade "${r.titulo || r.descricao}"`,
+                    lida: false,
+                    data_criacao: serverTimestamp(),
+                    rota: {
+                        modulo: 'rotina',
+                        item_id: id,
+                        comentario_id: comentarioRef.id
+                    }
+                })
+            );
+            
+            // Dispara as notificações sem travar o restante da função
+            Promise.all(disparos).catch(err => console.error('Erro ao enviar notificações:', err));
+        }
+    }
 }
 
 // Finalizar / reabrir (usado pelo check do card e do painel)
