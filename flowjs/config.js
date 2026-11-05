@@ -11,5 +11,5 @@ export const ADMINS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.
 
 export const EMAIL_CONFIG = {
     provider: 'emailjs',
-    emailjs: { serviceId: 'service_bs7w0ss', templateId: 'template_oet9kkt', publicKey: 'AUZIT5qioj8fQ_cQ8' }
+    emailjs: { serviceId: '', templateId: 'template_oet9kkt', publicKey: 'AUZIT5qioj8fQ_cQ8' }
 };
