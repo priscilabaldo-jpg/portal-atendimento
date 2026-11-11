@@ -1,5 +1,5 @@
 // Tarefas — painel lateral de detalhe + comentários.
-import { addDoc, collection, db, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc, doc } from './firebase.js'; // <-- Adicionado imports necessários
+import { addDoc, collection, db, increment, onSnapshot, orderBy, query, serverTimestamp, updateDoc, doc } from './firebase.js';
 import { PRIORIDADES, STATUS } from './constants.js';
 import { avatar, badgeSituacao, chipProjeto, getMembro, getOrigemTarefa, getTarefa, optionsCron, optionsMembros, podeExcluirTarefa, toast } from './helpers.js';
 import { fecharModal } from './modals.js';
@@ -47,6 +47,12 @@ export function abrirDrawer(id) {
                     ${atuar ? `<button data-action="salvar-tarefa" data-id="${esc(t.id)}" class="px-4 py-2 bg-leveros-verde1 text-white rounded-lg hover:leveros-verde2 font-medium text-sm"><i class="fas fa-save mr-1"></i> Salvar alterações</button>` : ''}
                 </div>
             </div>
+
+            <!-- NOVA SESSÃO: LINHA DO TEMPO & SUBTAREFAS -->
+            <div id="dr-timeline" class="p-5 border-b bg-gray-50/30">
+                ${timelineHTML(t)}
+            </div>
+            
             <div class="p-5 border-b" id="dr-colab">${colabSectionHTML(t)}</div>
             <div class="p-5">
                 <h4 class="font-bold text-gray-700 mb-3 text-sm"><i class="far fa-comments text-leveros-verde2 mr-1"></i> Observações e questionamentos</h4>
@@ -73,11 +79,9 @@ export function abrirDrawer(id) {
 export function feedItemHTML(c) {
     const quando = fmtDataHora(tsMillis(c.criadoEm));
     if (c.tipo === 'sistema') {
-        // ─── INSERIDO id="${c.id}" NA DIV ───
         return `<div id="${c.id}" class="flex items-start gap-2 text-xs text-gray-500 bg-gray-50 rounded-lg px-3 py-2"><i class="fas fa-clock-rotate-left mt-0.5 text-gray-400"></i><div><span class="font-semibold">${esc(getMembro(c.autorEmail).nome)}</span> ${esc(c.texto)} <span class="text-gray-400">· ${quando}</span></div></div>`;
     }
     const minha = c.autorEmail === state.user.email;
-    // ─── INSERIDO id="${c.id}" NA DIV ───
     return `<div id="${c.id}" class="flex gap-2.5 ${minha ? 'flex-row-reverse' : ''}">
         ${avatar(c.autorEmail, 'w-8 h-8 text-xs')}
         <div class="max-w-[80%] ${minha ? 'bg-leveros-verde4/60' : 'bg-gray-100'} rounded-xl px-3 py-2">
@@ -93,9 +97,6 @@ export function fecharDrawer() {
     const d = $('#drawer'); if (d) d.classList.add('hidden');
 }
 
-
-// Se você já tem a função de comentar e disparar o log no tarefas-eventos, não precisa usar esta.
-// Caso contrário, adicione a chamada no seu events para `data-action="enviar-comentario"`
 export async function comentarTarefa(id) {
     const ta = $('#dt-comentario'), texto = ta?.value.trim();
     if (!texto) return;
@@ -116,13 +117,9 @@ export async function comentarTarefa(id) {
         return toast('Não foi possível enviar o comentário.', 'erro');
     }
 
-    // ─── DISPARO DE NOTIFICAÇÕES (SINO) ───
     const t = getTarefa(id);
     if (t) {
-        // Envia para o responsável + colaboradoresEmails + criador (se diferente)
         const pessoasNotificadas = new Set([t.responsavelEmail, ...(t.colaboradoresEmails || []), t.criadoPorEmail]);
-        
-        // Retira a própria pessoa que comentou
         pessoasNotificadas.delete(state.user.email);
 
         if (pessoasNotificadas.size > 0) {
@@ -135,11 +132,77 @@ export async function comentarTarefa(id) {
                     rota: {
                         modulo: 'tarefas',
                         item_id: id,
-                        comentario_id: comentarioRef.id // Permite o scroll direto
+                        comentario_id: comentarioRef.id 
                     }
                 })
             );
             Promise.all(disparos).catch(err => console.error('Erro ao enviar notificações:', err));
         }
+    }
+}
+
+// ==========================================
+// FUNÇÕES DE UI DAS SUBTAREFAS
+// ==========================================
+
+export function timelineHTML(t) {
+    const subtarefas = t.subtarefas || [];
+    
+    let html = `
+        <h4 class="font-bold text-gray-700 mb-4 text-sm"><i class="fas fa-stream text-leveros-verde2 mr-1"></i> Linha do Tempo & Etapas</h4>
+        
+        <div class="flex gap-2 mb-6">
+            <input type="text" id="input-nova-subtarefa" placeholder="Adicionar nova etapa..." class="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-leveros-azul">
+            <button data-action="nova-subtarefa" data-tarefa-id="${esc(t.id)}" class="bg-leveros-verde1 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-leveros-verde2 transition-colors">
+                Adicionar
+            </button>
+        </div>
+
+        <div class="relative border-l-2 border-gray-200 ml-3 space-y-5">
+            <div class="relative pl-6">
+                <div class="absolute w-3 h-3 rounded-full -left-[7px] top-1.5 bg-leveros-azul ring-4 ring-gray-50"></div>
+                <p class="text-xs text-gray-500 font-semibold">Tarefa iniciada</p>
+            </div>
+    `;
+
+    subtarefas.forEach(sub => {
+        const isConcluida = sub.status === 'concluida';
+        const corBolinha = isConcluida ? 'bg-leveros-verde1' : 'bg-gray-300';
+        const checked = isConcluida ? 'checked' : '';
+        const textoRiscado = isConcluida ? 'line-through text-gray-400' : 'text-gray-700';
+
+        html += `
+            <div class="relative pl-6 flex items-start gap-3 group">
+                <div class="absolute w-3 h-3 rounded-full -left-[7px] top-1.5 ${corBolinha} ring-4 ring-gray-50 transition-colors duration-300"></div>
+                
+                <input type="checkbox" 
+                       data-action="toggle-subtarefa" 
+                       data-tarefa-id="${esc(t.id)}" 
+                       data-sub-id="${esc(sub.id)}" 
+                       class="mt-1 w-4 h-4 text-leveros-verde1 rounded border-gray-300 focus:ring-leveros-verde1 cursor-pointer"
+                       ${checked}>
+                <div class="flex-1">
+                    <p class="text-sm font-medium ${textoRiscado}">${esc(sub.titulo)}</p>
+                </div>
+                
+                <!-- Botão de excluir que aparece ao passar o mouse (group-hover) -->
+                <button data-action="excluir-subtarefa" data-tarefa-id="${esc(t.id)}" data-sub-id="${esc(sub.id)}" class="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" title="Remover etapa">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+    return html;
+}
+
+export function atualizarTimelineNoDrawer(id) {
+    const container = $('#dr-timeline');
+    if (!container) return;
+    
+    const t = getTarefa(id);
+    if (t) {
+        container.innerHTML = timelineHTML(t);
     }
 }
