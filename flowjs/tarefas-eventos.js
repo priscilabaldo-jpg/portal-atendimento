@@ -3,8 +3,9 @@ import { addDoc, collection, db, serverTimestamp } from './firebase.js';
 import { colabsMarcados, getMembro, getOrigemTarefa, getTarefa, optionsCron, toast } from './helpers.js';
 import { adicionarPessoaRapida, fecharModal, modalTarefa } from './modals.js';
 import { state } from './state.js';
-import { adicionarColaborador, enviarComentario, excluirTarefa, logAtividade, moverStatus, notificarAtribuicao, removerColaborador, salvarTarefa } from './tarefas-acoes.js';
-import { abrirDrawer } from './tarefas-drawer.js';
+// <-- Note as 3 novas funções importadas no final desta linha:
+import { adicionarColaborador, enviarComentario, excluirTarefa, logAtividade, moverStatus, notificarAtribuicao, removerColaborador, salvarTarefa, adicionarSubtarefa, atualizarSubtarefasArray } from './tarefas-acoes.js';
+import { abrirDrawer, atualizarTimelineNoDrawer } from './tarefas-drawer.js';
 import { atualizarCamposSolicitacao, cancelarSolicitacao, criarSolicitacao, modalSolicitacao, responderSolicitacao } from './tarefas-solicitacoes.js';
 import { $, fmtBR } from './utils.js';
 
@@ -20,7 +21,49 @@ export const acoesTarefas = {
     'remover-colab': (d) => removerColaborador(d.id, d.email),
     'salvar-tarefa': (d) => salvarTarefa(d.id),
     'enviar-comentario': (d) => enviarComentario(d.id),
-    'excluir-tarefa': (d) => excluirTarefa(d.id)
+    'excluir-tarefa': (d) => excluirTarefa(d.id),
+
+    // ==========================================
+    // AÇÕES DAS SUBTAREFAS
+    // ==========================================
+    'nova-subtarefa': async (d, event) => {
+        const input = document.getElementById('input-nova-subtarefa');
+        const titulo = input?.value.trim();
+        const btn = event.target.closest('button');
+        
+        if (titulo && btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            await adicionarSubtarefa(d.tarefaId, titulo);
+            
+            // Não precisamos recarregar todo o drawer manualmente aqui, 
+            // pois se você estiver usando onSnapshot na Tarefa, ela atualizará o UI sozinha.
+            // Mas caso a sua tarefa não escute as mudanças automaticamente, você chama:
+            // atualizarTimelineNoDrawer(d.tarefaId);
+            
+            input.value = '';
+            btn.disabled = false;
+            btn.textContent = 'Adicionar';
+        }
+    },
+    
+    'excluir-subtarefa': async (d) => {
+        if (!confirm('Deseja excluir esta etapa da linha do tempo?')) return;
+        
+        const t = getTarefa(d.tarefaId);
+        if (!t || !t.subtarefas) return;
+        
+        // Remove do array local
+        const novoArray = t.subtarefas.filter(s => s.id !== d.subId);
+        
+        // Salva no Firebase
+        await atualizarSubtarefasArray(d.tarefaId, novoArray);
+        
+        // Atualiza a tela (útil se você não usa Snapshot dinâmico nas tarefas)
+        atualizarTimelineNoDrawer(d.tarefaId);
+        toast('Etapa removida.');
+    }
 };
 
 export const submitsTarefas = {
@@ -45,7 +88,8 @@ export const submitsTarefas = {
             prazo: $('#nt-prazo').value, prioridade: $('#nt-prio').value, status: $('#nt-status').value,
             historicoPrazos: [], comentariosCount: 0,
             criadoPorEmail: state.user.email, criadoPorNome: state.user.nome,
-            criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp()
+            criadoEm: serverTimestamp(), atualizadoEm: serverTimestamp(),
+            subtarefas: [] // Inicializa o array de subtarefas já na criação da tarefa
         };
         const ref = await addDoc(collection(db, 'tarefas'), dados);
         await logAtividade(ref.id, `criou a tarefa e atribuiu a ${dados.responsavelNome} (prazo ${fmtBR(dados.prazo)})`);
@@ -55,8 +99,9 @@ export const submitsTarefas = {
     }
 };
 
-export const changeTarefas = (e) => {
-    const { id, value } = e.target;
+export const changeTarefas = async (e) => {
+    const { id, value, dataset, checked } = e.target;
+    
     if (id === 'sl-tipo') atualizarCamposSolicitacao();
     if (id === 'nt-projeto') $('#nt-cron').innerHTML = optionsCron(value) || '<option value="">Geral (será criado)</option>';
     if (id === 'nt-resp') {
@@ -70,5 +115,30 @@ export const changeTarefas = (e) => {
     if (id === 'dt-prazo') {
         const t = getTarefa(state.drawerTaskId);
         $('#dt-motivo-wrap').classList.toggle('hidden', !t || value === t.prazo);
+    }
+
+    // ==========================================
+    // CHECKBOX DA SUBTAREFA (MUDANÇA DE STATUS)
+    // ==========================================
+    if (dataset && dataset.action === 'toggle-subtarefa') {
+        const tarefaId = dataset.tarefaId;
+        const subId = dataset.subId;
+        const t = getTarefa(tarefaId);
+        
+        if (!t || !t.subtarefas) return;
+        
+        // Clona e atualiza o array
+        const novoArray = t.subtarefas.map(s => {
+            if (s.id === subId) {
+                return { ...s, status: checked ? 'concluida' : 'pendente' };
+            }
+            return s;
+        });
+        
+        // Dispara a gravação pro Firebase
+        await atualizarSubtarefasArray(tarefaId, novoArray);
+        
+        // Atualiza a tela (útil se você não usa Snapshot dinâmico nas tarefas)
+        atualizarTimelineNoDrawer(tarefaId);
     }
 };
