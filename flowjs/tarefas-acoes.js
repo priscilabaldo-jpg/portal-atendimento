@@ -208,3 +208,50 @@ export async function excluirProjeto(id) {
         toast('Projeto excluído.'); navegar('projetos');
     } catch (e) { /* erro tratado silenciosamente */ toast('Sem permissão para excluir o projeto.', 'erro'); }
 }
+
+// ==========================================
+// NOVAS FUNÇÕES PARA SUBTAREFAS
+// ==========================================
+
+export async function adicionarSubtarefa(tarefaId, titulo) {
+    if (!titulo) return null;
+    
+    // Gera um ID único compatível com a maioria dos navegadores modernos
+    const subId = typeof crypto.randomUUID === 'function' 
+        ? crypto.randomUUID() 
+        : Date.now().toString(36) + Math.random().toString(36).substring(2);
+
+    const novaSubtarefa = {
+        id: subId,
+        titulo: titulo,
+        status: 'pendente',
+        criadoEm: new Date().toISOString()
+    };
+
+    try {
+        await updateDoc(doc(db, 'tarefas', tarefaId), {
+            subtarefas: arrayUnion(novaSubtarefa),
+            atualizadoEm: serverTimestamp()
+        });
+        
+        await logAtividade(tarefaId, `adicionou a etapa "${titulo}" na linha do tempo`);
+        toast('Subtarefa adicionada.');
+        return novaSubtarefa;
+    } catch (e) {
+        console.error("Erro ao adicionar subtarefa:", e);
+        toast('Erro ao adicionar subtarefa.', 'erro');
+        return null;
+    }
+}
+
+export async function atualizarSubtarefasArray(tarefaId, arrayAtualizado) {
+    try {
+        await updateDoc(doc(db, 'tarefas', tarefaId), {
+            subtarefas: arrayAtualizado,
+            atualizadoEm: serverTimestamp()
+        });
+    } catch (e) {
+        console.error("Erro ao atualizar status da subtarefa:", e);
+        toast('Erro ao atualizar status.', 'erro');
+    }
+}
