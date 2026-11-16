@@ -2606,5 +2606,69 @@
   "pagina": "20",
   "conteudo": "Checklist antes de finalizar um CSDEVOL: 1) Fluxo de Documentos com apenas 1 linha 'Venda Normal' (sem fatura/remessa). 2) BloqRemessa aplicado e gravado com motivo correto. 3) VA02 confirmada como NÃO aberta (própria ou de terceiros). 4) Número do documento copiado corretamente. 5) ZDEVOL preenchido com itens e quantidades revisados. 6) Ticket/CRM atualizado com evidências e encaminhado ao BackOffice. Material completo (slides): https://docs.google.com/presentation/d/1Zky4Tr7Lj47J25hittyil3u1sL-sRjmt5H2uIDZH3zY/edit?slide=id.h65b5d28d6bfb2336_3_262#slide=id.h65b5d28d6bfb2336_3_262",
   "id": 159.7
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMAS DE ENERGIA: O QUE SÃO E PARA QUE SERVEM",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Os sistemas de energia monofásico, bifásico e trifásico são as três configurações mais comuns de fornecimento de energia elétrica em residências, comércios e indústrias. Cada um tem características distintas que determinam como a energia é transmitida e utilizada, além de suportarem potências diferentes. Resumo: Monofásico = 2 fios (1 fase + 1 neutro), até 8 kW. Bifásico = 3 fios (2 fases + 1 neutro), de 12 a 25 kW. Trifásico = 4 fios (3 fases + 1 neutro), de 25 a 75 kW.",
+  "id": 160.1
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMAS DE ENERGIA: POR QUE EXISTEM SISTEMAS DIFERENTES",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Cada sistema é mais adequado a certas demandas de consumo e situações: quanto maior a demanda de energia de um local, mais sólido precisa ser o fornecimento. Por isso é importante saber se a residência ou estabelecimento é alimentado por sistema monofásico, bifásico ou trifásico, para garantir a segurança e o bom funcionamento dos equipamentos elétricos utilizados.",
+  "id": 160.2
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMA MONOFÁSICO: CARACTERÍSTICAS, INDICAÇÃO E DESVANTAGENS",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Comum em residências pela simplicidade e economia para demandas baixas. Opera com dois fios: um fase e um neutro. Tensão máxima de 127V na maior parte do Brasil e 220V em alguns estados. Potência limitada a 8 kW. Ideal para: residências ou pequenos estabelecimentos com baixo consumo, onde poucos aparelhos são usados ao mesmo tempo; locais com instalações elétricas simples e orçamento limitado. Desvantagens: pode apresentar instabilidade com alto consumo simultâneo (ex.: ligar chuveiro e ar-condicionado juntos pode desarmar o disjuntor); vem perdendo espaço pela alta potência exigida por equipamentos modernos.",
+  "id": 160.3
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMA BIFÁSICO: CARACTERÍSTICAS E INDICAÇÃO",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Opera com dois fios fase e um fio neutro (um cabo a mais que o monofásico). Potência máxima entre 12 kW e 25 kW. Pode ter saídas de 127V e 220V nas tomadas. Ideal para: estabelecimentos comerciais maiores, residências com maior demanda de energia e regiões rurais onde é preciso operar motores e outros equipamentos que exigem mais energia.",
+  "id": 160.4
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMA TRIFÁSICO: CARACTERÍSTICAS E INDICAÇÃO",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Considerado o mais estável e potente. Composto por quatro fios: três fases e um neutro. Tensão máxima também pode ser 127V e 220V, mas a capacidade de fornecer alta potência é muito maior: de 25 kW a 75 kW. Ideal para: indústrias, grandes empresas e estabelecimentos de alto consumo, para operar maquinários e equipamentos; residências modernas e edifícios de alto padrão com alto consumo (piscinas, ares-condicionados, chuveiros elétricos).",
+  "id": 160.5
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "SISTEMAS DE ENERGIA: TABELA COMPARATIVA (MONO x BI x TRI)",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Fios: Monofásico 2 (fase e neutro) | Bifásico 3 (duas fases e neutro) | Trifásico 4 (três fases e neutro). Tensão: Monofásico 127V (maior parte do Brasil) ou 220V (alguns estados) | Bifásico 127V e 220V | Trifásico 127V e 220V. Potência: Monofásico até 8 kW | Bifásico 12 a 25 kW | Trifásico 25 a 75 kW. Ideal para: Monofásico = residências e pequenos comércios de baixo consumo | Bifásico = comércios maiores, residências de maior demanda e áreas rurais | Trifásico = indústrias, grandes empresas e residências/edifícios de alto padrão.",
+  "id": 160.6
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "COMO SABER QUAL É O SISTEMA ELÉTRICO: PASSO 1 (QUADRO DE DISTRIBUIÇÃO)",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Para descobrir se o local é monofásico, bifásico ou trifásico, verifique o quadro de distribuição e conte os disjuntores principais: Monofásico = geralmente apenas um disjuntor principal. Bifásico = dois disjuntores principais. Trifásico = três disjuntores principais.",
+  "id": 160.7
+ },
+ {
+  "secao": "18. Sistemas de Energia Eletrica (Monofasico, Bifasico e Trifasico)",
+  "titulo": "COMO SABER QUAL É O SISTEMA ELÉTRICO: PASSO 2 (FIOS NA ENTRADA DE ENERGIA)",
+  "fonte": "O que são os sistemas de energia e para que servem.docx",
+  "pagina": "1",
+  "conteudo": "Analise a quantidade de fios na entrada de energia: Monofásico = dois fios (fase e neutro). Bifásico = três fios (duas fases e um neutro). Trifásico = quatro fios (três fases e um neutro). Use junto com o Passo 1 (quantidade de disjuntores principais no quadro de distribuição) para confirmar o sistema.",
+  "id": 160.8
  }
 ]
