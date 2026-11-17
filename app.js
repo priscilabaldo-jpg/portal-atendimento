@@ -1812,11 +1812,11 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-onAuthStateChanged(auth, async user => {
-  // CORREÇÃO 1: Adicionado user.email.toLowerCase() para evitar recusa por letra maiúscula
-  if (user && user.email && user.email.toLowerCase().endsWith('@leveros.com.br')) {
+oonAuthStateChanged(auth, async user => {
+  // Alterado: Agora verifica apenas se o usuário está logado, sem restringir o domínio
+  if (user) {
     currentUser = user;
-    const emailLogado = user.email.toLowerCase();
+    const emailLogado = user.email ? user.email.toLowerCase() : '';
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
     // ATUALIZAÇÃO DA VARIÁVEL DE ADMIN
@@ -1905,19 +1905,13 @@ onAuthStateChanged(auth, async user => {
     }
     
   } else {
+    // Alterado: Removeu a parte que deslogava forçadamente usuários fora do domínio
     currentUser = null;
     const loginArea = document.getElementById('login-area');
     
     if (loginArea) {
       loginArea.style.display = 'flex';
       if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
-      
-      // CORREÇÃO 2: Verificando toLowerCase() antes de exibir a mensagem de erro de domínio
-      if (user && user.email && !user.email.toLowerCase().endsWith('@leveros.com.br')) {
-        const loginError = document.getElementById('loginError');
-        if (loginError) loginError.classList.add('visible');
-        signOut(auth);
-      }
     } else {
       window.location.href = 'index.html';
     }
