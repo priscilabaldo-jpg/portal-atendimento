@@ -1701,7 +1701,8 @@ async function sincronizarPontosDiarios(user) {
 }
 
 onAuthStateChanged(auth, async user => {
-  if (user && user.email.endsWith('@leveros.com.br')) {
+  // CORREÇÃO 1: Adicionado user.email.toLowerCase() para evitar recusa por letra maiúscula
+  if (user && user.email && user.email.toLowerCase().endsWith('@leveros.com.br')) {
     currentUser = user;
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
@@ -1769,7 +1770,6 @@ onAuthStateChanged(auth, async user => {
     
     if (lojinhaContent) {
       carregarVitrine();
-      // ATUALIZAÇÃO DA FUNÇÃO DO CONTADOR
       window.iniciarContadorLojinha(isAdminGlobal);
     }
 
@@ -1800,7 +1800,8 @@ onAuthStateChanged(auth, async user => {
       loginArea.style.display = 'flex';
       if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
       
-      if (user && !user.email.endsWith('@leveros.com.br')) {
+      // CORREÇÃO 2: Verificando toLowerCase() antes de exibir a mensagem de erro de domínio
+      if (user && user.email && !user.email.toLowerCase().endsWith('@leveros.com.br')) {
         const loginError = document.getElementById('loginError');
         if (loginError) loginError.classList.add('visible');
         signOut(auth);
@@ -1811,13 +1812,117 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-const loginBtn = document.getElementById('loginBtn');
-if (loginBtn) {
-  loginBtn.onclick = () => {
-    document.getElementById('loginError').classList.remove('visible');
-    signInWithPopup(auth, provider).catch(() => document.getElementById('loginError').classList.add('visible'));
-  };
-}
+onAuthStateChanged(auth, async user => {
+  // CORREÇÃO 1: Adicionado user.email.toLowerCase() para evitar recusa por letra maiúscula
+  if (user && user.email && user.email.toLowerCase().endsWith('@leveros.com.br')) {
+    currentUser = user;
+    const emailLogado = user.email.toLowerCase();
+    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
+
+    // ATUALIZAÇÃO DA VARIÁVEL DE ADMIN
+    isAdminGlobal = isAdmin;
+
+    const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
+    let containerAdminAtivo = null;
+
+    paginasAdminIDs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) containerAdminAtivo = el;
+    });
+
+    if (containerAdminAtivo && !isAdmin) {
+        alert("Acesso negado. Esta é uma área restrita a gestores.");
+        window.location.href = 'index.html';
+        return; 
+    }
+
+    const loginError = document.getElementById('loginError');
+    const loginArea = document.getElementById('login-area');
+    
+    const lojinhaContent = document.getElementById('lojinha-content');
+    const conteudoArea = document.getElementById('conteudo') || 
+                         document.getElementById('timeline-content') || 
+                         document.getElementById('informativos-content') || 
+                         document.getElementById('materiais-content') || 
+                         lojinhaContent ||
+                         containerAdminAtivo;
+    
+    if (loginError) loginError.classList.remove('visible');
+    if (loginArea) loginArea.style.display = 'none';
+    if (conteudoArea) conteudoArea.style.display = 'block';
+    
+    const welcomeUser = document.getElementById('welcomeUser');
+    if (welcomeUser) welcomeUser.textContent = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
+    
+    const feedbackNome = document.getElementById('feedbackNome');
+    if (feedbackNome) feedbackNome.value = user.displayName || '';
+    
+    const feedbackEmail = document.getElementById('feedbackEmail');
+    if (feedbackEmail) feedbackEmail.value = user.email || '';
+
+    const myAvatar = document.getElementById('myAvatarGlobal');
+    if (myAvatar) myAvatar.innerHTML = renderAvatar(user.displayName, user.photoURL);
+
+    const menuAdminContainer = document.getElementById('menuAdminContainer');
+    const navAdminMobile = document.getElementById('navAdminMobile');
+    const btnAdmin = document.getElementById('btnAdmin');
+
+    if (isAdmin) {
+      if (btnAdmin) btnAdmin.style.display = 'flex';
+      if (menuAdminContainer) menuAdminContainer.style.display = 'block';
+      if (navAdminMobile) navAdminMobile.style.display = 'block';
+    } else {
+      if (btnAdmin) btnAdmin.style.display = 'none';
+      if (menuAdminContainer) menuAdminContainer.style.display = 'none';
+      if (navAdminMobile) navAdminMobile.style.display = 'none';
+    }
+    
+    registrarAcesso(user);
+    carregarAvisos(isAdmin);
+    
+    if (lojinhaContent) {
+      carregarVitrine();
+      window.iniciarContadorLojinha(isAdminGlobal);
+    }
+
+    if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
+    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); 
+    
+    if (document.getElementById('tabelaMatriz') && isAdmin) {
+      let totalTemp = 0;
+      for (let cat in ORCAMENTO_TEMPORADA) { totalTemp += ORCAMENTO_TEMPORADA[cat]; }
+      const elemTemp = document.getElementById('cardOrcamentoTemp');
+      if (elemTemp) elemTemp.textContent = formatarMoeda(totalTemp);
+      
+      carregarDadosOrcamento();
+    }
+
+    if (document.getElementById('feedListGlobal') || lojinhaContent) {
+      if(window.carregarFeed) window.carregarFeed(isAdmin);
+      if(window.carregarRanking) window.carregarRanking();
+      if(window.carregarTickerDiario) window.carregarTickerDiario();
+      await sincronizarPontosDiarios(user);
+    }
+    
+  } else {
+    currentUser = null;
+    const loginArea = document.getElementById('login-area');
+    
+    if (loginArea) {
+      loginArea.style.display = 'flex';
+      if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
+      
+      // CORREÇÃO 2: Verificando toLowerCase() antes de exibir a mensagem de erro de domínio
+      if (user && user.email && !user.email.toLowerCase().endsWith('@leveros.com.br')) {
+        const loginError = document.getElementById('loginError');
+        if (loginError) loginError.classList.add('visible');
+        signOut(auth);
+      }
+    } else {
+      window.location.href = 'index.html';
+    }
+  }
+});
 
 window.abrirModalLikes = function(curtidasEmails) {
     const modal = document.getElementById('likesModal');
