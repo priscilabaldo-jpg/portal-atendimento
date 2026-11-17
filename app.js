@@ -16,6 +16,9 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
+// Sempre mostra o seletor de contas do Google e sugere o domínio da Leveros
+provider.setCustomParameters({ prompt: 'select_account', hd: 'leveros.com.br' });
+
 const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br' , 'arinay.santos@leveros.com.br'];
 let currentUser = null;
 
@@ -27,6 +30,27 @@ let saldoAtualUsuario = 0;
 let produtosLojaCache = [];
 let isAdminGlobal = false; // Controle global de acesso Admin
 let intervaloContador = null; // Variável para controlar o relógio da Lojinha
+
+// ====================================================================
+// LOGIN COM GOOGLE (botão da tela de login)
+// ====================================================================
+const loginBtn = document.getElementById('loginBtn');
+if (loginBtn) {
+  loginBtn.addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error('Erro no login:', err.code, err.message);
+      if (err.code === 'auth/unauthorized-domain') {
+        alert('Este domínio não está autorizado no Firebase (Authentication > Settings > Authorized domains).');
+      } else if (err.code === 'auth/popup-blocked') {
+        alert('O navegador bloqueou o popup de login. Libere popups para este site.');
+      } else if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
+        alert('Não foi possível entrar. Código: ' + err.code);
+      }
+    }
+  });
+}
 
 // ====================================================================
 // CORREÇÃO EMAILJS
@@ -99,7 +123,7 @@ if (buscaEl && resultadosEl) {
         {nome:"Intergrall", categoria:"Sistema", link:"https://wwws.intergrall.com.br/callcenter/cc_login.php"},
         {nome:"Book de Atendimento N1 N2 N3", categoria:"Material", link:"materiais.html"},
         {nome:"Fluxo de Pedido não faturado", categoria:"Material", link:"materiais.html"},
-        {nome:"Como consultar pedido na BoxLink", category:"Material", link:"materiais.html"},
+        {nome:"Como consultar pedido na BoxLink", categoria:"Material", link:"materiais.html"},
         {nome:"Como usar a Uappi", categoria:"Material", link:"materiais.html"},
         {nome:"Consulta na FUP", categoria:"Material", link:"materiais.html"}
     ];
@@ -1589,7 +1613,7 @@ document.addEventListener('click', async (event) => {
   const target = event.target;
   if (!target) return;
 
-  // 👇 --- NOVO CÓDIGO: ABRIR/FECHAR DETALHES DAS METAS --- 👇
+  // ABRIR/FECHAR DETALHES DAS METAS
   if (target.classList.contains('btn-toggle-detalhes')) {
     const detalhes = target.nextElementSibling;
     if (detalhes && detalhes.classList.contains('meta-details')) {
@@ -1601,9 +1625,8 @@ document.addEventListener('click', async (event) => {
         target.textContent = 'Ocultar detalhes';
       }
     }
-    return; // Encerra aqui para não rodar o resto à toa
+    return;
   }
-  // 👆 ---------------------------------------------------- 👆
 
   if (target.classList.contains('btn-entregar')) {
     const pedidoId = target.getAttribute('data-id');
@@ -1641,6 +1664,7 @@ document.addEventListener('click', async (event) => {
     }
   }
 });
+
 // ====================================================================
 // 9. AUTENTICAÇÃO E GERENCIAMENTO DE ESTADO / PONTOS
 // ====================================================================
@@ -1701,13 +1725,12 @@ async function sincronizarPontosDiarios(user) {
 }
 
 onAuthStateChanged(auth, async user => {
-  // CORREÇÃO 1: Adicionado user.email.toLowerCase() para evitar recusa por letra maiúscula
+  // toLowerCase() evita recusa por letra maiúscula no e-mail
   if (user && user.email && user.email.toLowerCase().endsWith('@leveros.com.br')) {
     currentUser = user;
     const emailLogado = user.email.toLowerCase();
     const isAdmin = ADMIN_EMAILS.includes(emailLogado);
 
-    // ATUALIZAÇÃO DA VARIÁVEL DE ADMIN
     isAdminGlobal = isAdmin;
 
     const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
@@ -1800,118 +1823,12 @@ onAuthStateChanged(auth, async user => {
       loginArea.style.display = 'flex';
       if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
       
-      // CORREÇÃO 2: Verificando toLowerCase() antes de exibir a mensagem de erro de domínio
+      // Conta fora do domínio: mostra o aviso e desloga
       if (user && user.email && !user.email.toLowerCase().endsWith('@leveros.com.br')) {
         const loginError = document.getElementById('loginError');
         if (loginError) loginError.classList.add('visible');
         signOut(auth);
       }
-    } else {
-      window.location.href = 'index.html';
-    }
-  }
-});
-
-oonAuthStateChanged(auth, async user => {
-  // Alterado: Agora verifica apenas se o usuário está logado, sem restringir o domínio
-  if (user) {
-    currentUser = user;
-    const emailLogado = user.email ? user.email.toLowerCase() : '';
-    const isAdmin = ADMIN_EMAILS.includes(emailLogado);
-
-    // ATUALIZAÇÃO DA VARIÁVEL DE ADMIN
-    isAdminGlobal = isAdmin;
-
-    const paginasAdminIDs = ['admin-content', 'admin-logs-content', 'admin-pontos-content', 'centro-custo-content', 'admin-loja-content'];
-    let containerAdminAtivo = null;
-
-    paginasAdminIDs.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) containerAdminAtivo = el;
-    });
-
-    if (containerAdminAtivo && !isAdmin) {
-        alert("Acesso negado. Esta é uma área restrita a gestores.");
-        window.location.href = 'index.html';
-        return; 
-    }
-
-    const loginError = document.getElementById('loginError');
-    const loginArea = document.getElementById('login-area');
-    
-    const lojinhaContent = document.getElementById('lojinha-content');
-    const conteudoArea = document.getElementById('conteudo') || 
-                         document.getElementById('timeline-content') || 
-                         document.getElementById('informativos-content') || 
-                         document.getElementById('materiais-content') || 
-                         lojinhaContent ||
-                         containerAdminAtivo;
-    
-    if (loginError) loginError.classList.remove('visible');
-    if (loginArea) loginArea.style.display = 'none';
-    if (conteudoArea) conteudoArea.style.display = 'block';
-    
-    const welcomeUser = document.getElementById('welcomeUser');
-    if (welcomeUser) welcomeUser.textContent = user.displayName ? user.displayName.split(' ')[0] : 'bem-vindo';
-    
-    const feedbackNome = document.getElementById('feedbackNome');
-    if (feedbackNome) feedbackNome.value = user.displayName || '';
-    
-    const feedbackEmail = document.getElementById('feedbackEmail');
-    if (feedbackEmail) feedbackEmail.value = user.email || '';
-
-    const myAvatar = document.getElementById('myAvatarGlobal');
-    if (myAvatar) myAvatar.innerHTML = renderAvatar(user.displayName, user.photoURL);
-
-    const menuAdminContainer = document.getElementById('menuAdminContainer');
-    const navAdminMobile = document.getElementById('navAdminMobile');
-    const btnAdmin = document.getElementById('btnAdmin');
-
-    if (isAdmin) {
-      if (btnAdmin) btnAdmin.style.display = 'flex';
-      if (menuAdminContainer) menuAdminContainer.style.display = 'block';
-      if (navAdminMobile) navAdminMobile.style.display = 'block';
-    } else {
-      if (btnAdmin) btnAdmin.style.display = 'none';
-      if (menuAdminContainer) menuAdminContainer.style.display = 'none';
-      if (navAdminMobile) navAdminMobile.style.display = 'none';
-    }
-    
-    registrarAcesso(user);
-    carregarAvisos(isAdmin);
-    
-    if (lojinhaContent) {
-      carregarVitrine();
-      window.iniciarContadorLojinha(isAdminGlobal);
-    }
-
-    if (document.getElementById('logsContainer') && isAdmin) carregarLogsAdmin();
-    if (document.getElementById('listaPedidos') && isAdmin) carregarPedidosAdmin(); 
-    
-    if (document.getElementById('tabelaMatriz') && isAdmin) {
-      let totalTemp = 0;
-      for (let cat in ORCAMENTO_TEMPORADA) { totalTemp += ORCAMENTO_TEMPORADA[cat]; }
-      const elemTemp = document.getElementById('cardOrcamentoTemp');
-      if (elemTemp) elemTemp.textContent = formatarMoeda(totalTemp);
-      
-      carregarDadosOrcamento();
-    }
-
-    if (document.getElementById('feedListGlobal') || lojinhaContent) {
-      if(window.carregarFeed) window.carregarFeed(isAdmin);
-      if(window.carregarRanking) window.carregarRanking();
-      if(window.carregarTickerDiario) window.carregarTickerDiario();
-      await sincronizarPontosDiarios(user);
-    }
-    
-  } else {
-    // Alterado: Removeu a parte que deslogava forçadamente usuários fora do domínio
-    currentUser = null;
-    const loginArea = document.getElementById('login-area');
-    
-    if (loginArea) {
-      loginArea.style.display = 'flex';
-      if (document.getElementById('conteudo')) document.getElementById('conteudo').style.display = 'none';
     } else {
       window.location.href = 'index.html';
     }
@@ -1945,8 +1862,10 @@ window.fecharModalLikes = function() {
 
 const logout = () => { sessionStorage.removeItem('logRegistrado'); signOut(auth); window.location.href = 'index.html'; };
 const logoutBtnGlobal = document.getElementById('logoutBtnGlobal');
+const logoutBtn = document.getElementById('logoutBtn');
 const logoutBtnMobile = document.getElementById('logoutBtnMobile');
 if (logoutBtnGlobal) logoutBtnGlobal.onclick = logout;
+if (logoutBtn) logoutBtn.onclick = logout;
 if (logoutBtnMobile) logoutBtnMobile.onclick = logout;
 
 export { auth, db };
