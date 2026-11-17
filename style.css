@@ -1,3 +1,48 @@
+
+/* ===== POPUP "ESTOU DE VOLTA" ===== */
+.volta-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0, 20, 22, 0.65); backdrop-filter: blur(3px);
+  padding: 20px;
+}
+.volta-overlay.show { display: flex; animation: voltaFade .3s ease; }
+.volta-card {
+  position: relative; max-width: 420px; width: 100%;
+  background: linear-gradient(145deg, #002D32, #00555e);
+  border: 2px solid #00c8b3; border-radius: 22px;
+  padding: 34px 28px 28px; text-align: center; color: #fff;
+  box-shadow: 0 20px 60px rgba(0,0,0,.45);
+  animation: voltaPop .6s cubic-bezier(.2,1.6,.4,1);
+}
+.volta-emoji { font-size: 64px; display: inline-block; animation: voltaWobble 1.2s ease-in-out infinite; }
+.volta-card h2 { font-size: 24px; font-weight: 800; margin: 14px 0 6px; line-height: 1.25; }
+.volta-card h2 span { color: #FFD700; }
+.volta-card p { font-size: 13px; opacity: .8; margin-bottom: 20px; }
+.volta-btn {
+  background: #00c8b3; color: #002D32; border: none; cursor: pointer;
+  font-weight: 800; font-size: 14px; padding: 12px 26px; border-radius: 999px;
+  transition: transform .15s;
+}
+.volta-btn:hover { transform: scale(1.06); }
+.volta-confete {
+  position: fixed; top: -20px; width: 10px; height: 14px; z-index: 10000;
+  pointer-events: none; animation: voltaCai linear forwards;
+}
+@keyframes voltaFade   { from { opacity: 0 } to { opacity: 1 } }
+@keyframes voltaPop    { 0% { transform: scale(.3) rotate(-8deg); opacity: 0 } 100% { transform: scale(1) rotate(0); opacity: 1 } }
+@keyframes voltaWobble { 0%,100% { transform: rotate(-12deg) } 50% { transform: rotate(12deg) scale(1.1) } }
+@keyframes voltaCai    { to { transform: translateY(110vh) rotate(720deg); opacity: .9 } }
+@media (prefers-reduced-motion: reduce) {
+  .volta-card, .volta-emoji, .volta-confete { animation: none; }
+}
+
+
+
+
+
+
+
 /* ====================================================================
    1. VARIÁVEIS GLOBAIS E RESET
    ==================================================================== */
