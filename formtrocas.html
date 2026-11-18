@@ -1,12 +1,3 @@
-Excelente observação. Olhando para a sua tela, faz todo o sentido: quando o passo 5 aparece, o operador precisa saber **o que falar** para o cliente antes de poder registrar a resposta dele.
-
-Para resolver isso de forma bem elegante e sem quebrar o fluxo, adicionei uma **caixa de orientação azul (alert-info)** fixa dentro da própria pergunta 5.
-
-Assim, assim que a pergunta 5 for exibida na tela, o operador lerá o roteiro do que deve informar ao cliente, fará a oferta da ATEC na ligação e, em seguida, selecionará o "Sim" ou "Não" para gerar o script final.
-
-Aqui está o código atualizado com essa melhoria:
-
-```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -35,9 +26,6 @@ Aqui está o código atualizado com essa melhoria:
         textarea { width: 100%; padding: 12px; border-radius: 6px; border: 1px solid #ddd; resize: vertical; background: #fafafa; font-family: monospace; font-size: 13px; margin-bottom: 15px; box-sizing: border-box; }
         button { width: 100%; padding: 12px; background: var(--azul); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background: #003a6b; }
-        
-        .btn-link { display: block; text-align: center; background: var(--verde); color: white; padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 15px; transition: 0.2s; }
-        .btn-link:hover { background: #218838; }
     </style>
 </head>
 <body>
@@ -45,7 +33,7 @@ Aqui está o código atualizado com essa melhoria:
     <div class="container">
         <h2>Triagem T&D | Atendimento Geral</h2>
         
-        <!-- PASSO 1 -->
+        <!-- PASSO 1: MOTIVO PRINCIPAL -->
         <div class="form-group highlight">
             <label>1. Qual o principal motivo do contato do cliente?</label>
             <select id="motivoGeral" onchange="iniciarTriagem()">
@@ -59,7 +47,7 @@ Aqui está o código atualizado com essa melhoria:
             </select>
         </div>
 
-        <!-- FLUXOS ESPECÍFICOS -->
+        <!-- FLUXOS ESPECÍFICOS (Fora do Pós-Recebimento padrão) -->
         <div id="fluxoCancelamento" class="form-group hidden">
             <label>O pedido já está em rota com a transportadora?</label>
             <select id="statusRota" onchange="avaliarSimples()">
@@ -94,21 +82,6 @@ Aqui está o código atualizado com essa melhoria:
                 <input type="date" id="dataRecebimento" onchange="avaliarPosRecebimento()" max="">
             </div>
 
-            <!-- OPÇÃO ATEC COM ALERTA PARA O OPERADOR -->
-            <div class="form-group hidden" id="divAtec" style="border-color: #b8d4eb; background: #eef5fa;">
-                <div class="alert-box alert-info" style="margin-bottom: 15px; padding: 12px; background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460;">
-                    <strong>🗣️ Orientação na Ligação:</strong><br>
-                    Informe ao cliente que o procedimento padrão para produtos instalados com defeito é o acionamento da <strong>Assistência Técnica Autorizada (ATEC)</strong> do fabricante. Pergunte se ele concorda em seguir com esse atendimento.
-                </div>
-                <label style="color: var(--verde);">5. Cliente aceitou o direcionamento para a Assistência Técnica (ATEC)?</label>
-                <select id="aceitouAtec" onchange="avaliarPosRecebimento()">
-                    <option value="">Selecione...</option>
-                    <option value="SIM">Sim, aceitou a ATEC</option>
-                    <option value="NAO">Não, exigiu troca/devolução imediata</option>
-                </select>
-            </div>
-
-            <!-- DEMAIS PERGUNTAS DINÂMICAS -->
             <div class="form-group hidden" id="divAceite">
                 <label style="color: #721c24;">⚠️ O prazo excedeu. Cliente aceitou a negativa?</label>
                 <select id="aceitouNegativa" onchange="avaliarPosRecebimento()">
@@ -148,6 +121,7 @@ Aqui está o código atualizado com essa melhoria:
     </div>
 
     <script>
+        // Trava de data limite (não permite selecionar amanhã)
         document.getElementById('dataRecebimento').max = new Date().toISOString().split("T")[0];
 
         function calcularDias(dataInicio) {
@@ -164,7 +138,6 @@ Aqui está o código atualizado com essa melhoria:
             document.getElementById("divData").classList.add("hidden");
             document.getElementById("divAceite").classList.add("hidden");
             document.getElementById("divFotos").classList.add("hidden");
-            document.getElementById("divAtec").classList.add("hidden");
         }
 
         function iniciarTriagem() {
@@ -187,11 +160,13 @@ Aqui está o código atualizado com essa melhoria:
             let statusHTML = "", acao = "", crm = "";
 
             if (motivo === "atraso") {
+                // Correção 1: Remoção da oferta de troca e ajuste de tabulação
                 statusHTML = `<div class="alert-box alert-info"><strong>⏰ ATRASO NA ENTREGA</strong></div>`;
                 acao = "• Verificar com a transportadora o novo prazo e repassar ao cliente.\n• Se o cliente desejar cancelar espontaneamente, informar que faremos a tentativa de barramento. Caso a entrega chegue, orientar a RECUSAR no ato.";
                 crm = "Motivo: Entrega\nSubmotivo: Status de Entrega | Atraso na Entrega";
             } 
             else if (motivo === "recusa_ato") {
+                // Correção 4: Ajuste na tabulação de Recusa no Ato
                 statusHTML = `<div class="alert-box alert-success"><strong>📦 RECUSA NO ATO DA ENTREGA</strong><br>Avaria ou divergência identificada na hora.</div>`;
                 acao = "• Confirmar se a recusa de TODOS os volumes foi registrada no comprovante da transportadora.\n• Informar que, assim que a posse da transportadora for confirmada, seguiremos com o envio de um novo ou estorno.";
                 crm = "Motivo: Recusa no Ato da Entrega\nSubmotivo: [Selecionar a divergência ou avaria correspondente]";
@@ -201,10 +176,12 @@ Aqui está o código atualizado com essa melhoria:
                 if (!statusRota) return;
 
                 if (statusRota === "SIM") {
+                    // Correção 2: Posse da transportadora (não precisa chegar no CD)
                     statusHTML = `<div class="alert-box alert-warning"><strong>🚚 PEDIDO EM ROTA</strong><br>O cancelamento exige recusa no ato da entrega.</div>`;
                     acao = "• Orientar o cliente a RECUSAR O RECEBIMENTO de todos os volumes quando a transportadora chegar.\n• Informar que o estorno prossegue após a **confirmação de posse da transportadora** (não é necessário aguardar o retorno da mercadoria ao CD).";
                     crm = "Motivo: Cancelamento\nSubmotivo: Mercadoria em rota (Orientado recusa)";
                 } else {
+                    // Correção 3: Pedido não faturado
                     statusHTML = `<div class="alert-box alert-success"><strong>✅ CANCELAMENTO - PEDIDO NÃO FATURADO</strong><br>O pedido não saiu do CD.</div>`;
                     acao = "• Informar ao cliente que o cancelamento será efetuado e o processo de estorno do valor será iniciado.";
                     crm = "Motivo: Pedido não Faturado\nSubmotivo: [Selecione o submotivo mais adequado à necessidade apresentada]";
@@ -219,27 +196,24 @@ Aqui está o código atualizado com essa melhoria:
             const canal = document.getElementById("canalCompra").value;
             const instalado = document.getElementById("produtoInstalado").value;
             const dataRecVal = document.getElementById("dataRecebimento").value;
-            
             const aceitouNeg = document.getElementById("aceitouNegativa").value;
             const fotos = document.getElementById("possuiFotos").value;
-            const aceitouAtec = document.getElementById("aceitouAtec").value;
 
             const divData = document.getElementById("divData");
             const divAceite = document.getElementById("divAceite");
             const divFotos = document.getElementById("divFotos");
-            const divAtec = document.getElementById("divAtec");
             const resBox = document.getElementById("resultadoFinal");
 
             resBox.classList.add("hidden");
             divAceite.classList.add("hidden");
             divFotos.classList.add("hidden");
-            divAtec.classList.add("hidden");
 
             if (!canal || !instalado) {
                 divData.classList.add("hidden");
                 return;
             }
 
+            // Exige a data sempre, para saber se está dentro do prazo antes de aplicar regras de instalação
             divData.classList.remove("hidden");
             if (!dataRecVal) return;
 
@@ -250,26 +224,16 @@ Aqui está o código atualizado com essa melhoria:
 
             let acao = "", crm = "", statusHTML = "";
 
+            // ====== LÓGICAS DE PRODUTO INSTALADO ======
             if (instalado === "SIM") {
                 if (isDentro) {
                     if (motivo === "defeito") {
-                        divAtec.classList.remove("hidden");
-                        if (!aceitouAtec) return; // Aguarda o operador oferecer e responder
-
-                        if (aceitouAtec === "SIM") {
-                            statusHTML = `<div class="alert-box alert-success"><strong>✅ ATEC ACEITA PELO CLIENTE</strong></div>`;
-                            acao = "O cliente concordou em acionar a Assistência Técnica. Clique no botão acima ou oriente a preencher o formulário de Garantia.";
-                            crm = "Atendimento será direcionado via Formulário de Garantia (formn1).";
-                            
-                            statusHTML += `<a href="formn1.html" target="_blank" class="btn-link">📋 Abrir Formulário de Garantia (formn1.html)</a>`;
-                            
-                        } else {
-                            statusHTML = `<div class="alert-box alert-warning"><strong>⚠️ ANÁLISE BACKOFFICE (RECUSOU ATEC)</strong></div>`;
-                            acao = "• Como o cliente NÃO ACEITOU seguir com a ATEC, abra um protocolo de T&D para análise do BackOffice.\n• O time realizará uma análise individualizada antes de qualquer posicionamento definitivo.";
-                            crm = `Motivo: Troca/Devolução - Dentro dos ${prazoMax} dias ${tabMkt}\nSubmotivo: Direcionado para Garantia / Análise Backoffice`;
-                        }
-
+                        // Correção 8: Defeito em 30 dias instalado
+                        statusHTML = `<div class="alert-box alert-warning"><strong>🔄 DIRECIONAMENTO PARA GARANTIA (NO PRAZO)</strong></div>`;
+                        acao = "• Orientar o cliente a acionar a Assistência Técnica Autorizada (ATEC).\n\n⚠️ IMPORTANTE: Caso o cliente NÃO ACEITE seguir com a ATEC, abra um protocolo de T&D para análise do BackOffice. Não negue de imediato.";
+                        crm = `Motivo: Troca/Devolução - Dentro dos ${prazoMax} dias\nSubmotivo: Direcionado para Garantia / Análise Backoffice`;
                     } else {
+                        // Correções 5 e 7: Arrependimento ou Avaria dentro do prazo (mesmo instalado)
                         statusHTML = `<div class="alert-box alert-warning"><strong>⚠️ PRODUTO INSTALADO (DENTRO DO PRAZO)</strong><br>O prazo é de ${prazoMax} dias e se passaram apenas ${dias} dias.</div>`;
                         acao = "⚠️ NÃO REALIZE A NEGATIVA IMEDIATA.\n\n• Como o cliente acionou dentro do prazo da plataforma, abra o atendimento e direcione para o BackOffice.\n• O time realizará uma análise individualizada antes de qualquer posicionamento definitivo.";
                         crm = `Motivo: Devolução/Troca - Dentro dos ${prazoMax} dias ${tabMkt}\nSubmotivo: Produto Instalado - Envio p/ Análise Backoffice`;
@@ -277,6 +241,7 @@ Aqui está o código atualizado com essa melhoria:
                     mostrarResultado(statusHTML, acao, crm, motivo, dataRecVal, dias, prazoMax);
                     return;
                 } else {
+                    // Produto Instalado FORA DO PRAZO
                     statusHTML = `<div class="alert-box alert-danger"><strong>🚫 DEVOLUÇÃO RECUSADA - INSTALADO E FORA DO PRAZO</strong><br>Prazo excedido (${dias} dias) e produto não é mais novo.</div>`;
                     acao = "Informar ao cliente que a solicitação não pode prosseguir, pois o produto já foi instalado e o prazo de devolução também já se encerrou.";
                     crm = "Motivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato / Negativa Produto Instalado";
@@ -285,6 +250,7 @@ Aqui está o código atualizado com essa melhoria:
                 }
             }
 
+            // ====== LÓGICAS DE PRODUTO NÃO INSTALADO ======
             if (isDentro) {
                 statusHTML = `<div class="alert-box alert-success"><strong>✅ DENTRO DO PRAZO (${dias} de ${prazoMax} dias)</strong></div>`;
                 divFotos.classList.remove("hidden");
@@ -338,14 +304,7 @@ Aqui está o código atualizado com essa melhoria:
                 script += `Recebido em: ${dataRec.split('-').reverse().join('/')} (${dias} dias de ${prazoMax})\n`;
                 
                 const fotos = document.getElementById("possuiFotos").value;
-                if (fotos && document.getElementById("divFotos").classList.contains("hidden") === false) {
-                    script += `Possui Fotos: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
-                }
-                
-                const aceitouAtec = document.getElementById("aceitouAtec").value;
-                if (aceitouAtec && document.getElementById("divAtec").classList.contains("hidden") === false) {
-                    script += `Aceitou ATEC: ${aceitouAtec === 'SIM' ? 'Sim' : 'Não (Exigiu Troca/Devolução)'}\n`;
-                }
+                if (fotos) script += `Possui Fotos: ${fotos === 'SIM' ? 'Sim' : 'Não'}\n`;
             }
 
             script += `\n[CONCLUSÃO / AÇÃO CRM]\n`;
@@ -371,5 +330,3 @@ Aqui está o código atualizado com essa melhoria:
     </script>
 </body>
 </html>
-
-```
