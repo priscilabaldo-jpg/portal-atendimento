@@ -1,3 +1,12 @@
+Excelente observação. Olhando para a sua tela, faz todo o sentido: quando o passo 5 aparece, o operador precisa saber **o que falar** para o cliente antes de poder registrar a resposta dele.
+
+Para resolver isso de forma bem elegante e sem quebrar o fluxo, adicionei uma **caixa de orientação azul (alert-info)** fixa dentro da própria pergunta 5.
+
+Assim, assim que a pergunta 5 for exibida na tela, o operador lerá o roteiro do que deve informar ao cliente, fará a oferta da ATEC na ligação e, em seguida, selecionará o "Sim" ou "Não" para gerar o script final.
+
+Aqui está o código atualizado com essa melhoria:
+
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -362,3 +371,5 @@
     </script>
 </body>
 </html>
+
+```
