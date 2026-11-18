@@ -27,22 +27,8 @@
         button { width: 100%; padding: 12px; background: var(--azul); color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button:hover { background: #003a6b; }
         
-        /* Estilo do botão de Link para a Garantia */
-        .btn-link {
-            display: block;
-            text-align: center;
-            background: var(--verde);
-            color: white;
-            padding: 12px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: 0.2s;
-        }
-        .btn-link:hover {
-            background: #218838;
-        }
+        .btn-link { display: block; text-align: center; background: var(--verde); color: white; padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; margin-top: 15px; transition: 0.2s; }
+        .btn-link:hover { background: #218838; }
     </style>
 </head>
 <body>
@@ -50,7 +36,7 @@
     <div class="container">
         <h2>Triagem T&D | Atendimento Geral</h2>
         
-        <!-- PASSO 1: MOTIVO PRINCIPAL -->
+        <!-- PASSO 1 -->
         <div class="form-group highlight">
             <label>1. Qual o principal motivo do contato do cliente?</label>
             <select id="motivoGeral" onchange="iniciarTriagem()">
@@ -99,8 +85,12 @@
                 <input type="date" id="dataRecebimento" onchange="avaliarPosRecebimento()" max="">
             </div>
 
-            <!-- OPÇÃO ATEC (Adicionado) -->
-            <div class="form-group hidden" id="divAtec">
+            <!-- OPÇÃO ATEC COM ALERTA PARA O OPERADOR -->
+            <div class="form-group hidden" id="divAtec" style="border-color: #b8d4eb; background: #eef5fa;">
+                <div class="alert-box alert-info" style="margin-bottom: 15px; padding: 12px; background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460;">
+                    <strong>🗣️ Orientação na Ligação:</strong><br>
+                    Informe ao cliente que o procedimento padrão para produtos instalados com defeito é o acionamento da <strong>Assistência Técnica Autorizada (ATEC)</strong> do fabricante. Pergunte se ele concorda em seguir com esse atendimento.
+                </div>
                 <label style="color: var(--verde);">5. Cliente aceitou o direcionamento para a Assistência Técnica (ATEC)?</label>
                 <select id="aceitouAtec" onchange="avaliarPosRecebimento()">
                     <option value="">Selecione...</option>
@@ -251,20 +241,17 @@
 
             let acao = "", crm = "", statusHTML = "";
 
-            // ====== LÓGICAS DE PRODUTO INSTALADO ======
             if (instalado === "SIM") {
                 if (isDentro) {
                     if (motivo === "defeito") {
-                        // Exibe a pergunta sobre aceitação da ATEC
                         divAtec.classList.remove("hidden");
-                        if (!aceitouAtec) return; // Aguarda a resposta do operador
+                        if (!aceitouAtec) return; // Aguarda o operador oferecer e responder
 
                         if (aceitouAtec === "SIM") {
                             statusHTML = `<div class="alert-box alert-success"><strong>✅ ATEC ACEITA PELO CLIENTE</strong></div>`;
                             acao = "O cliente concordou em acionar a Assistência Técnica. Clique no botão acima ou oriente a preencher o formulário de Garantia.";
                             crm = "Atendimento será direcionado via Formulário de Garantia (formn1).";
                             
-                            // INSERE O BOTÃO PARA O FORMULÁRIO DE GARANTIA
                             statusHTML += `<a href="formn1.html" target="_blank" class="btn-link">📋 Abrir Formulário de Garantia (formn1.html)</a>`;
                             
                         } else {
@@ -274,7 +261,6 @@
                         }
 
                     } else {
-                        // Arrependimento ou Avaria dentro do prazo (instalado)
                         statusHTML = `<div class="alert-box alert-warning"><strong>⚠️ PRODUTO INSTALADO (DENTRO DO PRAZO)</strong><br>O prazo é de ${prazoMax} dias e se passaram apenas ${dias} dias.</div>`;
                         acao = "⚠️ NÃO REALIZE A NEGATIVA IMEDIATA.\n\n• Como o cliente acionou dentro do prazo da plataforma, abra o atendimento e direcione para o BackOffice.\n• O time realizará uma análise individualizada antes de qualquer posicionamento definitivo.";
                         crm = `Motivo: Devolução/Troca - Dentro dos ${prazoMax} dias ${tabMkt}\nSubmotivo: Produto Instalado - Envio p/ Análise Backoffice`;
@@ -282,7 +268,6 @@
                     mostrarResultado(statusHTML, acao, crm, motivo, dataRecVal, dias, prazoMax);
                     return;
                 } else {
-                    // Produto Instalado FORA DO PRAZO
                     statusHTML = `<div class="alert-box alert-danger"><strong>🚫 DEVOLUÇÃO RECUSADA - INSTALADO E FORA DO PRAZO</strong><br>Prazo excedido (${dias} dias) e produto não é mais novo.</div>`;
                     acao = "Informar ao cliente que a solicitação não pode prosseguir, pois o produto já foi instalado e o prazo de devolução também já se encerrou.";
                     crm = "Motivo: Informações sobre troca e devolução\nSubmotivo: Retido em contato / Negativa Produto Instalado";
@@ -291,7 +276,6 @@
                 }
             }
 
-            // ====== LÓGICAS DE PRODUTO NÃO INSTALADO ======
             if (isDentro) {
                 statusHTML = `<div class="alert-box alert-success"><strong>✅ DENTRO DO PRAZO (${dias} de ${prazoMax} dias)</strong></div>`;
                 divFotos.classList.remove("hidden");
