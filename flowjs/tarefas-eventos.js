@@ -26,27 +26,20 @@ export const acoesTarefas = {
     // ==========================================
     // AÇÕES DAS SUBTAREFAS
     // ==========================================
-    'nova-subtarefa': async (d, event) => {
-        const input = document.getElementById('input-nova-subtarefa');
-        const titulo = input?.value.trim();
-        const btn = event.target.closest('button');
-        
-        if (titulo && btn) {
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-            
-            await adicionarSubtarefa(d.tarefaId, titulo);
-            
-            // Não precisamos recarregar todo o drawer manualmente aqui, 
-            // pois se você estiver usando onSnapshot na Tarefa, ela atualizará o UI sozinha.
-            // Mas caso a sua tarefa não escute as mudanças automaticamente, você chama:
-            // atualizarTimelineNoDrawer(d.tarefaId);
-            
-            input.value = '';
-            btn.disabled = false;
-            btn.textContent = 'Adicionar';
-        }
-    },
+    'nova-subtarefa': async (d, el) => {
+    const input = document.getElementById('input-nova-subtarefa');
+    const titulo = input?.value.trim();
+    if (!titulo || el.disabled) return;
+
+    el.disabled = true;
+    el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        await adicionarSubtarefa(d.tarefaId, titulo);
+    } finally {
+        // Redesenha a timeline (recria o input vazio e o botão)
+        atualizarTimelineNoDrawer(d.tarefaId);
+    }
+},
     
     'excluir-subtarefa': async (d) => {
         if (!confirm('Deseja excluir esta etapa da linha do tempo?')) return;
