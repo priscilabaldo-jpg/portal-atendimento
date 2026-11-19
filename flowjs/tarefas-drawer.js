@@ -199,10 +199,17 @@ export function timelineHTML(t) {
 
 export function atualizarTimelineNoDrawer(id) {
     const container = $('#dr-timeline');
-    if (!container) return;
-    
+    if (!container || state.drawerTaskId !== id) return;
     const t = getTarefa(id);
-    if (t) {
-        container.innerHTML = timelineHTML(t);
-    }
+    if (!t) return;
+
+    const antigo = container.querySelector('#input-nova-subtarefa');
+    const valor = antigo?.value || '';
+    const tinhaFoco = document.activeElement === antigo;
+
+    container.innerHTML = timelineHTML(t);
+
+    const novo = container.querySelector('#input-nova-subtarefa');
+    if (novo) { novo.value = valor; if (tinhaFoco) novo.focus(); }
+}
 }
