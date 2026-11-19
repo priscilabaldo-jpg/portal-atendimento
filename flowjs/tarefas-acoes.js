@@ -34,7 +34,18 @@ export async function logAtividade(tarefaId, texto, tipo = 'sistema') {
     await addDoc(collection(db, 'tarefas', tarefaId, 'comentarios'), {
         tipo, texto, autorEmail: state.user.email, autorNome: state.user.nome, criadoEm: serverTimestamp()
     });
-    if (tipo === 'comentario') await updateDoc(doc(db, 'tarefas', tarefaId), { comentariosCount: increment(1) });
+    if (tipo === 'comentario') {
+        // ultimoComentario fica gravado na própria tarefa para os cards das Dores mostrarem sem leituras extras
+        await updateDoc(doc(db, 'tarefas', tarefaId), {
+            comentariosCount: increment(1),
+            ultimoComentario: {
+                texto: String(texto).slice(0, 200),
+                autorEmail: state.user.email,
+                autorNome: state.user.nome || state.user.email,
+                em: Date.now()
+            }
+        });
+    }
 }
 
 export async function notificarAtribuicao(tarefa, origem) {
