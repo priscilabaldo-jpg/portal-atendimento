@@ -1,21 +1,18 @@
 // Listeners em tempo real do Firestore.
-import { collection, db, onSnapshot, query, where } from './firebase.js'; // <-- ADICIONADO: query e where
+import { collection, db, onSnapshot, query, where } from './firebase.js';
 import { ouvirDores } from './dores-data.js';
 import { nomeDoEmail, toast } from './helpers.js';
 import { render } from './render.js';
 import { state } from './state.js';
-import { fecharDrawer } from './tarefas-drawer.js';
-
-// Importação da função que criaremos no próximo passo para desenhar o Sino
-import { renderizarSinoNotificacoes } from './notificacoes.js'; 
+import { fecharDrawer, atualizarTimelineNoDrawer } from './tarefas-drawer.js';
+import { renderizarSinoNotificacoes } from './notificacoes.js';
 
 export function pararListeners() {
     state.unsubs.forEach(u => u());
     state.unsubs = [];
     if (state.unsubFeed) { state.unsubFeed(); state.unsubFeed = null; }
-    
-    // <-- ADICIONADO: notificacoes no controle de carregamento
-    state.loaded = { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false, notificacoes: false }; 
+
+    state.loaded = { membros: false, projetos: false, cronogramas: false, tarefas: false, solicitacoes: false, rotinas: false, notificacoes: false };
     fecharDrawer();
 }
 
@@ -25,6 +22,10 @@ export function iniciarListeners() {
         const u = onSnapshot(collection(db, colecao), (snap) => {
             state[nome] = snap.docs.map(d => map({ id: d.id, ...d.data() }));
             state.loaded[nome] = true;
+
+            // Mantém a linha do tempo do drawer sincronizada com a tarefa aberta
+            if (nome === 'tarefas' && state.drawerTaskId) atualizarTimelineNoDrawer(state.drawerTaskId);
+
             if (Object.values(state.loaded).every(Boolean)) render();
         }, (err) => {
             toast(`Erro ao carregar "${colecao}". Verifique as regras do Firestore.`, 'erro');
@@ -39,7 +40,7 @@ export function iniciarListeners() {
     ouvir('solicitacoes', 'solicitacoes', (x) => x);
     ouvir('rotinas', 'rotinas', (r) => r);
 
-    // ─── NOVO: LISTENER DE NOTIFICAÇÕES DO USUÁRIO LOGADO ───
+    // Listener de notificações do usuário logado
     const qNotificacoes = query(
         collection(db, 'notificacoes'),
         where('usuario_destino', '==', state.user.email)
@@ -47,9 +48,9 @@ export function iniciarListeners() {
     const uNotificacoes = onSnapshot(qNotificacoes, (snap) => {
         state.notificacoes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         state.loaded.notificacoes = true;
-        
-        // Sempre que o banco atualizar, redesenha o HTML do Sino
-        renderizarSinoNotificacoes(); 
+
+        // Sempre que o banco atualizar, redesenha o HTML do sino
+        renderizarSinoNotificacoes();
 
         if (Object.values(state.loaded).every(Boolean)) render();
     }, (err) => {
