@@ -1,10 +1,15 @@
 // Dores Operacionais — telas (KPIs, cards, tabela).
 import { agruparDores, dorCorSetor, DORES_COLUNAS, DORES_PRIO, DORES_STATUS, doresFiltradas, dorPrioMeta, dorQuarter, dorStatusMeta, fmtDor, opcoesDe, optsFiltro, qOrd } from './dores-data.js';
+import { badgeSituacao } from './helpers.js';
 import { state } from './state.js';
 import { $, esc, primeiroNome } from './utils.js';
 
 // ─── ANDAMENTO DIRETO NO CARD (tarefas vinculadas + último comentário) ───
-const tarefaConcluida = (t) => /conclu/i.test(t.status || '');
+// Usa o mesmo badge exibido dentro da dor ("Concluída", "No prazo · em 11 dias", "Atrasado · há 1 dia"),
+// assim o card nunca discorda do que a pessoa vê ao abrir a tarefa.
+const situacaoTxt = (t) => String(badgeSituacao(t) || '').replace(/<[^>]*>/g, ' ');
+const tarefaConcluida = (t) => /conclu/i.test(situacaoTxt(t));
+const tarefaAtrasada = (t) => !tarefaConcluida(t) && /atrasad/i.test(situacaoTxt(t));
 const msDe = (v) => (typeof v === 'number' ? v : (v?.toMillis?.() ?? 0));
 
 function tempoRelativo(ms) {
@@ -26,10 +31,9 @@ function andamentoDorHTML(d) {
         return `<div class="text-[11px] text-gray-400 italic"><i class="far fa-circle-question mr-1"></i>Sem tarefas vinculadas</div>`;
     }
 
-    const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
     const feitas = ts.filter(tarefaConcluida).length;
     const pct = Math.round((feitas / ts.length) * 100);
-    const atrasadas = ts.filter(t => !tarefaConcluida(t) && t.prazo && t.prazo < hoje).length;
+    const atrasadas = ts.filter(tarefaAtrasada).length;
     const etapas = ts.flatMap(t => t.subtarefas || []);
     const etapasFeitas = etapas.filter(s => s.status === 'concluida').length;
 
