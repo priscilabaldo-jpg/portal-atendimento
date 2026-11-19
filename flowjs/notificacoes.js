@@ -1,6 +1,6 @@
 import { doc, updateDoc, db } from './firebase.js';
 import { state } from './state.js';
-import { $ } from './utils.js';
+import { $, esc, fmtDataHora } from './utils.js';
 import { abrirRotinaDrawer } from './rotina-drawer.js';
 import { abrirDrawer as abrirTarefaDrawer } from './tarefas-drawer.js'; // <- Descomentado para as tarefas funcionarem!
 
@@ -9,37 +9,39 @@ export function renderizarSinoNotificacoes() {
     const badge = $('#badge-notificacoes');
     const lista = $('#lista-notificacoes');
     if (!badge || !lista) return;
-
-    // Se as notificações ainda não foram carregadas, sai silenciosamente
     if (!state.notificacoes) return;
 
-    // Filtra apenas as não lidas e ordena da mais recente para a mais antiga
-    const naoLidas = state.notificacoes
-        .filter(n => !n.lida)
-        .sort((a, b) => (b.data_criacao?.toMillis() || 0) - (a.data_criacao?.toMillis() || 0));
+    const ms = n => n.data_criacao?.toMillis?.() ?? Date.now(); // pendente (sem timestamp) = agora
 
-    // Atualiza Badge
-    if (naoLidas.length > 0) {
-        badge.textContent = naoLidas.length > 99 ? '99+' : naoLidas.length;
+    // Histórico completo (últimas 30), mais recentes primeiro
+    const todas = [...state.notificacoes].sort((a, b) => ms(b) - ms(a)).slice(0, 30);
+    const qtdNaoLidas = todas.filter(n => !n.lida).length;
+
+    if (qtdNaoLidas > 0) {
+        badge.textContent = qtdNaoLidas > 99 ? '99+' : qtdNaoLidas;
         badge.classList.remove('hidden');
     } else {
         badge.classList.add('hidden');
     }
 
-    // Renderiza Lista
-    if (naoLidas.length === 0) {
-        lista.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Nenhuma notificação nova.</p>`;
+    if (todas.length === 0) {
+        lista.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Nenhuma notificação.</p>`;
         return;
     }
 
-    lista.innerHTML = naoLidas.map(notif => `
-        <div class="p-3 hover:bg-blue-50 rounded-md cursor-pointer transition-colors border-b border-gray-50 last:border-0" 
-             data-action="abrir-notificacao" 
-             data-id="${notif.id}" 
-             data-modulo="${notif.rota?.modulo}" 
-             data-item="${notif.rota?.item_id}"
-             data-comentario="${notif.rota?.comentario_id}">
-            <p class="text-sm text-gray-700">${notif.mensagem}</p>
+    lista.innerHTML = todas.map(notif => `
+        <div class="p-3 rounded-md cursor-pointer transition-colors border-b border-gray-50 last:border-0 flex items-start gap-2
+                    ${notif.lida ? 'opacity-60 hover:bg-gray-50' : 'bg-blue-50/60 hover:bg-blue-100'}"
+             data-action="abrir-notificacao"
+             data-id="${esc(notif.id)}"
+             data-modulo="${esc(notif.rota?.modulo || '')}"
+             data-item="${esc(notif.rota?.item_id || '')}"
+             data-comentario="${esc(notif.rota?.comentario_id || '')}">
+            <span class="mt-1.5 w-2 h-2 rounded-full shrink-0 ${notif.lida ? 'bg-transparent' : 'bg-leveros-azul'}"></span>
+            <div class="min-w-0">
+                <p class="text-sm ${notif.lida ? 'text-gray-500' : 'text-gray-800 font-medium'}">${esc(notif.mensagem)}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5">${fmtDataHora(ms(notif))}</p>
+            </div>
         </div>
     `).join('');
 }
@@ -51,10 +53,10 @@ export const acoesNotificacoes = {
     },
 
     'marcar-todas-lidas': () => {
-        if (!state.notificacoes) return;
-        const naoLidas = state.notificacoes.filter(n => !n.lida);
-        naoLidas.forEach(n => updateDoc(doc(db, 'notificacoes', n.id), { lida: true }));
-        $('#dropdown-notificacoes')?.classList.add('hidden');
+    if (!state.notificacoes) return;
+    state.notificacoes
+        .filter(n => !n.lida)
+        .forEach(n => updateDoc(doc(db, 'notificacoes', n.id), { lida: true }));
     },
 
     'abrir-notificacao': async (dataset) => {
