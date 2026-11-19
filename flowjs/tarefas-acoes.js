@@ -266,3 +266,34 @@ export async function atualizarSubtarefasArray(tarefaId, arrayAtualizado) {
         toast('Erro ao atualizar status.', 'erro');
     }
 }
+// ==========================================
+// MIGRAÇÃO ÚNICA: preenche "ultimoComentario" nas tarefas que já tinham comentários.
+// Rodar uma vez pelo console do navegador (ver instruções). Pode ser removida depois.
+// ==========================================
+export async function preencherUltimosComentarios() {
+    const ms = (c) => c.criadoEm?.toMillis?.() ?? 0;
+    let preenchidas = 0, semComentario = 0, falhas = 0;
+    for (const t of (state.tarefas || [])) {
+        if (t.ultimoComentario) continue;
+        try {
+            const snap = await getDocs(collection(db, 'tarefas', t.id, 'comentarios'));
+            const coms = snap.docs.map(d => d.data()).filter(c => c.tipo === 'comentario');
+            if (!coms.length) { semComentario++; continue; }
+            const u = coms.sort((a, b) => ms(b) - ms(a))[0];
+            await updateDoc(doc(db, 'tarefas', t.id), {
+                ultimoComentario: {
+                    texto: String(u.texto || '').slice(0, 200),
+                    autorEmail: u.autorEmail || '',
+                    autorNome: u.autorNome || u.autorEmail || '',
+                    em: ms(u) || Date.now()
+                }
+            });
+            preenchidas++;
+        } catch (e) {
+            falhas++;
+            console.error('Falha na tarefa', t.id, e);
+        }
+    }
+    console.log(`Concluído: ${preenchidas} preenchidas, ${semComentario} sem comentários, ${falhas} falhas.`);
+    return { preenchidas, semComentario, falhas };
+}
