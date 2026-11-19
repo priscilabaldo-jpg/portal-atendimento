@@ -2,7 +2,7 @@
 import { agruparDores, dorCorSetor, DORES_COLUNAS, DORES_PRIO, DORES_STATUS, doresFiltradas, dorPrioMeta, dorQuarter, dorStatusMeta, fmtDor, opcoesDe, optsFiltro, qOrd } from './dores-data.js';
 import { badgeSituacao } from './helpers.js';
 import { state } from './state.js';
-import { $, esc, primeiroNome } from './utils.js';
+import { $, esc, fmtDataHora, primeiroNome } from './utils.js';
 
 // ─── ANDAMENTO DIRETO NO CARD (tarefas vinculadas + último comentário) ───
 // Usa o mesmo badge exibido dentro da dor ("Concluída", "No prazo · em 11 dias", "Atrasado · há 1 dia"),
@@ -45,10 +45,10 @@ function andamentoDorHTML(d) {
         const c = comUltimo.ultimoComentario;
         return `
         <button type="button" data-action="abrir-tarefa" data-id="${esc(comUltimo.id)}" title="Abrir a tarefa" class="w-full text-left bg-gray-50 hover:bg-leveros-verde4/40 rounded-md px-2 py-1.5 transition-colors">
-            <div class="flex items-center gap-1 text-[10px] text-gray-400 min-w-0">
+            <div class="flex items-center flex-wrap gap-x-1 text-[10px] text-gray-400 min-w-0">
                 <i class="far fa-comment-dots shrink-0"></i>
                 <b class="text-gray-600 shrink-0">${esc(primeiroNome(c.autorNome || c.autorEmail || ''))}</b>
-                <span class="shrink-0">· ${tempoRelativo(c.em)}</span>
+                <span class="shrink-0">· ${fmtDataHora(c.em)} (${tempoRelativo(c.em)})</span>
                 <span class="truncate">· ${esc(comUltimo.titulo)}</span>
             </div>
             <div class="text-[11px] text-gray-700 line-clamp-2 break-words">${esc(c.texto)}</div>
