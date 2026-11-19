@@ -34,10 +34,10 @@ export const acoesTarefas = {
     el.disabled = true;
     el.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     try {
-        await adicionarSubtarefa(d.tarefaId, titulo);
+        const ok = await adicionarSubtarefa(d.tarefaId, titulo);
+        if (ok) input.value = '';          // só limpa se gravou
     } finally {
-        // Redesenha a timeline (recria o input vazio e o botão)
-        atualizarTimelineNoDrawer(d.tarefaId);
+        atualizarTimelineNoDrawer(d.tarefaId); // recria o botão e mostra a etapa
     }
 },
     
