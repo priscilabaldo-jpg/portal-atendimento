@@ -1,7 +1,70 @@
 // Dores Operacionais — telas (KPIs, cards, tabela).
 import { agruparDores, dorCorSetor, DORES_COLUNAS, DORES_PRIO, DORES_STATUS, doresFiltradas, dorPrioMeta, dorQuarter, dorStatusMeta, fmtDor, opcoesDe, optsFiltro, qOrd } from './dores-data.js';
 import { state } from './state.js';
-import { $, esc } from './utils.js';
+import { $, esc, primeiroNome } from './utils.js';
+
+// ─── ANDAMENTO DIRETO NO CARD (tarefas vinculadas + último comentário) ───
+const tarefaConcluida = (t) => /conclu/i.test(t.status || '');
+const msDe = (v) => (typeof v === 'number' ? v : (v?.toMillis?.() ?? 0));
+
+function tempoRelativo(ms) {
+    if (!ms) return '';
+    const min = Math.floor((Date.now() - ms) / 60000);
+    if (min < 1) return 'agora';
+    if (min < 60) return `há ${min} min`;
+    const h = Math.floor(min / 60);
+    if (h < 24) return `há ${h} h`;
+    const dias = Math.floor(h / 24);
+    if (dias < 30) return `há ${dias} ${dias === 1 ? 'dia' : 'dias'}`;
+    const m = Math.floor(dias / 30);
+    return `há ${m} ${m === 1 ? 'mês' : 'meses'}`;
+}
+
+function andamentoDorHTML(d) {
+    const ts = (state.tarefas || []).filter(t => t.dorId === d.id);
+    if (!ts.length) {
+        return `<div class="text-[11px] text-gray-400 italic"><i class="far fa-circle-question mr-1"></i>Sem tarefas vinculadas</div>`;
+    }
+
+    const hoje = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const feitas = ts.filter(tarefaConcluida).length;
+    const pct = Math.round((feitas / ts.length) * 100);
+    const atrasadas = ts.filter(t => !tarefaConcluida(t) && t.prazo && t.prazo < hoje).length;
+    const etapas = ts.flatMap(t => t.subtarefas || []);
+    const etapasFeitas = etapas.filter(s => s.status === 'concluida').length;
+
+    // Último comentário (dado denormalizado na tarefa) entre todas as tarefas da dor
+    const comUltimo = ts.filter(t => t.ultimoComentario?.em).sort((a, b) => b.ultimoComentario.em - a.ultimoComentario.em)[0];
+    const ultimaMov = Math.max(0, ...ts.map(t => msDe(t.atualizadoEm)));
+
+    const comentarioHTML = comUltimo ? (() => {
+        const c = comUltimo.ultimoComentario;
+        return `
+        <button type="button" data-action="abrir-tarefa" data-id="${esc(comUltimo.id)}" title="Abrir a tarefa" class="w-full text-left bg-gray-50 hover:bg-leveros-verde4/40 rounded-md px-2 py-1.5 transition-colors">
+            <div class="flex items-center gap-1 text-[10px] text-gray-400 min-w-0">
+                <i class="far fa-comment-dots shrink-0"></i>
+                <b class="text-gray-600 shrink-0">${esc(primeiroNome(c.autorNome || c.autorEmail || ''))}</b>
+                <span class="shrink-0">· ${tempoRelativo(c.em)}</span>
+                <span class="truncate">· ${esc(comUltimo.titulo)}</span>
+            </div>
+            <div class="text-[11px] text-gray-700 line-clamp-2 break-words">${esc(c.texto)}</div>
+        </button>`;
+    })() : `<div class="text-[11px] text-gray-400 italic"><i class="far fa-comment mr-1"></i>Sem comentários nas tarefas</div>`;
+
+    return `
+        <div class="flex flex-col gap-1.5">
+            <div>
+                <div class="flex items-center justify-between text-[11px] text-gray-600 mb-0.5">
+                    <span><b>${feitas}/${ts.length}</b> ${ts.length === 1 ? 'tarefa concluída' : 'tarefas concluídas'}${etapas.length ? ` · ${etapasFeitas}/${etapas.length} etapas` : ''}</span>
+                    <span class="font-bold ${pct === 100 ? 'text-green-600' : 'text-leveros-verde2'}">${pct}%</span>
+                </div>
+                <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full ${pct === 100 ? 'bg-green-500' : 'bg-leveros-azul'}" style="width:${pct}%"></div></div>
+            </div>
+            ${atrasadas ? `<div class="text-[11px] font-semibold text-red-600"><i class="fas fa-triangle-exclamation mr-1"></i>${atrasadas} ${atrasadas === 1 ? 'tarefa atrasada' : 'tarefas atrasadas'}</div>` : ''}
+            ${comentarioHTML}
+            ${ultimaMov ? `<div class="text-[10px] text-gray-400"><i class="fas fa-rotate mr-1"></i>Última movimentação ${tempoRelativo(ultimaMov)}</div>` : ''}
+        </div>`;
+}
 
 function doresKpisHTML() {
     const n = (fn) => state.dores.filter(fn).length;
@@ -32,7 +95,8 @@ function cardDorHTML(d) {
         <div class="text-[10px] uppercase font-bold tracking-wide text-leveros-verde2 truncate">${esc(d.setor)}${d.direcional ? ' · ' + esc(d.direcional) : ''}</div>
         <h4 class="text-sm font-semibold text-gray-800 leading-snug line-clamp-3">${d.dor ? esc(d.dor) : '<span class="text-gray-400 font-normal">(sem descrição da dor)</span>'}</h4>
         <p class="text-xs text-gray-600 line-clamp-3 whitespace-pre-line"><i class="fas fa-hammer text-blue-400 mr-1"></i>${esc(d.acao)}</p>
-        <div class="mt-auto pt-2 border-t border-gray-100 flex items-center justify-between gap-x-3 gap-y-1 text-[11px] text-gray-500 flex-wrap">
+        <div class="mt-auto pt-2 border-t border-gray-100">${andamentoDorHTML(d)}</div>
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between gap-x-3 gap-y-1 text-[11px] text-gray-500 flex-wrap">
             <span class="truncate max-w-full"><i class="fas fa-users mr-1 text-gray-400"></i>${esc(d.squad || '—')}</span>
             <span class="whitespace-nowrap"><i class="far fa-calendar-alt mr-1 text-gray-400"></i>${fmtDor(d.inicio)} → ${fmtDor(d.fim)}</span>
         </div>
