@@ -212,4 +212,3 @@ export function atualizarTimelineNoDrawer(id) {
     const novo = container.querySelector('#input-nova-subtarefa');
     if (novo) { novo.value = valor; if (tinhaFoco) novo.focus(); }
 }
-}
