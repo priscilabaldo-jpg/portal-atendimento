@@ -1,9 +1,13 @@
 // Configurações do projeto (Firebase, domínio permitido, administradores, e-mail).
 export const firebaseConfig = {
-    apiKey:      "AIzaSyA6WjOoM-KCi-Yl4E5rwKbOulF8tBYEClo",
-    authDomain:  "portal-atendimento-541ae.firebaseapp.com",
-    projectId:   "portal-atendimento-541ae",
-    storageBucket: "portal-atendimento-541ae.appspot.com"
+    apiKey: "AIzaSyBTiJKRNXNt4H9IqATRrm9U32frQIQUvMo",
+    authDomain: "portalcx-d6f7f.firebaseapp.com",
+    databaseURL: "https://portalcx-d6f7f-default-rtdb.firebaseio.com",
+    projectId: "portalcx-d6f7f",
+    storageBucket: "portalcx-d6f7f.firebasestorage.app",
+    messagingSenderId: "487975108101",
+    appId: "1:487975108101:web:bf9dfee437c7ac2522266c",
+    measurementId: "G-VEEHMX90Q7"
 };
 
 export const DOMINIO = '@leveros.com.br';
