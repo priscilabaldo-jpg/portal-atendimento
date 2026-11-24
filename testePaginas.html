@@ -75,153 +75,183 @@
             color: #fff; font-weight: 400;
         }
 
-        /* =========================================
-           VISTA EXPLODIDA INTERATIVA (SVG + LISTA)
-           ========================================= */
-        .vista-explodida-card {
-            margin-top: 20px;
-            border: 1px solid rgba(76, 221, 221, 0.35);
-        }
-        .vista-header {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 8px; margin-bottom: 12px;
-        }
-        .vista-header h3 { margin: 0; font-size: 17px; }
-        .vista-dica { font-size: 12.5px; color: #aaa; margin: 0; }
-
-        .vista-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1.85fr) minmax(240px, 1fr);
-            gap: 16px;
-            align-items: start;
-        }
-        @media (max-width: 960px) {
-            .vista-grid { grid-template-columns: 1fr; }
-        }
-
-        .svg-wrapper {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            overflow: hidden;
-            position: relative;
-        }
-        #svgVistaExplodida {
-            width: 100%;
-            height: auto;
-            display: block;
-            user-select: none;
-        }
-
-        /* Estilos das peças no SVG */
-        .peca-svg { cursor: pointer; transition: opacity 0.15s ease; }
-        .peca-svg .forma {
-            fill: #ffffff;
-            stroke: #1e293b;
-            stroke-width: 1.5;
-            transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
-        }
-        .peca-svg .detalhe {
-            fill: none;
-            stroke: #475569;
-            stroke-width: 1;
-            transition: stroke 0.15s ease;
-        }
-        .peca-svg .linha-guia {
-            fill: none;
-            stroke: #94a3b8;
-            stroke-width: 1;
-            stroke-dasharray: 2 2;
-            transition: stroke 0.15s ease, stroke-width 0.15s ease;
-        }
-        .peca-svg .badge-circulo {
-            fill: #ffffff;
-            stroke: #334155;
-            stroke-width: 1.3;
-            transition: fill 0.15s ease, stroke 0.15s ease;
-        }
-        .peca-svg .badge-texto {
-            fill: #0f172a;
-            font-family: Arial, sans-serif;
-            font-size: 10.5px;
-            font-weight: 700;
-            text-anchor: middle;
-            dominant-baseline: central;
-            pointer-events: none;
-        }
-
-        /* Destaque ao passar o mouse (Hover) */
-        .peca-svg.ativo .forma {
-            fill: rgba(76, 221, 221, 0.35);
-            stroke: #005A64;
-            stroke-width: 2.6;
-        }
-        .peca-svg.ativo .detalhe { stroke: #002D32; }
-        .peca-svg.ativo .linha-guia {
-            stroke: #005A64;
-            stroke-width: 2;
-            stroke-dasharray: none;
-        }
-        .peca-svg.ativo .badge-circulo {
-            fill: #005A64;
-            stroke: #002D32;
-            stroke-width: 2;
-        }
-        .peca-svg.ativo .badge-texto { fill: #ffffff; }
-
-        /* Destaque quando selecionada (Click) */
-        .peca-svg.selecionada .forma {
-            fill: rgba(255, 206, 0, 0.42);
-            stroke: #b45309;
-            stroke-width: 2.6;
-        }
-        .peca-svg.selecionada .badge-circulo {
-            fill: #FFCE00;
-            stroke: #002D32;
-        }
-        .peca-svg.selecionada .badge-texto { fill: #002D32; }
-
-        /* Lista lateral de peças */
-        .lista-pecas-box {
-            background: var(--fundo2, #161d2e);
-            border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
-            border-radius: 10px;
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 6px;
-        }
-        .item-peca-lista {
-            display: flex; align-items: center; gap: 10px;
-            padding: 7px 10px; border-radius: 6px; cursor: pointer;
-            font-size: 12.5px; color: #e2e8f0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-            transition: background 0.15s ease, color 0.15s ease;
-        }
-        .item-peca-lista:last-child { border-bottom: none; }
-        .item-peca-num {
-            min-width: 24px; height: 24px; border-radius: 50%;
-            display: inline-flex; align-items: center; justify-content: center;
-            background: rgba(76, 221, 221, 0.15); color: #4CDDDD;
-            font-weight: 700; font-size: 11.5px; flex-shrink: 0;
-        }
-        .item-peca-lista.ativo {
-            background: rgba(76, 221, 221, 0.25);
-            color: #ffffff;
-            font-weight: 600;
-        }
-        .item-peca-lista.ativo .item-peca-num {
-            background: #4CDDDD; color: #002D32;
-        }
-        .item-peca-lista.selecionada {
-            background: rgba(255, 206, 0, 0.22);
-            border-left: 3px solid #FFCE00;
-            color: #FFCE00;
-            font-weight: 700;
-        }
-        .item-peca-lista.selecionada .item-peca-num {
-            background: #FFCE00; color: #002D32;
-        }
+                   /* =========================================
+               VISTA EXPLODIDA INTERATIVA (EXPANDIDA)
+               ========================================= */
+            .vista-explodida-card {
+                margin-top: 20px;
+                border: 1px solid rgba(76, 221, 221, 0.45);
+                /* Quebra o limite estreito da coluna do formulário */
+                width: min(94vw, 1380px);
+                max-width: none !important;
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                box-sizing: border-box;
+                padding: 20px !important;
+            }
+            
+            /* Modo Tela Cheia (100% da janela) */
+            .vista-explodida-card.tela-cheia {
+                position: fixed;
+                inset: 0;
+                left: 0;
+                transform: none;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                z-index: 9000;
+                background: #002D32;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+            .vista-explodida-card.tela-cheia .vista-grid {
+                flex: 1;
+                align-items: stretch;
+            }
+            .vista-explodida-card.tela-cheia .lista-pecas-box {
+                max-height: calc(100vh - 120px);
+            }
+            
+            .vista-header {
+                display: flex; justify-content: space-between; align-items: center;
+                flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+            }
+            .vista-header h3 { margin: 0; font-size: 19px; }
+            .vista-dica { font-size: 13px; color: #cbd5e1; margin: 2px 0 0 0; }
+            .vista-acoes-header { display: flex; gap: 8px; }
+            
+            .vista-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 2.7fr) 310px;
+                gap: 18px;
+                align-items: start;
+            }
+            @media (max-width: 1024px) {
+                .vista-grid { grid-template-columns: 1fr; }
+            }
+            
+            .svg-wrapper {
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 16px;
+                border: 2px solid #4CDDDD;
+                overflow: hidden;
+                position: relative;
+            }
+            #svgVistaExplodida {
+                width: 100%;
+                height: auto;
+                max-height: 76vh;
+                display: block;
+                user-select: none;
+            }
+            
+            /* Peças e números mais visíveis */
+            .peca-svg { cursor: pointer; transition: opacity 0.15s ease; }
+            .peca-svg .forma {
+                fill: #ffffff;
+                stroke: #0f172a;
+                stroke-width: 1.8;
+                transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+            }
+            .peca-svg .detalhe {
+                fill: none;
+                stroke: #334155;
+                stroke-width: 1.2;
+                transition: stroke 0.15s ease;
+            }
+            .peca-svg .linha-guia {
+                fill: none;
+                stroke: #64748b;
+                stroke-width: 1.2;
+                stroke-dasharray: 3 2;
+                transition: stroke 0.15s ease, stroke-width 0.15s ease;
+            }
+            .peca-svg .badge-circulo {
+                r: 13px;
+                fill: #ffffff;
+                stroke: #0f172a;
+                stroke-width: 1.6;
+                transition: fill 0.15s ease, stroke 0.15s ease;
+            }
+            .peca-svg .badge-texto {
+                fill: #0f172a;
+                font-family: Arial, sans-serif;
+                font-size: 12.5px;
+                font-weight: 800;
+                text-anchor: middle;
+                dominant-baseline: central;
+                pointer-events: none;
+            }
+            
+            /* Hover */
+            .peca-svg.ativo .forma {
+                fill: rgba(76, 221, 221, 0.42);
+                stroke: #005A64;
+                stroke-width: 2.8;
+            }
+            .peca-svg.ativo .detalhe { stroke: #002D32; }
+            .peca-svg.ativo .linha-guia {
+                stroke: #005A64;
+                stroke-width: 2.4;
+                stroke-dasharray: none;
+            }
+            .peca-svg.ativo .badge-circulo {
+                fill: #005A64;
+                stroke: #002D32;
+                stroke-width: 2.2;
+            }
+            .peca-svg.ativo .badge-texto { fill: #ffffff; }
+            
+            /* Selecionada */
+            .peca-svg.selecionada .forma {
+                fill: rgba(255, 206, 0, 0.48);
+                stroke: #b45309;
+                stroke-width: 2.8;
+            }
+            .peca-svg.selecionada .badge-circulo {
+                fill: #FFCE00;
+                stroke: #002D32;
+            }
+            .peca-svg.selecionada .badge-texto { fill: #002D32; }
+            
+            /* Lista lateral */
+            .lista-pecas-box {
+                background: var(--fundo2, #161d2e);
+                border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+                border-radius: 10px;
+                max-height: 620px;
+                overflow-y: auto;
+                padding: 8px;
+            }
+            .item-peca-lista {
+                display: flex; align-items: center; gap: 10px;
+                padding: 9px 10px; border-radius: 6px; cursor: pointer;
+                font-size: 13.5px; color: #e2e8f0;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+                transition: background 0.15s ease, color 0.15s ease;
+            }
+            .item-peca-lista:last-child { border-bottom: none; }
+            .item-peca-num {
+                min-width: 26px; height: 26px; border-radius: 50%;
+                display: inline-flex; align-items: center; justify-content: center;
+                background: rgba(76, 221, 221, 0.18); color: #4CDDDD;
+                font-weight: 700; font-size: 12.5px; flex-shrink: 0;
+            }
+            .item-peca-lista.ativo {
+                background: rgba(76, 221, 221, 0.28);
+                color: #ffffff; font-weight: 600;
+            }
+            .item-peca-lista.ativo .item-peca-num { background: #4CDDDD; color: #002D32; }
+            .item-peca-lista.selecionada {
+                background: rgba(255, 206, 0, 0.24);
+                border-left: 3px solid #FFCE00;
+                color: #FFCE00; font-weight: 700;
+            }
+            .item-peca-lista.selecionada .item-peca-num { background: #FFCE00; color: #002D32; }
 
         /* Tooltip flutuante acompanhando o mouse */
         .tooltip-peca {
