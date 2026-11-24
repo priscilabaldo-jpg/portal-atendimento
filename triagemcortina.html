@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image" href="LogoLeveros.png">
+    <link rel="icon" type="image/png" href="LogoLeveros.png">
     <title>Triagem Cortina de Ar | Atendimento ON</title>
 
     <link rel="stylesheet" href="style.css">
@@ -15,10 +15,13 @@
         }
         .checklist-item:last-child { border-bottom: none; }
         .checklist-item input[type="checkbox"] {
-            margin-top: 3px; width: 18px; height: 18px; accent-color: var(--azul, #4CDDDD);
+            margin-top: 3px; width: 18px; height: 18px; cursor: pointer;
+            accent-color: var(--azul, #4CDDDD); flex-shrink: 0;
         }
-        .checklist-item span { font-size: 14px; line-height: 1.4; }
-        .pergunta-resolveu { margin-top: 14px; }
+        .checklist-item label {
+            font-size: 14px; line-height: 1.4; cursor: pointer; margin: 0; font-weight: 400;
+        }
+        .pergunta-resolveu, .bloco-decisao { margin-top: 16px; }
         .btn-resolveu {
             display: inline-block; padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
             font-size: 14px; font-weight: 600; color: #fff; margin-right: 10px; margin-top: 8px; transition: 0.2s;
@@ -26,16 +29,274 @@
         .btn-resolveu:hover { opacity: 0.9; }
         .btn-sim { background: var(--verde, #28a745); }
         .btn-nao { background: var(--vermelho, #dc3545); }
+        .btn-troca { background: #005A64; }
+        .btn-peca { background: #0077b6; }
+        .btn-secundario { background: #495057; }
+        .btn-ativo { outline: 2px solid var(--amarelo, #FFCE00); outline-offset: 2px; }
 
-        #problema option:disabled {
+        .topo-acoes {
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+        }
+        .btn-vista-toggle {
+            background: #005A64; color: #fff; border: 1px solid #4CDDDD;
+            padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-vista-toggle:hover { background: #007a87; }
+
+        .diagnostico-previo {
+            margin-top: 16px; padding: 14px; border-radius: 8px;
+            background: rgba(76, 221, 221, 0.08);
+            border-left: 4px solid var(--azul, #4CDDDD);
+        }
+        .diagnostico-previo strong { display: block; margin-bottom: 4px; font-size: 14px; }
+        .diagnostico-previo p { margin: 0; font-size: 13.5px; line-height: 1.45; }
+
+        .sub-opcoes-cd {
+            margin-top: 16px; padding-top: 14px;
+            border-top: 1px dashed var(--glass-border, #ccc);
+        }
+        .input-peca {
+            width: 100%; padding: 10px 12px; border-radius: 8px; margin-top: 6px;
+            border: 1px solid var(--glass-border, #ccc); font-size: 14px;
+            background: var(--fundo2, #161d2e); color: #fff; box-sizing: border-box;
+        }
+        .aviso-etapa {
+            font-size: 12.5px; color: var(--amarelo, #FFCE00); margin-top: 6px; display: block;
+        }
+        #problema optgroup {
             background-color: var(--fundo2, #161d2e);
-            color: var(--amarelo, #FFD166);
-            font-weight: 700;
-            font-style: normal;
+            color: var(--amarelo, #FFCE00);
+            font-weight: 700; font-style: normal;
+        }
+        #problema option {
+            background-color: var(--fundo2, #161d2e);
+            color: #fff; font-weight: 400;
+        }
+
+                   /* =========================================
+               VISTA EXPLODIDA INTERATIVA (EXPANDIDA)
+               ========================================= */
+            .vista-explodida-card {
+                margin-top: 20px;
+                border: 1px solid rgba(76, 221, 221, 0.45);
+                /* Quebra o limite estreito da coluna do formulário */
+                width: min(94vw, 1380px);
+                max-width: none !important;
+                position: relative;
+                left: 50%;
+                transform: translateX(-50%);
+                box-sizing: border-box;
+                padding: 20px !important;
+            }
+            
+            /* Modo Tela Cheia (100% da janela) */
+            .vista-explodida-card.tela-cheia {
+                position: fixed;
+                inset: 0;
+                left: 0;
+                transform: none;
+                width: 100vw;
+                height: 100vh;
+                margin: 0;
+                border-radius: 0;
+                z-index: 9000;
+                background: #002D32;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+            .vista-explodida-card.tela-cheia .vista-grid {
+                flex: 1;
+                align-items: stretch;
+            }
+            .vista-explodida-card.tela-cheia .lista-pecas-box {
+                max-height: calc(100vh - 120px);
+            }
+            
+            .vista-header {
+                display: flex; justify-content: space-between; align-items: center;
+                flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
+            }
+            .vista-header h3 { margin: 0; font-size: 19px; }
+            .vista-dica { font-size: 13px; color: #cbd5e1; margin: 2px 0 0 0; }
+            .vista-acoes-header { display: flex; gap: 8px; }
+            
+            .vista-grid {
+                display: grid;
+                grid-template-columns: minmax(0, 2.7fr) 310px;
+                gap: 18px;
+                align-items: start;
+            }
+            @media (max-width: 1024px) {
+                .vista-grid { grid-template-columns: 1fr; }
+            }
+            
+            .svg-wrapper {
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 16px;
+                border: 2px solid #4CDDDD;
+                overflow: hidden;
+                position: relative;
+            }
+            #svgVistaExplodida {
+                width: 100%;
+                height: auto;
+                max-height: 76vh;
+                display: block;
+                user-select: none;
+            }
+            
+            /* Peças e números mais visíveis */
+            .peca-svg { cursor: pointer; transition: opacity 0.15s ease; }
+            .peca-svg .forma {
+                fill: #ffffff;
+                stroke: #0f172a;
+                stroke-width: 1.8;
+                transition: fill 0.15s ease, stroke 0.15s ease, stroke-width 0.15s ease;
+            }
+            .peca-svg .detalhe {
+                fill: none;
+                stroke: #334155;
+                stroke-width: 1.2;
+                transition: stroke 0.15s ease;
+            }
+            .peca-svg .linha-guia {
+                fill: none;
+                stroke: #64748b;
+                stroke-width: 1.2;
+                stroke-dasharray: 3 2;
+                transition: stroke 0.15s ease, stroke-width 0.15s ease;
+            }
+            .peca-svg .badge-circulo {
+                r: 13px;
+                fill: #ffffff;
+                stroke: #0f172a;
+                stroke-width: 1.6;
+                transition: fill 0.15s ease, stroke 0.15s ease;
+            }
+            .peca-svg .badge-texto {
+                fill: #0f172a;
+                font-family: Arial, sans-serif;
+                font-size: 12.5px;
+                font-weight: 800;
+                text-anchor: middle;
+                dominant-baseline: central;
+                pointer-events: none;
+            }
+            
+            /* Hover */
+            .peca-svg.ativo .forma {
+                fill: rgba(76, 221, 221, 0.42);
+                stroke: #005A64;
+                stroke-width: 2.8;
+            }
+            .peca-svg.ativo .detalhe { stroke: #002D32; }
+            .peca-svg.ativo .linha-guia {
+                stroke: #005A64;
+                stroke-width: 2.4;
+                stroke-dasharray: none;
+            }
+            .peca-svg.ativo .badge-circulo {
+                fill: #005A64;
+                stroke: #002D32;
+                stroke-width: 2.2;
+            }
+            .peca-svg.ativo .badge-texto { fill: #ffffff; }
+            
+            /* Selecionada */
+            .peca-svg.selecionada .forma {
+                fill: rgba(255, 206, 0, 0.48);
+                stroke: #b45309;
+                stroke-width: 2.8;
+            }
+            .peca-svg.selecionada .badge-circulo {
+                fill: #FFCE00;
+                stroke: #002D32;
+            }
+            .peca-svg.selecionada .badge-texto { fill: #002D32; }
+            
+            /* Lista lateral */
+            .lista-pecas-box {
+                background: var(--fundo2, #161d2e);
+                border: 1px solid var(--glass-border, rgba(255,255,255,0.15));
+                border-radius: 10px;
+                max-height: 620px;
+                overflow-y: auto;
+                padding: 8px;
+            }
+            .item-peca-lista {
+                display: flex; align-items: center; gap: 10px;
+                padding: 9px 10px; border-radius: 6px; cursor: pointer;
+                font-size: 13.5px; color: #e2e8f0;
+                border-bottom: 1px solid rgba(255,255,255,0.06);
+                transition: background 0.15s ease, color 0.15s ease;
+            }
+            .item-peca-lista:last-child { border-bottom: none; }
+            .item-peca-num {
+                min-width: 26px; height: 26px; border-radius: 50%;
+                display: inline-flex; align-items: center; justify-content: center;
+                background: rgba(76, 221, 221, 0.18); color: #4CDDDD;
+                font-weight: 700; font-size: 12.5px; flex-shrink: 0;
+            }
+            .item-peca-lista.ativo {
+                background: rgba(76, 221, 221, 0.28);
+                color: #ffffff; font-weight: 600;
+            }
+            .item-peca-lista.ativo .item-peca-num { background: #4CDDDD; color: #002D32; }
+            .item-peca-lista.selecionada {
+                background: rgba(255, 206, 0, 0.24);
+                border-left: 3px solid #FFCE00;
+                color: #FFCE00; font-weight: 700;
+            }
+            .item-peca-lista.selecionada .item-peca-num { background: #FFCE00; color: #002D32; }
+
+        /* Tooltip flutuante acompanhando o mouse */
+        .tooltip-peca {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: none;
+            background: #002D32;
+            color: #ffffff;
+            border: 1.5px solid #4CDDDD;
+            padding: 7px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transform: translateY(4px);
+            transition: opacity 0.12s ease, transform 0.12s ease;
+            white-space: nowrap;
+        }
+        .tooltip-peca.visivel {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .tooltip-peca .tt-num {
+            display: inline-block;
+            background: #FFCE00;
+            color: #002D32;
+            border-radius: 4px;
+            padding: 1px 6px;
+            margin-right: 6px;
+            font-weight: 800;
+        }
+        .tooltip-peca .tt-sub {
+            display: block;
+            font-size: 10.5px;
+            font-weight: 400;
+            color: #6FFFAF;
+            margin-top: 2px;
         }
     </style>
 </head>
 <body>
+
+    <!-- TOOLTIP FLUTUANTE NO MOUSE -->
+    <div id="tooltipPeca" class="tooltip-peca"></div>
 
     <header class="top-header">
         <div class="header-inner">
@@ -62,51 +323,385 @@
             <div class="ticker-content">
                 <span class="ticker-item">🌬️ Verifique sempre a energia e o disjuntor de antemão</span>
                 <span class="ticker-item">🔋 Oriente o cliente a testar com pilhas novas no controle remoto</span>
-                <span class="ticker-item">🤝 Tenha empatia e respeito</span>
-                <span class="ticker-item">😊 Tenha cordialidade no atendimento</span>
+                <span class="ticker-item">📦 Peça de reposição: orientar guarda de 90 dias (sem logística reversa)</span>
+                <span class="ticker-item">🤝 Tenha empatia, respeito e cordialidade no atendimento</span>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <h2>Triagem Atendimento ON | Cortina de Ar</h2>
-        <br>
-        <h5>Base: Matriz Pós-Vendas - Eventuais Problemas (Multiar)</h5>
+        <div class="topo-acoes">
+            <div>
+                <h2 style="margin-bottom: 4px;">Triagem Atendimento ON | Cortina de Ar</h2>
+                <h5 style="margin: 0;">Base: Fluxo Pós-Vendas Cortina de Ar & Matriz Eventuais Problemas (Multi-Ar / Leveros)</h5>
+            </div>
+            <button type="button" class="btn-vista-toggle" onclick="alternarVistaExplodida()">
+                📐 Vista Explodida (25 peças)
+            </button>
+        </div>
 
         <div class="layout-wrapper">
             <div class="form-column">
                 <div class="card-panel">
+                    <!-- ETAPA 1: IDENTIFICAÇÃO DO SINTOMA -->
                     <div class="form-group">
                         <label for="problema">1. Qual o problema apresentado pela Cortina de Ar?</label>
-                        <select id="problema" onchange="carregarFluxo()">
-                            <option value="">Selecione o problema...</option>
-                            <option value="" disabled>── VERIFICAÇÕES BÁSICAS (NÍVEL 1) ──</option>
-                            <option value="nao_liga">A cortina de ar não liga</option>
-                            <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
-                            <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
-                            <option value="" disabled>── ANÁLISE AVANÇADA (NÍVEL 2) ──</option>
-                            <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
-                            <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
-                            <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
-                            <option value="controle_curto_alcance">Controle a 1 metro de distância não funciona</option>
-                            <option value="liga_tomada_sem_funcionar">Ligado na tomada, recebe sinal, porém não liga</option>
-                            <option value="baixa_rotacao">Cortina apresenta baixa rotação</option>
+                        <select id="problema" onchange="iniciarTriagem()">
+                            <option value="">Selecione o sintoma relatado...</option>
+                            <optgroup label="── VERIFICAÇÕES BÁSICAS (NÍVEL 1) ──">
+                                <option value="nao_liga">A cortina de ar não liga</option>
+                                <option value="sem_sinal_controle">Cortina não recebe sinal do controle remoto</option>
+                                <option value="sinal_apos_troca_pilha">Sinal não é recebido mesmo após troca das pilhas</option>
+                                <option value="baixa_rotacao">Cortina apresenta baixa rotação</option>
+                            </optgroup>
+                            <optgroup label="── ANÁLISE AVANÇADA (NÍVEL 2) ──">
+                                <option value="ruido_sem_rotacao">Ruído excessivo, sem rotação do ventilador</option>
+                                <option value="ventilador_contrario">Ventilador rodando ao contrário</option>
+                                <option value="ruido_com_rotacao">Ruído excessivo, ventilador com rotação</option>
+                                <option value="controle_curto_alcance">Controle a 1 metro de distância não funciona</option>
+                                <option value="liga_tomada_sem_funcionar">Ligado à tomada, recebe sinal, porém não liga</option>
+                            </optgroup>
                         </select>
                     </div>
 
-                    <!-- CHECKLIST NÍVEL 1 -->
+                    <!-- ETAPA 2: TESTES ORIENTADOS -->
                     <div class="form-group hidden" id="divChecklist">
-                        <span class="section-title">Passos de Verificação com o Cliente</span>
+                        <span class="section-title">2. Orientar Testes da Matriz Eventuais Problemas</span>
+                        <span id="avisoEtapaTeste" class="aviso-etapa hidden"></span>
                         <div id="listaChecklist"></div>
 
                         <div class="pergunta-resolveu">
-                            <label>As verificações acima resolveram o problema?</label><br>
-                            <button class="btn-resolveu btn-sim" onclick="definirResolucao(true)">✅ Sim, resolveu</button>
-                            <button class="btn-resolveu btn-nao" onclick="definirResolucao(false)">❌ Não resolveu</button>
+                            <label>Problema resolvido nos testes?</label><br>
+                            <button type="button" class="btn-resolveu btn-sim" onclick="definirResolucao(true)">✅ Sim, resolveu</button>
+                            <button type="button" class="btn-resolveu btn-nao" onclick="definirResolucao(false)">❌ Não resolveu</button>
+                        </div>
+                    </div>
+
+                    <!-- ETAPA 3: NATUREZA DA SOLICITAÇÃO (FLUXOGRAMA BPMN) -->
+                    <div class="form-group hidden" id="divNatureza">
+                        <div class="diagnostico-previo">
+                            <strong id="previaTituloDiag"></strong>
+                            <p id="previaTextoDiag"></p>
+                        </div>
+
+                        <div class="bloco-decisao">
+                            <span class="section-title">3. Natureza da Solicitação</span>
+                            <label>Os testes não resolveram. Qual o encaminhamento aplicável?</label><br>
+                            <button type="button" class="btn-resolveu btn-troca" id="btnTrocaCompleta" onclick="selecionarNatureza('troca_completa')">🔄 Troca Completa</button>
+                            <button type="button" class="btn-resolveu btn-peca" id="btnPecaReposicao" onclick="selecionarNatureza('peca_reposicao')">🧩 Peça de Reposição</button>
+                        </div>
+
+                        <!-- DETALHES PEÇA DE REPOSIÇÃO / RETORNO CD GARANTIA -->
+                        <div class="sub-opcoes-cd hidden" id="divDetalhesPeca">
+                            <div class="form-group">
+                                <label for="etapaCD">Etapa do Fluxo de Peça (Atendimento ↔ CD Garantia):</label>
+                                <select id="etapaCD" onchange="atualizarFluxoPeca()">
+                                    <option value="encaminhar_cd">1. Solicitação inicial → Identificar na Visão Explodida e encaminhar ao CD Garantia</option>
+                                    <option value="formalizar_envio">2. Retorno CD (Peça em estoque) → Formalizar envio da peça ao cliente</option>
+                                    <option value="indisponivel_aprovada">3. Retorno CD (Peça indisponível) → Troca do produto completo APROVADA</option>
+                                    <option value="indisponivel_reprovada">4. Retorno CD (Peça indisponível) → Troca do produto completo REPROVADA</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="grupoInputPeca">
+                                <label for="inputPeca">Peça identificada na Visão Explodida (clique no desenho abaixo ou digite):</label>
+                                <input type="text" id="inputPeca" class="input-peca" placeholder="Clique em uma peça na Vista Explodida abaixo ou digite aqui..." oninput="atualizarFluxoPeca()">
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- VISTA EXPLODIDA INTERATIVA -->
+                <div class="card-panel vista-explodida-card hidden" id="cardVistaExplodida">
+                    <div class="vista-header">
+                        <div>
+                            <h3>📐 Vista Explodida Interativa — Cortina de Ar (Multi-Ar)</h3>
+                            <p class="vista-dica">Passe o mouse para identificar a peça na lista e no cursor. Clique para preencher automaticamente no script.</p>
+                        </div>
+                        <button type="button" class="btn-vista-toggle" onclick="alternarVistaExplodida(false)">✖ Ocultar</button>
+                    </div>
+
+                    <div class="vista-grid">
+                        <!-- DESENHO VETORIAL SVG -->
+                        <div class="svg-wrapper">
+                            <svg id="svgVistaExplodida" viewBox="0 0 700 545" xmlns="http://www.w3.org/2000/svg">
+                                <!-- 1: PAINEL FRONTAL -->
+                                <g class="peca-svg" data-id="1">
+                                    <path class="forma" d="M 160 24 L 580 24 Q 568 55 566 86 L 148 86 Q 146 55 160 24 Z"/>
+                                    <!-- Grade de ventilação superior -->
+                                    <rect class="detalhe" x="172" y="30" width="120" height="30" rx="2"/>
+                                    <rect class="detalhe" x="302" y="30" width="120" height="30" rx="2"/>
+                                    <rect class="detalhe" x="432" y="30" width="120" height="30" rx="2"/>
+                                    <line class="detalhe" x1="172" y1="38" x2="552" y2="38"/>
+                                    <line class="detalhe" x1="172" y1="46" x2="552" y2="46"/>
+                                    <line class="detalhe" x1="172" y1="54" x2="552" y2="54"/>
+                                    <!-- Visor frontal -->
+                                    <rect class="detalhe" x="332" y="68" width="50" height="12" rx="3"/>
+                                    <line class="linha-guia" x1="576" y1="30" x2="622" y2="18"/>
+                                    <circle class="badge-circulo" cx="634" cy="18" r="11"/>
+                                    <text class="badge-texto" x="634" y="18">1</text>
+                                </g>
+
+                                <!-- 5: ETIQUETA DO PAINEL -->
+                                <g class="peca-svg" data-id="5">
+                                    <rect class="forma" x="168" y="102" width="58" height="20" rx="3"/>
+                                    <line class="detalhe" x1="176" y1="112" x2="218" y2="112"/>
+                                    <circle class="detalhe" cx="197" cy="112" r="3"/>
+                                    <line class="linha-guia" x1="168" y1="112" x2="108" y2="90"/>
+                                    <circle class="badge-circulo" cx="96" cy="86" r="11"/>
+                                    <text class="badge-texto" x="96" y="86">5</text>
+                                </g>
+
+                                <!-- 4: CAIXA DA PLACA RECEPTORA -->
+                                <g class="peca-svg" data-id="4">
+                                    <rect class="forma" x="322" y="104" width="46" height="19" rx="2"/>
+                                    <circle class="detalhe" cx="332" cy="113" r="2.2"/>
+                                    <circle class="detalhe" cx="340" cy="113" r="2.2"/>
+                                    <rect class="detalhe" x="348" y="110" width="14" height="6"/>
+                                    <line class="linha-guia" x1="322" y1="113" x2="288" y2="106"/>
+                                    <circle class="badge-circulo" cx="276" cy="104" r="11"/>
+                                    <text class="badge-texto" x="276" y="104">4</text>
+                                </g>
+
+                                <!-- 3: PLACA RECEPTORA -->
+                                <g class="peca-svg" data-id="3">
+                                    <rect class="forma" x="404" y="108" width="32" height="12" rx="1"/>
+                                    <path class="detalhe" d="M 436 114 Q 448 112 458 116"/>
+                                    <rect class="forma" x="458" y="111" width="10" height="8" rx="1"/>
+                                    <line class="linha-guia" x1="466" y1="111" x2="492" y2="96"/>
+                                    <circle class="badge-circulo" cx="502" cy="94" r="11"/>
+                                    <text class="badge-texto" x="502" y="94">3</text>
+                                </g>
+
+                                <!-- 2: TAMPA DA CAIXA DA PLACA RECEPTORA -->
+                                <g class="peca-svg" data-id="2">
+                                    <rect class="forma" x="526" y="102" width="44" height="18" rx="3"/>
+                                    <rect class="detalhe" x="532" y="106" width="32" height="10" rx="2"/>
+                                    <line class="linha-guia" x1="570" y1="108" x2="622" y2="90"/>
+                                    <circle class="badge-circulo" cx="634" cy="88" r="11"/>
+                                    <text class="badge-texto" x="634" y="88">2</text>
+                                </g>
+
+                                <!-- 9: ROLAMENTO DE BORRACHA (ESQ E DIR) -->
+                                <g class="peca-svg" data-id="9">
+                                    <rect class="forma" x="95" y="176" width="18" height="22" rx="5"/>
+                                    <ellipse class="detalhe" cx="104" cy="187" rx="4" ry="7"/>
+                                    <rect class="forma" x="636" y="176" width="16" height="22" rx="5"/>
+                                    <ellipse class="detalhe" cx="644" cy="187" rx="4" ry="7"/>
+                                    <line class="linha-guia" x1="95" y1="184" x2="54" y2="168"/>
+                                    <circle class="badge-circulo" cx="42" cy="165" r="11"/>
+                                    <text class="badge-texto" x="42" y="165">9</text>
+                                </g>
+
+                                <!-- 10: VENTILADOR LADO ESQUERDO -->
+                                <g class="peca-svg" data-id="10">
+                                    <rect class="forma" x="128" y="158" width="170" height="54" rx="8"/>
+                                    <ellipse class="forma" cx="294" cy="185" rx="9" ry="27"/>
+                                    <ellipse class="detalhe" cx="294" cy="185" rx="4" ry="11"/>
+                                    <line class="detalhe" x1="132" y1="168" x2="284" y2="168"/>
+                                    <line class="detalhe" x1="130" y1="176" x2="283" y2="176"/>
+                                    <line class="detalhe" x1="130" y1="185" x2="283" y2="185"/>
+                                    <line class="detalhe" x1="130" y1="194" x2="283" y2="194"/>
+                                    <line class="detalhe" x1="132" y1="202" x2="284" y2="202"/>
+                                    <line class="detalhe" x1="185" y1="158" x2="185" y2="212"/>
+                                    <line class="detalhe" x1="240" y1="158" x2="240" y2="212"/>
+                                    <line class="linha-guia" x1="138" y1="160" x2="54" y2="136"/>
+                                    <circle class="badge-circulo" cx="42" cy="133" r="11"/>
+                                    <text class="badge-texto" x="42" y="133">10</text>
+                                </g>
+
+                                <!-- 6: SUPORTE DO MOTOR -->
+                                <g class="peca-svg" data-id="6">
+                                    <path class="forma" d="M 326 148 Q 344 148 348 175 L 348 205 Q 344 232 326 232 Q 318 205 318 175 Z"/>
+                                    <ellipse class="detalhe" cx="333" cy="190" rx="8" ry="26"/>
+                                    <line class="linha-guia" x1="328" y1="150" x2="308" y2="136"/>
+                                    <circle class="badge-circulo" cx="298" cy="132" r="11"/>
+                                    <text class="badge-texto" x="298" y="132">6</text>
+                                </g>
+
+                                <!-- 24: BORRACHA ANTI-CHOQUE MOTOR -->
+                                <g class="peca-svg" data-id="24">
+                                    <circle class="forma" cx="358" cy="166" r="5"/>
+                                    <circle class="forma" cx="358" cy="190" r="5"/>
+                                    <circle class="forma" cx="358" cy="214" r="5"/>
+                                    <line class="linha-guia" x1="358" y1="160" x2="352" y2="138"/>
+                                    <circle class="badge-circulo" cx="350" cy="130" r="11"/>
+                                    <text class="badge-texto" x="350" y="130">24</text>
+                                </g>
+
+                                <!-- 7: MOTOR -->
+                                <g class="peca-svg" data-id="7">
+                                    <rect class="forma" x="370" y="162" width="46" height="50" rx="10"/>
+                                    <line class="detalhe" x1="382" y1="164" x2="382" y2="210"/>
+                                    <line class="detalhe" x1="404" y1="164" x2="404" y2="210"/>
+                                    <rect class="forma" x="358" y="184" width="12" height="6"/>
+                                    <rect class="forma" x="416" y="184" width="14" height="6"/>
+                                    <circle class="detalhe" cx="393" cy="187" r="9"/>
+                                    <line class="linha-guia" x1="398" y1="162" x2="404" y2="144"/>
+                                    <circle class="badge-circulo" cx="406" cy="134" r="11"/>
+                                    <text class="badge-texto" x="406" y="134">7</text>
+                                </g>
+
+                                <!-- 11: VENTILADOR LADO DIREITO -->
+                                <g class="peca-svg" data-id="11">
+                                    <rect class="forma" x="438" y="158" width="176" height="54" rx="8"/>
+                                    <ellipse class="forma" cx="610" cy="185" rx="9" ry="27"/>
+                                    <ellipse class="detalhe" cx="610" cy="185" rx="4" ry="11"/>
+                                    <line class="detalhe" x1="442" y1="168" x2="600" y2="168"/>
+                                    <line class="detalhe" x1="440" y1="176" x2="599" y2="176"/>
+                                    <line class="detalhe" x1="440" y1="185" x2="599" y2="185"/>
+                                    <line class="detalhe" x1="440" y1="194" x2="599" y2="194"/>
+                                    <line class="detalhe" x1="442" y1="202" x2="600" y2="202"/>
+                                    <line class="detalhe" x1="496" y1="158" x2="496" y2="212"/>
+                                    <line class="detalhe" x1="552" y1="158" x2="552" y2="212"/>
+                                    <line class="linha-guia" x1="612" y1="162" x2="626" y2="146"/>
+                                    <circle class="badge-circulo" cx="634" cy="138" r="11"/>
+                                    <text class="badge-texto" x="634" y="138">11</text>
+                                </g>
+
+                                <!-- 12: REFORÇO CENTRAL -->
+                                <g class="peca-svg" data-id="12">
+                                    <polygon class="forma" points="292,238 318,238 332,262 278,262"/>
+                                    <circle class="detalhe" cx="305" cy="246" r="2"/>
+                                    <circle class="detalhe" cx="294" cy="255" r="2"/>
+                                    <circle class="detalhe" cx="316" cy="255" r="2"/>
+                                    <line class="linha-guia" x1="286" y1="248" x2="54" y2="232"/>
+                                    <circle class="badge-circulo" cx="42" cy="230" r="11"/>
+                                    <text class="badge-texto" x="42" y="230">12</text>
+                                </g>
+
+                                <!-- 8: CAPACITOR -->
+                                <g class="peca-svg" data-id="8">
+                                    <rect class="forma" x="380" y="240" width="22" height="16" rx="2"/>
+                                    <line class="detalhe" x1="386" y1="232" x2="386" y2="240"/>
+                                    <line class="detalhe" x1="396" y1="232" x2="396" y2="240"/>
+                                    <line class="linha-guia" x1="402" y1="250" x2="622" y2="262"/>
+                                    <circle class="badge-circulo" cx="634" cy="262" r="11"/>
+                                    <text class="badge-texto" x="634" y="262">8</text>
+                                </g>
+
+                                <!-- 20: CAIXA COM PLACA DE POTÊNCIA -->
+                                <g class="peca-svg" data-id="20">
+                                    <rect class="forma" x="116" y="262" width="74" height="24" rx="3"/>
+                                    <rect class="detalhe" x="142" y="268" width="22" height="10" rx="1"/>
+                                    <line class="linha-guia" x1="116" y1="274" x2="54" y2="266"/>
+                                    <circle class="badge-circulo" cx="42" cy="264" r="11"/>
+                                    <text class="badge-texto" x="42" y="264">20</text>
+                                </g>
+
+                                <!-- 21: TAMPA DA CAIXA DA PLACA DE POTÊNCIA -->
+                                <g class="peca-svg" data-id="21">
+                                    <rect class="forma" x="150" y="294" width="76" height="13" rx="3"/>
+                                    <line class="detalhe" x1="158" y1="300" x2="218" y2="300"/>
+                                    <line class="linha-guia" x1="150" y1="300" x2="54" y2="298"/>
+                                    <circle class="badge-circulo" cx="42" cy="298" r="11"/>
+                                    <text class="badge-texto" x="42" y="298">21</text>
+                                </g>
+
+                                <!-- 14: BRAÇADEIRA CABO DE ALIMENTAÇÃO -->
+                                <g class="peca-svg" data-id="14">
+                                    <ellipse class="forma" cx="352" cy="268" rx="9" ry="5"/>
+                                    <circle class="detalhe" cx="352" cy="268" r="2.2"/>
+                                    <line class="linha-guia" x1="344" y1="272" x2="286" y2="294"/>
+                                    <circle class="badge-circulo" cx="275" cy="296" r="11"/>
+                                    <text class="badge-texto" x="275" y="296">14</text>
+                                </g>
+
+                                <!-- 13: CABO DE ALIMENTAÇÃO -->
+                                <g class="peca-svg" data-id="13">
+                                    <path class="forma" fill="none" d="M 388 308 C 406 306, 404 282, 420 282 C 434 282, 434 298, 444 276" style="fill:none; stroke-width:3;"/>
+                                    <rect class="forma" x="440" y="266" width="12" height="12" rx="2"/>
+                                    <line class="detalhe" x1="444" y1="260" x2="444" y2="266"/>
+                                    <line class="detalhe" x1="448" y1="260" x2="448" y2="266"/>
+                                    <line class="linha-guia" x1="406" y1="294" x2="352" y2="294"/>
+                                    <circle class="badge-circulo" cx="340" cy="294" r="11"/>
+                                    <text class="badge-texto" x="340" y="294">13</text>
+                                </g>
+
+                                <!-- 15: GRAMPO DO CABO -->
+                                <g class="peca-svg" data-id="15">
+                                    <rect class="forma" x="366" y="310" width="12" height="8" rx="2"/>
+                                    <line class="linha-guia" x1="366" y1="314" x2="322" y2="314"/>
+                                    <circle class="badge-circulo" cx="310" cy="314" r="11"/>
+                                    <text class="badge-texto" x="310" y="314">15</text>
+                                </g>
+
+                                <!-- 22: PAINEL TRASEIRO -->
+                                <g class="peca-svg" data-id="22">
+                                    <path class="forma" d="M 116 328 L 548 328 Q 562 355 552 418 L 110 418 Q 98 370 116 328 Z"/>
+                                    <path class="detalhe" d="M 128 338 L 534 338 Q 542 360 536 396 L 122 396 Q 114 365 128 338 Z"/>
+                                    <rect class="detalhe" x="292" y="388" width="54" height="24" rx="2"/>
+                                    <line class="detalhe" x1="122" y1="382" x2="538" y2="382"/>
+                                    <line class="linha-guia" x1="108" y1="358" x2="54" y2="348"/>
+                                    <circle class="badge-circulo" cx="42" cy="346" r="11"/>
+                                    <text class="badge-texto" x="42" y="346">22</text>
+                                </g>
+
+                                <!-- 16: SUPORTE DA ALETA -->
+                                <g class="peca-svg" data-id="16">
+                                    <rect class="forma" x="96" y="432" width="12" height="16" rx="3"/>
+                                    <line class="linha-guia" x1="96" y1="440" x2="54" y2="434"/>
+                                    <circle class="badge-circulo" cx="42" cy="432" r="11"/>
+                                    <text class="badge-texto" x="42" y="432">16</text>
+                                </g>
+
+                                <!-- 17: ALETA -->
+                                <g class="peca-svg" data-id="17">
+                                    <rect class="forma" x="116" y="436" width="176" height="9" rx="3"/>
+                                    <rect class="forma" x="318" y="436" width="192" height="9" rx="3"/>
+                                    <line class="linha-guia" x1="166" y1="445" x2="54" y2="466"/>
+                                    <circle class="badge-circulo" cx="42" cy="466" r="11"/>
+                                    <text class="badge-texto" x="42" y="466">17</text>
+                                </g>
+
+                                <!-- 19: FIXADOR ALETA SUPORTE -->
+                                <g class="peca-svg" data-id="19">
+                                    <rect class="forma" x="296" y="434" width="18" height="13" rx="3"/>
+                                    <circle class="detalhe" cx="305" cy="440" r="2.5"/>
+                                    <line class="linha-guia" x1="312" y1="446" x2="454" y2="478"/>
+                                    <circle class="badge-circulo" cx="466" cy="480" r="11"/>
+                                    <text class="badge-texto" x="466" y="480">19</text>
+                                </g>
+
+                                <!-- 18: FIXADOR ALETA LATERAL -->
+                                <g class="peca-svg" data-id="18">
+                                    <rect class="forma" x="528" y="430" width="14" height="16" rx="3"/>
+                                    <line class="linha-guia" x1="542" y1="438" x2="572" y2="444"/>
+                                    <circle class="badge-circulo" cx="584" cy="446" r="11"/>
+                                    <text class="badge-texto" x="584" y="446">18</text>
+                                </g>
+
+                                <!-- 23: SUPORTE FIXADOR -->
+                                <g class="peca-svg" data-id="23">
+                                    <polygon class="forma" points="116,494 434,494 446,522 104,522"/>
+                                    <line class="detalhe" x1="112" y1="504" x2="438" y2="504"/>
+                                    <circle class="detalhe" cx="144" cy="513" r="2.5"/>
+                                    <circle class="detalhe" cx="275" cy="513" r="2.5"/>
+                                    <circle class="detalhe" cx="404" cy="513" r="2.5"/>
+                                    <line class="linha-guia" x1="110" y1="508" x2="54" y2="514"/>
+                                    <circle class="badge-circulo" cx="42" cy="514" r="11"/>
+                                    <text class="badge-texto" x="42" y="514">23</text>
+                                </g>
+
+                                <!-- 25: CONTROLE REMOTO -->
+                                <g class="peca-svg" data-id="25">
+                                    <rect class="forma" x="506" y="486" width="24" height="48" rx="6"/>
+                                    <circle class="detalhe" cx="518" cy="498" r="4"/>
+                                    <circle class="detalhe" cx="518" cy="508" r="3"/>
+                                    <rect class="detalhe" x="513" y="516" width="10" height="8" rx="1"/>
+                                    <line class="linha-guia" x1="530" y1="518" x2="564" y2="518"/>
+                                    <circle class="badge-circulo" cx="576" cy="518" r="11"/>
+                                    <text class="badge-texto" x="576" y="518">25</text>
+                                </g>
+                            </svg>
+                        </div>
+
+                        <!-- LISTA NUMERADA DAS 25 PEÇAS -->
+                        <div class="lista-pecas-box" id="listaPecasVista"></div>
+                    </div>
+                </div>
+
+                <!-- RESULTADO FINAL E SCRIPT CRM -->
                 <div class="card-panel result-box hidden" id="resultadoFinal" style="margin-bottom: 0;">
 
                     <div id="statusBox" class="status-box hidden"></div>
@@ -114,7 +709,7 @@
                     <h3 id="tituloResultado">Diagnóstico Técnico</h3>
                     <p id="textoDiagnostico" style="white-space: pre-wrap;"></p>
 
-                    <h3 style="margin-top:20px;">Ação N1 Recomendada</h3>
+                    <h3 style="margin-top:20px;">Ação Recomendada (Fluxo Pós-Vendas)</h3>
                     <p id="textoAcao" style="white-space: pre-wrap;"></p>
 
                     <div class="alert-crm">
@@ -127,11 +722,12 @@
 
                     <div class="resumo-crm-container" style="margin-top: 25px; border-top: 1px solid var(--glass-border); padding-top: 20px;">
                         <h3>📝 Script para o CRM</h3>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Copie o texto abaixo e cole no protocolo.</p>
+                        <p style="font-size: 13px; color: #aaa; margin-bottom: 10px;">Copie o texto abaixo e cole no protocolo.</p>
 
-                        <textarea id="textoResumoCRM" readonly rows="10" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; resize: vertical; background: #f9f9f9; color: #333; font-family: monospace; font-size: 12.5px;"></textarea>
+                        <textarea id="textoResumoCRM" readonly rows="12" style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--glass-border, #ccc); resize: vertical; background: var(--fundo2, #161d2e); color: #fff; font-family: monospace; font-size: 12.5px; box-sizing: border-box;"></textarea>
 
-                        <button class="btn-resolveu" id="btnCopiar" onclick="copiarResumo()" style="background-color: #0056b3; margin-top: 10px;">📋 Copiar Script</button>
+                        <button type="button" class="btn-resolveu" id="btnCopiar" onclick="copiarResumo()" style="background-color: #0056b3; margin-top: 10px;">📋 Copiar Script</button>
+                        <button type="button" class="btn-resolveu btn-secundario" onclick="reiniciarTriagem()" style="margin-top: 10px;">🔄 Nova Triagem</button>
                     </div>
                 </div>
             </div>
@@ -139,6 +735,34 @@
     </div>
 
 <script>
+const pecasVistaExplodida = [
+    { id: 1,  nome: "PAINEL FRONTAL" },
+    { id: 2,  nome: "TAMPA DA CAIXA DA PLACA RECEPTORA" },
+    { id: 3,  nome: "PLACA RECEPTORA" },
+    { id: 4,  nome: "CAIXA DA PLACA RECEPTORA" },
+    { id: 5,  nome: "ETIQUETA DO PAINEL" },
+    { id: 6,  nome: "SUPORTE DO MOTOR" },
+    { id: 7,  nome: "MOTOR" },
+    { id: 8,  nome: "CAPACITOR" },
+    { id: 9,  nome: "ROLAMENTO DE BORRACHA" },
+    { id: 10, nome: "VENTILADOR LADO ESQUERDO" },
+    { id: 11, nome: "VENTILADOR LADO DIREITO" },
+    { id: 12, nome: "REFORÇO CENTRAL" },
+    { id: 13, nome: "CABO DE ALIMENTAÇÃO" },
+    { id: 14, nome: "BRAÇADEIRA CABO DE ALIMENTAÇÃO" },
+    { id: 15, nome: "GRAMPO DO CABO" },
+    { id: 16, nome: "SUPORTE DA ALETA" },
+    { id: 17, nome: "ALETA" },
+    { id: 18, nome: "FIXADOR ALETA LATERAL" },
+    { id: 19, nome: "FIXADOR ALETA SUPORTE" },
+    { id: 20, nome: "CAIXA COM PLACA DE POTÊNCIA" },
+    { id: 21, nome: "TAMPA DA CAIXA DA PLACA DE POTÊNCIA" },
+    { id: 22, nome: "PAINEL TRASEIRO" },
+    { id: 23, nome: "SUPORTE FIXADOR" },
+    { id: 24, nome: "BORRACHA ANTI-CHOQUE MOTOR" },
+    { id: 25, nome: "CONTROLE REMOTO" }
+];
+
 const baseConhecimento = {
     nao_liga: {
         titulo: "A cortina de ar não liga",
@@ -164,138 +788,472 @@ const baseConhecimento = {
         titulo: "Sinal do controle não é recebido, mesmo após a troca das pilhas",
         nivel: "basico",
         checklist: [
-            "Isto pode ocorrer caso exista alta incidência de sol ou luz artificial direcionada ao receptor da Cortina de Ar.",
+            "Verifique se existe alta incidência de sol ou luz artificial direcionada ao receptor da Cortina de Ar.",
             "Oriente o cliente a fechar as cortinas/persianas e apagar a luz do ambiente, executando o teste novamente."
         ],
         escalaPara: "controle_curto_alcance"
     },
+    baixa_rotacao: {
+        titulo: "Cortina apresenta baixa rotação",
+        nivel: "basico",
+        checklist: [
+            "Analise a tensão elétrica do local com o cliente.",
+            "Caso a rede seja 127V, oriente que a cortina operará com redução na rotação normal (característica técnica do produto, não sendo defeito)."
+        ],
+        escalaPara: "baixa_rotacao_avancado"
+    },
+    baixa_rotacao_avancado: {
+        titulo: "Cortina apresenta baixa rotação (rede validada)",
+        nivel: "avancado",
+        diagnostico: "Rede elétrica validada fora do cenário de redução por 127V — suspeita de falha no motor ou capacitor.",
+        acaoBase: "Registrar o sintoma e a confirmação da tensão elétrica no CRM."
+    },
     ruido_sem_rotacao: {
         titulo: "Ruído excessivo, sem rotação do ventilador",
         nivel: "avancado",
-        diagnostico: "Moto ventilador travado, eventual problema na bobina.",
-        acao: "Registar o sintoma detalhado no CRM. Escalonar o diagnóstico de travamento do moto ventilador ou falha na bobina para a equipa responsável avaliar as diretrizes de garantia."
+        diagnostico: "Moto ventilador travado ou eventual problema na bobina.",
+        acaoBase: "Registrar o diagnóstico de travamento do moto ventilador ou falha na bobina."
     },
     ventilador_contrario: {
         titulo: "Ventilador rodando ao contrário",
         nivel: "avancado",
         diagnostico: "Inversão das fases do motor.",
-        acao: "Registar o sintoma detalhado no CRM apontando inversão das fases. Direcionar para a fila de garantia determinar o fluxo de correção técnica aplicável."
+        acaoBase: "Registrar o diagnóstico de inversão das fases do motor."
     },
     ruido_com_rotacao: {
         titulo: "Ruído excessivo, ventilador com rotação",
         nivel: "avancado",
         diagnostico: "Problemas nas hélices do produto, rolamentos ou moto ventilador comprometido.",
-        acao: "Registar o diagnóstico de dano mecânico nas hélices, rolamentos ou moto ventilador. Redirecionar atendimento para o Nível 2 / Backoffice seguir com a análise do problema."
+        acaoBase: "Registrar o diagnóstico de dano mecânico nas hélices, rolamentos ou moto ventilador."
     },
     controle_curto_alcance: {
         titulo: "Controle a 1 metro de distância não funciona",
         nivel: "avancado",
         diagnostico: "Problema na placa receptora ou problema no controle remoto.",
-        acao: "O problema não se deve a falhas ambientais ou pilhas fracas. Registar no protocolo a necessidade de intervenção para análise da placa receptora ou do controlo remoto."
+        acaoBase: "Descartadas falhas de pilhas e interferência luminosa; registrar necessidade de tratativa para placa receptora ou controle remoto."
     },
     liga_tomada_sem_funcionar: {
-        titulo: "Equipamento ligado a tomada, recebe sinal, porém não liga",
+        titulo: "Equipamento ligado à tomada, recebe sinal, porém não liga",
         nivel: "avancado",
-        diagnostico: "Problema na placa de comando, Motor queimado ou Cabo de alimentação avariado (medir continuidade).",
-        acao: "Registar no CRM as conclusões (suspeita de motor queimado, placa de comando ou cabo avariado). Escalonar para tratativa de pós-venda conforme as diretrizes do equipamento."
-    },
-    baixa_rotacao: {
-        titulo: "Cortina apresenta baixa rotação",
-        nivel: "avancado",
-        diagnostico: "Analisar a tensão do local, caso seja 127V, esta rotação reduzirá.",
-        acao: "Questionar o cliente sobre a tensão da rede elétrica instalada. Caso confirme ser de 127V, orientar o cliente de que o equipamento operará com uma redução na sua rotação normal. Documentar em protocolo."
+        diagnostico: "Problema na placa de comando, motor queimado ou cabo de alimentação avariado (medir continuidade).",
+        acaoBase: "Registrar suspeita de placa de comando, motor queimado ou cabo de alimentação avariado."
     }
 };
 
-function carregarFluxo() {
-    const problema = document.getElementById("problema").value;
-    const divChecklist = document.getElementById("divChecklist");
-    const resultadoFinal = document.getElementById("resultadoFinal");
-    const listaChecklist = document.getElementById("listaChecklist");
+let estadoTriagem = {
+    sintomaInicial: "",
+    chaveAtual: "",
+    chaveAvancada: "",
+    testesRealizados: [],
+    natureza: "",
+    pecaSelecionadaId: null
+};
 
-    resultadoFinal.classList.add("hidden");
-    divChecklist.classList.add("hidden");
+/* =========================================
+   INICIALIZAÇÃO DA VISTA EXPLODIDA INTERATIVA
+   ========================================= */
+function inicializarVistaExplodida() {
+    const listaContainer = document.getElementById("listaPecasVista");
+    const tooltip = document.getElementById("tooltipPeca");
+    listaContainer.innerHTML = "";
 
-    if (!problema) return;
+    pecasVistaExplodida.forEach(peca => {
+        const row = document.createElement("div");
+        row.className = "item-peca-lista";
+        row.dataset.id = peca.id;
+        row.innerHTML = `<span class="item-peca-num">${peca.id}</span><span>${peca.nome}</span>`;
 
-    const item = baseConhecimento[problema];
+        row.addEventListener("mouseenter", () => destacarPeca(peca.id, false));
+        row.addEventListener("mouseleave", () => limparDestaquePeca());
+        row.addEventListener("click", () => selecionarPecaVista(peca));
 
-    if (item.nivel === "basico") {
-        listaChecklist.innerHTML = "";
-        item.checklist.forEach((texto, i) => {
-            const div = document.createElement("div");
-            div.className = "checklist-item";
-            const chk = document.createElement("input");
-            chk.type = "checkbox";
-            chk.id = "chk_" + i;
-            const span = document.createElement("span");
-            span.textContent = texto;
-            div.appendChild(chk);
-            div.appendChild(span);
-            listaChecklist.appendChild(div);
+        listaContainer.appendChild(row);
+    });
+
+    document.querySelectorAll("#svgVistaExplodida .peca-svg").forEach(grupo => {
+        const id = Number(grupo.dataset.id);
+        const peca = pecasVistaExplodida.find(p => p.id === id);
+        if (!peca) return;
+
+        grupo.addEventListener("mouseenter", (e) => {
+            destacarPeca(id, true);
+            tooltip.innerHTML = `<span class="tt-num">${peca.id}</span>${peca.nome}<span class="tt-sub">Clique para selecionar no script</span>`;
+            tooltip.classList.add("visivel");
+            posicionarTooltip(e);
         });
-        divChecklist.classList.remove("hidden");
-    } else {
-        montarResultadoAvancado(problema);
+
+        grupo.addEventListener("mousemove", (e) => posicionarTooltip(e));
+
+        grupo.addEventListener("mouseleave", () => {
+            limparDestaquePeca();
+            tooltip.classList.remove("visivel");
+        });
+
+        grupo.addEventListener("click", () => selecionarPecaVista(peca));
+    });
+}
+
+function posicionarTooltip(e) {
+    const tooltip = document.getElementById("tooltipPeca");
+    const offset = 16;
+    let x = e.clientX + offset;
+    let y = e.clientY - 46;
+
+    if (x + tooltip.offsetWidth > window.innerWidth - 12) {
+        x = e.clientX - tooltip.offsetWidth - offset;
+    }
+    if (y < 12) {
+        y = e.clientY + offset;
+    }
+
+    tooltip.style.left = x + "px";
+    tooltip.style.top = y + "px";
+}
+
+function destacarPeca(id, rolarLista) {
+    limparDestaquePeca();
+    const grupo = document.querySelector(`#svgVistaExplodida .peca-svg[data-id="${id}"]`);
+    const itemLista = document.querySelector(`#listaPecasVista .item-peca-lista[data-id="${id}"]`);
+
+    if (grupo) grupo.classList.add("ativo");
+    if (itemLista) {
+        itemLista.classList.add("ativo");
+        if (rolarLista) {
+            itemLista.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
     }
 }
 
+function limparDestaquePeca() {
+    document.querySelectorAll("#svgVistaExplodida .peca-svg.ativo").forEach(el => el.classList.remove("ativo"));
+    document.querySelectorAll("#listaPecasVista .item-peca-lista.ativo").forEach(el => el.classList.remove("ativo"));
+}
+
+function selecionarPecaVista(peca) {
+    estadoTriagem.pecaSelecionadaId = peca.id;
+
+    document.querySelectorAll("#svgVistaExplodida .peca-svg.selecionada").forEach(el => el.classList.remove("selecionada"));
+    document.querySelectorAll("#listaPecasVista .item-peca-lista.selecionada").forEach(el => el.classList.remove("selecionada"));
+
+    const grupo = document.querySelector(`#svgVistaExplodida .peca-svg[data-id="${peca.id}"]`);
+    const itemLista = document.querySelector(`#listaPecasVista .item-peca-lista[data-id="${peca.id}"]`);
+    if (grupo) grupo.classList.add("selecionada");
+    if (itemLista) itemLista.classList.add("selecionada");
+
+    const inputPeca = document.getElementById("inputPeca");
+    inputPeca.value = `Item ${peca.id} - ${peca.nome}`;
+
+    if (estadoTriagem.natureza === "peca_reposicao" && estadoTriagem.chaveAvancada) {
+        atualizarFluxoPeca();
+    }
+}
+
+function alternarVistaExplodida(forcarEstado) {
+    const card = document.getElementById("cardVistaExplodida");
+    if (typeof forcarEstado === "boolean") {
+        card.classList.toggle("hidden", !forcarEstado);
+    } else {
+        card.classList.toggle("hidden");
+    }
+}
+
+/* =========================================
+   LÓGICA DA TRIAGEM E FLUXOGRAMA BPMN
+   ========================================= */
+function iniciarTriagem() {
+    const chave = document.getElementById("problema").value;
+    estadoTriagem = {
+        sintomaInicial: chave ? baseConhecimento[chave].titulo : "",
+        chaveAtual: chave,
+        chaveAvancada: "",
+        testesRealizados: [],
+        natureza: "",
+        pecaSelecionadaId: null
+    };
+
+    esconderSecoes();
+    if (!chave) return;
+
+    carregarEtapa(chave, false);
+}
+
+function esconderSecoes() {
+    document.getElementById("divChecklist").classList.add("hidden");
+    document.getElementById("divNatureza").classList.add("hidden");
+    document.getElementById("divDetalhesPeca").classList.add("hidden");
+    document.getElementById("cardVistaExplodida").classList.add("hidden");
+    document.getElementById("resultadoFinal").classList.add("hidden");
+    document.getElementById("avisoEtapaTeste").classList.add("hidden");
+    document.getElementById("btnTrocaCompleta").classList.remove("btn-ativo");
+    document.getElementById("btnPecaReposicao").classList.remove("btn-ativo");
+}
+
+function carregarEtapa(chave, veioDeEscalonamento) {
+    const item = baseConhecimento[chave];
+    estadoTriagem.chaveAtual = chave;
+
+    if (item.nivel === "basico") {
+        const listaChecklist = document.getElementById("listaChecklist");
+        listaChecklist.innerHTML = "";
+
+        item.checklist.forEach((texto, i) => {
+            const div = document.createElement("div");
+            div.className = "checklist-item";
+
+            const chk = document.createElement("input");
+            chk.type = "checkbox";
+            chk.id = "chk_" + i;
+            chk.value = texto;
+
+            const lbl = document.createElement("label");
+            lbl.htmlFor = "chk_" + i;
+            lbl.textContent = texto;
+
+            div.appendChild(chk);
+            div.appendChild(lbl);
+            listaChecklist.appendChild(div);
+        });
+
+        const aviso = document.getElementById("avisoEtapaTeste");
+        if (veioDeEscalonamento) {
+            aviso.textContent = "➡️ Próxima verificação obrigatória: " + item.titulo;
+            aviso.classList.remove("hidden");
+        } else {
+            aviso.classList.add("hidden");
+        }
+
+        document.getElementById("divChecklist").classList.remove("hidden");
+    } else {
+        abrirNaturezaSolicitacao(chave);
+    }
+}
+
+function capturarCheckboxesMarcados() {
+    const marcados = Array.from(document.querySelectorAll("#listaChecklist input[type='checkbox']:checked"))
+        .map(chk => chk.value);
+    marcados.forEach(texto => {
+        if (!estadoTriagem.testesRealizados.includes(texto)) {
+            estadoTriagem.testesRealizados.push(texto);
+        }
+    });
+}
+
 function definirResolucao(resolveu) {
-    const problema = document.getElementById("problema").value;
-    const item = baseConhecimento[problema];
+    capturarCheckboxesMarcados();
+    const itemAtual = baseConhecimento[estadoTriagem.chaveAtual];
 
     if (resolveu) {
-        montarResultadoResolvido(item);
+        document.getElementById("divNatureza").classList.add("hidden");
+        document.getElementById("cardVistaExplodida").classList.add("hidden");
+        montarResultadoResolvido(itemAtual);
+        return;
+    }
+
+    const proximaChave = itemAtual.escalaPara;
+    const proximoItem = baseConhecimento[proximaChave];
+
+    if (proximoItem.nivel === "basico") {
+        document.getElementById("problema").value = proximaChave;
+        carregarEtapa(proximaChave, true);
     } else {
-        montarResultadoAvancado(item.escalaPara, item.titulo);
+        abrirNaturezaSolicitacao(proximaChave);
+    }
+}
+
+function abrirNaturezaSolicitacao(chaveAvancada) {
+    estadoTriagem.chaveAvancada = chaveAvancada;
+    const item = baseConhecimento[chaveAvancada];
+
+    document.getElementById("previaTituloDiag").textContent = "Diagnóstico Técnico: " + item.titulo;
+    document.getElementById("previaTextoDiag").textContent = item.diagnostico;
+
+    document.getElementById("divNatureza").classList.remove("hidden");
+    document.getElementById("divDetalhesPeca").classList.add("hidden");
+    document.getElementById("cardVistaExplodida").classList.add("hidden");
+    document.getElementById("resultadoFinal").classList.add("hidden");
+    document.getElementById("btnTrocaCompleta").classList.remove("btn-ativo");
+    document.getElementById("btnPecaReposicao").classList.remove("btn-ativo");
+}
+
+function selecionarNatureza(tipo) {
+    estadoTriagem.natureza = tipo;
+
+    document.getElementById("btnTrocaCompleta").classList.toggle("btn-ativo", tipo === "troca_completa");
+    document.getElementById("btnPecaReposicao").classList.toggle("btn-ativo", tipo === "peca_reposicao");
+
+    if (tipo === "troca_completa") {
+        document.getElementById("divDetalhesPeca").classList.add("hidden");
+        document.getElementById("cardVistaExplodida").classList.add("hidden");
+        montarResultadoTrocaCompleta();
+    } else {
+        document.getElementById("etapaCD").value = "encaminhar_cd";
+        document.getElementById("divDetalhesPeca").classList.remove("hidden");
+        document.getElementById("cardVistaExplodida").classList.remove("hidden");
+        atualizarFluxoPeca();
     }
 }
 
 function montarResultadoResolvido(item) {
-    const resultadoFinal = document.getElementById("resultadoFinal");
     const statusBox = document.getElementById("statusBox");
-
     statusBox.className = "status-box status-ok";
-    statusBox.textContent = "✅ PROBLEMA RESOLVIDO NAS VERIFICAÇÕES DE NÍVEL 1";
+    statusBox.textContent = "✅ RESOLVIDO NOS TESTES (ENCERRAR SOLICITAÇÃO)";
     statusBox.classList.remove("hidden");
 
-    document.getElementById("tituloResultado").textContent = "Verificação Concluída";
-    document.getElementById("textoDiagnostico").textContent =
-        "Problema relatado: " + item.titulo + "\n\nApós orientação e verificações básicas, o cliente confirmou o funcionamento normal do equipamento.";
-    document.getElementById("textoAcao").textContent =
-        "Finalizar o atendimento orientando o cliente sobre as verificações realizadas. Não é necessário escalonamento.";
-    document.getElementById("textoRegra").textContent =
-        "Atendimentos resolvidos em Nível 1 devem ser finalizados sem prosseguir para análise adicional. Registar a causa e a solução aplicada no protocolo.";
+    const tituloCaminho = obterTituloCompleto(item.titulo);
 
-    gerarScriptCRM(item.titulo, "Resolvido em Nível 1", "Finalizado sem escalonamento para Nível 2.");
-    resultadoFinal.classList.remove("hidden");
+    document.getElementById("tituloResultado").textContent = "Verificação Concluída — Resolvido nos Testes";
+    document.getElementById("textoDiagnostico").textContent =
+        "Sintoma relatado: " + tituloCaminho +
+        "\n\nApós a execução dos testes orientados pela Matriz de Eventuais Problemas, o cliente confirmou o funcionamento adequado do equipamento.";
+
+    const acao = "Encerrar a solicitação como 'Resolvido nos testes' e registrar as orientações aplicadas no protocolo. Não é necessário acionar CD Garantia ou fluxo de troca.";
+    document.getElementById("textoAcao").textContent = acao;
+    document.getElementById("textoRegra").textContent =
+        "Fluxo encerrado na etapa de testes (Nível 1). Confirmar a resolução com o cliente e finalizar o protocolo.";
+
+    gerarScriptCRM({
+        sintoma: tituloCaminho,
+        diagnostico: "Resolvido após testes orientados da Matriz de Eventuais Problemas.",
+        natureza: "Não se aplica (Resolvido nos testes)",
+        status: "RESOLVIDO NOS TESTES",
+        acao: acao
+    });
+
+    document.getElementById("resultadoFinal").classList.remove("hidden");
 }
 
-function montarResultadoAvancado(chaveAvancada, tituloOriginal) {
-    const item = baseConhecimento[chaveAvancada];
-    const resultadoFinal = document.getElementById("resultadoFinal");
+function montarResultadoTrocaCompleta() {
+    const item = baseConhecimento[estadoTriagem.chaveAvancada];
     const statusBox = document.getElementById("statusBox");
-
     statusBox.className = "status-box status-nok";
-    statusBox.textContent = "🔧 DIAGNÓSTICO AVANÇADO (NÍVEL 2)";
+    statusBox.textContent = "🔄 TROCA COMPLETA → FLUXO DE TROCA";
+    statusBox.classList.remove("hidden");
+
+    const tituloCaminho = obterTituloCompleto(item.titulo);
+
+    document.getElementById("tituloResultado").textContent = item.titulo;
+    document.getElementById("textoDiagnostico").textContent = item.diagnostico;
+
+    const acao =
+        "1. " + item.acaoBase + "\n" +
+        "2. Validar e aprovar a troca direta com base nas evidências solicitadas e no prazo de troca.\n" +
+        "3. Encaminhar o atendimento para o Fluxo de Troca e finalizar o protocolo desta etapa.";
+
+    document.getElementById("textoAcao").textContent = acao;
+    document.getElementById("textoRegra").textContent =
+        "Natureza definida como Troca Completa. Garantir que todas as evidências e o prazo de elegibilidade estejam anexados antes de acionar o Fluxo de Troca.";
+
+    gerarScriptCRM({
+        sintoma: tituloCaminho,
+        diagnostico: item.diagnostico,
+        natureza: "Troca completa",
+        status: "Aprovada troca direta → Encaminhado ao Fluxo de Troca",
+        acao: acao
+    });
+
+    document.getElementById("resultadoFinal").classList.remove("hidden");
+}
+
+function atualizarFluxoPeca() {
+    const item = baseConhecimento[estadoTriagem.chaveAvancada];
+    const etapaCD = document.getElementById("etapaCD").value;
+    const pecaDigitada = document.getElementById("inputPeca").value.trim();
+    const grupoInputPeca = document.getElementById("grupoInputPeca");
+    const esconderPeca = (etapaCD === "indisponivel_aprovada" || etapaCD === "indisponivel_reprovada");
+
+    grupoInputPeca.classList.toggle("hidden", esconderPeca);
+    document.getElementById("cardVistaExplodida").classList.toggle("hidden", esconderPeca);
+
+    const statusBox = document.getElementById("statusBox");
+    const tituloCaminho = obterTituloCompleto(item.titulo);
+    const textoPeca = pecaDigitada ? ` (${pecaDigitada})` : "";
+
+    let badge = "";
+    let statusClass = "status-box status-nok";
+    let acao = "";
+    let regra = "";
+    let statusCRM = "";
+
+    if (etapaCD === "encaminhar_cd") {
+        badge = "🧩 PEÇA DE REPOSIÇÃO → ENCAMINHAR AO CD GARANTIA";
+        acao =
+            "1. " + item.acaoBase + "\n" +
+            "2. Identificar a peça na Visão Explodida de Peças" + textoPeca + " e encaminhar ao CD Garantia com a evidência.\n" +
+            "3. Orientar o cliente sobre a guarda de 90 dias do item defeituoso (sem logística reversa).\n" +
+            "4. Alinhar que, após o recebimento da peça, o cliente deverá solicitar ao seu técnico responsável o reparo e a instalação.";
+        regra = "Encaminhar ao CD Garantia com a identificação da Visão Explodida e evidência anexada. Não há logística reversa da peça defeituosa (guarda de 90 dias).";
+        statusCRM = "Encaminhado ao CD Garantia (verificação de estoque de peça)";
+    } else if (etapaCD === "formalizar_envio") {
+        badge = "📦 PEÇA EM ESTOQUE → FORMALIZAR ENVIO DA PEÇA";
+        statusClass = "status-box status-ok";
+        acao =
+            "1. Peça confirmada em estoque e enviada pelo CD Garantia" + textoPeca + ".\n" +
+            "2. Formalizar o envio da peça ao cliente (informando código de rastreio e previsão).\n" +
+            "3. Reforçar que, ao receber a peça, o cliente deve acionar seu técnico responsável para reparo/instalação e manter a guarda de 90 dias do item defeituoso.\n" +
+            "4. Finalizar o protocolo.";
+        regra = "Com o envio realizado pelo CD Garantia, formalizar o despacho ao cliente e encerrar o protocolo.";
+        statusCRM = "Peça enviada pelo CD Garantia → Envio formalizado (Protocolo finalizado)";
+    } else if (etapaCD === "indisponivel_aprovada") {
+        badge = "🔄 PEÇA INDISPONÍVEL NO CD → TROCA DO PRODUTO APROVADA";
+        acao =
+            "1. CD Garantia notificou indisponibilidade da peça em estoque.\n" +
+            "2. Avaliação concluída: troca do produto completo APROVADA.\n" +
+            "3. Direcionar o atendimento para o Fluxo de Troca e finalizar o protocolo desta etapa.";
+        regra = "Diante da indisponibilidade de peça no CD Garantia e aprovação da troca completa, seguir imediatamente pelo Fluxo de Troca.";
+        statusCRM = "Peça indisponível no CD → Troca do produto aprovada (Fluxo de Troca)";
+    } else {
+        badge = "⛔ PEÇA INDISPONÍVEL NO CD → TROCA REPROVADA";
+        acao =
+            "1. CD Garantia notificou indisponibilidade da peça em estoque.\n" +
+            "2. Avaliação concluída: troca do produto completo REPROVADA.\n" +
+            "3. Comunicar formalmente o cliente sobre a devolutiva e encerrar o protocolo.";
+        regra = "Registrar a justificativa da reprovação da troca no protocolo, comunicar o cliente de forma clara e encerrar o atendimento.";
+        statusCRM = "Peça indisponível no CD → Troca reprovada (Cliente comunicado / Protocolo finalizado)";
+    }
+
+    statusBox.className = statusClass;
+    statusBox.textContent = badge;
     statusBox.classList.remove("hidden");
 
     document.getElementById("tituloResultado").textContent = item.titulo;
     document.getElementById("textoDiagnostico").textContent = item.diagnostico;
-    document.getElementById("textoAcao").textContent = item.acao;
-    document.getElementById("textoRegra").textContent =
-        "O diagnóstico da matriz não prevê envio automático de técnico pelo Nível 1. A tratativa final e a avaliação dos próximos passos devem decorrer no fluxo interno estipulado pelo CRM.";
+    document.getElementById("textoAcao").textContent = acao;
+    document.getElementById("textoRegra").textContent = regra;
 
-    const tituloParaCrm = tituloOriginal ? (tituloOriginal + " → " + item.titulo) : item.titulo;
-    gerarScriptCRM(tituloParaCrm, "Escalonado para Avaliação do Pós-Vendas", item.acao);
-    resultadoFinal.classList.remove("hidden");
+    gerarScriptCRM({
+        sintoma: tituloCaminho,
+        diagnostico: item.diagnostico,
+        natureza: "Peça de reposição" + textoPeca,
+        status: statusCRM,
+        acao: acao
+    });
+
+    document.getElementById("resultadoFinal").classList.remove("hidden");
 }
 
-function gerarScriptCRM(problemaTexto, statusTriagem, acaoResumo) {
-    let script = "[TRIAGEM CORTINA DE AR - MULTIAR]\n";
-    script += "Problema Relatado: " + problemaTexto + "\n";
-    script += "Resultado da Triagem: " + statusTriagem + "\n";
-    script += "\n[AÇÃO ADOTADA]\n" + acaoResumo + "\n";
+function obterTituloCompleto(tituloFinal) {
+    if (estadoTriagem.sintomaInicial && estadoTriagem.sintomaInicial !== tituloFinal) {
+        return estadoTriagem.sintomaInicial + " → " + tituloFinal;
+    }
+    return tituloFinal;
+}
+
+function gerarScriptCRM({ sintoma, diagnostico, natureza, status, acao }) {
+    let script = "[TRIAGEM CORTINA DE AR - MULTI-AR / LEVEROS]\n";
+    script += "Sintoma Relatado: " + sintoma + "\n";
+
+    if (estadoTriagem.testesRealizados.length > 0) {
+        script += "\n[TESTES ORIENTADOS / VALIDADOS]\n";
+        estadoTriagem.testesRealizados.forEach(t => {
+            script += "- " + t + "\n";
+        });
+    }
+
+    script += "\n[DIAGNÓSTICO]\n" + diagnostico + "\n";
+    script += "\nNatureza da Solicitação: " + natureza + "\n";
+    script += "Status do Fluxo: " + status + "\n";
+    script += "\n[AÇÃO ADOTADA]\n" + acao + "\n";
+
     document.getElementById("textoResumoCRM").value = script;
 }
 
@@ -315,6 +1273,16 @@ function copiarResumo() {
         alert("Não foi possível copiar automaticamente. Selecione o texto e use Ctrl+C.");
     });
 }
+
+function reiniciarTriagem() {
+    document.getElementById("problema").value = "";
+    document.getElementById("inputPeca").value = "";
+    document.querySelectorAll(".selecionada").forEach(el => el.classList.remove("selecionada"));
+    iniciarTriagem();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.addEventListener("DOMContentLoaded", inicializarVistaExplodida);
 </script>
 </body>
 </html>
