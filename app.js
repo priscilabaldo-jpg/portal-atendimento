@@ -23,7 +23,7 @@ const provider = new GoogleAuthProvider();
 // Sempre mostra o seletor de contas do Google e sugere o domínio da Leveros
 provider.setCustomParameters({ prompt: 'select_account', hd: 'leveros.com.br' });
 
-const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br' , 'arinay.santos@leveros.com.br'];
+const ADMIN_EMAILS = ['priscila.baldo@leveros.com.br', 'matheus.mendes@leveros.com.br' , 'ariany.santos@leveros.com.br'];
 let currentUser = null;
 
 // Variáveis Globais de Dados e Controle
