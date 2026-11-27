@@ -30,6 +30,7 @@ export function abrirDetalheDor(id) {
         <div class="p-5 overflow-y-auto grid grid-cols-1 md:grid-cols-3 gap-x-5 gap-y-4">
             ${bloco('setor', 'fa-layer-group')}${bloco('direcional', 'fa-compass')}${bloco('squad', 'fa-users')}
             ${bloco('dor', 'fa-circle-exclamation', 'md:col-span-3', 'bg-red-50 border border-red-100 text-red-900')}
+            ${bloco('responsavel', 'fa-user-tie', 'md:col-span-3')}
             ${bloco('acao', 'fa-hammer', 'md:col-span-3', 'bg-blue-50 border border-blue-100 text-blue-900')}
             ${bloco('resultado', 'fa-trophy', 'md:col-span-3')}
             ${bloco('metricaAtual', 'fa-gauge')}${bloco('kpi', 'fa-bullseye', 'md:col-span-2')}
@@ -99,6 +100,7 @@ export function modalDor(id = '') {
     abrirModal(d ? `Editar dor ${esc(d.codigo || '')}` : 'Nova dor operacional', `
         <input type="hidden" id="dr-id" value="${esc(id)}">
         ${dl('dl-setor', [...new Set([...SETORES_PADRAO, ...opcoesDe(x => x.setor)])])}
+        ${dl('dl-resp', opcoesDe(x => x.responsavel))}
         ${dl('dl-direcional', opcoesDe(x => x.direcional))}
         ${dl('dl-squad', opcoesDe(x => parseSquad(x.squad).squad))}
         ${dl('dl-alinh', opcoesDe(x => x.alinhamento))}
@@ -106,6 +108,7 @@ export function modalDor(id = '') {
             <div class="sm:col-span-1"><label class="lbl">ID</label><input id="dr-codigo" class="inp" placeholder="ex.: T9" value="${v('codigo')}"></div>
             <div class="sm:col-span-2"><label class="lbl">Setor *</label><input id="dr-setor-f" list="dl-setor" class="inp" required value="${v('setor')}" placeholder="ex.: T&D"></div>
             <div class="sm:col-span-3"><label class="lbl">Direcional</label><input id="dr-direcional" list="dl-direcional" class="inp" value="${v('direcional')}" placeholder="ex.: Jornada T&D"></div>
+            <div class="sm:col-span-6"><label class="lbl">Responsável <span class="font-normal normal-case text-gray-400">(quem está à frente desta dor)</span></label><input id="dr-responsavel-f" list="dl-resp" class="inp" value="${v('responsavel')}" placeholder="ex.: Ana Silva"></div>
 
             ${area('dor', 'Dor *', 2, '(o problema que o time enfrenta)', 'sm:col-span-6')}
             ${area('acao', 'Ação', 3, '(o que será feito)', 'sm:col-span-6')}
@@ -130,7 +133,7 @@ export async function salvarDor() {
     const dataVal = (n) => $(`#dr-${n}-adef`).checked ? 'A definir' : $('#dr-' + n).value;
     const quarter = $('#dr-quarter-f').value, squadNome = val('squad-f');
     const dados = {
-        codigo: val('codigo'), setor: val('setor-f'), direcional: val('direcional'), dor: val('dor'), acao: val('acao'),
+        codigo: val('codigo'), setor: val('setor-f'), direcional: val('direcional'), responsavel: val('responsavel-f'), dor: val('dor'), acao: val('acao'),
         resultado: val('resultado'), metricaAtual: val('metricaAtual'), kpi: val('kpi'), prioridade: $('#dr-prioridade').value,
         squad: quarter && squadNome ? `${quarter} · ${squadNome}` : (quarter || squadNome),
         alinhamento: val('alinhamento'), inicio: dataVal('inicio'), fim: dataVal('fim'), status: $('#dr-status-f').value, obs: val('obs')
