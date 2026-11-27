@@ -16,6 +16,8 @@ export const DORES_COLUNAS = [
     { k: 'metricaAtual', h: 'Métrica Atual (do problema)' },
     { k: 'kpi',          h: 'KPI de Sucesso' },
     { k: 'prioridade',   h: 'Prioridade' },
+    { k: 'direcional',   h: 'DIRECIONAL' },
+    { k: 'responsavel',  h: 'Responsável' },
     { k: 'squad',        h: 'Quarter & Squad de Destino' },
     { k: 'alinhamento',  h: 'Alinhamento "4 por 100"' },
     { k: 'inicio',       h: 'Início' },
@@ -77,6 +79,7 @@ export function doresFiltradas() {
     return state.dores.filter(d =>
         (!f.setor || d.setor === f.setor) && (!f.prio || d.prioridade === f.prio) &&
         (!f.status || d.status === f.status) && (!f.quarter || dorQuarter(d) === f.quarter) &&
+        (!f.responsavel || (f.responsavel === '__sem' ? !d.responsavel : d.responsavel === f.responsavel)) &&
         (!q || normTxt(DORES_COLUNAS.map(c => d[c.k]).join(' ')).includes(q)));
 }
 
@@ -84,7 +87,7 @@ export function agruparDores(lista) {
     const g = state.filtros.dores.grupo;
     if (g === 'nenhum') return [{ titulo: '', itens: lista }];
     const chave = (d) => g === 'setor' ? (d.setor || 'Sem setor') : g === 'prioridade' ? (d.prioridade || 'Sem prioridade')
-        : g === 'status' ? (d.status || 'Sem status') : dorQuarter(d);
+    : g === 'status' ? (d.status || 'Sem status') : g === 'responsavel' ? (d.responsavel || 'Sem responsável') : dorQuarter(d);
     const mapa = new Map();
     lista.forEach(d => { const k = chave(d); if (!mapa.has(k)) mapa.set(k, []); mapa.get(k).push(d); });
     const grupos = [...mapa].map(([titulo, itens]) => ({ titulo, itens }));
